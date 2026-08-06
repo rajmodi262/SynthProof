@@ -1,12 +1,11 @@
 """Differentially Private Domain Profiler that charges budget for schema and range discovery."""
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Union, Optional
-import numpy as np
+from typing import Any, Dict, List, Optional
 
 from synthproof.accounting.accountant import Accountant
-from synthproof.accounting.types import MechanismSpec
 from synthproof.accounting.noise import sample_discrete_laplace
+from synthproof.accounting.types import MechanismSpec
 from synthproof.data.dataset import TabularDataset
 
 

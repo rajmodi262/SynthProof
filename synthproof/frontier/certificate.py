@@ -1,8 +1,8 @@
 """Pareto Privacy-Utility Frontier Engine and Privacy Data Sheet Certificate Exporter."""
 
+import json
 from dataclasses import asdict, dataclass
 from typing import Dict, List, Optional
-import json
 
 from synthproof.accounting.accountant import Accountant
 from synthproof.audit.canary import CanaryAuditor
@@ -78,7 +78,8 @@ class FrontierEngine:
             auditor = CanaryAuditor(num_canaries=5, seed=self.seed)
             aug_dataset, canary_set = auditor.plant_canaries(dataset)
 
-            gen = AIMGenerator(seed=self.seed) if use_aim else GaussianCopulaGenerator(seed=self.seed)
+            gen = (AIMGenerator(seed=self.seed) if use_aim
+                   else GaussianCopulaGenerator(seed=self.seed))
             gen.fit(aug_dataset, profile, acc, target_eps=eps)
 
             synthetic_df = gen.generate(num_samples=dataset.num_rows)
@@ -97,7 +98,9 @@ class FrontierEngine:
                 seed=self.seed,
             ))
 
-            evaluator = UtilityEvaluator(target_col=dataset.categorical_cols[0] if dataset.categorical_cols else "category")
+            target_col = (dataset.categorical_cols[0]
+                          if dataset.categorical_cols else "category")
+            evaluator = UtilityEvaluator(target_col=target_col)
             utility_res = evaluator.evaluate(dataset.df, synthetic_df)
 
             point = FrontierPoint(

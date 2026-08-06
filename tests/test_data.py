@@ -1,9 +1,8 @@
 """Unit tests for TabularDataset and DPDomainProfiler."""
 
-import pytest
+from synthproof.accounting.accountant import Accountant
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
-from synthproof.accounting.accountant import Accountant
 
 
 def test_tabular_dataset_classification():

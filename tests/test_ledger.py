@@ -1,9 +1,10 @@
 """Unit tests for append-only Ledger and Allocator."""
 
 import pytest
+
+from synthproof.ledger.allocator import Allocator
 from synthproof.ledger.ledger import Ledger
 from synthproof.ledger.types import LedgerEntry
-from synthproof.ledger.allocator import Allocator
 
 
 def test_ledger_append_and_verify():
@@ -28,6 +29,7 @@ def test_ledger_tamper_mutation_fails_verification():
     ledger = Ledger(db_path=":memory:")
     e1 = ledger.append(LedgerEntry(eps_spent=0.5))
     e2 = ledger.append(LedgerEntry(eps_spent=1.0))
+    assert e2.prev_hash == e1.compute_hash()
     assert ledger.verify() is True
 
     # Mutate eps_spent of e1 in SQLite directly
@@ -42,6 +44,7 @@ def test_ledger_tamper_deletion_fails_verification():
     ledger = Ledger(db_path=":memory:")
     e1 = ledger.append(LedgerEntry(eps_spent=0.5))
     e2 = ledger.append(LedgerEntry(eps_spent=1.0))
+    assert e2.prev_hash == e1.compute_hash()
     assert ledger.verify() is True
 
     # Delete e1 from SQLite

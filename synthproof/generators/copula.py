@@ -4,15 +4,20 @@ import numpy as np
 import pandas as pd
 
 from synthproof.accounting.accountant import Accountant
-from synthproof.accounting.types import MechanismSpec
 from synthproof.accounting.noise import sample_discrete_gaussian
+from synthproof.accounting.types import MechanismSpec
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DomainProfile
 from synthproof.generators.base import BaseGenerator
 
 
 class GaussianCopulaGenerator(BaseGenerator):
-    """Calibrated Gaussian Copula generator that estimates column covariance and marginals under DP."""
+    """Per-column independent Gaussian sampler with DP-noised moments.
+
+    NOTE: despite the name, this does NOT implement a Gaussian copula. It estimates no
+    covariance and applies no rank transform, so it preserves no cross-column
+    correlation. See brutal_project_audit.md, F6.
+    """
 
     def __init__(self, seed: int = 42):
         super().__init__(seed=seed)
@@ -20,7 +25,8 @@ class GaussianCopulaGenerator(BaseGenerator):
         self.stds: dict = {}
         self.categories: dict = {}
 
-    def fit(self, dataset: TabularDataset, profile: DomainProfile, accountant: Accountant, target_eps: float) -> None:
+    def fit(self, dataset: TabularDataset, profile: DomainProfile,
+            accountant: Accountant, target_eps: float) -> None:
         """Fits Gaussian Copula parameters under DP budget charge."""
         np.random.seed(self.seed)
         eps_per_feature = target_eps / max(1, len(dataset.columns))
@@ -39,8 +45,15 @@ class GaussianCopulaGenerator(BaseGenerator):
                 col_min = profile.columns[col].min_val or 0.0
                 col_max = profile.columns[col].max_val or 100.0
 
-                true_mean = float(dataset.df[col].mean())
-                true_std = float(dataset.df[col].std()) if len(dataset.df) > 1 else 1.0
+                # Clip to the DP-profiled range before measuring. Without this the mean
+                # is taken over an unbounded domain, so it has unbounded sensitivity and
+                # the `sensitivity=1.0` declared above is unjustifiable. (These bounds
+                # were previously computed and then discarded.) Calibrating sensitivity
+                # to (col_max - col_min) remains Tier 1 work; see brutal_project_audit.md F5.
+                clipped = dataset.df[col].clip(lower=col_min, upper=col_max)
+
+                true_mean = float(clipped.mean())
+                true_std = float(clipped.std()) if len(dataset.df) > 1 else 1.0
 
                 # Add noise
                 noise_scale = 2.0 / eps_per_feature

@@ -1,6 +1,7 @@
 """Unit tests for UtilityEvaluator, FrontierEngine, and PrivacyDataSheet export."""
 
 import pytest
+
 from synthproof.data.dataset import TabularDataset
 from synthproof.evaluate.utility import UtilityEvaluator
 from synthproof.frontier.certificate import FrontierEngine

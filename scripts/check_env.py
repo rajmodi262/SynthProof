@@ -1,7 +1,8 @@
 """Environment check script for SynthProof platform."""
 
-import sys
 import platform
+import sys
+
 
 def check_environment():
     print("=" * 60)

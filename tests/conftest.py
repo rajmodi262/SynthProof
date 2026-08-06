@@ -1,6 +1,7 @@
 """Pytest configuration and shared fixtures for SynthProof tests."""
 
 import pytest
+
 from synthproof.accounting.accountant import Accountant
 from synthproof.accounting.types import MechanismSpec
 

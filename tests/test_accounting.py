@@ -1,10 +1,11 @@
 """Unit tests and property checks for Privacy Accountant and noise samplers."""
 
-import pytest
 import numpy as np
+import pytest
+
 from synthproof.accounting.accountant import Accountant
+from synthproof.accounting.noise import sample_discrete_gaussian, sample_discrete_laplace
 from synthproof.accounting.types import BudgetExceededError, MechanismSpec
-from synthproof.accounting.noise import sample_discrete_laplace, sample_discrete_gaussian
 
 
 def test_accountant_initialization():
@@ -97,7 +98,8 @@ def test_discrete_gaussian_matches_true_pmf():
     observed = np.array([np.sum(samples == k) for k in support], dtype=float)
     # Fold the tails so no expected bin is too small for the chi-square approximation.
     keep = expected >= 5
-    _, p = stats.chisquare(observed[keep], expected[keep] * observed[keep].sum() / expected[keep].sum())
+    scaled = expected[keep] * observed[keep].sum() / expected[keep].sum()
+    _, p = stats.chisquare(observed[keep], scaled)
     assert p > 0.001, f"sampler does not match the discrete Gaussian PMF (p={p})"
 
 

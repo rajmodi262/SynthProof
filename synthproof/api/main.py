@@ -4,15 +4,14 @@ import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from synthproof.data.dataset import TabularDataset
 from synthproof.frontier.certificate import FrontierEngine
 from synthproof.ledger.ledger import Ledger
 from synthproof.ledger.types import LedgerEntry
-
 
 app = FastAPI(
     title="SynthProof API",

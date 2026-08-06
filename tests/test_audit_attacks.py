@@ -1,6 +1,5 @@
 """Unit tests for CanaryAuditor, DistanceMIABaseline, and ExactMatchRiskEvaluator."""
 
-import numpy as np
 import pandas as pd
 import pytest
 

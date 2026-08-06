@@ -22,7 +22,7 @@ Design notes (and honest limitations):
 """
 
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -203,7 +203,10 @@ class CanaryAuditor:
         fpr = fp / n_out if n_out > 0 else 0.0
 
         tpr_lower, _ = self._clopper_pearson(tp, n_mem, self.confidence)
-        _, fpr_upper = self._clopper_pearson(fp, n_out, self.confidence) if n_out > 0 else (0.0, 1.0)
+        if n_out > 0:
+            _, fpr_upper = self._clopper_pearson(fp, n_out, self.confidence)
+        else:
+            fpr_upper = 1.0
 
         # eps >= log(TPR_lo / FPR_hi). fpr_upper is strictly positive for any finite
         # sample under Clopper-Pearson, so this never divides by zero.

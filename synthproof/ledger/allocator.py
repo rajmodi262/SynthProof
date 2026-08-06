@@ -4,7 +4,11 @@ from typing import Dict, List
 
 
 class Allocator:
-    """Allocates total epsilon budget across columns/features using uniform or weighted allocation."""
+    """Allocates an epsilon budget across columns using uniform or weighted splits.
+
+    NOTE: nothing in the pipeline currently calls this. Wiring it into the generators is
+    a prerequisite for hypothesis H3. See brutal_project_audit.md, Tier 3 item 20.
+    """
 
     @staticmethod
     def allocate_uniform(total_eps: float, items: List[str]) -> Dict[str, float]:

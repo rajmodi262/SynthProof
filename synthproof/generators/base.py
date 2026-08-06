@@ -1,6 +1,7 @@
 """Base abstract interface for synthetic data generators."""
 
 from abc import ABC, abstractmethod
+
 import pandas as pd
 
 from synthproof.accounting.accountant import Accountant
@@ -16,7 +17,8 @@ class BaseGenerator(ABC):
         self.is_fitted = False
 
     @abstractmethod
-    def fit(self, dataset: TabularDataset, profile: DomainProfile, accountant: Accountant, target_eps: float) -> None:
+    def fit(self, dataset: TabularDataset, profile: DomainProfile,
+            accountant: Accountant, target_eps: float) -> None:
         """Fits generator on sensitive dataset under accountant budget charges."""
         pass
 

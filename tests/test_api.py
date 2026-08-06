@@ -1,6 +1,7 @@
 """Unit tests for FastAPI endpoints."""
 
 from fastapi.testclient import TestClient
+
 from synthproof.api.main import app
 
 client = TestClient(app)

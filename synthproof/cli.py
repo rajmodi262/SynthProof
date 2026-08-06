@@ -1,6 +1,7 @@
 """SynthProof Command Line Interface (CLI)."""
 
 import click
+
 from synthproof.data.dataset import TabularDataset
 from synthproof.frontier.certificate import FrontierEngine
 

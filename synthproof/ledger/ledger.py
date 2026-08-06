@@ -1,10 +1,16 @@
-"""Append-only cryptographic Privacy Budget Ledger with SHA-256 hash chaining and Ed25519 signatures."""
+"""Append-only privacy budget ledger.
+
+Uses SHA-256 hash chaining plus Ed25519 signatures over each entry.
+
+NOTE: the signing key is generated in memory per instance and never persisted, so
+signatures on a file-backed database become unverifiable after restart. See
+brutal_project_audit.md, F10.
+"""
 
 import sqlite3
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from cryptography.hazmat.primitives.asymmetric import ed25519
-from cryptography.hazmat.primitives import serialization
 
 from synthproof.ledger.types import LedgerEntry
 
@@ -15,9 +21,10 @@ class LedgerVerificationError(Exception):
 
 
 class Ledger:
-    """Append-only database with cryptographic SHA-256 hash chaining and Ed25519 signature checks."""
+    """Append-only store with SHA-256 hash chaining and Ed25519 signature checks."""
 
-    def __init__(self, db_path: str = ":memory:", private_key: Optional[ed25519.Ed25519PrivateKey] = None):
+    def __init__(self, db_path: str = ":memory:",
+                 private_key: Optional[ed25519.Ed25519PrivateKey] = None):
         self.db_path = db_path
         self._private_key = private_key or ed25519.Ed25519PrivateKey.generate()
         self._public_key = self._private_key.public_key()
@@ -129,7 +136,8 @@ class Ledger:
             signed_entry.entry_id, signed_entry.prev_hash, entry_hash,
             signed_entry.timestamp, signed_entry.dataset_id, signed_entry.run_id,
             signed_entry.mechanism_name, signed_entry.sensitivity, signed_entry.noise_scale,
-            signed_entry.eps_spent, signed_entry.delta, signed_entry.seed, signed_entry.actor, signed_entry.signature
+            signed_entry.eps_spent, signed_entry.delta, signed_entry.seed,
+            signed_entry.actor, signed_entry.signature
         ))
         conn.commit()
         if not self._conn:
@@ -177,7 +185,10 @@ class Ledger:
         """Retrieves list of ledger entries, optionally filtered by dataset_id."""
         conn = self._get_conn()
         if dataset_id:
-            rows = conn.execute("SELECT * FROM ledger_entries WHERE dataset_id = ? ORDER BY id ASC", (dataset_id,)).fetchall()
+            rows = conn.execute(
+                "SELECT * FROM ledger_entries WHERE dataset_id = ? ORDER BY id ASC",
+                (dataset_id,),
+            ).fetchall()
         else:
             rows = conn.execute("SELECT * FROM ledger_entries ORDER BY id ASC").fetchall()
         entries = []

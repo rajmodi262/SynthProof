@@ -6,7 +6,6 @@ with Poisson subsampling amplification from Mironov, Talwar & Zhang (2019).
 """
 
 import copy
-import math
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -89,7 +88,7 @@ class Accountant:
         q = sampling_rate
         amplified = np.zeros_like(rdp_curve)
 
-        for i, (alpha, rdp) in enumerate(zip(alphas, rdp_curve)):
+        for i, (alpha, rdp) in enumerate(zip(alphas, rdp_curve, strict=True)):
             if rdp == 0.0:
                 amplified[i] = 0.0
             elif np.isinf(rdp):

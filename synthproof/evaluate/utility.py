@@ -52,7 +52,10 @@ class UtilityEvaluator:
         np.random.seed(self.seed)
 
         # Numerical columns excluding target
-        num_cols = [c for c in real_df.columns if pd.api.types.is_numeric_dtype(real_df[c]) and c != self.target_col]
+        num_cols = [
+            c for c in real_df.columns
+            if pd.api.types.is_numeric_dtype(real_df[c]) and c != self.target_col
+        ]
 
         # No silent fallback. A previous version returned hardcoded values
         # (0.75 / 0.80 / 0.05 / 0.02) whenever the schema did not match, which made a

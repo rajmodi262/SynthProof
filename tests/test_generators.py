@@ -1,12 +1,12 @@
 """Unit tests for synthetic tabular generators (GaussianCopula, AIM)."""
 
-import pytest
 import pandas as pd
+
+from synthproof.accounting.accountant import Accountant
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
-from synthproof.accounting.accountant import Accountant
-from synthproof.generators.copula import GaussianCopulaGenerator
 from synthproof.generators.aim import AIMGenerator
+from synthproof.generators.copula import GaussianCopulaGenerator
 
 
 def test_copula_generator_fit_and_generate():

@@ -1,12 +1,10 @@
 """Data structures and serialization for the append-only cryptographic ledger."""
 
-from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
-import json
-
 import hashlib
-from typing import Any, Dict, Optional
+import json
 import uuid
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
 
 
 @dataclass(frozen=True)

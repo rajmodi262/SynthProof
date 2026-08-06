@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 
 from synthproof.accounting.accountant import Accountant
-from synthproof.accounting.types import MechanismSpec
 from synthproof.accounting.noise import sample_discrete_gaussian
+from synthproof.accounting.types import MechanismSpec
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DomainProfile
 from synthproof.generators.base import BaseGenerator
@@ -19,7 +19,8 @@ class AIMGenerator(BaseGenerator):
         self.marginals: dict = {}
         self.columns: list = []
 
-    def fit(self, dataset: TabularDataset, profile: DomainProfile, accountant: Accountant, target_eps: float) -> None:
+    def fit(self, dataset: TabularDataset, profile: DomainProfile,
+            accountant: Accountant, target_eps: float) -> None:
         """Selects and measures 1D/2D marginal distributions under DP mechanism spend."""
         np.random.seed(self.seed)
         self.columns = dataset.columns
