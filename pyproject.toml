@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "synthproof"
+version = "0.1.0"
+description = "Synthetic Data That Ships With Its Proof — Differential Privacy Platform & Adversarial Assurance Engine"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Raj Modi", email = "raj.modi@mitwpu.edu.in"},
+    {name = "Krishna Renuse", email = "krishna.renuse@mitwpu.edu.in"},
+    {name = "Aaditya Kumar Sinha", email = "aaditya.sinha@mitwpu.edu.in"},
+    {name = "Levinesh G R", email = "levinesh.gr@mitwpu.edu.in"}
+]
+# Only packages actually imported by the codebase are listed. torch, opacus,
+# dp-accounting, autodp, duckdb and pyarrow were previously declared but had zero
+# imports anywhere. dp-accounting returns in Tier 1, when it replaces the hand-rolled
+# RDP math in synthproof/accounting/accountant.py.
+dependencies = [
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "scipy>=1.10.0",
+    "scikit-learn>=1.3.0",
+    "cryptography>=41.0.0",
+    "pydantic>=2.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.22.0",
+    "click>=8.1.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "hypothesis>=6.80.0",
+    "ruff>=0.1.0",
+    "black>=23.7.0",
+    "mypy>=1.5.0"
+]
+
+[project.scripts]
+synthproof = "synthproof.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --cov=synthproof --cov-report=term-missing"
