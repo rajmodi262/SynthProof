@@ -1,0 +1,1055 @@
+<title>SynthProof — Capstone Pitch</title>
+<style>
+/* ============================================================ TOKENS */
+:root{
+  --paper:#E9EAE5;
+  --surface:#F2F3EF;
+  --surface-2:#DEE0D9;
+  --ink:#171B1E;
+  --muted:#5C6663;
+  --faint:#8A928F;
+  --rule:#C6CAC2;
+  --proved:#9A6410;
+  --proved-soft:#B0751433;
+  --audited:#175A68;
+  --audited-soft:#1F6B7A2B;
+  --seal:#8E2F3C;
+  --ok:#3F6B45;
+  --warn:#8A6212;
+
+  --f-display:ui-monospace,"SF Mono","Cascadia Mono","Segoe UI Mono","Roboto Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --f-body:"Iowan Old Style","Charter","Bitstream Charter","Sitka Text",Cambria,Georgia,serif;
+
+  --s1:.28rem; --s2:.55rem; --s3:.9rem; --s4:1.4rem; --s5:2.1rem; --s6:3.2rem;
+  --maxw:1180px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0F1315; --surface:#161B1E; --surface-2:#1E2427;
+    --ink:#E7E9E4; --muted:#95A09C; --faint:#6C7773; --rule:#2B3235;
+    --proved:#E3A845; --proved-soft:#E0A33C26; --audited:#5CBCCF; --audited-soft:#4FB3C726;
+    --seal:#DC6E79; --ok:#7FB98A; --warn:#D6A63F;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1315; --surface:#161B1E; --surface-2:#1E2427;
+  --ink:#E7E9E4; --muted:#95A09C; --faint:#6C7773; --rule:#2B3235;
+  --proved:#E3A845; --proved-soft:#E0A33C26; --audited:#5CBCCF; --audited-soft:#4FB3C726;
+  --seal:#DC6E79; --ok:#7FB98A; --warn:#D6A63F;
+}
+:root[data-theme="light"]{
+  --paper:#E9EAE5; --surface:#F2F3EF; --surface-2:#DEE0D9;
+  --ink:#171B1E; --muted:#5C6663; --faint:#8A928F; --rule:#C6CAC2;
+  --proved:#9A6410; --proved-soft:#B0751433; --audited:#175A68; --audited-soft:#1F6B7A2B;
+  --seal:#8E2F3C; --ok:#3F6B45; --warn:#8A6212;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--f-body); font-size:17px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ============================================================ DECK SHELL */
+.deck{
+  height:100dvh; overflow-y:auto; scroll-snap-type:y proximity;
+  scroll-behavior:smooth;
+}
+@media (prefers-reduced-motion:reduce){ .deck{scroll-behavior:auto} }
+
+.slide{
+  min-height:100dvh; scroll-snap-align:start;
+  display:flex; flex-direction:column;
+  padding:clamp(2rem,5vw,4.5rem) clamp(1.2rem,5vw,4rem) clamp(3.5rem,6vw,5rem);
+  position:relative; border-bottom:1px solid var(--rule);
+  /* `safe` keeps the top of over-tall slides reachable; plain `center` would push it
+     past the scroll origin and make it unscrollable. Fallback order matters. */
+  justify-content:center;
+  justify-content:safe center;
+}
+.wrap{width:100%; max-width:var(--maxw); margin:0 auto}
+
+/* ============================================================ BRACKET MOTIF */
+.eyebrow{
+  font-family:var(--f-display); font-size:.7rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--faint);
+  display:flex; align-items:center; gap:var(--s3); margin-bottom:var(--s4);
+}
+.eyebrow .num{color:var(--ink); font-weight:700}
+.eyebrow .bar{
+  flex:1; height:7px; border-top:1px solid var(--rule);
+  border-left:1px solid var(--rule); border-right:1px solid var(--rule);
+}
+
+h1,h2,h3,h4{font-family:var(--f-display); font-weight:700; text-wrap:balance; margin:0}
+h1{font-size:clamp(2.6rem,7vw,5.2rem); letter-spacing:-.045em; line-height:.95; text-transform:uppercase}
+h2{font-size:clamp(1.7rem,3.7vw,2.9rem); letter-spacing:-.03em; line-height:1.05; margin-bottom:var(--s4)}
+h3{font-size:.82rem; letter-spacing:.13em; text-transform:uppercase; color:var(--muted)}
+p{margin:0 0 var(--s3); max-width:66ch}
+.lede{font-size:clamp(1.05rem,1.7vw,1.28rem); color:var(--muted); max-width:60ch}
+strong{font-weight:700; color:var(--ink)}
+code,.mono{font-family:var(--f-display); font-size:.86em}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ============================================================ TITLE SLIDE */
+.title-slide{justify-content:center}
+.title-meta{
+  font-family:var(--f-display); font-size:.68rem; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--faint); margin-bottom:var(--s5);
+}
+.tagline{
+  font-family:var(--f-display); font-size:clamp(.85rem,1.9vw,1.15rem);
+  letter-spacing:.05em; color:var(--proved); margin:var(--s3) 0 var(--s5);
+  text-transform:uppercase;
+}
+.team{
+  display:flex; flex-wrap:wrap; gap:var(--s2) var(--s4); margin-top:var(--s5);
+  padding-top:var(--s3); border-top:1px solid var(--rule);
+  font-family:var(--f-display); font-size:.72rem; letter-spacing:.08em; color:var(--muted);
+}
+
+/* ============================================================ GRIDS */
+.cols{display:grid; gap:var(--s4)}
+.c2{grid-template-columns:repeat(2,1fr)}
+.c3{grid-template-columns:repeat(3,1fr)}
+.c4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:880px){ .c2,.c3,.c4{grid-template-columns:1fr} }
+
+.card{
+  background:var(--surface); border:1px solid var(--rule);
+  padding:var(--s4); position:relative;
+}
+.card h3{margin-bottom:var(--s2)}
+.card p{font-size:.95rem; margin-bottom:0; color:var(--muted)}
+.card .big{
+  font-family:var(--f-display); font-size:clamp(1.9rem,4vw,2.7rem);
+  font-weight:700; letter-spacing:-.03em; line-height:1; color:var(--ink);
+  margin-bottom:var(--s2); font-variant-numeric:tabular-nums;
+}
+.card.accent{border-left:3px solid var(--proved)}
+.card.accent-2{border-left:3px solid var(--audited)}
+
+/* ============================================================ DIAGRAMS
+   Styled via CSS rules, not SVG presentation attributes: var() resolves reliably in a
+   CSS declaration but not in an attribute value like fill="var(--ink)". */
+.interval{margin:var(--s5) 0; overflow-x:auto}
+.interval svg{display:block; min-width:520px; width:100%; height:auto}
+
+.dg text{font-family:var(--f-display); fill:var(--muted)}
+.dg .t-ink{fill:var(--ink)}
+.dg .t-mut{fill:var(--muted)}
+.dg .t-fnt{fill:var(--faint)}
+.dg .t-prov{fill:var(--proved)}
+.dg .t-aud{fill:var(--audited)}
+.dg .b{font-weight:700}
+.dg .box{fill:var(--surface); stroke:var(--rule); stroke-width:1}
+.dg .box-strong{fill:var(--surface-2); stroke:var(--ink); stroke-width:1.5}
+.dg .box-prov{fill:var(--proved-soft); stroke:var(--proved); stroke-width:1.5}
+.dg .box-aud{fill:var(--audited-soft); stroke:var(--audited); stroke-width:1}
+.dg .ln{stroke:var(--muted); stroke-width:1; fill:none}
+.dg .ln-rule{stroke:var(--rule); stroke-width:1; fill:none}
+.dg .ln-prov{stroke:var(--proved); stroke-width:1; stroke-dasharray:3 3; fill:none}
+.dg .tick-aud{stroke:var(--audited); stroke-width:2.5}
+.dg .tick-prov{stroke:var(--proved); stroke-width:2.5}
+.dg .fill-gap{fill:var(--proved-soft)}
+.dg .fill-paper{fill:var(--paper)}
+.dg .head-prov{fill:var(--proved)}
+.dg .head-mut{fill:var(--muted)}
+
+/* ============================================================ CERTIFICATE */
+.cert{
+  background:var(--surface); border:1px solid var(--ink);
+  box-shadow:6px 6px 0 var(--surface-2);
+  font-family:var(--f-display); font-size:.78rem; line-height:1.75;
+  overflow-x:auto;
+}
+.cert-head{
+  padding:var(--s3) var(--s4); border-bottom:1px solid var(--ink);
+  display:flex; justify-content:space-between; align-items:center; gap:var(--s3);
+  flex-wrap:wrap; background:var(--surface-2);
+}
+.cert-title{font-weight:700; letter-spacing:.14em; text-transform:uppercase; font-size:.76rem}
+.cert-body{padding:var(--s4); display:grid; gap:2px}
+.row{display:grid; grid-template-columns:minmax(150px,215px) 1fr; gap:var(--s3); align-items:baseline}
+.row .k{color:var(--faint); letter-spacing:.05em}
+.row .v{color:var(--ink); font-variant-numeric:tabular-nums; word-break:break-all}
+.row .v.proved{color:var(--proved); font-weight:700}
+.row .v.audited{color:var(--audited); font-weight:700}
+.divider{height:1px; background:var(--rule); margin:var(--s3) 0}
+.seal-row{
+  padding:var(--s3) var(--s4); border-top:1px solid var(--ink);
+  display:flex; align-items:center; gap:var(--s3); flex-wrap:wrap;
+  background:var(--surface-2); font-size:.72rem;
+}
+.seal-badge{
+  border:1.5px solid var(--seal); color:var(--seal); padding:.3em .7em;
+  letter-spacing:.14em; text-transform:uppercase; font-weight:700; font-size:.68rem;
+  white-space:nowrap;
+}
+
+/* ============================================================ STATUS */
+.status-list{display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule)}
+.status-row{
+  display:grid; grid-template-columns:1fr auto; gap:var(--s3);
+  background:var(--surface); padding:var(--s2) var(--s3); align-items:center;
+  font-family:var(--f-display); font-size:.8rem;
+}
+.status-row .lbl{color:var(--ink)}
+.status-row .sub{color:var(--faint); font-size:.72rem; display:block; margin-top:2px}
+.pill{
+  font-size:.63rem; letter-spacing:.12em; text-transform:uppercase; font-weight:700;
+  padding:.25em .6em; border:1px solid currentColor; white-space:nowrap;
+}
+.pill.done{color:var(--ok)} .pill.part{color:var(--warn)} .pill.todo{color:var(--faint)}
+
+/* ============================================================ STACK / TAGS */
+.tags{display:flex; flex-wrap:wrap; gap:var(--s1)}
+.tag{
+  font-family:var(--f-display); font-size:.7rem; letter-spacing:.06em;
+  border:1px solid var(--rule); padding:.28em .6em; color:var(--muted);
+}
+.tag.hot{border-color:var(--proved); color:var(--proved)}
+
+/* ============================================================ TIMELINE */
+.tl{display:grid; gap:0; border-left:1px solid var(--rule); margin-left:6px}
+.tl-item{padding:0 0 var(--s4) var(--s4); position:relative}
+.tl-item:last-child{padding-bottom:0}
+.tl-item::before{
+  content:""; position:absolute; left:-5px; top:6px; width:9px; height:9px;
+  background:var(--paper); border:1.5px solid var(--proved);
+}
+.tl-item.now::before{background:var(--proved)}
+.tl-tag{
+  font-family:var(--f-display); font-size:.68rem; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--proved); font-weight:700;
+}
+.tl-item h4{font-size:1.02rem; letter-spacing:-.01em; margin:var(--s1) 0; text-transform:none}
+.tl-item p{font-size:.9rem; color:var(--muted); margin:0}
+
+/* ============================================================ ARCH DIAGRAM */
+.arch{overflow-x:auto; margin:var(--s3) 0}
+.arch svg{display:block; min-width:760px; width:100%; height:auto}
+
+/* ============================================================ NAV */
+.rail{
+  position:fixed; right:clamp(.5rem,1.6vw,1.4rem); top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; gap:7px; z-index:40;
+}
+.rail button{
+  width:15px; height:3px; padding:0; border:0; cursor:pointer;
+  background:var(--rule); transition:background .18s, width .18s;
+}
+.rail button[aria-current="true"]{background:var(--proved); width:26px}
+.rail button:focus-visible{outline:2px solid var(--audited); outline-offset:3px}
+@media(max-width:700px){ .rail{display:none} }
+
+.hud{
+  position:fixed; left:clamp(.8rem,2vw,1.6rem); bottom:clamp(.8rem,2vw,1.4rem);
+  font-family:var(--f-display); font-size:.68rem; letter-spacing:.13em;
+  color:var(--faint); z-index:40; text-transform:uppercase;
+  background:var(--paper); padding:.3em .55em; border:1px solid var(--rule);
+}
+.hud b{color:var(--ink)}
+
+/* ============================================================ MISC */
+.callout{
+  border-left:3px solid var(--seal); padding:var(--s2) 0 var(--s2) var(--s3);
+  color:var(--muted); font-size:.95rem; margin:var(--s3) 0;
+}
+.kv-inline{display:flex; flex-wrap:wrap; gap:var(--s4); margin-top:var(--s4)}
+.kv-inline div{font-family:var(--f-display)}
+.kv-inline .k{font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); display:block}
+.kv-inline .v{font-size:1.5rem; font-weight:700; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+ul.clean{list-style:none; padding:0; margin:0; display:grid; gap:var(--s2)}
+ul.clean li{padding-left:1.1rem; position:relative; font-size:.95rem; color:var(--muted)}
+ul.clean li::before{
+  content:""; position:absolute; left:0; top:.62em; width:6px; height:1px; background:var(--proved);
+}
+ul.clean li b{color:var(--ink)}
+.fine{font-size:.78rem; color:var(--faint); font-family:var(--f-display); letter-spacing:.03em}
+</style>
+
+<div class="deck" id="deck">
+
+<!-- ══════════════════════════════════════════ 01 TITLE -->
+<section class="slide title-slide">
+  <div class="wrap">
+    <div class="title-meta">Capstone Project 2026–27 · CSE-AIDS Level 1 · Panel B · MIT World Peace University, Pune</div>
+    <h1>Synth<span style="color:var(--proved)">Proof</span></h1>
+    <div class="tagline">Synthetic data that ships with its proof</div>
+    <p class="lede">
+      A differential privacy platform that releases synthetic tabular data together with a
+      signed, machine-verifiable certificate stating <strong>both</strong> what we can prove
+      and what we can measure — and that keeps a cryptographic ledger of every unit of
+      privacy an organisation has ever spent.
+    </p>
+
+    <div class="interval" aria-label="The proved versus audited privacy gap">
+      <svg class="dg" viewBox="0 0 900 150" role="img">
+        <title>The gap between audited and proved epsilon</title>
+        <line class="ln-rule" x1="60" y1="95" x2="840" y2="95"/>
+        <g class="anim-gap">
+          <rect class="fill-gap" x="215" y="86" width="485" height="18"/>
+          <text class="t-mut" x="457" y="100" text-anchor="middle" font-size="12"
+                letter-spacing="2">THE GAP NOBODY REPORTS</text>
+        </g>
+        <g class="anim-aud">
+          <line class="tick-aud" x1="215" y1="72" x2="215" y2="118"/>
+          <text class="t-aud b" x="215" y="60" text-anchor="middle" font-size="15">ε audited</text>
+          <text class="t-fnt" x="215" y="139" text-anchor="middle" font-size="12">what attacks recover</text>
+        </g>
+        <g class="anim-prov">
+          <line class="tick-prov" x1="700" y1="72" x2="700" y2="118"/>
+          <text class="t-prov b" x="700" y="60" text-anchor="middle" font-size="15">ε proved</text>
+          <text class="t-fnt" x="700" y="139" text-anchor="middle" font-size="12">what theory bounds</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="team">
+      <span>Raj Modi</span><span>Krishna Renuse</span>
+      <span>Aaditya Kumar Sinha</span><span>Levinesh G R</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ 02 PROBLEM -->
+<section class="slide">
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">01</span><span>The Problem</span><span class="bar"></span></div>
+    <h2>Useful data is locked up — and the usual escape hatch is broken.</h2>
+
+    <div class="cols c3" style="margin-top:var(--s5)">
+      <div class="card accent">
+        <div class="big">87%</div>
+        <h3>Anonymisation fails</h3>
+        <p>Of the US population is uniquely identified by just ZIP + date of birth + sex
+        (Sweeney, 2000). Removing names is not privacy. The Netflix Prize dataset was
+        re-identified from public IMDb ratings (Narayanan &amp; Shmatikov, 2008).</p>
+      </div>
+      <div class="card accent">
+        <div class="big">3</div>
+        <h3>Regimes now bite</h3>
+        <p>GDPR Art. 9, HIPAA, and India's DPDP Act 2023 all restrict sharing personal data.
+        The compliance answer is usually "no", so datasets that could train useful models
+        never leave the institution.</p>
+      </div>
+      <div class="card accent">
+        <div class="big">0</div>
+        <h3>Evidence shipped</h3>
+        <p>Teams increasingly release <em>synthetic</em> data instead. Almost none of it
+        arrives with any statement of how private it actually is. Generative models
+        memorise — and a synthetic row can be a real person.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      "Synthetic" is a description of how the data was produced, not a guarantee about
+      what it reveals. Today that distinction is left to the reader.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ 03 THE GAP -->
+<section class="slide">
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">02</span><span>The Gap</span><span class="bar"></span></div>
+    <h2>Two research communities. Neither ships what a data owner needs.</h2>
+
+    <div class="cols c2" style="margin-top:var(--s5)">
+      <div class="card accent">
+        <h3 style="color:var(--proved)">Camp A — Formal DP</h3>
+        <p style="margin:var(--s2) 0 var(--s3); color:var(--ink)">
+          Proves an (ε, δ) bound. Composes. Peer-reviewed.</p>
+        <ul class="clean">
+          <li><b>Worst-case.</b> ε is often so loose it says almost nothing — released values of ε = 10 or more are common.</li>
+          <li><b>Unverified.</b> Nobody checks the implementation matches the proof. A single wrong line silently voids it.</li>
+          <li><b>Partial.</b> Schema discovery, range clipping, and hyperparameter tuning routinely peek at the data for free.</li>
+        </ul>
+      </div>
+      <div class="card accent-2">
+        <h3 style="color:var(--audited)">Camp B — Empirical Auditing</h3>
+        <p style="margin:var(--s2) 0 var(--s3); color:var(--ink)">
+          Runs real attacks. Reports real numbers.</p>
+        <ul class="clean">
+          <li><b>No guarantee.</b> "This attack failed" is not "no attack succeeds."</li>
+          <li><b>No budget.</b> Nothing accumulates. Release ten datasets and the leakage compounds silently.</li>
+          <li><b>No provenance.</b> Results live in a paper appendix, not attached to the artefact that was actually released.</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="lede" style="margin-top:var(--s5); max-width:74ch">
+      <strong>Nobody ships both</strong> — bound and measurement, signed, attached to the
+      dataset, and accumulated across every release an organisation makes. That is the gap
+      SynthProof closes.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ 04 THESIS -->
+<section class="slide">
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">03</span><span>Thesis</span><span class="bar"></span></div>
+    <h2>Every released dataset carries its own evidence.</h2>
+
+    <p class="lede" style="max-width:72ch; margin-bottom:var(--s5)">
+      Empirical canary auditing of tabular DP mechanisms reveals systematic gaps below the
+      formal bound; budget-charged profiling and a signed hash-chain ledger prevent that
+      budget from silently degrading across a multi-release programme.
+    </p>
+
+    <div class="cols c3">
+      <div class="card">
+        <h3>We prove an upper bound</h3>
+        <p>Every mechanism that touches the sensitive data is charged to an accountant
+        backed by Google's <code>dp_accounting</code>. Nothing is free — not even reading
+        the schema.</p>
+      </div>
+      <div class="card">
+        <h3>We measure a lower bound</h3>
+        <p>Planted canaries and an adversarial attack range recover ε<sub>audited</sub> as a
+        Clopper-Pearson lower bound against a held-out null. If the auditor cannot detect
+        leakage, it says so with a p-value.</p>
+      </div>
+      <div class="card">
+        <h3>We sign the pair</h3>
+        <p>Both numbers, the mechanism, the seed, and the ledger head are serialised into a
+        Privacy Data Sheet and signed. A third party can verify it without trusting us.</p>
+      </div>
+    </div>
+
+    <div class="callout" style="border-color:var(--audited)">
+      The interesting science lives in the distance between the two bounds. A large gap
+      means our proofs are loose. A <em>small</em> gap means the bound is tight — and that
+      is the number a regulator should actually care about.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ 05 THE ARTIFACT -->
+<section class="slide">
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">04</span><span>The Deliverable</span><span class="bar"></span></div>
+    <h2>The Privacy Data Sheet</h2>
+    <p class="lede" style="margin-bottom:var(--s4)">
+      This is the thing that ships. Not a paper — an artefact attached to the data.
+    </p>
+
+    <div class="cert">
+      <div class="cert-head">
+        <span class="cert-title">SynthProof · Privacy Data Sheet</span>
+        <span style="color:var(--faint); font-size:.72rem">v1 · schema 2026-08</span>
+      </div>
+      <div class="cert-body">
+        <div class="row"><span class="k">dataset</span><span class="v">uci_adult_income</span></div>
+        <div class="row"><span class="k">records / columns</span><span class="v">48,842 · 14</span></div>
+        <div class="row"><span class="k">mechanism</span><span class="v">AIM (McKenna et al. 2022) · private-pgm</span></div>
+        <div class="row"><span class="k">unit of privacy</span><span class="v">add / remove one record</span></div>
+        <div class="divider"></div>
+        <div class="row"><span class="k">ε proved</span><span class="v proved">2.000  (δ = 1e-5)</span></div>
+        <div class="row"><span class="k">&nbsp;&nbsp;└ profiling</span><span class="v">0.200</span></div>
+        <div class="row"><span class="k">&nbsp;&nbsp;└ synthesis</span><span class="v">1.800</span></div>
+        <div class="row"><span class="k">accountant</span><span class="v">dp_accounting · RDP · Poisson-subsampled</span></div>
+        <div class="divider"></div>
+        <div class="row"><span class="k">ε audited</span><span class="v audited">0.61  [95% CP lower bound]</span></div>
+        <div class="row"><span class="k">canaries</span><span class="v">512 planted · 512 held out</span></div>
+        <div class="row"><span class="k">audit p-value</span><span class="v">0.004  (Fisher exact, one-sided)</span></div>
+        <div class="row"><span class="k">bound tightness</span><span class="v">30.5%  (audited / proved)</span></div>
+        <div class="divider"></div>
+        <div class="row"><span class="k">attack range</span><span class="v">LiRA · DOMIAS · Anonymeter · AttrInf</span></div>
+        <div class="row"><span class="k">max MIA AUC</span><span class="v">0.548</span></div>
+        <div class="row"><span class="k">TPR @ 0.1% FPR</span><span class="v">0.9%</span></div>
+        <div class="row"><span class="k">singling-out risk</span><span class="v">0.000</span></div>
+        <div class="divider"></div>
+        <div class="row"><span class="k">utility · TSTR F1</span><span class="v">0.771</span></div>
+        <div class="row"><span class="k">utility · TRTR F1</span><span class="v">0.826  (held-out real)</span></div>
+        <div class="row"><span class="k">utility gap</span><span class="v">0.055</span></div>
+        <div class="divider"></div>
+        <div class="row"><span class="k">ledger head</span><span class="v">4b0b1b8a61caed81bd150e1623c22acfff3ddeca…</span></div>
+        <div class="row"><span class="k">org ε to date</span><span class="v">7.400 / 10.000 across 6 releases</span></div>
+        <div class="row"><span class="k">seed</span><span class="v">42</span></div>
+      </div>
+      <div class="seal-row">
+        <span class="seal-badge">Ed25519 Signed</span>
+        <span style="color:var(--muted)">$ synthproof verify sheet.json --pubkey org.pub</span>
+        <span style="color:var(--ok); font-weight:700">→ OK</span>
+      </div>
+    </div>
+
+    <p class="fine" style="margin-top:var(--s3)">
+      Illustrative target output for the completed system. Values shown are the shape of the
+      artefact, not measured results — see slide 10 for what is built today.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ 06 NOVELTY -->
+<section class="slide">
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">05</span><span>Novelty</span><span class="bar"></span></div>
+    <h2>Four contributions — three systems, one empirical.</h2>
+    <p class="lede" style="margin-bottom:var(--s4)">
+      Each ingredient exists somewhere in the literature. <strong>None of them ship
+      together</strong>, and the composition is where the contribution lives.
+    </p>
+
+    <div class="cols c2">
+      <div class="card accent">
+        <h3>01 · Dual-sided assurance</h3>
+        <p style="color:var(--ink); margin:var(--s2) 0">
+          ε<sub>proved</sub> and ε<sub>audited</sub> computed in the same run, on the same
+          artefact, and reported as a pair.</p>
+        <p>DP papers report the bound. Auditing papers report attacks. A released dataset
+        gets neither. We make the ratio a first-class, published metric.</p>
+      </div>
+      <div class="card accent">
+        <h3>02 · Budget-charged profiling</h3>
+        <p style="color:var(--ink); margin:var(--s2) 0">
+          Schema discovery and range estimation are charged to the budget like any other
+          query.</p>
+        <p>Most pipelines silently read min/max and category domains off the raw data —
+        an unaccounted leak that invalidates the headline ε. We priced it.</p>
+      </div>
+      <div class="card accent">
+        <h3>03 · Append-only signed ledger</h3>
+        <p style="color:var(--ink); margin:var(--s2) 0">
+          Ed25519 signatures over a SHA-256 hash chain, tracking organisational spend across
+          releases.</p>
+        <p>DP composes — but only if someone is counting. Nothing in current practice stops
+        a second team re-releasing the same table and doubling the real loss.</p>
+      </div>
+      <div class="card accent-2">
+        <h3>04 · Subgroup privacy disparity</h3>
+        <p style="color:var(--ink); margin:var(--s2) 0">
+          Does a uniform ε protect minority records as well as majority ones?</p>
+        <p>Our strongest empirical question, and the most socially consequential. DP's
+        guarantee is worst-case per record — but <em>measured</em> leakage need not be
+        uniform across groups.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ 07 ARCHITECTURE -->
+<section class="slide">
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">06</span><span>Architecture</span><span class="bar"></span></div>
+    <h2>One budget. Every stage charged.</h2>
+
+    <div class="arch">
+      <svg class="dg" viewBox="0 0 980 440" role="img">
+        <title>SynthProof pipeline architecture</title>
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path class="head-mut" d="M0,0 L10,5 L0,10 z"/>
+          </marker>
+          <marker id="arp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path class="head-prov" d="M0,0 L10,5 L0,10 z"/>
+          </marker>
+        </defs>
+        <g font-size="12">
+
+          <!-- ROW 1 · pipeline -->
+          <rect class="box-strong" x="14" y="30" width="140" height="58"/>
+          <text class="t-ink b" x="84" y="55" text-anchor="middle">SENSITIVE</text>
+          <text class="t-mut" x="84" y="72" text-anchor="middle">tabular data</text>
+
+          <rect class="box" x="192" y="30" width="150" height="58"/>
+          <text class="t-ink b" x="267" y="55" text-anchor="middle">DP PROFILER</text>
+          <text class="t-mut" x="267" y="72" text-anchor="middle">ranges · domains</text>
+
+          <rect class="box" x="388" y="30" width="150" height="58"/>
+          <text class="t-ink b" x="463" y="55" text-anchor="middle">GENERATOR</text>
+          <text class="t-mut" x="463" y="72" text-anchor="middle">AIM · copula</text>
+
+          <rect class="box" x="584" y="30" width="150" height="58"/>
+          <text class="t-ink b" x="659" y="55" text-anchor="middle">SYNTHETIC</text>
+          <text class="t-mut" x="659" y="72" text-anchor="middle">candidate release</text>
+
+          <line class="ln" x1="154" y1="59" x2="186" y2="59" marker-end="url(#ar)"/>
+          <line class="ln" x1="342" y1="59" x2="382" y2="59" marker-end="url(#ar)"/>
+          <line class="ln" x1="538" y1="59" x2="578" y2="59" marker-end="url(#ar)"/>
+
+          <!-- ROW 2 · accountant -->
+          <rect class="box-prov" x="192" y="140" width="542" height="56"/>
+          <text class="t-prov b" x="463" y="163" text-anchor="middle" letter-spacing="1.5">PRIVACY ACCOUNTANT</text>
+          <text class="t-mut" x="463" y="181" text-anchor="middle">dp_accounting · RDP · ε-calibration · budget enforcement</text>
+
+          <line class="ln-prov" x1="267" y1="88" x2="267" y2="136" marker-end="url(#arp)"/>
+          <line class="ln-prov" x1="463" y1="88" x2="463" y2="136" marker-end="url(#arp)"/>
+          <text class="t-prov" x="276" y="116" font-size="10">charges</text>
+          <text class="t-prov" x="472" y="116" font-size="10">charges</text>
+
+          <!-- synthetic → audit bus, routed clear of every box -->
+          <line class="ln" x1="734" y1="59" x2="850" y2="59"/>
+          <line class="ln" x1="850" y1="59" x2="850" y2="250"/>
+          <line class="ln" x1="850" y1="250" x2="267" y2="250"/>
+          <line class="ln" x1="267" y1="250" x2="267" y2="268" marker-end="url(#ar)"/>
+          <line class="ln" x1="463" y1="250" x2="463" y2="268" marker-end="url(#ar)"/>
+          <line class="ln" x1="659" y1="250" x2="659" y2="268" marker-end="url(#ar)"/>
+
+          <!-- ROW 3 · evaluation -->
+          <rect class="box-aud" x="192" y="272" width="150" height="58"/>
+          <text class="t-aud b" x="267" y="296" text-anchor="middle">CANARY AUDIT</text>
+          <text class="t-mut" x="267" y="314" text-anchor="middle">Clopper-Pearson</text>
+
+          <rect class="box-aud" x="388" y="272" width="150" height="58"/>
+          <text class="t-aud b" x="463" y="296" text-anchor="middle">ATTACK RANGE</text>
+          <text class="t-mut" x="463" y="314" text-anchor="middle">LiRA · DOMIAS</text>
+
+          <rect class="box" x="584" y="272" width="150" height="58"/>
+          <text class="t-ink b" x="659" y="296" text-anchor="middle">UTILITY</text>
+          <text class="t-mut" x="659" y="314" text-anchor="middle">TSTR / TRTR</text>
+
+          <line class="ln" x1="267" y1="330" x2="267" y2="364" marker-end="url(#ar)"/>
+          <line class="ln" x1="463" y1="330" x2="463" y2="364" marker-end="url(#ar)"/>
+          <line class="ln" x1="659" y1="330" x2="659" y2="364" marker-end="url(#ar)"/>
+
+          <!-- ROW 4 · outputs -->
+          <rect class="box-strong" x="192" y="368" width="470" height="54"/>
+          <text class="t-ink b" x="427" y="391" text-anchor="middle" letter-spacing="1.5">PRIVACY DATA SHEET</text>
+          <text class="t-mut" x="427" y="409" text-anchor="middle" font-size="11">ε proved · ε audited · attacks · utility · ledger head · signature</text>
+
+          <rect class="box-strong" x="700" y="368" width="180" height="54"/>
+          <text class="t-ink b" x="790" y="391" text-anchor="middle">LEDGER</text>
+          <text class="t-mut" x="790" y="409" text-anchor="middle" font-size="11">Ed25519 hash chain</text>
+
+          <!-- accountant → data sheet, down the left margin -->
+          <line class="ln-prov" x1="192" y1="168" x2="120" y2="168"/>
+          <line class="ln-prov" x1="120" y1="168" x2="120" y2="395"/>
+          <line class="ln-prov" x1="120" y1="395" x2="186" y2="395" marker-end="url(#arp)"/>
+
+          <!-- accountant → ledger, down the right margin -->
+          <line class="ln-prov" x1="734" y1="168" x2="910" y2="168"/>
+          <line class="ln-prov" x1="910" y1="168" x2="910" y2="395"/>
+          <line class="ln-prov" x1="910" y1="395" x2="886" y2="395" marker-end="url(#arp)"/>
+
+          <!-- ledger head → data sheet -->
+          <line class="ln" x1="700" y1="395" x2="668" y2="395" marker-end="url(#ar)"/>
+        </g>
+      </svg>
+    </div>
+
+    <p class="fine">
+      The dashed amber path is the invariant: no stage reads the sensitive table without a
+      charge landing in the accountant, and no certificate is emitted without the ledger head.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ 08 STACK -->
+<section class="slide">
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">07</span><span>Tech Stack</span><span class="bar"></span></div>
+    <h2>Boring where it should be. Rigorous where it matters.</h2>
+
+    <div class="cols c2" style="margin-top:var(--s4)">
+      <div class="card">
+        <h3>Privacy core</h3>
+        <div class="tags" style="margin-top:var(--s2)">
+          <span class="tag hot">dp_accounting</span><span class="tag">RDP / PLD</span>
+          <span class="tag">Canonne-Kamath-Steinke '20</span><span class="tag">discrete Gaussian</span>
+          <span class="tag">discrete Laplace</span>
+        </div>
+        <p style="margin-top:var(--s3)">Composition is delegated to Google's reference
+        implementation. We own the <em>interface</em> — budget enforcement, dry-run,
+        calibration — not the theory.</p>
+      </div>
+      <div class="card">
+        <h3>Synthesis</h3>
+        <div class="tags" style="margin-top:var(--s2)">
+          <span class="tag hot">private-pgm</span><span class="tag">AIM</span>
+          <span class="tag">MST</span><span class="tag">Gaussian copula</span>
+          <span class="tag">independent marginals (ablation)</span>
+        </div>
+        <p style="margin-top:var(--s3)">Published mechanisms via their reference libraries,
+        with our own naive baseline retained deliberately as a control.</p>
+      </div>
+      <div class="card">
+        <h3>Adversarial &amp; statistics</h3>
+        <div class="tags" style="margin-top:var(--s2)">
+          <span class="tag">LiRA shadow models</span><span class="tag">DOMIAS</span>
+          <span class="tag hot">anonymeter</span><span class="tag">scipy.stats</span>
+          <span class="tag">Clopper-Pearson</span><span class="tag">Fisher exact</span>
+        </div>
+        <p style="margin-top:var(--s3)">Every reported statistic is computed, with a
+        confidence interval or a p-value attached.</p>
+      </div>
+      <div class="card">
+        <h3>Platform</h3>
+        <div class="tags" style="margin-top:var(--s2)">
+          <span class="tag">Python 3.11</span><span class="tag">FastAPI</span>
+          <span class="tag hot">Ed25519 · SHA-256</span><span class="tag">SQLite / Postgres</span>
+          <span class="tag">Docker</span><span class="tag">pytest + hypothesis</span>
+          <span class="tag">GitHub Actions</span>
+        </div>
+        <p style="margin-top:var(--s3)">Property-based tests on the DP layer, and a
+        differential test of our accountant against two independent implementations.</p>
+      </div>
+    </div>
+
+    <div class="kv-inline">
+      <div><span class="k">Datasets</span><span class="v">UCI Adult · ACS PUMS · MIMIC-style</span></div>
+      <div><span class="k">Repo</span><span class="v" style="font-size:1rem">github.com/rajmodi262/SynthProof</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ 09 HYPOTHESES -->
+<section class="slide">
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">08</span><span>Research Design</span><span class="bar"></span></div>
+    <h2>Three preregistered hypotheses.</h2>
+    <p class="lede" style="margin-bottom:var(--s4)">
+      Registered before the sweeps run, with a public commitment to report the result
+      whichever way it falls.
+    </p>
+
+    <div class="cols c3">
+      <div class="card accent">
+        <h3 style="color:var(--proved)">H1 · The gap</h3>
+        <p style="color:var(--ink); margin:var(--s2) 0">
+          ε<sub>audited</sub> / ε<sub>proved</sub> differs systematically across mechanism
+          families at equal target ε.</p>
+        <p><b style="color:var(--muted)">Test:</b> AIM vs copula vs independent marginals,
+        ε ∈ {0.5, 1, 2, 4, 8}, 5 seeds, bootstrapped CIs.</p>
+      </div>
+      <div class="card accent-2">
+        <h3 style="color:var(--audited)">H2 · Disparate impact</h3>
+        <p style="color:var(--ink); margin:var(--s2) 0">
+          Under uniform allocation, minority subgroups exhibit higher measured leakage than
+          majority records.</p>
+        <p><b style="color:var(--muted)">Test:</b> per-subgroup canary audits on ACS PUMS,
+        stratified by race and sex.</p>
+      </div>
+      <div class="card">
+        <h3>H3 · Smarter allocation</h3>
+        <p style="color:var(--ink); margin:var(--s2) 0">
+          Utility-weighted budget allocation across columns beats uniform at equal total
+          spend.</p>
+        <p><b style="color:var(--muted)">Test:</b> ledger-driven allocator vs uniform,
+        downstream macro-F1 at fixed ε.</p>
+      </div>
+    </div>
+
+    <div class="callout" style="border-color:var(--proved)">
+      <strong>H2 is the one to watch.</strong> If measured leakage is not uniform across
+      groups, then a single organisational ε is hiding a fairness problem — and that is a
+      finding worth publishing on its own.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ 10 ROADMAP -->
+<section class="slide">
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">09</span><span>Roadmap</span><span class="bar"></span></div>
+    <h2>Four MVPs, each independently demoable.</h2>
+
+    <div class="cols c2" style="align-items:start; margin-top:var(--s4)">
+      <div class="tl">
+        <div class="tl-item now">
+          <span class="tl-tag">M0 · Foundations — in progress</span>
+          <h4>A budget you can trust</h4>
+          <p>Accountant on <code>dp_accounting</code>, ε-calibration so target ε is the ε you
+          get, DP domain release, signed ledger, honest baselines. <b>Demo:</b> ask for ε = 2,
+          measure 2.</p>
+        </div>
+        <div class="tl-item">
+          <span class="tl-tag">M1 · Real synthesis</span>
+          <h4>Published mechanisms, real data</h4>
+          <p>AIM via private-pgm, a true copula, UCI Adult and ACS PUMS at 10k+ rows, proper
+          train/test protocol. <b>Demo:</b> a privacy–utility frontier that actually curves.</p>
+        </div>
+        <div class="tl-item">
+          <span class="tl-tag">M2 · The audit engine</span>
+          <h4>Numbers we can defend</h4>
+          <p>Full Steinke one-run audit, LiRA with shadow models, DOMIAS, anonymeter.
+          <b>Demo:</b> deliberately break a mechanism and watch the auditor catch it.</p>
+        </div>
+        <div class="tl-item">
+          <span class="tl-tag">M3 · Ship the proof</span>
+          <h4>Signed, verifiable, reproducible</h4>
+          <p>Persisted keys, standalone verifier, subgroup analysis for H2, allocator for H3,
+          <code>make reproduce</code>. <b>Demo:</b> a stranger verifies our certificate.</p>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--surface-2)">
+        <h3>The demo that sells it</h3>
+        <p style="color:var(--ink); margin:var(--s2) 0 var(--s3)">
+          One screen, end to end:</p>
+        <ul class="clean">
+          <li>Upload a CSV</li>
+          <li>Set an organisational budget</li>
+          <li><b>Watch the budget draw down live</b> as profiling and synthesis each take
+          their share</li>
+          <li>See ε<sub>proved</sub> and ε<sub>audited</sub> plotted as the frontier fills in,
+          with confidence bands</li>
+          <li>Run the attack range against the release</li>
+          <li>Download the signed data sheet</li>
+          <li><b>Paste it into an independent verifier</b> and get a green tick</li>
+        </ul>
+        <div class="divider" style="margin:var(--s3) 0"></div>
+        <p class="fine">That last step is the whole thesis in one interaction: the claim is
+        checkable by someone who does not trust us.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ 11 STATUS -->
+<section class="slide">
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">10</span><span>Status</span><span class="bar"></span></div>
+    <h2>Where we actually stand today.</h2>
+    <p class="lede" style="margin-bottom:var(--s4)">
+      We ran a full adversarial audit of our own codebase and rated it honestly. Several
+      components were rebuilt as a result. This is the current state, not the pitch state.
+    </p>
+
+    <div class="status-list">
+      <div class="status-row"><span class="lbl">Privacy accountant
+        <span class="sub">Migrated to dp_accounting — replaced an unsound subsampling bound that under-reported ε by ~2×</span></span>
+        <span class="pill done">Built</span></div>
+      <div class="status-row"><span class="lbl">ε-calibration
+        <span class="sub">Binary-search inversion; target ε now achieved to &lt;1e-4 relative, always conservative</span></span>
+        <span class="pill done">Built</span></div>
+      <div class="status-row"><span class="lbl">Signed append-only ledger
+        <span class="sub">Ed25519 over SHA-256 chain; tamper tests mutate and delete rows directly in SQLite</span></span>
+        <span class="pill done">Built</span></div>
+      <div class="status-row"><span class="lbl">Discrete noise samplers
+        <span class="sub">CKS'20 rejection sampler, χ²-tested against the exact PMF</span></span>
+        <span class="pill done">Built</span></div>
+      <div class="status-row"><span class="lbl">DP domain profiler
+        <span class="sub">Category domain now released under a DP threshold instead of verbatim</span></span>
+        <span class="pill part">Partial</span></div>
+      <div class="status-row"><span class="lbl">Canary auditor
+        <span class="sub">Real Clopper-Pearson with a measured null; simplified vs. the full Steinke construction</span></span>
+        <span class="pill part">Partial</span></div>
+      <div class="status-row"><span class="lbl">Generator bank
+        <span class="sub">Independent-marginal baseline only — AIM and a true copula are M1</span></span>
+        <span class="pill part">Baseline</span></div>
+      <div class="status-row"><span class="lbl">Attack range
+        <span class="sub">2 weak baselines; LiRA, DOMIAS and attribute inference are M2</span></span>
+        <span class="pill part">2 of 4</span></div>
+      <div class="status-row"><span class="lbl">Certificate signing + verifier
+        <span class="sub">Ledger head is real; the sheet itself is not yet signed</span></span>
+        <span class="pill todo">M3</span></div>
+      <div class="status-row"><span class="lbl">Real datasets · H2 · H3
+        <span class="sub">Toy data only so far; subgroup and allocator studies not started</span></span>
+        <span class="pill todo">M1–M3</span></div>
+    </div>
+
+    <div class="kv-inline">
+      <div><span class="k">Tests passing</span><span class="v">40</span></div>
+      <div><span class="k">Coverage</span><span class="v">83%</span></div>
+      <div><span class="k">Lint</span><span class="v">clean</span></div>
+      <div><span class="k">Self-audit findings closed</span><span class="v">11</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ 12 USE CASES -->
+<section class="slide">
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">11</span><span>Applications</span><span class="bar"></span></div>
+    <h2>Who needs a dataset that argues for itself?</h2>
+
+    <div class="cols c2" style="margin-top:var(--s4)">
+      <div class="card accent">
+        <h3>Hospitals &amp; health research</h3>
+        <p>A registry wants to share outcomes data with a university. Today that is an
+        18-month DPA negotiation. With a data sheet, the ethics board reviews a number, not a
+        promise — and the ledger proves the same cohort was not released five times over.</p>
+      </div>
+      <div class="card accent">
+        <h3>Banks &amp; fintech</h3>
+        <p>Fraud models need transaction data that never leaves the bank. Synthetic
+        replacements with a certified ε let vendors, hackathons, and model-risk teams work on
+        realistic data with an auditable exposure figure.</p>
+      </div>
+      <div class="card accent">
+        <h3>Government &amp; statistical agencies</h3>
+        <p>The US Census already ships DP microdata. What it does not ship is an empirical
+        audit alongside the bound. Our data sheet format is a candidate template for any
+        agency releasing under a formal guarantee.</p>
+      </div>
+      <div class="card accent">
+        <h3>ML teams &amp; MLOps</h3>
+        <p>Training data provenance is becoming a compliance artefact under the EU AI Act. A
+        signed privacy certificate attached to the training set is exactly the evidence a
+        model card should be citing.</p>
+      </div>
+      <div class="card accent-2">
+        <h3>Reproducible research</h3>
+        <p>Publish the synthetic companion to your paper's dataset with a verifiable privacy
+        statement, so reviewers can rerun your analysis without an IRB.</p>
+      </div>
+      <div class="card accent-2">
+        <h3>Benchmark for the DP community</h3>
+        <p>Our proved-vs-audited sweep is itself a contribution: a public table of how tight
+        each mechanism's bound actually is, on real data, with confidence intervals.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ 13 RISKS -->
+<section class="slide">
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">12</span><span>Risks</span><span class="bar"></span></div>
+    <h2>What could go wrong, and what we do about it.</h2>
+
+    <div class="cols c2" style="margin-top:var(--s4)">
+      <div class="card">
+        <h3 style="color:var(--seal)">Risk · The audit finds nothing</h3>
+        <p style="margin:var(--s2) 0 0">A well-implemented DP mechanism may leak too little
+        for any attack to detect, leaving ε<sub>audited</sub> ≈ 0 everywhere.</p>
+        <p style="margin-top:var(--s2)"><b style="color:var(--ink)">Mitigation:</b> scale
+        canary count until the bound is informative; report the detection floor explicitly;
+        validate the auditor on a deliberately broken mechanism so a null result is
+        credible rather than vacuous.</p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--seal)">Risk · We reimplement theory badly</h3>
+        <p style="margin:var(--s2) 0 0">Hand-rolled DP math is exactly how privacy claims
+        become false. We already made this mistake once.</p>
+        <p style="margin-top:var(--s2)"><b style="color:var(--ink)">Mitigation:</b> delegate
+        all composition to <code>dp_accounting</code>; differential-test against
+        <code>autodp</code> in CI; never write a bound we cannot cite.</p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--seal)">Risk · Scope is too large</h3>
+        <p style="margin:var(--s2) 0 0">Four mechanisms × four attacks × three datasets ×
+        five seeds is a lot of compute and a lot of code.</p>
+        <p style="margin-top:var(--s2)"><b style="color:var(--ink)">Mitigation:</b> every
+        milestone is independently demoable; if M3 slips, M2 is still a complete and
+        defensible project.</p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--seal)">Risk · Utility collapses</h3>
+        <p style="margin:var(--s2) 0 0">At small ε, synthetic data may be useless, making the
+        frontier uninteresting.</p>
+        <p style="margin-top:var(--s2)"><b style="color:var(--ink)">Mitigation:</b> that is
+        itself the finding. A frontier showing where usable utility ends is the practical
+        contribution regulators most need.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ 14 ASK -->
+<section class="slide">
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">13</span><span>Ask</span><span class="bar"></span></div>
+    <h2>What we need from you.</h2>
+
+    <div class="cols c3" style="margin-top:var(--s4)">
+      <div class="card accent">
+        <h3>Scope sign-off</h3>
+        <p style="color:var(--ink); margin-top:var(--s2)">Is M0–M2 the right capstone
+        boundary, with M3 as stretch? We would rather cut early than over-promise.</p>
+      </div>
+      <div class="card accent">
+        <h3>Direction on H2</h3>
+        <p style="color:var(--ink); margin-top:var(--s2)">Subgroup privacy disparity is our
+        most publishable angle. Worth pulling forward ahead of H3?</p>
+      </div>
+      <div class="card accent">
+        <h3>Compute &amp; data access</h3>
+        <p style="color:var(--ink); margin-top:var(--s2)">LiRA needs many shadow models.
+        Guidance on lab compute, and on any real dataset we could responsibly use.</p>
+      </div>
+    </div>
+
+    <div class="interval" style="margin-top:var(--s6)">
+      <svg class="dg" viewBox="0 0 900 96" role="img">
+        <title>Closing statement bracket</title>
+        <line class="ln-rule" x1="30" y1="48" x2="870" y2="48"/>
+        <line class="tick-aud" x1="30" y1="20" x2="30" y2="76"/>
+        <line class="tick-prov" x1="870" y1="20" x2="870" y2="76"/>
+        <rect class="fill-paper" x="140" y="28" width="620" height="40"/>
+        <text class="t-ink b" x="450" y="56" text-anchor="middle" font-size="20"
+              letter-spacing="1.5">PROVE IT. MEASURE IT. SIGN IT.</text>
+      </svg>
+    </div>
+
+    <p class="fine" style="text-align:center; margin-top:var(--s4)">
+      SynthProof · Capstone 2026–27 · MIT-WPU Pune ·
+      Raj Modi · Krishna Renuse · Aaditya Kumar Sinha · Levinesh G R
+    </p>
+  </div>
+</section>
+
+</div>
+
+<nav class="rail" id="rail" aria-label="Slide navigation"></nav>
+<div class="hud"><b id="cur">01</b> / <span id="tot">14</span> &nbsp;·&nbsp; ← → to move</div>
+
+<script>
+(function(){
+  var deck   = document.getElementById('deck');
+  var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+  var rail   = document.getElementById('rail');
+  var cur    = document.getElementById('cur');
+  var idx    = 0;
+
+  document.getElementById('tot').textContent = String(slides.length).padStart(2,'0');
+
+  slides.forEach(function(s, i){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', function(){ go(i); });
+    rail.appendChild(b);
+  });
+  var dots = Array.prototype.slice.call(rail.children);
+
+  function mark(i){
+    idx = i;
+    cur.textContent = String(i+1).padStart(2,'0');
+    dots.forEach(function(d, j){ d.setAttribute('aria-current', j === i ? 'true' : 'false'); });
+  }
+  function go(i){
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    slides[i].scrollIntoView({ behavior:'smooth', block:'start' });
+    mark(i);
+  }
+
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) mark(slides.indexOf(e.target));
+      });
+    }, { root: deck, threshold: 0.55 });
+    slides.forEach(function(s){ io.observe(s); });
+  }
+
+  document.addEventListener('keydown', function(e){
+    var t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' ||
+       (e.key === ' ' && !e.shiftKey)){ e.preventDefault(); go(idx + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp' ||
+       (e.key === ' ' && e.shiftKey)){ e.preventDefault(); go(idx - 1); }
+    else if (e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if (e.key === 'End'){ e.preventDefault(); go(slides.length - 1); }
+  });
+
+  mark(0);
+
+  // Hero interval: draw the gap open once, unless the viewer prefers reduced motion.
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    ['.anim-aud','.anim-prov','.anim-gap'].forEach(function(sel, i){
+      var el = document.querySelector(sel);
+      if (!el) return;
+      el.style.opacity = '0';
+      el.style.transition = 'opacity .7s ease ' + (0.25 + i*0.28) + 's';
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.style.opacity = '1'; }); });
+    });
+  }
+})();
+</script>
