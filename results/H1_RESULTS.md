@@ -1,5 +1,33 @@
 # H1 — Proved vs. Audited Gap Across Mechanism Families
 
+> # ⛔ RESULTS BELOW ARE INVALIDATED — DO NOT CITE
+>
+> **Superseded on 2026-08-13.** The conclusion in this document ("H1 is NOT supported on
+> UCI Adult") was an artefact of a defect in our own canary design, not a property of the
+> mechanisms.
+>
+> Canaries were placed at the extreme top of *every* numeric column simultaneously, packing
+> the entire canary set into one corner of the joint distribution and fabricating correlation
+> in the training data. Measured on UCI Adult: 60 canaries shifted corr(age, hours_per_week)
+> from **0.093 to 0.334**. Mechanisms that model dependence faithfully reproduced that
+> artefact and were then scored against the *un-canaried* original — so the better a
+> mechanism was at capturing structure, the worse it scored.
+>
+> After randomising the canary direction per column (shift now −0.07 to +0.01), a single-seed
+> re-check inverts the finding entirely:
+>
+> | mechanism | corr err ε=1.0 | corr err ε=8.0 |
+> |---|---:|---:|
+> | independent | 0.101 | 0.097 |
+> | **pairwise** | **0.017** | **0.044** |
+> | **aim** | 0.112 | **0.018** |
+>
+> **H1 now appears supported.** The full multi-seed grid must be re-run before any claim is
+> made. Nothing in the sections below should be quoted.
+
+---
+
+
 > **Status: FIRST REAL RESULT.** UCI Adult, 5 seeds per cell, bootstrapped 95% CIs.
 > Reported in full, in the direction the data actually falls.
 > Raw output: [`h1_adult.json`](h1_adult.json) · Runner: `synthproof/frontier/experiment.py`

@@ -102,9 +102,20 @@ class CanaryAuditor:
                     else:
                         lo, hi = float(dataset.df[col].min()), float(dataset.df[col].max())
                     span = max(1e-9, hi - lo)
-                    # Extreme but in-domain: the top few percent of the range, randomised so
-                    # members and holdout canaries remain exchangeable.
-                    row[col] = hi - span * float(rng.uniform(0.0, 0.03))
+                    # Extreme but in-domain, and extreme in a RANDOM DIRECTION per column.
+                    #
+                    # Pinning every canary to the top of every numeric column packs the whole
+                    # canary set into one corner of the joint distribution, which fabricates
+                    # correlation in the training data. Measured on UCI Adult: 60 canaries
+                    # shifted corr(age, hours_per_week) from 0.093 to 0.334. Mechanisms that
+                    # model dependence then faithfully reproduced that artefact and were
+                    # scored against the un-canaried original, making them look far worse
+                    # than the independent baseline. Randomising the direction keeps each
+                    # canary individually extreme without biasing the joint.
+                    if rng.random() < 0.5:
+                        row[col] = hi - span * float(rng.uniform(0.0, 0.03))
+                    else:
+                        row[col] = lo + span * float(rng.uniform(0.0, 0.03))
                 else:
                     observed = list(dataset.df[col].unique())
                     row[col] = observed[int(rng.integers(0, len(observed)))] if observed else "NA"
