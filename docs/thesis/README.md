@@ -14,7 +14,7 @@ wc -w docs/thesis/ch*.md
 | Chapter | Target | Depends on | Status |
 |---|--:|---|---|
 | [Ch.1 Introduction](ch01-introduction.md) | 1,200 | — | outline |
-| [Ch.2 Literature review](ch02-literature-review.md) | 2,500 | — | ✅ **first draft ~2,300 words** |
+| [Ch.2 Literature review](ch02-literature-review.md) | 2,500 | — | ✅ **draft: 1,888 / 2,500 words** |
 | [Ch.3 Threat model](ch03-threat-model.md) | 1,500 | **nothing — write now** | outline + draft |
 | [Ch.4 System design](ch04-system-design.md) | 2,000 | M0 ✅ **write now** | outline |
 | [Ch.5 Implementation](ch05-implementation.md) | 1,500 | M1 | stub |

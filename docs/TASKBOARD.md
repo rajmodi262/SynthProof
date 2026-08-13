@@ -116,7 +116,7 @@ overspending. CI asserts this across 24 configurations.
 | # | Chapter / doc | Words | Owner | Hrs | Status | Depends on |
 |---|---|--:|---|--:|:--:|---|
 | D.1 | Ch.1 Introduction & motivation | 1,200 | | 6 | [ ] | — |
-| D.2 | Ch.2 Literature review | 2,500 | — | 20 | [x] | ✅ first draft; citations need BibTeX conversion |
+| D.2 | Ch.2 Literature review | 2,500 | — | 20 | [~] | draft 1,888/2,500 words; needs ~600 more + BibTeX |
 | D.3 | Ch.3 Threat model & problem formulation | 1,500 | | 8 | [ ] | **nothing — start today** |
 | D.4 | Ch.4 System design & architecture | 2,000 | | 12 | [ ] | M0 ✅ — writable now |
 | D.5 | Ch.5 Implementation | 1,500 | | 8 | [ ] | M1 |

@@ -1,6 +1,6 @@
 # Chapter 2 — Literature Review
 
-> **Status: FIRST DRAFT (~2,300 words).** Prose is written; citations are marked `[Author Year]`
+> **Status: FIRST DRAFT — 1,888 words against a 2,500 target (~75%).** Prose is written; citations are marked `[Author Year]`
 > and need converting to the project's BibTeX style. Section 2.6 must be re-checked against
 > `results/H1_RESULTS.md` before submission, since it states what this work adds.
 
