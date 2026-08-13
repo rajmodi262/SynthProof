@@ -33,12 +33,7 @@ def test_dp_domain_profiler_charges_budget():
     assert age_prof.min_val < age_prof.max_val
 
 
-def test_sensitivity_is_derived_from_schema_width():
-    """Regression for audit finding F5.
-
-    A range query on a column clipped to [0, 500000] is vastly more sensitive than a count.
-    Asserting sensitivity=1.0 for both, as an earlier version did, has no basis.
-    """
+def _bounded_dataset(n=200):
     import numpy as np
     import pandas as pd
 
@@ -46,20 +41,48 @@ def test_sensitivity_is_derived_from_schema_width():
 
     rng = np.random.default_rng(1)
     df = pd.DataFrame({
-        "age": rng.integers(18, 80, 200),
-        "income": rng.normal(5e4, 1e4, 200),
-        "g": rng.choice(["a", "b"], 200),
+        "age": rng.integers(18, 80, n),
+        "income": rng.normal(5e4, 1e4, n),
+        "g": rng.choice(["a", "b"], n),
     })
-    ds = TabularDataset(df, schema=Schema([
+    return TabularDataset(df, schema=Schema([
         ColumnSpec("age", NUMERICAL, lower=0.0, upper=120.0),
         ColumnSpec("income", NUMERICAL, lower=0.0, upper=5e5),
         ColumnSpec("g", CATEGORICAL, categories=["a", "b"]),
     ]))
 
+
+def test_public_ranges_cost_no_budget_and_are_used_verbatim():
+    """Regression for audit finding F5, and for the bug that fix exposed.
+
+    A publicly declared range reveals nothing, so re-estimating it under noise is pure
+    waste. Worse, once sensitivity was sized correctly the noisy estimate became garbage:
+    a column publicly bounded to [0, 100] was released with a range like (1633, 1634) —
+    width 1 — collapsing every record into one bin and destroying all downstream structure.
+    """
+    ds = _bounded_dataset()
     profiler = DPDomainProfiler(accountant=Accountant(10.0, 1e-5), eps_budget=0.5)
-    assert profiler._sensitivity_for(ds, "age") == 120.0
-    assert profiler._sensitivity_for(ds, "income") == 5e5
-    assert profiler._sensitivity_for(ds, "g") == 1.0
+
+    # Only the categorical column needs a query; both numerics are publicly bounded.
+    assert profiler._query_count(ds) == 1
+
+    profile = profiler.profile(ds, seed=0)
+    assert profile.columns["age"].is_public_range is True
+    assert (profile.columns["age"].min_val, profile.columns["age"].max_val) == (0.0, 120.0)
+    assert (profile.columns["income"].min_val, profile.columns["income"].max_val) == (0.0, 5e5)
+    assert profile.columns["g"].is_public_range is False
+
+
+def test_undeclared_numeric_range_still_falls_back_to_a_noisy_estimate():
+    import pandas as pd
+
+    ds = TabularDataset(pd.DataFrame({"v": range(300)}))   # no schema
+    profiler = DPDomainProfiler(accountant=Accountant(10.0, 1e-5), eps_budget=0.5)
+    assert profiler._query_count(ds) == 2
+
+    profile = profiler.profile(ds, seed=0)
+    assert profile.columns["v"].is_public_range is False
+    assert profile.eps_spent > 0
 
 
 def test_profiling_spends_exactly_its_budget_despite_mixed_sensitivities():

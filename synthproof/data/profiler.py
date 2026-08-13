@@ -4,10 +4,12 @@ Discovers per-column ranges and category domains, charging the privacy budget fo
 it learns. Noise is calibrated so the whole profiling pass costs the epsilon it was
 given, rather than growing with the number of columns.
 
-Known limitation (audit finding F5, partially open): min/max over an unbounded column
-has unbounded sensitivity, so the `sensitivity` declared for the range queries is not yet
-justified — that needs caller-declared public bounds. The categorical domain leak
-described in F5 IS fixed here.
+Audit finding F5 is closed here, in two parts:
+
+  * The category domain is released through a noisy threshold rather than published verbatim.
+  * Numeric ranges come from the schema's PUBLIC bounds and cost no budget, because a public
+    fact reveals nothing. Only a column with no declared range falls back to a noisy min/max,
+    and that path documents plainly that its sensitivity is an assumption.
 """
 
 from dataclasses import dataclass, field
@@ -31,6 +33,7 @@ class ColumnProfile:
     max_val: Optional[float] = None
     categories: Optional[List[Any]] = None
     suppressed_categories: int = 0   # rare categories withheld by the DP threshold
+    is_public_range: bool = False    # True when the range came from the schema, not the data
 
 
 @dataclass
@@ -72,33 +75,47 @@ class DPDomainProfiler:
         self.category_threshold_factor = category_threshold_factor
 
     @staticmethod
-    def _query_count(dataset: TabularDataset) -> int:
-        """Two range queries per numeric column, one histogram per categorical column."""
-        return 2 * len(dataset.numerical_cols) + len(dataset.categorical_cols)
+    def _public_bounds(dataset: TabularDataset, col: str):
+        """Public [lower, upper] for a numeric column, or None if none is declared."""
+        if dataset.schema is None or col not in dataset.numerical_cols:
+            return None
+        return dataset.bounds(col)
+
+    def _query_count(self, dataset: TabularDataset) -> int:
+        """Number of DP queries this pass will issue.
+
+        A numeric column whose range is PUBLIC costs nothing: the bounds are already known, so
+        there is nothing to learn and nothing to hide. Only columns without a declared range
+        need a (2-query) noisy min/max, and only categorical columns need a histogram.
+        """
+        n = len(dataset.categorical_cols)
+        for col in dataset.numerical_cols:
+            if self._public_bounds(dataset, col) is None:
+                n += 2
+        return n
 
     def _sensitivity_for(self, dataset: TabularDataset, col: str) -> float:
-        """Sensitivity of this column's queries, derived from the public schema where possible.
+        """Sensitivity of this column's queries.
 
-        For a column clipped to a public range [lower, upper], adding or removing one record
-        moves a min/max query by at most the range width, so `width` is a defensible
-        sensitivity. Without a schema there is no public bound, the true sensitivity is
-        unbounded, and `self.sensitivity` is an assumption rather than a derivation — which is
-        why a real release should always supply a schema. See audit finding F5.
-
-        Categorical histogram queries have sensitivity 1 under add/remove-one regardless.
+        Categorical histograms have sensitivity 1 under add/remove-one. A noisy min/max on an
+        unbounded column has *unbounded* sensitivity, so `self.sensitivity` there is an
+        assumption, not a derivation — which is exactly why a release should declare bounds
+        and take the zero-cost path instead. See audit finding F5.
         """
-        if col not in dataset.numerical_cols:
-            return 1.0
-        bounds = dataset.bounds(col) if dataset.schema is not None else None
-        if bounds is None:
-            return self.sensitivity
-        return max(1e-9, float(bounds[1] - bounds[0]))
+        return 1.0 if col not in dataset.numerical_cols else self.sensitivity
 
     def profile(self, dataset: TabularDataset, seed: Optional[int] = None) -> DomainProfile:
-        """Profiles the dataset schema, spending `eps_budget` in total."""
+        """Profiles the dataset schema, spending at most `eps_budget` in total."""
         n_queries = self._query_count(dataset)
         if n_queries == 0:
-            return DomainProfile(dataset_name=dataset.name, num_rows=dataset.num_rows)
+            # Everything is publicly declared; profiling is free.
+            rng = np.random.default_rng(seed)
+            cols = {c: self._public_profile(dataset, c) for c in dataset.columns
+                    if self._public_bounds(dataset, c) is not None}
+            for c in dataset.categorical_cols:
+                cols[c] = self._profile_categorical(dataset, c, 1.0, rng)
+            return DomainProfile(dataset_name=dataset.name, num_rows=dataset.num_rows,
+                                 columns={c: cols[c] for c in dataset.columns if c in cols})
 
         # Calibrate a noise MULTIPLIER — the scale expressed in units of sensitivity — rather
         # than an absolute scale. Columns have different sensitivities (a range query on an
@@ -121,8 +138,18 @@ class DPDomainProfiler:
             sens = self._sensitivity_for(dataset, col)
             noise_scale = noise_multiplier * sens
             if col in dataset.numerical_cols:
-                col_profiles[col] = self._profile_numeric(
-                    dataset, col, noise_scale, rng, sens)
+                bounds = self._public_bounds(dataset, col)
+                if bounds is not None:
+                    # Declared publicly: use it, charge nothing. Spending budget to noisily
+                    # re-estimate a range that is already public is pure waste — and with a
+                    # correctly-sized sensitivity the estimate is garbage anyway. Before this
+                    # branch existed, a column publicly bounded to [0, 100] was released with
+                    # a noisy range like (1633, 1634): width 1, collapsing every record into a
+                    # single bin and destroying all downstream structure.
+                    col_profiles[col] = self._public_profile(dataset, col)
+                else:
+                    col_profiles[col] = self._profile_numeric(
+                        dataset, col, noise_scale, rng, sens)
             else:
                 col_profiles[col] = self._profile_categorical(
                     dataset, col, noise_scale, rng, sens)
@@ -134,9 +161,20 @@ class DPDomainProfiler:
             eps_spent=self.accountant.total() - eps_before,
         )
 
+    def _public_profile(self, dataset: TabularDataset, col: str) -> ColumnProfile:
+        """Uses the publicly declared range. Costs no budget, because it reveals nothing."""
+        lo, hi = self._public_bounds(dataset, col)
+        return ColumnProfile(name=col, dtype="numerical", min_val=float(lo),
+                             max_val=float(hi), is_public_range=True)
+
     def _profile_numeric(self, dataset: TabularDataset, col: str, noise_scale: float,
                          rng: np.random.Generator, sensitivity: float) -> ColumnProfile:
-        """Releases noisy min/max for a numeric column (2 queries)."""
+        """Releases a noisy min/max for a column with no declared public range (2 queries).
+
+        NOTE: min/max over an unbounded column has unbounded sensitivity, so the epsilon
+        charged here rests on `self.sensitivity` being a correct assumption. Declare bounds in
+        the schema instead — that path is both sound and free.
+        """
         self.accountant.charge(
             MechanismSpec(name="laplace", sensitivity=sensitivity,
                           noise_scale=noise_scale, steps=2),
@@ -151,7 +189,8 @@ class DPDomainProfiler:
         return ColumnProfile(name=col, dtype="numerical", min_val=dp_min, max_val=dp_max)
 
     def _profile_categorical(self, dataset: TabularDataset, col: str, noise_scale: float,
-                             rng: np.random.Generator, sensitivity: float = 1.0) -> ColumnProfile:
+                             rng: np.random.Generator,
+                             sensitivity: float = 1.0) -> ColumnProfile:
         """Releases a DP category domain for a categorical column (1 histogram query).
 
         A previous version charged epsilon here and then published

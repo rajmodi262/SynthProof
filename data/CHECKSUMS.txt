@@ -1,0 +1,3 @@
+# SynthProof benchmark dataset digests.
+# Verified on every load; a mismatch raises rather than proceeding.
+7537312dd56c2b98035880805ce99e68183a30ee468aa5329d6df0fbb3cc21bb  adult.zip
