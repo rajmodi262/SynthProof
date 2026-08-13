@@ -27,7 +27,7 @@
 | Privacy accounting | 8.0 | `dp_accounting` composition; calibration verified to <1e-4 |
 | ε-calibration | 8.5 | proved/target = 0.92 across the grid, never overspends |
 | Cryptographic ledger | 7.0 | Real Ed25519 + SHA-256, tamper-tested against live SQLite |
-| Build health | 9.0 | 40 tests green, 90% coverage, ruff clean, CI with a calibration gate |
+| Build health | 9.0 | 58 tests green, 87% coverage, ruff clean, CI with a calibration gate |
 | Test quality | 5.5 | Regression tests now assert values, not just shapes; no property tests yet |
 | Generators | 2.0 | Independent marginals only; neither is the algorithm it is named after |
 | Attack suite | 2.0 | 2 weak baselines of 4 claimed |
@@ -35,7 +35,7 @@
 | Data layer | 6.5 | `Schema` + `from_csv` + CLI `--input`; real datasets still to land |
 | Documentation | 1.5 | Thesis is 161 words against an 8,000–15,000 word requirement |
 | Frontend integrity | 6.0 | Fabricated verdicts removed; still no live attack surface |
-| **Weighted total** | **5.5** | |
+| **Weighted total** | **6.0** | |
 
 **Task board completion: 427 / 950 = 44.9%**
 
@@ -100,11 +100,11 @@ regresses, every certificate the project emits becomes false, so it gets its own
 
 | Gap | Consequence | Milestone |
 |---|---|---|
-| **No data ingestion path** | Cannot run on UCI Adult or anything else. Blocks all of §4.2 | M1 |
+| ~~No data ingestion path~~ | ✅ Closed — `Schema` + `from_csv` + CLI `--input` | done |
 | AIM is not AIM; copula has no copula | H1 needs ≥2 genuinely distinct mechanism families | M1 |
 | LiRA, DOMIAS, attribute inference missing | 2 of 4 claimed attacks | M2 |
 | Canary audit simplified vs Steinke et al. | Bound is indicative, not tight | M2 |
-| Unbounded min/max sensitivity in the profiler | The declared `sensitivity=1.0` is still unjustified | M1 |
+| ~~Unbounded min/max sensitivity~~ | ✅ Closed — sensitivity derived from public schema width | done |
 | Certificate unsigned; no third-party verifier | The project's title is not yet literally true | M3 |
 | Ed25519 key never persisted | File-backed ledgers become unverifiable after restart | M3 |
 | ~8% budget under-spend | Utility left on the table | M3 |
@@ -113,7 +113,7 @@ regresses, every certificate the project emits becomes false, so it gets its own
 
 | Gap | Consequence | Milestone |
 |---|---|---|
-| Toy data (100 rows, independent columns) | Nothing to preserve; utility measurement is vacuous | M1 |
+| Toy data (100 rows, independent columns) | Nothing to preserve; utility measurement is vacuous. **Ingestion now exists, so real data is unblocked** | M1 |
 | 1 seed, no confidence intervals | No result is statistically defensible | M1 |
 | **H1 untested** | Primary hypothesis | M1 |
 | **H2 not started** — no subgroup code exists | The most publishable result in the project | M2 |
@@ -134,7 +134,7 @@ regresses, every certificate the project emits becomes false, so it gets its own
 | Gap | Status |
 |---|---|
 | CI | ✅ Added this session |
-| `data/` + `CHECKSUMS.txt` | ❌ M1 |
+| `data/` + `CHECKSUMS.txt` | ❌ M1 (next task) |
 | `make reproduce` | ❌ M3 |
 | Property tests (`hypothesis`) | ❌ M1 |
 | Differential test vs `autodp` | ❌ M2 |
@@ -178,7 +178,7 @@ regresses, every certificate the project emits becomes false, so it gets its own
 | 16 | Frontend wired to live attack results | 15–25 |
 | 17 | `make reproduce` artifact | 6–10 |
 
-**Remaining to "excellent": ~180–300 engineer-hours.**
+**Remaining to "excellent": ~170–285 engineer-hours.**
 
 ---
 
