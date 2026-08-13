@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check synthproof/ tests/ scripts/
+
+      - name: Format check (black)
+        run: black --check synthproof/ tests/ scripts/
+        continue-on-error: true   # advisory until the tree is fully black-formatted
+
+      - name: Test with coverage
+        run: pytest --cov=synthproof --cov-report=term-missing --cov-fail-under=80
+
+      - name: Smoke — CLI demo runs end to end
+        run: python -m synthproof.cli demo --rows 60 --eps 1.0
+
+  # The headline claim of this project is that a requested epsilon is the epsilon you get.
+  # If that regresses, everything downstream — every certificate, every published number —
+  # becomes false. It is worth its own job.
+  calibration-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Assert calibrated epsilon tracks the target and never overspends
+        run: |
+          python - <<'PY'
+          from synthproof.accounting.calibration import (
+              calibrate_noise_scale, epsilon_for_noise_scale)
+
+          failures = []
+          for name in ("gaussian", "laplace"):
+              for steps in (1, 5, 20):
+                  for target in (0.5, 1.0, 2.0, 8.0):
+                      s = calibrate_noise_scale(target, 1e-5, name, 1.0, steps)
+                      got = epsilon_for_noise_scale(s, 1e-5, name, 1.0, steps)
+                      if got > target * 1.001:
+                          failures.append(f"OVERSPEND {name}/{steps}/{target}: got {got:.6f}")
+                      if got < target * 0.99:
+                          failures.append(f"LOOSE {name}/{steps}/{target}: got {got:.6f}")
+          if failures:
+              raise SystemExit("Calibration guard failed:\n  " + "\n  ".join(failures))
+          print("Calibration guard passed across 24 configurations.")
+          PY

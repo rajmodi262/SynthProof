@@ -1,14 +1,22 @@
-"""Privacy Accountant class supporting Gaussian, Laplace, RDP composition,
-subsampling amplification, and budget tracking.
+"""Privacy accountant with budget enforcement, dry-run, and snapshot/restore.
 
-Implements Rényi Differential Privacy (RDP) composition from Mironov (2017)
-with Poisson subsampling amplification from Mironov, Talwar & Zhang (2019).
+The composition math is delegated to Google's `dp_accounting` (the reference
+implementation used by TensorFlow Privacy). This module owns the *interface* — budget
+enforcement, spend history, dry-run, snapshot/restore — which is the part specific to
+SynthProof; it does not re-derive privacy theory.
+
+This replaces a hand-rolled RDP implementation whose subsampling amplification used
+``min(q * rho(alpha), truncated_MTZ)``. Neither branch was a citable theorem: RDP does
+not amplify linearly under subsampling, the MTZ series was truncated, and the alpha grid
+was non-integer while the MTZ bound requires integer orders. See brutal_project_audit.md,
+finding F4.
 """
 
 import copy
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
-import numpy as np
+from dp_accounting import dp_event
+from dp_accounting.rdp import rdp_privacy_accountant
 
 from synthproof.accounting.types import (
     BudgetExceededError,
@@ -17,159 +25,133 @@ from synthproof.accounting.types import (
     PrivacySpend,
 )
 
+# Standard RDP order grid (as used by TensorFlow Privacy). Includes integer orders,
+# which the subsampled-RDP bounds require.
+DEFAULT_ORDERS: Sequence[float] = (
+    [1 + x / 10.0 for x in range(1, 100)]
+    + list(range(11, 64))
+    + [128, 256, 512, 1024]
+)
+
+# Mechanism names accepted in MechanismSpec.name, mapped to how they are accounted.
+_GAUSSIAN_NAMES = frozenset({"gaussian", "dp-sgd", "dpsgd"})
+_LAPLACE_NAMES = frozenset({"laplace"})
+
 
 class Accountant:
-    """Tracks cumulative DP privacy spend across mechanisms using RDP composition.
+    """Tracks cumulative DP spend across mechanisms and enforces a budget.
 
     Supports:
-      - Gaussian mechanism RDP (exact formula)
-      - Laplace mechanism RDP (closed-form bound)
-      - Poisson subsampling amplification (when sampling_rate is set)
-      - Multi-step composition (steps > 1)
-      - Budget enforcement with dry-run and snapshot/restore
+      - Gaussian and Laplace mechanisms
+      - Poisson subsampling amplification (when ``sampling_rate`` is set)
+      - Multi-step composition (``steps > 1``)
+      - Budget enforcement, dry-run, and snapshot/restore
     """
 
-    # Standard alpha grid for RDP evaluation (denser near alpha=1 where the bound is tightest)
-    DEFAULT_ALPHAS = np.concatenate([
-        np.linspace(1.1, 10.0, 50),
-        np.linspace(10.5, 100.0, 50),
-        np.linspace(105.0, 500.0, 50),
-    ])
-
-    def __init__(self, budget_eps: float, budget_delta: float = 1e-5):
+    def __init__(self, budget_eps: float, budget_delta: float = 1e-5,
+                 orders: Optional[Sequence[float]] = None):
         self.budget = PrivacyParams(epsilon=budget_eps, delta=budget_delta)
+        self._orders = list(orders) if orders is not None else list(DEFAULT_ORDERS)
+        self._events: List[Tuple[dp_event.DpEvent, int]] = []
         self._spends: List[PrivacySpend] = []
-        self._rdp_curve: np.ndarray = np.zeros_like(self.DEFAULT_ALPHAS)
+
+    # ------------------------------------------------------------------ properties
 
     @property
     def spends(self) -> List[PrivacySpend]:
-        """Returns read-only copy of spends history."""
+        """Read-only copy of the spend history."""
         return list(self._spends)
 
-    def _gaussian_rdp(self, sensitivity: float, noise_scale: float,
-                      alphas: np.ndarray) -> np.ndarray:
-        """RDP for Gaussian mechanism: R(α) = α·Δ² / (2σ²)."""
-        if noise_scale == 0:
-            return np.full_like(alphas, np.inf)
-        return alphas * (sensitivity ** 2) / (2.0 * (noise_scale ** 2))
+    @property
+    def events(self) -> List[Tuple[dp_event.DpEvent, int]]:
+        """Read-only copy of the composed (event, repetitions) pairs."""
+        return list(self._events)
 
-    def _laplace_rdp(self, sensitivity: float, noise_scale: float,
-                     alphas: np.ndarray) -> np.ndarray:
-        """RDP for Laplace mechanism (exact closed-form bound).
+    # ------------------------------------------------------------------ translation
 
-        For Laplace(b) with b = noise_scale / sensitivity:
-        R(α) = (1/(α-1)) * log( α/(2α-1) * exp((α-1)/b) + (α-1)/(2α-1) * exp(-α/b) )
+    @staticmethod
+    def to_dp_event(spec: MechanismSpec) -> dp_event.DpEvent:
+        """Translates a MechanismSpec into a dp_accounting DpEvent.
+
+        The noise multiplier is the noise scale expressed in units of sensitivity, which
+        is what dp_accounting expects: sigma/Delta for Gaussian, b/Delta for Laplace.
         """
-        if noise_scale == 0:
-            return np.full_like(alphas, np.inf)
-        eps = sensitivity / noise_scale
-        rdp = (1.0 / (alphas - 1.0)) * np.log(
-            (alphas / (2.0 * alphas - 1.0)) * np.exp((alphas - 1.0) * eps)
-            + ((alphas - 1.0) / (2.0 * alphas - 1.0)) * np.exp(-alphas * eps)
-        )
-        return rdp
-
-    def _apply_subsampling(self, rdp_curve: np.ndarray, sampling_rate: float,
-                           alphas: np.ndarray) -> np.ndarray:
-        """Applies Poisson subsampling amplification to an RDP curve.
-
-        Uses the upper bound from Mironov, Talwar & Zhang (2019), Proposition 10:
-        For subsampling rate q and base mechanism RDP ρ(α), the subsampled
-        mechanism satisfies RDP with:
-          ρ_sub(α) ≤ (1/(α-1)) * log(1 + q² * C(α) * (exp((α-1)*ρ(α)) - 1))
-
-        For simplicity and numerical stability, we use the tighter bound:
-          ρ_sub(α) ≤ (1/(α-1)) * log(1 + q² * α * (exp(ρ(α)) - 1))
-        when ρ(α) is small, and the naive bound q*ρ(α) otherwise.
-        """
-        if sampling_rate >= 1.0:
-            return rdp_curve
-
-        q = sampling_rate
-        amplified = np.zeros_like(rdp_curve)
-
-        for i, (alpha, rdp) in enumerate(zip(alphas, rdp_curve, strict=True)):
-            if rdp == 0.0:
-                amplified[i] = 0.0
-            elif np.isinf(rdp):
-                amplified[i] = np.inf
-            else:
-                # Use min of several bounds for tightness
-                # Bound 1: naive q * rdp
-                b1 = q * rdp
-                # Bound 2: subsampled RDP (approximate)
-                expm1 = np.expm1((alpha - 1) * rdp)
-                if np.isfinite(expm1) and expm1 > 0:
-                    b2 = (1.0 / (alpha - 1.0)) * np.log1p(q * q * expm1)
-                else:
-                    b2 = b1
-                amplified[i] = min(b1, b2)
-
-        return amplified
-
-    def _compute_mechanism_rdp(self, spec: MechanismSpec) -> np.ndarray:
-        """Computes RDP curve R(alpha) for a given mechanism spec across DEFAULT_ALPHAS."""
-        alphas = self.DEFAULT_ALPHAS
         name = spec.name.lower()
 
-        # Base mechanism RDP (single step, no subsampling)
-        if name in ("gaussian", "dp-sgd"):
-            base_rdp = self._gaussian_rdp(spec.sensitivity, spec.noise_scale, alphas)
-        elif name == "laplace":
-            base_rdp = self._laplace_rdp(spec.sensitivity, spec.noise_scale, alphas)
+        # Zero noise is not "a very small amount of privacy loss" — it is none at all.
+        # Modelling it explicitly keeps epsilon at infinity instead of silently
+        # producing a finite number.
+        if spec.noise_scale == 0:
+            return dp_event.NonPrivateDpEvent()
+
+        noise_multiplier = spec.noise_scale / spec.sensitivity
+
+        if name in _GAUSSIAN_NAMES:
+            base = dp_event.GaussianDpEvent(noise_multiplier)
+        elif name in _LAPLACE_NAMES:
+            base = dp_event.LaplaceDpEvent(noise_multiplier)
         else:
-            # Default: treat as Gaussian
-            base_rdp = self._gaussian_rdp(spec.sensitivity, spec.noise_scale, alphas)
+            raise ValueError(
+                f"Unknown mechanism {spec.name!r}. Supported: "
+                f"{sorted(_GAUSSIAN_NAMES | _LAPLACE_NAMES)}. "
+                "(A previous version silently accounted unknown mechanisms as Gaussian.)"
+            )
 
-        # Apply subsampling amplification if applicable
         if spec.sampling_rate is not None and spec.sampling_rate < 1.0:
-            base_rdp = self._apply_subsampling(base_rdp, spec.sampling_rate, alphas)
+            base = dp_event.PoissonSampledDpEvent(spec.sampling_rate, base)
 
-        # Composition across steps (linear in RDP)
-        return base_rdp * spec.steps
+        return base
 
-    def _rdp_to_eps(self, rdp_curve: np.ndarray, delta: float) -> float:
-        """Converts RDP curve to (epsilon, delta)-DP via optimization over alphas.
+    # ------------------------------------------------------------------ composition
 
-        Uses the conversion: eps = min_α { ρ(α) + log(1/δ) / (α-1) }
-        from Balle et al. (2020) Proposition 3.
-        """
-        if np.all(rdp_curve == 0.0):
+    def _epsilon_for(self, events: List[Tuple[dp_event.DpEvent, int]], delta: float) -> float:
+        """Composes (event, count) pairs in a fresh accountant and returns epsilon."""
+        if not events:
             return 0.0
         if delta <= 0:
             return float("inf")
-        alphas = self.DEFAULT_ALPHAS
-        # eps(alpha) = rdp(alpha) + log(1/delta) / (alpha - 1)
-        eps_values = rdp_curve + np.log(1.0 / delta) / (alphas - 1.0)
-        valid_eps = eps_values[np.isfinite(eps_values)]
-        if len(valid_eps) == 0:
-            return float("inf")
-        return float(np.min(valid_eps))
+        acct = rdp_privacy_accountant.RdpAccountant(self._orders)
+        for ev, count in events:
+            # compose() takes a repetition count directly; composing `count` separate
+            # events instead makes calibration search prohibitively slow for large step
+            # counts (e.g. 100-step subsampled Gaussian).
+            acct.compose(ev, count)
+        return float(acct.get_epsilon(delta))
+
+    def _events_for(self, spec: MechanismSpec) -> List[Tuple[dp_event.DpEvent, int]]:
+        """Expands a spec into a single (event, repetitions) pair."""
+        return [(self.to_dp_event(spec), spec.steps)]
+
+    # ------------------------------------------------------------------ public API
 
     def dry_run(self, spec: MechanismSpec, delta: Optional[float] = None) -> float:
-        """Calculates what total epsilon would be if spec were charged, without mutating state."""
+        """Total epsilon that *would* result from charging `spec`, without mutating state."""
         target_delta = delta if delta is not None else self.budget.delta
-        spec_rdp = self._compute_mechanism_rdp(spec)
-        hypothetical_rdp = self._rdp_curve + spec_rdp
-        return self._rdp_to_eps(hypothetical_rdp, target_delta)
+        return self._epsilon_for(self._events + self._events_for(spec), target_delta)
 
     def charge(self, spec: MechanismSpec, run_id: Optional[str] = None) -> PrivacySpend:
-        """Charges a mechanism to the budget. Raises BudgetExceededError if over budget."""
-        spec_rdp = self._compute_mechanism_rdp(spec)
-        new_rdp = self._rdp_curve + spec_rdp
-        new_eps = self._rdp_to_eps(new_rdp, self.budget.delta)
+        """Charges a mechanism to the budget.
+
+        Raises:
+            BudgetExceededError: if the resulting total would exceed the budget. The
+                accountant is left unmodified in that case.
+        """
+        prior_eps = self.total()
+        new_events = self._events + self._events_for(spec)
+        new_eps = self._epsilon_for(new_events, self.budget.delta)
 
         if new_eps > self.budget.epsilon:
             raise BudgetExceededError(
-                requested_eps=new_eps - self.total(self.budget.delta),
-                remaining_eps=self.remaining(self.budget.delta),
+                requested_eps=new_eps - prior_eps,
+                remaining_eps=max(0.0, self.budget.epsilon - prior_eps),
                 delta=self.budget.delta,
             )
 
-        self._rdp_curve = new_rdp
+        self._events = new_events
         spend = PrivacySpend(
             mechanism=spec,
             computed_eps=new_eps,
+            marginal_eps=new_eps - prior_eps,
             delta=self.budget.delta,
             run_id=run_id,
         )
@@ -177,20 +159,25 @@ class Accountant:
         return spend
 
     def total(self, delta: Optional[float] = None) -> float:
-        """Returns current total composed epsilon at specified delta."""
+        """Current total composed epsilon at the given delta."""
         target_delta = delta if delta is not None else self.budget.delta
-        return self._rdp_to_eps(self._rdp_curve, target_delta)
+        return self._epsilon_for(self._events, target_delta)
 
     def remaining(self, delta: Optional[float] = None) -> float:
-        """Returns remaining epsilon budget at specified delta."""
+        """Remaining epsilon budget at the given delta."""
         target_delta = delta if delta is not None else self.budget.delta
-        current_eps = self.total(target_delta)
-        return max(0.0, self.budget.epsilon - current_eps)
+        return max(0.0, self.budget.epsilon - self.total(target_delta))
 
-    def snapshot(self) -> Tuple[np.ndarray, List[PrivacySpend]]:
-        """Returns a snapshot tuple of current accountant state."""
-        return copy.deepcopy(self._rdp_curve), copy.deepcopy(self._spends)
+    # ------------------------------------------------------------------ state
 
-    def restore(self, snapshot: Tuple[np.ndarray, List[PrivacySpend]]) -> None:
+    def snapshot(self) -> Tuple[List[Tuple[dp_event.DpEvent, int]], List[PrivacySpend]]:
+        """Returns a snapshot of the current accountant state."""
+        return list(self._events), copy.deepcopy(self._spends)
+
+    def restore(
+        self, snapshot: Tuple[List[Tuple[dp_event.DpEvent, int]], List[PrivacySpend]]
+    ) -> None:
         """Restores accountant state from a snapshot."""
-        self._rdp_curve, self._spends = copy.deepcopy(snapshot)
+        events, spends = snapshot
+        self._events = list(events)
+        self._spends = copy.deepcopy(spends)

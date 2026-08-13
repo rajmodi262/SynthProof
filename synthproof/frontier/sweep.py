@@ -16,6 +16,7 @@ from typing import List
 import numpy as np
 
 from synthproof.accounting.accountant import Accountant
+from synthproof.accounting.calibration import BudgetPlan
 from synthproof.attacks.distance_mia import DistanceMIABaseline
 from synthproof.attacks.exact_match_risk import ExactMatchRiskEvaluator
 from synthproof.audit.canary import CanaryAuditor
@@ -78,22 +79,24 @@ class SweepRunner:
         # second half — both were members, so the attack could not have worked.)
         fit_ds, holdout_df = self._split(dataset)
 
-        acc = Accountant(budget_eps=max(10.0, target_eps * 10.0), budget_delta=delta)
-        profiler = DPDomainProfiler(accountant=acc, eps_per_col=0.01)
+        # One budget for the whole release, split across the stages that read the data.
+        plan = BudgetPlan.split(target_eps, delta=delta, profile_frac=0.1)
+        acc = Accountant(budget_eps=target_eps * 1.02, budget_delta=delta)
 
         auditor = CanaryAuditor(num_canaries=5, seed=self.seed)
         aug_dataset, canary_set = auditor.plant_canaries(fit_ds)
 
         # Profile the augmented table so planted canaries are inside the domain the
         # generator can actually emit; otherwise the audit is structurally dead.
-        profile = profiler.profile(aug_dataset)
+        profiler = DPDomainProfiler(accountant=acc, eps_budget=plan.profile_eps)
+        profile = profiler.profile(aug_dataset, seed=self.seed)
 
         if mechanism_name.lower() in ("aim", "mst", "aim / mst"):
             gen = AIMGenerator(seed=self.seed)
         else:
             gen = GaussianCopulaGenerator(seed=self.seed)
 
-        gen.fit(aug_dataset, profile, acc, target_eps=target_eps)
+        gen.fit(aug_dataset, profile, acc, target_eps=plan.synthesis_eps)
         synthetic_df = gen.generate(num_samples=dataset.num_rows)
 
         audit_res = auditor.audit(synthetic_df, canary_set)

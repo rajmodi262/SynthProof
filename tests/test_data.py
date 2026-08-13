@@ -18,7 +18,7 @@ def test_dp_domain_profiler_charges_budget():
     acc = Accountant(budget_eps=2.0, budget_delta=1e-5)
     
     initial_spends = len(acc.spends)
-    profiler = DPDomainProfiler(accountant=acc, eps_per_col=0.05)
+    profiler = DPDomainProfiler(accountant=acc, eps_budget=0.5)
     profile = profiler.profile(ds)
     
     assert len(profile.columns) == 3

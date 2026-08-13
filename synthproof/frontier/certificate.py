@@ -5,6 +5,7 @@ from dataclasses import asdict, dataclass
 from typing import Dict, List, Optional
 
 from synthproof.accounting.accountant import Accountant
+from synthproof.accounting.calibration import BudgetPlan
 from synthproof.audit.canary import CanaryAuditor
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
@@ -71,16 +72,25 @@ class FrontierEngine:
         mechanism_label = "AIM_Marginal_Generator" if use_aim else "Gaussian_Copula_Generator"
 
         for eps in eps_grid:
-            acc = Accountant(budget_eps=max(10.0, eps * 10.0), budget_delta=delta)
-            profiler = DPDomainProfiler(accountant=acc, eps_per_col=0.01)
-            profile = profiler.profile(dataset)
+            # Split the release budget across the stages that touch the data, so the
+            # composed total approximates `eps` instead of exceeding it by whatever
+            # profiling happened to spend (audit finding F2).
+            plan = BudgetPlan.split(eps, delta=delta, profile_frac=0.1)
+            # 2% headroom absorbs float slack in the calibration search; RDP composition
+            # is sublinear, so the true total is at or below profile_eps + synthesis_eps.
+            acc = Accountant(budget_eps=eps * 1.02, budget_delta=delta)
 
             auditor = CanaryAuditor(num_canaries=5, seed=self.seed)
             aug_dataset, canary_set = auditor.plant_canaries(dataset)
 
+            # Profile the augmented table so planted canaries fall inside the domain the
+            # generator can emit; profiling the original leaves the audit structurally dead.
+            profiler = DPDomainProfiler(accountant=acc, eps_budget=plan.profile_eps)
+            profile = profiler.profile(aug_dataset, seed=self.seed)
+
             gen = (AIMGenerator(seed=self.seed) if use_aim
                    else GaussianCopulaGenerator(seed=self.seed))
-            gen.fit(aug_dataset, profile, acc, target_eps=eps)
+            gen.fit(aug_dataset, profile, acc, target_eps=plan.synthesis_eps)
 
             synthetic_df = gen.generate(num_samples=dataset.num_rows)
 

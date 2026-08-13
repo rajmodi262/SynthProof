@@ -279,49 +279,57 @@
       <div class="metrics-grid">
         <div class="metric-card">
           <div class="label">Proved Privacy Bound (ε<sub>proved</sub>)</div>
-          <div class="value" id="valProvedEps">5.31</div>
+          <div class="value" id="valProvedEps">—</div>
           <div class="sub">RDP Accountant</div>
         </div>
         <div class="metric-card">
           <div class="label">Audited Lower Bound (ε<sub>audited</sub>)</div>
-          <div class="value" id="valAuditedEps" style="color: var(--accent-green);">0.00</div>
+          <div class="value" id="valAuditedEps" style="color: var(--accent-green);">—</div>
           <div class="sub">Canary Auditor</div>
         </div>
         <div class="metric-card">
           <div class="label">Downstream Utility (TSTR F1)</div>
-          <div class="value" id="valTSTRF1">0.311</div>
-          <div class="sub">Target: 0.800 (TRTR)</div>
+          <div class="value" id="valTSTRF1">—</div>
+          <div class="sub" id="subTRTR">held-out real split</div>
         </div>
+        <!-- Was an "Anonymeter Risk 0.040" card. That figure had no source: the data sheet
+             carries no singling-out field, so the number was static and invented. Replaced
+             with the utility gap, which the data sheet actually reports. -->
         <div class="metric-card">
-          <div class="label">Anonymeter Risk</div>
-          <div class="value" id="valSinglingOut" style="color: var(--accent-cyan);">0.040</div>
-          <div class="sub">Singling-Out Risk</div>
+          <div class="label">Utility Gap</div>
+          <div class="value" id="valUtilityGap" style="color: var(--accent-cyan);">—</div>
+          <div class="sub">TRTR − TSTR</div>
         </div>
       </div>
 
       <!-- Live Attack Range Dossier -->
       <div class="glass-panel" style="margin-bottom: 1.5rem;">
         <h2 class="panel-title">Adversarial Attack Range Dossier</h2>
+        <!-- These panels previously displayed four hardcoded "PASSED" verdicts with
+             invented figures (51.2%, 0.040, 0.082, 0.012) that never changed regardless
+             of what was run, including a verdict for an attack that does not exist in the
+             codebase. They are now driven from the API response, and attacks that are not
+             implemented say so rather than reporting a pass. -->
         <div class="attack-dossier-grid">
-          <div class="attack-box pass">
-            <h4>Canary Auditor Attack</h4>
-            <p>Status: <strong style="color: var(--accent-green);">PASSED (0% Leakage)</strong></p>
-            <p>Planted Canaries: 5 | Detected: 0 | Audited ε = 0.00</p>
+          <div class="attack-box" id="boxCanary">
+            <h4>Canary Auditor</h4>
+            <p>Status: <strong id="canaryStatus" style="color: var(--text-muted);">awaiting run</strong></p>
+            <p id="canaryDetail">Clopper-Pearson lower bound against held-out canaries.</p>
           </div>
-          <div class="attack-box pass">
-            <h4>LiRA Membership Inference</h4>
-            <p>Status: <strong style="color: var(--accent-green);">PASSED (Chance Level)</strong></p>
-            <p>Attack Accuracy: 51.2% | Advantage: 0.024</p>
+          <div class="attack-box" id="boxMia">
+            <h4>Distance MIA Baseline</h4>
+            <p>Status: <strong id="miaStatus" style="color: var(--text-muted);">awaiting run</strong></p>
+            <p id="miaDetail">Nearest-neighbour membership inference. Not LiRA.</p>
           </div>
-          <div class="attack-box pass">
-            <h4>Anonymeter Singling-Out</h4>
-            <p>Status: <strong style="color: var(--accent-green);">PASSED (Low Risk)</strong></p>
-            <p>Singling-out Risk: 0.040 | Linkability: 0.082</p>
+          <div class="attack-box">
+            <h4>LiRA · DOMIAS</h4>
+            <p>Status: <strong style="color: var(--accent-amber, #d9a441);">NOT IMPLEMENTED</strong></p>
+            <p>Shadow-model LiRA and density-ratio DOMIAS are scheduled for milestone M2.</p>
           </div>
-          <div class="attack-box pass">
+          <div class="attack-box">
             <h4>Attribute Reconstruction</h4>
-            <p>Status: <strong style="color: var(--accent-green);">PASSED (Protected)</strong></p>
-            <p>Reconstruction Advantage over Baseline: 0.012</p>
+            <p>Status: <strong style="color: var(--accent-amber, #d9a441);">NOT IMPLEMENTED</strong></p>
+            <p>No attribute inference attack exists yet. Scheduled for milestone M2.</p>
           </div>
         </div>
       </div>
@@ -373,9 +381,37 @@
         const data = await res.json();
 
         if (data.datasheet) {
-          document.getElementById('valProvedEps').innerText = data.datasheet.total_proved_eps.toFixed(2);
-          document.getElementById('valAuditedEps').innerText = data.datasheet.total_audited_eps.toFixed(2);
-          document.getElementById('certificateJson').innerText = JSON.stringify(data.datasheet, null, 2);
+          const ds = data.datasheet;
+          document.getElementById('valProvedEps').innerText = ds.total_proved_eps.toFixed(2);
+          document.getElementById('valAuditedEps').innerText = ds.total_audited_eps.toFixed(2);
+          document.getElementById('certificateJson').innerText = JSON.stringify(ds, null, 2);
+
+          // Every figure below comes from the response. Nothing here is a literal.
+          const pt = (ds.frontier_curve && ds.frontier_curve.length)
+            ? ds.frontier_curve[ds.frontier_curve.length - 1] : null;
+          if (pt) {
+            document.getElementById('valTSTRF1').innerText = pt.tstr_f1.toFixed(3);
+            document.getElementById('subTRTR').innerText =
+              'TRTR baseline: ' + pt.trtr_f1.toFixed(3);
+            document.getElementById('valUtilityGap').innerText =
+              Math.max(0, pt.trtr_f1 - pt.tstr_f1).toFixed(3);
+          }
+
+          // The audit reports a lower bound, so "no leakage detected" is the honest
+          // reading of zero — not a pass.
+          const leaked = ds.total_audited_eps > 0;
+          const cs = document.getElementById('canaryStatus');
+          cs.innerText = leaked ? 'LEAKAGE DETECTED' : 'no leakage detected';
+          cs.style.color = leaked ? 'var(--accent-red, #e06c75)' : 'var(--accent-green)';
+          document.getElementById('canaryDetail').innerText =
+            'Audited ε = ' + ds.total_audited_eps.toFixed(3)
+            + ' (95% Clopper-Pearson lower bound vs held-out canaries)';
+
+          const ms = document.getElementById('miaStatus');
+          ms.innerText = 'not run by this endpoint';
+          ms.style.color = 'var(--text-muted)';
+          document.getElementById('miaDetail').innerText =
+            'The distance MIA runs in the experimental sweep, not in /api/synthesize.';
         }
         await fetchLedger();
       } catch (e) {

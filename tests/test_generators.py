@@ -12,7 +12,7 @@ from synthproof.generators.copula import GaussianCopulaGenerator
 def test_copula_generator_fit_and_generate():
     ds = TabularDataset.create_synthetic_toy(num_rows=100)
     acc = Accountant(budget_eps=10.0, budget_delta=1e-5)
-    profiler = DPDomainProfiler(accountant=acc, eps_per_col=0.05)
+    profiler = DPDomainProfiler(accountant=acc, eps_budget=0.5)
     profile = profiler.profile(ds)
 
     gen = GaussianCopulaGenerator(seed=42)
@@ -31,7 +31,7 @@ def test_copula_generator_fit_and_generate():
 def test_aim_generator_fit_and_generate():
     ds = TabularDataset.create_synthetic_toy(num_rows=100)
     acc = Accountant(budget_eps=10.0, budget_delta=1e-5)
-    profiler = DPDomainProfiler(accountant=acc, eps_per_col=0.05)
+    profiler = DPDomainProfiler(accountant=acc, eps_budget=0.5)
     profile = profiler.profile(ds)
 
     gen = AIMGenerator(seed=42)
