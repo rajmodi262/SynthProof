@@ -7,7 +7,7 @@ name = "synthproof"
 version = "0.1.0"
 description = "Synthetic Data That Ships With Its Proof — Differential Privacy Platform & Adversarial Assurance Engine"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
     {name = "Raj Modi", email = "raj.modi@mitwpu.edu.in"},
@@ -33,6 +33,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",
+    "httpx>=0.24.0",   # starlette TestClient needs it on newer versions
     "pytest-cov>=4.1.0",
     "hypothesis>=6.80.0",
     "ruff>=0.1.0",
@@ -48,7 +49,7 @@ where = ["."]
 
 [tool.black]
 line-length = 100
-target-version = ['py310']
+target-version = ['py311']
 
 [tool.ruff]
 line-length = 100

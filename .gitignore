@@ -50,3 +50,5 @@ htmlcov/
 *.swp
 data/*
 !data/CHECKSUMS.txt
+
+.venv311/

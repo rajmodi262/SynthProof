@@ -62,7 +62,7 @@ overspending. CI asserts this across 24 configurations.
 | M1.5 | CLI `--input` flag | 🔴 | — | 2 | [x] | `synthproof run --input my.csv --eps 2.0` works |
 | M1.6 | API upload endpoint | 🟠 | | 4 | [ ] | `POST /api/upload` accepts a CSV; console can drive it |
 | M1.7 | Caller-declared public bounds (closes F5) | 🔴 | — | 5 | [x] | Sensitivity is derived from declared clip range, not asserted as 1.0 |
-| M1.8 | Real AIM via `private-pgm` | 🔴 | | 16 | [!] | Uses published AIM; preserves ≥1 measured 2-way marginal the baseline destroys |
+| M1.8 | Real AIM via `private-pgm` | 🔴 | | 10–14 | [ ] | Uses published AIM; preserves ≥1 measured 2-way marginal the baseline destroys |
 | M1.9 | Real Gaussian copula | 🟢 | | 10 | [ ] | DP covariance + rank transform; measurably preserves correlation |
 | M1.10 | Rename baseline → `IndependentMarginalGenerator` | 🔴 | | 1 | [ ] | No class claims an algorithm it does not implement |
 | M1.11 | Multi-seed sweep runner (5 seeds) | 🔴 | — | 8 | [x] | Emits per-cell mean ± 95% CI |
@@ -148,7 +148,7 @@ See [`thesis/`](thesis/) for the chapter scaffolds with per-section outlines.
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| `private-pgm` dependency problems | High | High | Timebox to 20 h; fall back to `smartnoise-synth`; baseline still ships |
+| ~~`private-pgm` dependency problems~~ | — | — | ✅ **Resolved.** Works on Python 3.11; env verified end to end. See [PYTHON311_UPGRADE.md](PYTHON311_UPGRADE.md) |
 | Thesis left to the end | **High** | **Critical** | D.2/D.3/D.4 start this week, before any M1 code |
 | Audit detects nothing at realistic n | Medium | Medium | Scale canaries; report the detection floor; M2.2 validates the instrument |
 | LiRA compute exceeds available hardware | Medium | Medium | Reduce shadow models to 32 and report the sensitivity of the result |
