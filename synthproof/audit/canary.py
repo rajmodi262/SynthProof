@@ -90,11 +90,21 @@ class CanaryAuditor:
             row = {}
             for col in dataset.columns:
                 if col in dataset.numerical_cols:
-                    col_max = float(dataset.df[col].max())
-                    col_min = float(dataset.df[col].min())
-                    spread = max(1.0, col_max - col_min)
-                    # Extreme but randomised, so members and holdout are exchangeable.
-                    row[col] = col_max + spread * float(rng.uniform(1.5, 3.0))
+                    # Canaries must lie INSIDE the declared public domain. Placing them
+                    # outside it was a real defect: the schema clips them away (so they can
+                    # never be detected), and where clipping does not apply they drag the
+                    # profiled range out to absurd bounds — a canary age of ~250 stretched
+                    # UCI Adult's range to [17, 300] and compressed every real record into a
+                    # handful of bins, destroying the structure the generator was measuring.
+                    bounds = dataset.bounds(col) if dataset.schema is not None else None
+                    if bounds is not None:
+                        lo, hi = float(bounds[0]), float(bounds[1])
+                    else:
+                        lo, hi = float(dataset.df[col].min()), float(dataset.df[col].max())
+                    span = max(1e-9, hi - lo)
+                    # Extreme but in-domain: the top few percent of the range, randomised so
+                    # members and holdout canaries remain exchangeable.
+                    row[col] = hi - span * float(rng.uniform(0.0, 0.03))
                 else:
                     observed = list(dataset.df[col].unique())
                     row[col] = observed[int(rng.integers(0, len(observed)))] if observed else "NA"
@@ -114,7 +124,10 @@ class CanaryAuditor:
         holdout = all_canaries.iloc[self.num_canaries:].reset_index(drop=True)
 
         augmented_df = pd.concat([dataset.df, members], ignore_index=True)
-        augmented = TabularDataset(df=augmented_df, name=f"{dataset.name}_canary")
+        # Carry the schema through. Dropping it here silently disabled public bounds for the
+        # whole downstream pipeline, pushing the profiler onto its noisy-min/max fallback.
+        augmented = TabularDataset(df=augmented_df, name=f"{dataset.name}_canary",
+                                   schema=dataset.schema)
         return augmented, CanarySet(members=members, holdout=holdout)
 
     # ------------------------------------------------------------------ scoring
