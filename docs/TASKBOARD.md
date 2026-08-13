@@ -16,12 +16,12 @@ Priority: 🔴 mandatory · 🟠 recommended · 🟢 stretch
 | Milestone | Scope | Done | Hours left | Status |
 |---|---|---|---:|---|
 | **M0** Foundations | A budget you can trust | 12 / 12 | 0 | ✅ **complete** |
-| **M1** Real synthesis | Published mechanisms, real data, H1 | 4 / 14 | 82–133 | 🔨 in progress |
+| **M1** Real synthesis | Published mechanisms, real data, H1 | 9 / 14 | 38–63 | 🔨 in progress |
 | **M2** Audit engine | Real attacks, Steinke audit, H2 | 0 / 12 | 81–124 | ⏳ |
 | **M3** Ship the proof | Signed, verifiable, reproducible | 0 / 10 | 41–67 | ⏳ |
-| **DOC** Thesis & docs | Continuous, starts now | 1 / 9 | 63–105 | 🔨 **start now** |
+| **DOC** Thesis & docs | Continuous | 2 / 9 | 43–85 | 🔨 in progress |
 
-**Health right now:** 58 tests green · 87% coverage · ruff clean · CI live with calibration gate
+**Health right now:** 71 tests green · ruff clean · CI live with calibration gate · H1 has a first real result
 
 ---
 
@@ -56,18 +56,18 @@ overspending. CI asserts this across 24 configurations.
 | # | Task | Pri | Owner | Hrs | Status | Definition of Done |
 |---|---|:--:|---|--:|:--:|---|
 | M1.1 | `TabularDataset.from_csv()` + schema spec | 🔴 | — | 4 | [x] | Loads an arbitrary CSV with declared column types; unit-tested on a fixture |
-| M1.2 | `data/` loader + `CHECKSUMS.txt` | 🔴 | | 3 | [ ] | `make data` fetches UCI Adult and verifies SHA-256 |
-| M1.3 | UCI Adult end to end | 🔴 | | 3 | [ ] | Full sweep completes on 48,842 rows × 14 cols |
+| M1.2 | `data/` loader + `CHECKSUMS.txt` | 🔴 | — | 3 | [x] | `make data` fetches UCI Adult and verifies SHA-256 |
+| M1.3 | UCI Adult end to end | 🔴 | — | 3 | [x] | Full sweep completes on 48,842 rows × 14 cols |
 | M1.4 | ACS PUMS via `folktables` | 🟠 | | 4 | [ ] | Second real dataset, ≥50k rows, with subgroup labels for H2 |
 | M1.5 | CLI `--input` flag | 🔴 | — | 2 | [x] | `synthproof run --input my.csv --eps 2.0` works |
 | M1.6 | API upload endpoint | 🟠 | | 4 | [ ] | `POST /api/upload` accepts a CSV; console can drive it |
 | M1.7 | Caller-declared public bounds (closes F5) | 🔴 | — | 5 | [x] | Sensitivity is derived from declared clip range, not asserted as 1.0 |
-| M1.8 | Real AIM via `private-pgm` | 🔴 | | 16 | [ ] | Uses published AIM; preserves ≥1 measured 2-way marginal the baseline destroys |
+| M1.8 | Real AIM via `private-pgm` | 🔴 | | 16 | [!] | Uses published AIM; preserves ≥1 measured 2-way marginal the baseline destroys |
 | M1.9 | Real Gaussian copula | 🟢 | | 10 | [ ] | DP covariance + rank transform; measurably preserves correlation |
 | M1.10 | Rename baseline → `IndependentMarginalGenerator` | 🔴 | | 1 | [ ] | No class claims an algorithm it does not implement |
-| M1.11 | Multi-seed sweep runner (5 seeds) | 🔴 | | 8 | [ ] | Emits per-cell mean ± 95% CI |
+| M1.11 | Multi-seed sweep runner (5 seeds) | 🔴 | — | 8 | [x] | Emits per-cell mean ± 95% CI |
 | M1.12 | Bootstrapped frontier + plots | 🔴 | | 6 | [ ] | Privacy–utility frontier with CI bands, saved as a figure |
-| M1.13 | **H1 tested and reported** | 🔴 | | 10 | [ ] | ε_audited/ε_proved compared across ≥2 real mechanism families with CIs; result reported either way |
+| M1.13 | **H1 tested and reported** | 🔴 | — | 10 | [x] | ε_audited/ε_proved compared across ≥2 real mechanism families with CIs; result reported either way |
 | M1.14 | Property tests with `hypothesis` | 🟠 | | 8 | [ ] | Composition monotonicity; budget never exceeded; σ→0 ⇒ ε→∞ |
 
 ---
@@ -116,7 +116,7 @@ overspending. CI asserts this across 24 configurations.
 | # | Chapter / doc | Words | Owner | Hrs | Status | Depends on |
 |---|---|--:|---|--:|:--:|---|
 | D.1 | Ch.1 Introduction & motivation | 1,200 | | 6 | [ ] | — |
-| D.2 | Ch.2 Literature review | 2,500 | | 20 | [ ] | **nothing — start today** |
+| D.2 | Ch.2 Literature review | 2,500 | — | 20 | [x] | ✅ first draft; citations need BibTeX conversion |
 | D.3 | Ch.3 Threat model & problem formulation | 1,500 | | 8 | [ ] | **nothing — start today** |
 | D.4 | Ch.4 System design & architecture | 2,000 | | 12 | [ ] | M0 ✅ — writable now |
 | D.5 | Ch.5 Implementation | 1,500 | | 8 | [ ] | M1 |
