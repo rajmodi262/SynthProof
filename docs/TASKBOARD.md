@@ -16,12 +16,12 @@ Priority: 🔴 mandatory · 🟠 recommended · 🟢 stretch
 | Milestone | Scope | Done | Hours left | Status |
 |---|---|---|---:|---|
 | **M0** Foundations | A budget you can trust | 12 / 12 | 0 | ✅ **complete** |
-| **M1** Real synthesis | Published mechanisms, real data, H1 | 0 / 14 | 96–157 | 🔨 next |
+| **M1** Real synthesis | Published mechanisms, real data, H1 | 4 / 14 | 82–133 | 🔨 in progress |
 | **M2** Audit engine | Real attacks, Steinke audit, H2 | 0 / 12 | 81–124 | ⏳ |
 | **M3** Ship the proof | Signed, verifiable, reproducible | 0 / 10 | 41–67 | ⏳ |
 | **DOC** Thesis & docs | Continuous, starts now | 1 / 9 | 63–105 | 🔨 **start now** |
 
-**Health right now:** 40 tests green · 90% coverage · ruff clean · CI live with calibration gate
+**Health right now:** 58 tests green · 87% coverage · ruff clean · CI live with calibration gate
 
 ---
 
@@ -49,18 +49,19 @@ overspending. CI asserts this across 24 configurations.
 
 ## M1 — Real synthesis · 96–157 h
 
-> **M1.1 is the critical path.** Nothing else in this milestone can start until the system
-> can read a CSV.
+> **M1.1 is done — the critical path is open.** The system now ingests arbitrary CSVs with a
+> declared public schema, so M1.2/M1.3 (real datasets) can proceed. Verified end to end on an
+> 800-row correlated CSV: requested ε=2.0 → proved ε=1.836.
 
 | # | Task | Pri | Owner | Hrs | Status | Definition of Done |
 |---|---|:--:|---|--:|:--:|---|
-| M1.1 | `TabularDataset.from_csv()` + schema spec | 🔴 | | 4 | [ ] | Loads an arbitrary CSV with declared column types; unit-tested on a fixture |
+| M1.1 | `TabularDataset.from_csv()` + schema spec | 🔴 | — | 4 | [x] | Loads an arbitrary CSV with declared column types; unit-tested on a fixture |
 | M1.2 | `data/` loader + `CHECKSUMS.txt` | 🔴 | | 3 | [ ] | `make data` fetches UCI Adult and verifies SHA-256 |
 | M1.3 | UCI Adult end to end | 🔴 | | 3 | [ ] | Full sweep completes on 48,842 rows × 14 cols |
 | M1.4 | ACS PUMS via `folktables` | 🟠 | | 4 | [ ] | Second real dataset, ≥50k rows, with subgroup labels for H2 |
-| M1.5 | CLI `--input` flag | 🔴 | | 2 | [ ] | `synthproof run --input my.csv --eps 2.0` works |
+| M1.5 | CLI `--input` flag | 🔴 | — | 2 | [x] | `synthproof run --input my.csv --eps 2.0` works |
 | M1.6 | API upload endpoint | 🟠 | | 4 | [ ] | `POST /api/upload` accepts a CSV; console can drive it |
-| M1.7 | Caller-declared public bounds (closes F5) | 🔴 | | 5 | [ ] | Sensitivity is derived from declared clip range, not asserted as 1.0 |
+| M1.7 | Caller-declared public bounds (closes F5) | 🔴 | — | 5 | [x] | Sensitivity is derived from declared clip range, not asserted as 1.0 |
 | M1.8 | Real AIM via `private-pgm` | 🔴 | | 16 | [ ] | Uses published AIM; preserves ≥1 measured 2-way marginal the baseline destroys |
 | M1.9 | Real Gaussian copula | 🟢 | | 10 | [ ] | DP covariance + rank transform; measurably preserves correlation |
 | M1.10 | Rename baseline → `IndependentMarginalGenerator` | 🔴 | | 1 | [ ] | No class claims an algorithm it does not implement |

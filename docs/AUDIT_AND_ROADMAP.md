@@ -10,7 +10,9 @@
 
 ## 1. Verdict
 
-> ### **5.5 / 10** as a research capstone — up from 3.5 at the first audit
+> ### **6.0 / 10** as a research capstone — up from 3.5 at the first audit
+>
+> *(updated 2026-08-13 after F5 closed and CSV ingestion landed)*
 >
 > The two hardest correctness problems are now solved: the accountant delegates to a citable
 > reference implementation, and a requested ε is the ε you actually get. What remains is
@@ -30,7 +32,7 @@
 | Generators | 2.0 | Independent marginals only; neither is the algorithm it is named after |
 | Attack suite | 2.0 | 2 weak baselines of 4 claimed |
 | Empirical rigor | 2.0 | Toy data, 1 seed, no confidence intervals |
-| Data layer | 1.0 | **No CSV ingestion path exists anywhere in the codebase** |
+| Data layer | 6.5 | `Schema` + `from_csv` + CLI `--input`; real datasets still to land |
 | Documentation | 1.5 | Thesis is 161 words against an 8,000–15,000 word requirement |
 | Frontend integrity | 6.0 | Fabricated verdicts removed; still no live attack surface |
 | **Weighted total** | **5.5** | |
@@ -47,7 +49,7 @@
 | F2 — `target_eps` is not a privacy budget | ✅ **Fixed.** See §3 |
 | F3 — silent zero-noise hole at σ<0.3 | ✅ **Fixed**, with a regression test |
 | F4 — unsound subsampling amplification | ✅ **Fixed.** Migrated to `dp_accounting`. The old bound under-reported ε by ~2× (0.485 vs 0.956 at q=0.01) |
-| F5 — profiler leaked the exact category domain | ⚠️ **Partially fixed.** Domain now released under a noisy threshold. Unbounded min/max sensitivity remains open |
+| F5 — profiler leaked the exact category domain | ✅ **Fixed.** Domain released under a noisy threshold, and sensitivity is now derived from the public schema width rather than asserted as 1.0 |
 | F6 — generators are not what they are named | ⚠️ **Honest, not fixed.** Docstrings and the deck now say so; real AIM is M1 |
 | F7 — fabricated metrics | ✅ **Fixed** in Python *and*, as of this audit, in the web console |
 | F8 — TRTR measured in-sample | ✅ **Fixed.** Shared held-out split; TRTR fell from a bogus 0.971 to ~0.334 (chance, correct for random labels) |
@@ -62,7 +64,7 @@
 | **G1** | Web console hardcoded four `PASSED` attack verdicts with invented figures, including a pass for **attribute reconstruction, which does not exist in the codebase** | ✅ Fixed this session |
 | **G2** | The `Anonymeter Risk 0.040` metric card had **no data source** — the data sheet carries no singling-out field | ✅ Fixed this session |
 | **G3** | Copula categorical branch **charged ε and applied no noise**, releasing exact category frequencies | ✅ Fixed this session |
-| **G4** | **No CSV ingestion anywhere.** No `read_csv`, no upload endpoint, no `--input` flag. The system cannot run on real data | ❌ **Open — blocks every experiment** |
+| **G4** | **No CSV ingestion anywhere.** No `read_csv`, no upload endpoint, no `--input` flag | ✅ Fixed this session — `Schema`, `from_csv`, `synthproof run --input` |
 | **G5** | Thesis is **161 words**; threat model 177; preregistration 218 | ❌ Open |
 | **G6** | `Allocator` was defined but never called by the pipeline, structurally blocking H3 | ✅ Fixed — `BudgetPlan` now routes through it |
 | **G7** | Frontend loads Google Fonts from a CDN, so the console degrades without internet | ⚠️ Minor |
@@ -148,7 +150,8 @@ regresses, every certificate the project emits becomes false, so it gets its own
 | 1 | ~~Fix build, wire calibration~~ | ~~5~~ | ✅ done |
 | 2 | ~~Remove frontend fabrication~~ | ~~1~~ | ✅ done |
 | 3 | ~~CI~~ | ~~2~~ | ✅ done |
-| 4 | Data layer + UCI Adult ingestion | 6–10 | M1 |
+| 4a | ~~CSV ingestion + public schema~~ | ~~6~~ | ✅ done |
+| 4b | UCI Adult dataset loader + checksums | 4–6 | M1 |
 | 5 | One real published mechanism (AIM via `private-pgm`) | 12–20 | M1 |
 | 6 | Multi-seed sweep + confidence intervals | 10–15 | M1 |
 | 7 | H1 tested and reported | 8–12 | M1 |
