@@ -230,7 +230,7 @@ Adopted after the first audit found fabricated metrics in four separate modules.
 |---|---:|
 | First audit (2026-08-06) | 3.2 |
 | After Tier 0 integrity work | 4.5 |
-| **Today** | **5.5** |
+| **Today** | **6.0** |
 | + M1 (real data, real mechanism, H1) | 7.5 |
 | + M2 (attack suite, Steinke audit, H2) | 9.0 |
 | + M3 (signed, verifiable, reproducible) | **9.5–10** |
