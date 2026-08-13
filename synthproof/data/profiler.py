@@ -76,18 +76,40 @@ class DPDomainProfiler:
         """Two range queries per numeric column, one histogram per categorical column."""
         return 2 * len(dataset.numerical_cols) + len(dataset.categorical_cols)
 
+    def _sensitivity_for(self, dataset: TabularDataset, col: str) -> float:
+        """Sensitivity of this column's queries, derived from the public schema where possible.
+
+        For a column clipped to a public range [lower, upper], adding or removing one record
+        moves a min/max query by at most the range width, so `width` is a defensible
+        sensitivity. Without a schema there is no public bound, the true sensitivity is
+        unbounded, and `self.sensitivity` is an assumption rather than a derivation — which is
+        why a real release should always supply a schema. See audit finding F5.
+
+        Categorical histogram queries have sensitivity 1 under add/remove-one regardless.
+        """
+        if col not in dataset.numerical_cols:
+            return 1.0
+        bounds = dataset.bounds(col) if dataset.schema is not None else None
+        if bounds is None:
+            return self.sensitivity
+        return max(1e-9, float(bounds[1] - bounds[0]))
+
     def profile(self, dataset: TabularDataset, seed: Optional[int] = None) -> DomainProfile:
         """Profiles the dataset schema, spending `eps_budget` in total."""
         n_queries = self._query_count(dataset)
         if n_queries == 0:
             return DomainProfile(dataset_name=dataset.name, num_rows=dataset.num_rows)
 
-        # One calibrated noise scale for the whole pass.
-        noise_scale = calibrate_noise_scale(
+        # Calibrate a noise MULTIPLIER — the scale expressed in units of sensitivity — rather
+        # than an absolute scale. Columns have different sensitivities (a range query on an
+        # income column bounded to [0, 500000] is far more sensitive than a count), but a
+        # shared multiplier gives every query the same RDP curve, so the whole pass still
+        # composes to exactly eps_budget.
+        noise_multiplier = calibrate_noise_scale(
             target_eps=self.eps_budget,
             target_delta=self.accountant.budget.delta,
             name="laplace",
-            sensitivity=self.sensitivity,
+            sensitivity=1.0,
             steps=n_queries,
         )
 
@@ -96,10 +118,14 @@ class DPDomainProfiler:
         col_profiles: Dict[str, ColumnProfile] = {}
 
         for col in dataset.columns:
+            sens = self._sensitivity_for(dataset, col)
+            noise_scale = noise_multiplier * sens
             if col in dataset.numerical_cols:
-                col_profiles[col] = self._profile_numeric(dataset, col, noise_scale, rng)
+                col_profiles[col] = self._profile_numeric(
+                    dataset, col, noise_scale, rng, sens)
             else:
-                col_profiles[col] = self._profile_categorical(dataset, col, noise_scale, rng)
+                col_profiles[col] = self._profile_categorical(
+                    dataset, col, noise_scale, rng, sens)
 
         return DomainProfile(
             dataset_name=dataset.name,
@@ -108,11 +134,11 @@ class DPDomainProfiler:
             eps_spent=self.accountant.total() - eps_before,
         )
 
-    def _profile_numeric(self, dataset: TabularDataset, col: str,
-                         noise_scale: float, rng: np.random.Generator) -> ColumnProfile:
+    def _profile_numeric(self, dataset: TabularDataset, col: str, noise_scale: float,
+                         rng: np.random.Generator, sensitivity: float) -> ColumnProfile:
         """Releases noisy min/max for a numeric column (2 queries)."""
         self.accountant.charge(
-            MechanismSpec(name="laplace", sensitivity=self.sensitivity,
+            MechanismSpec(name="laplace", sensitivity=sensitivity,
                           noise_scale=noise_scale, steps=2),
             run_id=f"profile_range_{col}",
         )
@@ -124,8 +150,8 @@ class DPDomainProfiler:
         dp_max = max(dp_min + 1.0, float(dataset.df[col].max()) + float(noise[1]))
         return ColumnProfile(name=col, dtype="numerical", min_val=dp_min, max_val=dp_max)
 
-    def _profile_categorical(self, dataset: TabularDataset, col: str,
-                             noise_scale: float, rng: np.random.Generator) -> ColumnProfile:
+    def _profile_categorical(self, dataset: TabularDataset, col: str, noise_scale: float,
+                             rng: np.random.Generator, sensitivity: float = 1.0) -> ColumnProfile:
         """Releases a DP category domain for a categorical column (1 histogram query).
 
         A previous version charged epsilon here and then published
@@ -138,7 +164,7 @@ class DPDomainProfiler:
         value present in a single record is unlikely to survive into the domain.
         """
         self.accountant.charge(
-            MechanismSpec(name="laplace", sensitivity=self.sensitivity,
+            MechanismSpec(name="laplace", sensitivity=sensitivity,
                           noise_scale=noise_scale, steps=1),
             run_id=f"profile_domain_{col}",
         )
