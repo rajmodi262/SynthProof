@@ -17,8 +17,9 @@ from synthproof.audit.canary import CanaryAuditor
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
 from synthproof.evaluate.utility import UtilityEvaluator
-from synthproof.generators.aim import AIMGenerator
+from synthproof.generators.aim import AIMGenerator, mbi_available
 from synthproof.generators.copula import GaussianCopulaGenerator
+from synthproof.generators.independent import IndependentMarginalGenerator
 from synthproof.generators.pairwise import PairwiseMarginalGenerator
 
 DEFAULT_SEEDS = (0, 1, 2, 3, 4)
@@ -27,10 +28,15 @@ DEFAULT_EPS_GRID = (0.5, 1.0, 2.0, 4.0, 8.0)
 # Mechanism families. "independent" and "pairwise" differ in model class, which is what H1
 # compares; "copula" is a second independent-marginal implementation kept as a control.
 MECHANISMS: Dict[str, type] = {
-    "independent": AIMGenerator,
+    "independent": IndependentMarginalGenerator,
     "copula": GaussianCopulaGenerator,
     "pairwise": PairwiseMarginalGenerator,
 }
+
+# Real AIM needs private-PGM, which needs Python >= 3.11. Registered only when importable so
+# the rest of the grid still runs on an environment without it.
+if mbi_available():
+    MECHANISMS["aim"] = AIMGenerator
 
 
 @dataclass

@@ -23,8 +23,8 @@ from synthproof.audit.canary import CanaryAuditor
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
 from synthproof.evaluate.utility import UtilityEvaluator
-from synthproof.generators.aim import AIMGenerator
 from synthproof.generators.copula import GaussianCopulaGenerator
+from synthproof.generators.independent import IndependentMarginalGenerator
 
 
 @dataclass
@@ -92,7 +92,7 @@ class SweepRunner:
         profile = profiler.profile(aug_dataset, seed=self.seed)
 
         if mechanism_name.lower() in ("aim", "mst", "aim / mst"):
-            gen = AIMGenerator(seed=self.seed)
+            gen = IndependentMarginalGenerator(seed=self.seed)
         else:
             gen = GaussianCopulaGenerator(seed=self.seed)
 

@@ -5,8 +5,8 @@ import pandas as pd
 from synthproof.accounting.accountant import Accountant
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
-from synthproof.generators.aim import AIMGenerator
 from synthproof.generators.copula import GaussianCopulaGenerator
+from synthproof.generators.independent import IndependentMarginalGenerator
 
 
 def test_copula_generator_fit_and_generate():
@@ -34,7 +34,7 @@ def test_aim_generator_fit_and_generate():
     profiler = DPDomainProfiler(accountant=acc, eps_budget=0.5)
     profile = profiler.profile(ds)
 
-    gen = AIMGenerator(seed=42)
+    gen = IndependentMarginalGenerator(seed=42)
     initial_spends = len(acc.spends)
     gen.fit(ds, profile, acc, target_eps=1.0)
 

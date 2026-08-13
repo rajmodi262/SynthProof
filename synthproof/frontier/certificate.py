@@ -10,8 +10,8 @@ from synthproof.audit.canary import CanaryAuditor
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
 from synthproof.evaluate.utility import UtilityEvaluator
-from synthproof.generators.aim import AIMGenerator
 from synthproof.generators.copula import GaussianCopulaGenerator
+from synthproof.generators.independent import IndependentMarginalGenerator
 from synthproof.ledger.ledger import Ledger
 from synthproof.ledger.types import LedgerEntry
 
@@ -88,7 +88,7 @@ class FrontierEngine:
             profiler = DPDomainProfiler(accountant=acc, eps_budget=plan.profile_eps)
             profile = profiler.profile(aug_dataset, seed=self.seed)
 
-            gen = (AIMGenerator(seed=self.seed) if use_aim
+            gen = (IndependentMarginalGenerator(seed=self.seed) if use_aim
                    else GaussianCopulaGenerator(seed=self.seed))
             gen.fit(aug_dataset, profile, acc, target_eps=plan.synthesis_eps)
 

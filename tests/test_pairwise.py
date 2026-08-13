@@ -14,7 +14,7 @@ from synthproof.accounting.calibration import BudgetPlan
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
 from synthproof.data.schema import NUMERICAL, ColumnSpec, Schema
-from synthproof.generators.aim import AIMGenerator
+from synthproof.generators.independent import IndependentMarginalGenerator
 from synthproof.generators.pairwise import PairwiseMarginalGenerator
 
 
@@ -43,7 +43,7 @@ def test_pairwise_preserves_correlation_the_baseline_destroys():
     real = ds.df["x"].corr(ds.df["y"])
     assert real > 0.9
 
-    indep, _ = _synth(AIMGenerator, ds, 2.0)
+    indep, _ = _synth(IndependentMarginalGenerator, ds, 2.0)
     pair, _ = _synth(PairwiseMarginalGenerator, ds, 2.0)
 
     c_indep = abs(indep["x"].corr(indep["y"]))
