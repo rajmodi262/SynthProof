@@ -1,97 +1,147 @@
 # SynthProof — Synthetic Data That Ships With Its Proof
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![Status: research prototype](https://img.shields.io/badge/status-research%20prototype-orange.svg)](brutal_project_audit.md)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![Status: research prototype](https://img.shields.io/badge/status-research%20prototype-orange.svg)](docs/AUDIT_AND_ROADMAP.md)
 
-**SynthProof** is a research prototype for differentially private tabular synthesis. It generates
-privacy-preserving synthetic replacements, tracks every privacy expenditure in an append-only
-cryptographic ledger, and audits the released data against empirical attacks — reporting both the
-formal bound ($\epsilon_{\text{proved}}$) and an empirical lower bound recovered by canary
-auditing ($\epsilon_{\text{audited}}$).
+**SynthProof** generates differentially private synthetic tabular data, charges every
+operation that touches the sensitive table to a privacy accountant, records the spend in an
+append-only signed ledger, and audits the release against empirical attacks — reporting both
+the formal bound (ε_proved) and an empirical lower bound (ε_audited).
 
 > [!WARNING]
-> **This is an in-progress capstone prototype, not a system you should use to release real data.**
-> Several components are simplified baselines rather than the published algorithms they are named
-> after, and the formal privacy bounds are not yet sound. The current state, every known defect,
-> and the remediation plan are documented in full in **[brutal_project_audit.md](brutal_project_audit.md)**.
-> Read that before citing or reusing any number this project produces.
+> **This is a capstone research prototype, not a system for releasing real data.**
+> The privacy accounting is sound and the calibration is verified in CI, but the empirical
+> auditor's detection floor has never been measured, so `ε_audited = 0` currently means
+> "below this instrument's sensitivity", not "no leakage". Known gaps and the remediation
+> plan are in **[docs/AUDIT_AND_ROADMAP.md](docs/AUDIT_AND_ROADMAP.md)**.
 
 ---
 
-## What is actually implemented
+## What is implemented
 
 | Component | Status | Notes |
 |---|---|---|
-| **Append-only signed ledger** | ✅ Working | Ed25519 signatures over a SHA-256 hash chain, with tamper-detection tests. The most complete part of the project. |
-| **Discrete Gaussian / Laplace samplers** | ✅ Working | Correct CKS'20 rejection sampler; χ²-tested against the exact PMF. |
-| **Budget-charged domain profiler** | ⚠️ Partial | Charges budget for range discovery, but still releases the categorical domain un-noised, and assumes unjustified sensitivity. |
-| **RDP accountant** | ⚠️ Unsound | Correct API (`dry_run` / `charge` / `snapshot` / `restore`); the subsampling amplification bound is not a citable theorem. Being replaced with `dp-accounting`. |
-| **Generators** | ⚠️ Baselines only | Both are **independent-marginal samplers**. Neither is AIM/MST (no adaptive selection, no PGM) nor a real Gaussian copula (no correlation structure). |
-| **Canary auditor** | ⚠️ Simplified | Real Clopper-Pearson bound with a *measured* baseline FPR from held-out canaries. Not the full Steinke et al. (2023) one-run construction. |
-| **Attack suite** | ⚠️ 2 weak baselines | Nearest-neighbour MIA + exact-match singling-out. **LiRA, DOMIAS and attribute inference are NOT implemented.** |
-| **Utility evaluator** | ✅ Working | TSTR vs TRTR on a shared held-out real split. |
-| **Privacy Data Sheet** | ⚠️ Unsigned | Exports a real ledger hash, but carries no signature and has no third-party verifier yet. |
-| **Subgroup fairness (H2)** | ❌ Not started | |
-| **Ledger-driven allocation (H3)** | ❌ Not started | `Allocator` exists but nothing calls it. |
+| **Privacy accountant** | ✅ Working | Composition delegated to Google's `dp_accounting`. Budget enforcement, `dry_run`, `snapshot`/`restore`. |
+| **ε-calibration** | ✅ Working | Inverts the composition theorem by bisection. proved/target ≈ 0.92, **never overspends**. CI-gated across 24 configurations. |
+| **Discrete Gaussian / Laplace** | ✅ Working | CKS'20 rejection sampler, χ²-tested against the exact PMF. |
+| **DP domain profiler** | ✅ Working | Public schema bounds cost nothing; category domains released through a noisy threshold. |
+| **Append-only signed ledger** | ✅ Working | Ed25519 over a SHA-256 hash chain, tamper-tested against live SQLite. |
+| **Signed Privacy Data Sheet** | ✅ Working | Persistent key; `synthproof verify sheet.json --pubkey org.pub` is runnable by a third party. |
+| **Generators** | ✅ 3 real families | `independent` (baseline) · `pairwise` (tree-structured 2-way) · `aim` (private-PGM) · `copula` (per-column control) |
+| **Canary auditor** | ⚠️ Underpowered | Real Clopper-Pearson bound, measured FPR, Fisher exact test — but **detection floor unmeasured**, so it reads 0 everywhere. |
+| **Attack suite** | ⚠️ 1 of 4 | Nearest-neighbour MIA + exact-match singling-out. **LiRA, DOMIAS and attribute inference are NOT implemented.** |
+| **Web console** | ✅ Working | React + R3F. Live SSE pipeline, 3D record space, ledger tamper demo. |
+| **H1** — mechanism families | ✅ **Supported** | Structure and utility separate with non-overlapping CIs. See [results/H1_RESULTS.md](results/H1_RESULTS.md). Privacy half blocked on the auditor. |
+| **H2** — subgroup disparity | ❌ Not started | |
+| **H3** — ledger-driven allocation | ❌ Not started | `Allocator` exists; nothing drives generators with it. |
 
 ---
 
-## 🛠️ Quick start
+## Quick start
 
 ```bash
 pip install -e ".[dev]"
 ```
 
 ```bash
-python scripts/check_env.py
-```
-
-```bash
 python -m pytest
 ```
 
+Run a release on the built-in toy table:
+
 ```bash
-python -m synthproof.cli demo --rows 100 --eps 1.0
+python -m synthproof.cli demo --rows 200 --eps 1.0
+```
+
+Run it on your own CSV, and ship a signed data sheet:
+
+```bash
+python -m synthproof.cli keygen
 ```
 
 ```bash
-uvicorn synthproof.api.main:app --reload --port 8000
+python -m synthproof.cli run --input mydata.csv --schema myschema.json --eps 2.0 --mechanism aim --sign --out sheet.json
+```
+
+Anyone can then check that sheet with nothing but the file and your public key:
+
+```bash
+python -m synthproof.cli verify sheet.json --pubkey .keys/synthproof_ed25519.pub
 ```
 
 > [!NOTE]
-> There is currently **no way to run SynthProof on your own data** — no upload endpoint and no
-> CLI input path. Every entry point operates on a generated 100-row toy table. This is a known
-> gap, not an oversight in the docs.
+> Without `--schema`, column bounds are inferred **from your data**, which leaks. Generate a
+> starter schema with `synthproof infer-schema`, then replace each range with a publishable
+> fact about the domain before using it for a real release.
+
+## The console
+
+Two processes:
+
+```bash
+make serve
+```
+
+```bash
+cd web && npm install && npm run dev
+```
+
+Then open <http://localhost:5173>. See [web/README.md](web/README.md).
 
 ---
 
-## 📁 Repository structure
+## Repository structure
 
 ```
 synthproof/
-├── accounting/     # DP accountant (RDP composition) + discrete noise samplers
-├── ledger/         # Append-only Ed25519-signed hash-chain ledger & allocator
-├── data/           # Dataset wrapper & budget-charged domain profiler
-├── generators/     # Independent-marginal synthesis baselines
-├── audit/          # Canary privacy auditor (Clopper-Pearson lower bound)
-├── attacks/        # Distance MIA baseline, exact-match singling-out risk
+├── accounting/     # DP accountant, calibration, discrete noise samplers
+├── ledger/         # Ed25519-signed hash-chain ledger, allocator, data sheet signing
+├── data/           # Schema, dataset wrapper, benchmark loaders, DP domain profiler
+├── generators/     # independent · pairwise · aim (private-PGM) · copula
+├── audit/          # Canary auditor (Clopper-Pearson lower bound)
+├── attacks/        # Distance MIA baseline, exact-match singling-out
 ├── evaluate/       # Downstream ML utility (TSTR / TRTR)
-├── frontier/       # Privacy-utility sweep engine & Privacy Data Sheet export
+├── frontier/       # Experiment runner, Privacy Data Sheet exporter
+├── api/            # FastAPI service backing the console
 └── cli.py          # Command line interface
+web/                # React console
 ```
 
 ---
 
-## 📊 Results
+## Results
 
-See [results/RESULTS.md](results/RESULTS.md). **These are preliminary numbers on a 100-row
-synthetic toy table with a single seed** — they do **not** execute the protocol committed to in
-[docs/preregistration.md](docs/preregistration.md) (UCI Adult and ACSIncome, 5 seeds).
+See **[results/H1_RESULTS.md](results/H1_RESULTS.md)**. Regenerate with `make h1`.
+
+The headline: `pairwise` and `aim` both preserve joint structure substantially better than the
+independent baseline at ε = 8, with non-overlapping confidence intervals, and both improve as
+the budget grows while the baseline stays flat.
+
+That result required fixing our own measurement harness first — utility was being scored on a
+model trained with 60 planted canaries, which destroyed 89% of the correlation signal being
+measured and systematically penalised the mechanisms that model dependence best. Two earlier
+versions of the H1 document reported the opposite conclusion in good faith. §4 of the results
+document explains it.
 
 ---
 
-## 📜 License
+## Development
+
+```bash
+make test        # pytest with coverage
+make lint        # ruff + black, matching CI
+make security    # bandit SAST, pip-audit, npm audit
+make h1          # the H1 grid on UCI Adult (long)
+```
+
+Pull requests are reviewed by [CodeRabbit](.coderabbit.yaml), configured with this project's
+standing rules — never report a number that was not computed, a charged mechanism must be
+applied, name algorithms accurately.
+
+---
+
+## License
 
 MIT — see [LICENSE](LICENSE). © 2026-2027 SynthProof Authors
 (Raj Modi, Krishna Renuse, Aaditya Kumar Sinha, Levinesh G R).
