@@ -1,15 +1,20 @@
 """SynthProof command line interface."""
 
+import json
+from pathlib import Path
+
 import click
 
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.schema import Schema
 from synthproof.frontier.certificate import FrontierEngine
+from synthproof.frontier.experiment import MECHANISMS
+from synthproof.ledger import signing
 
 
 @click.group()
 def main():
-    """SynthProof — Synthetic Data That Ships With Its Proof."""
+    """SynthProof — synthetic data that ships with its proof."""
     pass
 
 
@@ -37,6 +42,21 @@ def _load(input_path, schema_path, rows, seed):
     return ds
 
 
+@main.command("mechanisms")
+def list_mechanisms():
+    """Lists the generators available in this environment."""
+    click.echo("Available mechanisms:\n")
+    for key in sorted(MECHANISMS):
+        click.echo(f"  {key}")
+    missing = {"aim"} - set(MECHANISMS)
+    if missing:
+        click.echo(
+            f"\nUnavailable: {', '.join(sorted(missing))}\n"
+            "  AIM needs private-pgm (package `mbi`), which requires Python >= 3.11.\n"
+            "  See docs/PYTHON311_UPGRADE.md."
+        )
+
+
 @main.command()
 @click.option("--input", "input_path", default=None, type=click.Path(exists=True),
               help="CSV file to synthesise. Omit to use the built-in toy table.")
@@ -44,24 +64,35 @@ def _load(input_path, schema_path, rows, seed):
               help="Public schema JSON declaring column kinds and numeric bounds.")
 @click.option("--eps", default=1.0, help="Total privacy budget for the release.")
 @click.option("--delta", default=1e-5, help="Target delta.")
-@click.option("--mechanism", default="AIM / MST", help="Generator to use.")
+@click.option("--mechanism", default="pairwise",
+              type=click.Choice(sorted(MECHANISMS)),
+              help="Generator to use. `synthproof mechanisms` lists what is available.")
 @click.option("--rows", default=100, help="Rows for the toy table when --input is omitted.")
 @click.option("--seed", default=42, help="Random seed.")
+@click.option("--canaries", default=30, help="Canaries planted for the audit.")
+@click.option("--sign/--no-sign", default=False,
+              help="Sign the data sheet with the persistent key (see `synthproof keygen`).")
 @click.option("--out", default=None, type=click.Path(),
               help="Write the Privacy Data Sheet JSON here.")
-def run(input_path, schema_path, eps, delta, mechanism, rows, seed, out):
+def run(input_path, schema_path, eps, delta, mechanism, rows, seed, canaries, sign, out):
     """Synthesises a dataset and emits its Privacy Data Sheet."""
     ds = _load(input_path, schema_path, rows, seed)
 
-    click.echo(f"Synthesising at total eps={eps} (delta={delta}) with {mechanism}...")
+    click.echo(f"Synthesising at total eps={eps} (delta={delta}) with '{mechanism}'...")
     datasheet = FrontierEngine(seed=seed).run_sweep(
-        ds, eps_grid=[eps], delta=delta, mechanism=mechanism
+        ds, eps_grid=[eps], delta=delta, mechanism=mechanism, num_canaries=canaries
     )
+
+    if sign:
+        try:
+            signing.sign_datasheet(datasheet)
+            click.echo("Signed with the persistent Ed25519 key.")
+        except FileNotFoundError as exc:
+            raise click.ClickException(str(exc)) from exc
 
     text = datasheet.to_json()
     if out:
-        with open(out, "w", encoding="utf-8") as f:
-            f.write(text)
+        Path(out).write_text(text, encoding="utf-8")
         click.echo(f"Privacy Data Sheet written to {out}")
     else:
         click.echo("=" * 60)
@@ -72,6 +103,62 @@ def run(input_path, schema_path, eps, delta, mechanism, rows, seed, out):
     click.echo(
         f"\nRequested eps={eps:.3f}  ->  proved eps={datasheet.total_proved_eps:.3f}"
         f"  (ratio {datasheet.total_proved_eps / eps:.3f}; calibration never overspends)"
+    )
+    if not sign:
+        click.echo("This sheet is UNSIGNED. Re-run with --sign to make it verifiable.")
+
+
+@main.command()
+@click.option("--key-dir", default=None, type=click.Path(),
+              help="Where to write the keypair. Defaults to .keys/")
+@click.option("--overwrite", is_flag=True,
+              help="Replace an existing key. Every signature it made becomes unverifiable.")
+def keygen(key_dir, overwrite):
+    """Creates the persistent Ed25519 signing key."""
+    kwargs = {"overwrite": overwrite}
+    if key_dir:
+        kwargs["key_dir"] = Path(key_dir)
+    try:
+        priv, pub = signing.generate_keypair(**kwargs)
+    except FileExistsError as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    click.echo(f"Private key: {priv}   (keep secret; .keys/ is gitignored)")
+    click.echo(f"Public key:  {pub}    (publish this)")
+    click.echo(
+        "\nAnyone with the public key can now check a signed data sheet:\n"
+        f"    synthproof verify sheet.json --pubkey {pub}"
+    )
+
+
+@main.command()
+@click.argument("datasheet", type=click.Path(exists=True))
+@click.option("--pubkey", required=True, type=click.Path(exists=True),
+              help="The public key you expect the sheet to be signed with.")
+def verify(datasheet, pubkey):
+    """Verifies a signed Privacy Data Sheet. Needs only this file and a public key.
+
+    This is the command a third party runs. It checks that the sheet was signed by the key
+    you supply and has not been altered since. It does NOT check that the epsilon is correct
+    or that the audit was run honestly — a key holder can sign wrong numbers.
+    """
+    sheet = json.loads(Path(datasheet).read_text(encoding="utf-8"))
+    try:
+        signing.verify_datasheet(sheet, key_path=Path(pubkey))
+    except signing.SignatureError as exc:
+        click.echo(click.style("FAILED", fg="red", bold=True))
+        click.echo(str(exc))
+        raise SystemExit(1) from exc
+
+    click.echo(click.style("VERIFIED", fg="green", bold=True))
+    click.echo(f"  dataset      {sheet.get('dataset_name')}  ({sheet.get('num_rows')} rows)")
+    click.echo(f"  mechanism    {sheet.get('mechanism')}")
+    click.echo(f"  eps proved   {sheet.get('total_proved_eps')}")
+    click.echo(f"  eps audited  {sheet.get('total_audited_eps')}")
+    click.echo(f"  ledger head  {sheet.get('ledger_hash', '')[:24]}...")
+    click.echo(
+        "\nThis proves the sheet came from the holder of that key and is unaltered.\n"
+        "It does not prove the numbers in it are correct."
     )
 
 
@@ -100,17 +187,20 @@ def infer_schema(input_path, out):
 @main.command()
 @click.option("--rows", default=100, help="Number of rows for the toy benchmark.")
 @click.option("--eps", default=1.0, help="Target privacy budget epsilon.")
-def demo(rows: int, eps: float):
-    """Runs a quick end-to-end SynthProof synthesis, audit, and certificate demo."""
-    click.echo(f"Running SynthProof End-to-End Demo (rows={rows}, eps={eps})...")
+@click.option("--mechanism", default="pairwise", type=click.Choice(sorted(MECHANISMS)))
+def demo(rows: int, eps: float, mechanism: str):
+    """Runs a quick end-to-end synthesis, audit, and certificate demo."""
+    click.echo(f"SynthProof demo (rows={rows}, eps={eps}, mechanism={mechanism})...")
     ds = TabularDataset.create_synthetic_toy(num_rows=rows)
-    datasheet = FrontierEngine(seed=42).run_sweep(ds, eps_grid=[eps])
+    datasheet = FrontierEngine(seed=42).run_sweep(
+        ds, eps_grid=[eps], mechanism=mechanism, num_canaries=min(20, rows // 5)
+    )
     click.echo("=" * 60)
-    click.echo("PRIVACY DATA SHEET CERTIFICATE")
+    click.echo("PRIVACY DATA SHEET")
     click.echo("=" * 60)
     click.echo(datasheet.to_json())
     click.echo("=" * 60)
-    click.echo("Demo completed successfully!")
+    click.echo("Demo completed.")
 
 
 if __name__ == "__main__":

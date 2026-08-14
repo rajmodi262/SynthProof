@@ -1,145 +1,176 @@
-# H1 — Proved vs. Audited Gap Across Mechanism Families
+# H1 — Mechanism families on UCI Adult
 
-> # ⛔ RESULTS BELOW ARE INVALIDATED — DO NOT CITE
->
-> **Superseded on 2026-08-13.** The conclusion in this document ("H1 is NOT supported on
-> UCI Adult") was an artefact of a defect in our own canary design, not a property of the
-> mechanisms.
->
-> Canaries were placed at the extreme top of *every* numeric column simultaneously, packing
-> the entire canary set into one corner of the joint distribution and fabricating correlation
-> in the training data. Measured on UCI Adult: 60 canaries shifted corr(age, hours_per_week)
-> from **0.093 to 0.334**. Mechanisms that model dependence faithfully reproduced that
-> artefact and were then scored against the *un-canaried* original — so the better a
-> mechanism was at capturing structure, the worse it scored.
->
-> After randomising the canary direction per column (shift now −0.07 to +0.01), a single-seed
-> re-check inverts the finding entirely:
->
-> | mechanism | corr err ε=1.0 | corr err ε=8.0 |
-> |---|---:|---:|
-> | independent | 0.101 | 0.097 |
-> | **pairwise** | **0.017** | **0.044** |
-> | **aim** | 0.112 | **0.018** |
->
-> **H1 now appears supported.** The full multi-seed grid must be re-run before any claim is
-> made. Nothing in the sections below should be quoted.
+> **Status: SUPPORTED, with the caveats in §5.** UCI Adult, 3 mechanism families, 3 seeds per
+> cell, bootstrapped 95% CIs. Utility and structure measured on a **canary-free second fit**.
+> Raw output: [`h1_all_families.json`](h1_all_families.json) · Runner: `scripts/run_h1.py`
+> · Regenerate with `make h1`.
+
+**H1 (preregistered):** the empirical-to-formal privacy ratio, and the utility a mechanism
+buys at fixed ε, differ across generator mechanism families.
+
+This document supersedes two earlier versions, both of which reported the opposite conclusion.
+§4 explains why they were wrong — the cause was a defect in our own measurement harness, not a
+property of the mechanisms, and it is worth reading before the numbers.
 
 ---
 
-
-> **Status: FIRST REAL RESULT.** UCI Adult, 5 seeds per cell, bootstrapped 95% CIs.
-> Reported in full, in the direction the data actually falls.
-> Raw output: [`h1_adult.json`](h1_adult.json) · Runner: `synthproof/frontier/experiment.py`
-
-## Setup
+## 1. Setup
 
 | | |
 |---|---|
-| Dataset | UCI Adult, SHA-256 verified, 30,162 complete rows; **6,000-row subsample** for runtime |
+| Dataset | UCI Adult, SHA-256 verified, 30,162 complete rows; **3,000-row subsample** for runtime |
 | Columns | 12 (4 numeric, 8 categorical); `fnlwgt` and `education_num` excluded |
 | Schema | Hand-declared public bounds (age ∈ [17,90], hours ∈ [1,99], …) |
-| Mechanisms | `independent` (1-way marginals) vs `pairwise` (tree-structured 2-way marginals) |
-| ε grid | 0.5, 1.0, 2.0, 4.0, 8.0 · δ = 1e-5 |
-| Seeds | 5 per cell · bootstrapped 95% CI (4,000 resamples) |
-| Utility target | `income` (the benchmark's own binary task) |
-| Structure metric | Mean absolute correlation error over `age` × `hours_per_week` |
-
-## Results
-
-| Mechanism | target ε | proved ε | Correlation error (95% CI) | TSTR F1 (95% CI) |
-|---|---:|---:|---|---|
-| independent | 0.5 | 0.456 | 0.112 [0.104, 0.118] | 0.451 [0.389, 0.535] |
-| independent | 1.0 | 0.912 | 0.113 [0.106, 0.118] | 0.418 [0.364, 0.481] |
-| independent | 2.0 | 1.828 | 0.112 [0.106, 0.117] | 0.445 [0.402, 0.479] |
-| independent | 4.0 | 3.664 | 0.113 [0.106, 0.117] | 0.439 [0.349, 0.528] |
-| independent | 8.0 | 7.356 | 0.112 [0.106, 0.117] | 0.465 [0.440, 0.493] |
-| pairwise | 0.5 | 0.456 | 0.091 [0.058, 0.131] | 0.458 [0.401, 0.505] |
-| pairwise | 1.0 | 0.912 | 0.108 [0.062, 0.157] | 0.469 [0.437, 0.515] |
-| pairwise | 2.0 | 1.828 | 0.133 [0.110, 0.163] | 0.387 [0.311, 0.463] |
-| pairwise | 4.0 | 3.664 | 0.128 [0.123, 0.134] | 0.411 [0.315, 0.491] |
-| pairwise | 8.0 | 7.356 | 0.139 [0.117, 0.159] | 0.496 [0.436, 0.548] |
-
-**TRTR baseline (real → held-out real): 0.678 [0.670, 0.686]**
-
-**ε_audited = 0.000 in every cell**, with audit p-values consistent with the null.
+| Mechanisms | `independent` (1-way marginals) · `pairwise` (tree-structured 2-way) · `aim` (private-PGM, adaptive selection) |
+| ε grid | 1.0, 8.0 · δ = 1e-5 |
+| Seeds | 3 per cell · bootstrapped 95% CI (4,000 resamples) |
+| Utility target | `income` — the benchmark's own binary task |
+| Structure metric | Mean absolute correlation error over `age` × `hours_per_week` (true correlation **0.093**) |
+| Canaries | 60 planted per audit fit; **utility measured on a separate fit with none** |
 
 ---
 
-## Findings
+## 2. Results
 
-### 1. Calibration holds on real data ✅
+| Mechanism | target ε | proved ε | Correlation error (95% CI) | TSTR F1 (95% CI) | MIA AUC | audit p |
+|---|---:|---:|---|---|---:|---:|
+| independent | 1.0 | 0.912 | 0.0824 [0.0579, 0.0975] | 0.377 [0.302, 0.443] | 0.489 | 0.569 |
+| independent | 8.0 | 7.356 | 0.0832 [0.0527, 0.1044] | 0.431 [0.245, 0.591] | 0.499 | 0.596 |
+| **pairwise** | 1.0 | 0.912 | **0.0298** [0.0138, 0.0490] | 0.467 [0.441, 0.517] | 0.483 | 0.476 |
+| **pairwise** | 8.0 | 7.356 | **0.0153** [0.0073, 0.0200] | 0.456 [0.441, 0.465] | 0.489 | 0.532 |
+| **aim** | 1.0 | 0.778 | 0.0790 [0.0367, 0.1239] | 0.511 [0.446, 0.570] | 0.494 | 0.541 |
+| **aim** | 8.0 | 6.543 | **0.0309** [0.0269, 0.0336] | **0.548** [0.518, 0.584] | 0.487 | 0.650 |
 
-proved/target is 0.912–0.919 across the entire grid and never exceeds 1.0. The budget
-interface behaves on a real 12-column table exactly as it does on synthetic fixtures.
+**TRTR baseline (real → held-out real): 0.704 [0.673, 0.739]**
 
-### 2. H1 is NOT supported on UCI Adult — and the reason is instructive
-
-The two mechanism families are **statistically indistinguishable** on this dataset: the CIs
-for correlation error overlap at every ε, and TSTR F1 overlaps everywhere.
-
-This is not a null caused by broken code. The cause is measurable: **the strongest numeric
-correlation in UCI Adult is only 0.103** (age × hours_per_week). The independent baseline
-scores an error of ≈0.112, which is essentially |0.103 − 0| — it simply reports no
-correlation, and when the truth is nearly no correlation that is nearly right.
-
-On a synthetic table with genuine structure the families separate dramatically:
-
-| ε | independent | pairwise | (true correlation 0.975) |
-|---:|---:|---:|---|
-| 0.5 | 0.003 ±0.013 | **0.823** ±0.016 | |
-| 8.0 | 0.003 ±0.013 | **0.948** ±0.004 | |
-
-**So the honest statement of the finding is conditional:** modelling pairwise dependence
-buys a large amount when dependence exists, and nothing measurable when the signal is weaker
-than the DP noise floor. UCI Adult's numeric columns are the second case.
-
-### 3. Utility gap is real and consistent
-
-TSTR ≈ 0.39–0.50 against a TRTR baseline of 0.678 — a gap of roughly 0.20–0.29 macro F1.
-Notably the gap **does not close as ε grows**, which suggests the binding constraint at this
-scale is model expressiveness, not noise.
-
-### 4. ε_audited = 0 everywhere
-
-At 60 canaries the auditor detects nothing, and reports a p-value saying so. Consistent with
-the synthetic experiments. This makes the proved-vs-audited gap **maximal but uninformative**:
-we cannot distinguish "the mechanism leaks very little" from "this auditor is underpowered
-at this canary count" without the detection-floor study (M2.2).
+**ε_audited = 0.000 in every cell**, with audit p-values consistent with the null (0.48–0.65).
 
 ---
 
-## Threats to validity
+## 3. Findings
 
-- **6,000-row subsample**, not the full 30,162. Larger n narrows CIs and may separate families.
-- **Two numeric columns** in the structure metric. `capital_gain` (91.6% zeros) and
-  `capital_loss` (95.5%) were excluded as degenerate — their sample correlations measure noise.
-- **Pairwise uses a fixed public chain**, not exponential-mechanism structure selection as in
-  MST/AIM. A data-adaptive tree would likely find whatever dependence exists.
-- **Not AIM.** `private-pgm` requires Python ≥3.11 and could not be installed here. The
-  comparison is between our two implementations, not against a published state of the art.
+### 3.1 The families separate on structure — H1 supported ✅
+
+At ε = 8 the confidence intervals **do not overlap**:
+
+```
+independent   [0.0527, 0.1044]
+aim           [0.0269, 0.0336]     entirely below independent
+pairwise      [0.0073, 0.0200]     entirely below both
+```
+
+Both dependence-modelling mechanisms reproduce the joint structure substantially better than
+the independent baseline: pairwise by **5.4×**, AIM by **2.7×**.
+
+### 3.2 The trend is now in the right direction
+
+Structured mechanisms improve as the budget grows; the baseline does not.
+
+| mechanism | ε = 1 → 8 | reading |
+|---|---|---|
+| independent | 0.0824 → 0.0832 | **flat** — it models no dependence, so extra budget buys no structure |
+| pairwise | 0.0298 → 0.0153 | **halves** |
+| aim | 0.0790 → 0.0309 | **improves 2.6×** |
+
+That the baseline is flat is the control working. It never preserves correlation, so
+contamination could neither flatter nor penalise it — and it doesn't move.
+
+### 3.3 AIM buys utility; pairwise buys structure
+
+AIM has the best downstream utility (TSTR **0.548** at ε = 8, against a TRTR ceiling of 0.704
+— a gap of 0.16), while pairwise has the lowest correlation error. They optimise different
+things: AIM adaptively selects whichever marginal is currently worst approximated across all
+12 columns, whereas pairwise measures a fixed public chain that happens to include the pair
+this structure metric scores.
+
+**This is a real caveat, not a footnote.** The structure metric looks at one column pair. A
+mechanism that spends budget on that specific pair will win it. A workload-wide fidelity
+metric would likely rank these two differently, and §5 records it as a threat to validity.
+
+### 3.4 AIM's proved ε is lower, and that is not free
+
+AIM composes to 6.543 where the others reach 7.356 at the same target, because it spends 25%
+of its synthesis budget on the exponential-mechanism-equivalent selection step. It therefore
+achieves its results at a **11% smaller actual privacy spend** than the mechanisms it is
+compared against — which makes its structure result slightly understated relative to the
+others, not overstated.
+
+### 3.5 ε_audited is still 0 everywhere ⚠️
+
+Unchanged, and still the project's biggest open gap. At 60 canaries the auditor detects
+nothing and reports p-values saying so. **We cannot yet distinguish "the mechanisms leak very
+little" from "this auditor is underpowered at this canary count."**
+
+Until the detection-floor study lands, the proved-versus-audited gap is *maximal but
+uninformative*, and no claim about the ratio ε_audited/ε_proved should be made from this
+table. Only the utility and structure halves of H1 are answered here.
+
+---
+
+## 4. Why the two earlier versions were wrong
+
+Both previous runs reported that the families were indistinguishable, and the 13 Aug run had
+pairwise getting *worse* as the budget grew (0.110 → 0.196 → 0.236). That is backwards, and it
+was our harness.
+
+`run_cell` fitted **one** model on the canary-augmented split and used it for everything.
+Canaries are extreme by construction, and 60 of them move the joint distribution:
+
+```
+corr(age, hours_per_week)   fit split        0.1014
+                            + 60 canaries    0.0109     89% of the signal destroyed
+```
+
+The generator was therefore trained on a table with almost no correlation and scored against
+one that had it. Mechanisms that model dependence faithfully reproduced the flattened
+structure and were penalised for it; the independent baseline, which reports no correlation
+either way, was unaffected. **The better a mechanism was, the worse it scored.**
+
+The 13 Aug fix randomised the canary direction per column. That removed a *different* artefact
+(canaries clustered in one corner, inflating correlation to 0.334) and changed the sign of the
+bias, but not its size.
+
+The fix in this run: fit **twice** — once on the augmented split for the audit, once on the
+clean split for utility and structure. Isolated on a synthetic table with true correlation
+0.975:
+
+| mechanism | ε | contaminated | decoupled |
+|---|---:|---:|---:|
+| independent | 1.0 | 0.9769 | 0.9776 |
+| independent | 8.0 | 0.9804 | 0.9778 |
+| pairwise | 1.0 | 0.2283 | 0.1880 |
+| pairwise | 8.0 | 0.1098 | **0.0459** |
+
+The baseline is unchanged; pairwise improves 58% at ε = 8.
+
+**The methodological point is worth more than the result.** A measurement instrument that
+systematically penalises the thing it is trying to detect will produce a confident null, and
+nothing about the null looks wrong from the outside. Both earlier documents reported that null
+in good faith.
+
+---
+
+## 5. Threats to validity
+
+- **ε_audited = 0 throughout.** The privacy half of H1 is untested. See §3.5.
+- **The structure metric is one column pair.** `capital_gain` (91.6% zeros) and
+  `capital_loss` (95.5%) are degenerate and excluded, leaving only `age` × `hours_per_week`.
+  A mechanism that happens to measure that pair is advantaged — see §3.3.
+- **3,000-row subsample**, not the full 30,162. Larger n narrows CIs.
+- **3 seeds and 2 ε points**, against 5 seeds and 5 points in the preregistration.
+- **Weak true correlation (0.093).** The separation is real but small in absolute terms; the
+  synthetic check in §4 shows the effect is far larger when dependence is strong.
 - **One dataset.** The preregistration also commits to ACS PUMS.
-- **Audit is underpowered**, per finding 4.
+- **`pairwise` uses a fixed public chain**, not data-adaptive structure selection, so it pays
+  nothing for structure while AIM does.
 
-## Bugs found and fixed while producing this result
+---
 
-Recording these because each silently corrupted results before it was caught:
-
-1. **Canary planting dropped the schema**, so the augmented dataset lost its public bounds and
-   the profiler fell back to noisy min/max.
-2. **Canaries were placed outside the public domain** (age ≈ 250 against a declared [17, 90]),
-   stretching the profiled range to [17, 300] and compressing every real record into a few
-   bins. This alone accounted for pairwise correlation error appearing to *increase* with ε.
-3. **Public ranges were being re-estimated under noise** rather than used directly, producing
-   degenerate ranges of width 1.
-4. **The utility target defaulted to `workclass`** (7 classes, 73% majority) instead of the
-   benchmark's `income` task, pinning macro F1 near chance for every mechanism.
-
-## Next
+## 6. Next
 
 | | Task |
 |---|---|
-| M1.4 | ACS PUMS — more columns, stronger dependence, subgroup labels for H2 |
-| M2.2 | Detection-floor study, so ε_audited = 0 becomes interpretable |
-| M1.8 | Real AIM on Python 3.11+, for a published-SOTA comparison |
-| — | Full 30,162-row run |
+| **M2.2** | **Detection-floor study — the blocker.** Sweep canary count against a known-leaky mechanism until the auditor fires, so ε_audited = 0 becomes a calibrated statement instead of an absence |
+| M1.4 | ACS PUMS — a second dataset, stronger dependence, subgroup labels for H2 |
+| — | Full grid: 5 seeds × 5 ε values on all 30,162 rows |
+| — | A workload-wide fidelity metric, so §3.3's single-pair caveat goes away |

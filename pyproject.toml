@@ -61,8 +61,6 @@ line-length = 100
 select = ["E", "F", "B", "I"]
 
 [tool.ruff.lint.per-file-ignores]
-# Emits a markdown results table whose header row is legitimately wider than 100 chars.
-"scripts/run_sweep.py" = ["E501"]
 # B008 flags function calls in argument defaults. FastAPI's dependency injection is
 # *expressed* that way — `file: UploadFile = File(...)` is the documented idiom, not an
 # accident — so the rule does not apply to route handlers.

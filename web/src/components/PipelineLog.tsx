@@ -18,6 +18,7 @@ const STAGE_LABELS: Record<StageName, string> = {
   fit: 'Fit mechanism',
   generate: 'Sample synthetic',
   audit: 'Canary audit',
+  utility_fit: 'Re-fit without canaries',
   utility: 'Downstream utility',
   attack: 'Membership inference',
 }
@@ -64,6 +65,10 @@ function summarise(e: StageEvent): string {
       return `ε spent ${n('eps_spent')} · ${i('charges')} charges to the accountant`
     case 'generate':
       return `${i('rows')} synthetic rows`
+    case 'utility_fit':
+      return e.source === 'clean_fit'
+        ? 'second fit on the clean split, so utility is measured canary-free'
+        : 'reusing the canary-trained fit — utility figures are contaminated'
     case 'audit':
       return `ε audited ${n('audited_eps')} · TPR ${n('tpr', 2)} vs FPR ${n('fpr', 2)} · p ${n('p_value')}`
     case 'utility':
