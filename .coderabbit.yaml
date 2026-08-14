@@ -1,0 +1,247 @@
+# CodeRabbit configuration for SynthProof.
+# Schema: https://docs.coderabbit.ai/reference/yaml-template
+#
+# This project's failure mode is not ordinary bugs — it is *plausible-looking dishonesty*:
+# metrics that were never computed, mechanisms charged but never applied, classes named after
+# algorithms they do not implement. Two self-audits found eleven such defects. The review
+# instructions below encode the standing rules adopted after those audits, so the reviewer is
+# looking for the specific way this codebase goes wrong rather than for generic code smells.
+#
+# See docs/AUDIT_AND_ROADMAP.md §7 for the rules in their original form.
+
+language: en-US
+
+tone_instructions: >-
+  Be direct and technical. Prioritise correctness of privacy accounting and honesty of
+  reported numbers over style. Flag any claim the code cannot support.
+
+reviews:
+  # This codebase makes formal guarantees. A quiet reviewer is the wrong trade here.
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  collapse_walkthrough: false
+  suggested_labels: true
+  suggested_reviewers: false
+
+  path_filters:
+    # Vendored and generated trees. Without these the reviewer spends its budget on
+    # third-party source and build output instead of on our code.
+    - "!.venv311/**"
+    - "!**/node_modules/**"
+    - "!**/.ruff_cache/**"
+    - "!**/__pycache__/**"
+    - "!synthproof/api/console/**"      # Vite build output
+    - "!synthproof.egg-info/**"
+    - "!data/**"                        # datasets and archives, not source
+    - "!**/*.lock"
+    - "!web/package-lock.json"
+    - "!**/*.woff"
+    - "!**/*.woff2"
+    - "!**/*.pdf"
+    - "!**/*.docx"
+
+  path_instructions:
+    - path: "synthproof/accounting/**"
+      instructions: >-
+        This is the privacy-critical core. Apply these checks strictly.
+
+        1. NEVER ACCEPT AN UNCITABLE BOUND. Composition must be delegated to
+        `dp_accounting`. Flag any hand-derived RDP, subsampling-amplification, or
+        conversion formula that is not backed by a named theorem in a cited paper. A prior
+        version used `min(q * rho(alpha), truncated_MTZ)`, which was not a theorem and
+        under-reported epsilon by roughly 2x at q=0.01.
+
+        2. NOISE MUST NOT BE POST-PROCESSED ASYMMETRICALLY. Flag `abs()`, clipping, or
+        rounding applied to a noise sample before it is added. Clamping the RESULT to a
+        valid range is post-processing and is fine; biasing the NOISE is not, and voids
+        the guarantee. A prior version used `abs(sample_discrete_gaussian(...))`.
+
+        3. NO SILENT ZERO-NOISE PATHS. Flag any early return, threshold, or shortcut that
+        can produce deterministic output while the accountant still charges epsilon. A
+        prior `if sigma < 0.3: return zeros` did exactly this.
+
+        4. CALIBRATION MUST NEVER OVERSPEND. `calibrate_noise_scale` must return the
+        conservative side of the bracket. Flag changes to the bisection termination
+        condition that could return a scale whose achieved epsilon exceeds the target.
+
+        5. Sensitivity must be derived from a declared public bound, never asserted as 1.0
+        for an unbounded quantity.
+
+    - path: "synthproof/generators/**"
+      instructions: >-
+        1. A MECHANISM THAT IS CHARGED MUST BE APPLIED. If `accountant.charge(...)` is
+        called, the corresponding noise must actually be added to the released quantity.
+        Paying budget and then releasing an exact value is strictly worse than not paying:
+        privacy is spent AND the data leaks deterministically. Two modules did this.
+
+        2. NAME THINGS WHAT THEY ARE. A class may only be called AIM, MST, or
+        GaussianCopula if it implements that algorithm. `IndependentMarginalGenerator` was
+        called `AIMGenerator` for months while implementing independent 1-D histograms.
+        Flag any docstring or class name that overclaims.
+
+        3. Generators must read the DP-released domain from the profile, never
+        `df[col].unique()` or raw min/max from the sensitive table.
+
+        4. Every generator must compose to its `target_eps`. Flag heuristics such as
+        `noise_scale = sqrt(d) / target_eps` that are not an inversion of the composition
+        theorem.
+
+    - path: "synthproof/data/profiler.py"
+      instructions: >-
+        The profiler is the first thing that touches sensitive data, so a leak here
+        invalidates the headline epsilon regardless of what follows.
+
+        Flag any path that releases a category domain, range, or count without passing it
+        through a DP mechanism. Publishing `df[col].unique()` is the specific defect this
+        module was rewritten to fix. Rare categories must be suppressed by a noisy
+        threshold. Numeric ranges should come from the PUBLIC schema (free, sound) rather
+        than a noisy min/max over an unbounded column (unjustifiable sensitivity).
+
+    - path: "synthproof/{audit,attacks,evaluate}/**"
+      instructions: >-
+        NEVER REPORT A NUMBER THAT WAS NOT COMPUTED. This is the rule most often broken
+        here. Flag on sight:
+
+        - A metric derived as an affine function of another and presented as independent
+          (`linkability = singling_out * 0.8 + 0.05`).
+        - AUC or any statistic invented rather than computed (`auc = accuracy + 0.05`).
+        - Hardcoded "good-looking" fallback values returned when inputs do not match.
+        - Magic constants presented as statistics (a hardcoded `p_out = 0.05`, or a
+          `p_value` set to a literal).
+        - A metric whose name does not match what it computes (`fairness_drift` computed
+          as `utility_gap / 10` with no subgroups anywhere).
+
+        Baselines must be labelled as baselines. A nearest-neighbour heuristic is not
+        LiRA. Prefer AUC and TPR at low FPR over accuracy at a median threshold.
+
+        Utility evaluation must score TSTR and TRTR on the SAME held-out real split.
+        Flag any `predict()` call on the data the model was fitted on.
+
+    - path: "synthproof/frontier/**"
+      instructions: >-
+        `experiment.py::run_cell` is the canonical pipeline. Flag any new code path that
+        reimplements plant/profile/fit/audit/evaluate rather than calling it — three
+        parallel pipelines already drifted apart in this repository and produced
+        contradictory published numbers.
+
+        Watch for evaluation contamination: the generator is fitted on a canary-augmented
+        table, so scoring its output against the un-canaried original compares against a
+        reference the mechanism never saw. Sixty canaries destroy roughly 89% of UCI
+        Adult's age/hours correlation.
+
+    - path: "synthproof/api/**"
+      instructions: >-
+        The API must return only what the pipeline measured. Where a capability does not
+        exist, the response must say so explicitly rather than omitting the field and
+        letting the console imply a pass. Flag any literal metric value, any placeholder
+        result, and any endpoint that reports success for work it did not do.
+
+        Uploaded data is sensitive by definition: flag anything that writes it to disk,
+        logs it, or returns it in a response.
+
+    - path: "web/**"
+      instructions: >-
+        Every figure displayed must come from an API response. Flag hardcoded metrics,
+        static "PASSED" verdicts, and status badges that assert a state without reading
+        it — a previous console displayed four fabricated attack verdicts and a permanent
+        "CHAIN INTEGRITY: VERIFIED" banner it never checked.
+
+        Do not describe the Privacy Data Sheet as "signed" while it carries no signature.
+
+        Also check: accessible names on interactive controls, visible focus states, and
+        that no `dangerouslySetInnerHTML` is introduced.
+
+    - path: "tests/**"
+      instructions: >-
+        Tests here must assert VALUES, not shapes. A test that only checks
+        `0.0 <= x <= 1.0` or `len(df) == 50` would not have caught any of the eleven
+        defects the audits found, and such tests should be flagged as insufficient.
+
+        Every regression test should name the defect it defends against in its docstring.
+        Prefer tests that fail loudly if a fabricated metric returns.
+
+    - path: "{results,docs}/**"
+      instructions: >-
+        Every number must trace to a committed experiment with a recorded seed. Flag any
+        result stated without n, seed count, and an uncertainty estimate. Flag any claim
+        that a hypothesis is supported on the basis of a single seed. Flag prose that
+        contradicts the table it sits next to — a results footer once claimed epsilon
+        reached 70.49 while its own table showed 7.44.
+
+        Preregistered commitments must be honoured or the deviation stated explicitly.
+
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+    base_branches:
+      - master
+      - main
+
+  tools:
+    # ---- security -------------------------------------------------------------
+    gitleaks:
+      enabled: true          # committed secrets and keys
+    semgrep:
+      enabled: true          # SAST across Python and TypeScript
+    osvScanner:
+      enabled: true          # known CVEs in declared dependencies
+    checkov:
+      enabled: true          # Dockerfile and docker-compose misconfiguration
+    hadolint:
+      enabled: true          # Dockerfile correctness
+    actionlint:
+      enabled: true          # GitHub Actions workflow correctness
+    zizmor:
+      enabled: true          # GitHub Actions *security* (injection, token scope)
+
+    # ---- correctness and style ------------------------------------------------
+    ruff:
+      enabled: true
+    biome:
+      enabled: true          # the web console
+    yamllint:
+      enabled: true
+    markdownlint:
+      enabled: true
+    shellcheck:
+      enabled: true
+
+    # ---- deliberately off -----------------------------------------------------
+    # Two Python linters disagreeing on the same line produces noise, not signal.
+    # ruff already covers what these would report.
+    flake8:
+      enabled: false
+    pylint:
+      enabled: false
+
+code_generation:
+  unit_tests:
+    path_instructions:
+      - path: "synthproof/**"
+        instructions: >-
+          Generate tests that assert correct VALUES, not shapes or ranges. A test that
+          only checks a float lies in [0, 1] is not useful here.
+
+          Prefer: comparing a sampler against its exact PMF with a goodness-of-fit test;
+          asserting a calibrated mechanism composes to its target epsilon and never
+          exceeds it; asserting a structured generator preserves a correlation the
+          independent baseline destroys; asserting an auditor recovers epsilon > 0 with
+          p < 0.05 on a deliberately leaky release and 0.0 on a clean one; asserting
+          tamper detection fails verification from the altered ledger entry onward.
+
+          Name the defect each regression test defends against in its docstring.
+
+knowledge_base:
+  learnings:
+    scope: local
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "docs/AUDIT_AND_ROADMAP.md"     # standing rules live in section 7
+      - "docs/thesis/README.md"         # house rules for reported numbers
+      - "CLAUDE.md"
+
+chat:
+  auto_reply: true

@@ -106,3 +106,20 @@ def test_rare_categories_are_suppressed_not_published():
 
     assert "unique_person" not in (profile.columns["g"].categories or [])
     assert profile.columns["g"].suppressed_categories >= 1
+
+
+def test_dataset_source_refuses_non_https_urls():
+    """Regression (bandit B310): `urlopen` honours file:/ and ftp:, so the scheme is pinned.
+
+    Without this, a caller-constructed DatasetSource could make the loader read a local
+    path instead of fetching a remote artefact.
+    """
+    from synthproof.data.datasets import DatasetSource
+
+    for bad in ("file:///etc/passwd", "ftp://example.com/a.zip", "http://example.com/a.zip"):
+        with pytest.raises(ValueError, match="must be https"):
+            DatasetSource(name="x", url=bad, sha256="", filename="a.zip")
+
+    # The real source is unaffected.
+    from synthproof.data.datasets import ADULT
+    assert ADULT.url.startswith("https://")
