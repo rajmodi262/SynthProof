@@ -6,7 +6,7 @@ is not evidence, and the preregistration commits to 5 seeds per configuration.
 """
 
 from dataclasses import asdict, dataclass, field
-from typing import Callable, Dict, List, Optional, Sequence
+from typing import Any, Callable, Dict, List, Optional, Sequence
 
 import numpy as np
 
@@ -134,10 +134,26 @@ def _mean_abs_corr_error(real, synth, cols: List[str]) -> float:
 def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
              seed: int, delta: float = 1e-5, holdout_frac: float = 0.3,
              num_canaries: int = 60, target_col: Optional[str] = None,
-             corr_cols: Optional[Sequence[str]] = None) -> Dict[str, float]:
-    """Runs one (mechanism, epsilon, seed) configuration and returns raw measurements."""
+             corr_cols: Optional[Sequence[str]] = None,
+             on_stage: Optional[Callable[[str, dict], None]] = None,
+             return_artifacts: bool = False) -> Dict[str, Any]:
+    """Runs one (mechanism, epsilon, seed) configuration and returns raw measurements.
+
+    Args:
+        on_stage: Optional callback invoked as `on_stage(name, payload)` after each pipeline
+            stage. The API's live console uses this to stream progress; it exists so the demo
+            surface drives THIS pipeline rather than reimplementing it. A fourth parallel
+            pipeline is exactly the divergence that let the sweep runner and the frontier
+            engine drift apart.
+        return_artifacts: When True, the returned dict additionally carries the fitted
+            objects (`_synth`, `_fit_df`, `_holdout_df`, `_profile`, `_canaries`, `_spends`)
+            under underscore-prefixed keys. Numeric keys are unchanged either way, so callers
+            that aggregate results are unaffected.
+    """
     if mechanism not in MECHANISMS:
         raise KeyError(f"Unknown mechanism {mechanism!r}. Known: {sorted(MECHANISMS)}")
+
+    emit = on_stage if on_stage is not None else (lambda *_a, **_k: None)
 
     rng = np.random.default_rng(seed)
     idx = rng.permutation(len(dataset.df))
@@ -145,21 +161,39 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
     holdout_df = dataset.df.iloc[idx[:n_hold]].reset_index(drop=True)
     fit_df = dataset.df.iloc[idx[n_hold:]].reset_index(drop=True)
     fit_ds = TabularDataset(fit_df, name=dataset.name, schema=dataset.schema)
+    emit("split", {"fit_rows": len(fit_df), "holdout_rows": len(holdout_df)})
 
     plan = BudgetPlan.split(target_eps, delta=delta, profile_frac=0.1)
     acc = Accountant(budget_eps=target_eps * 1.02, budget_delta=delta)
+    emit("budget", {"total_eps": target_eps, "profile_eps": plan.profile_eps,
+                    "synthesis_eps": plan.synthesis_eps, "delta": delta})
 
     auditor = CanaryAuditor(num_canaries=num_canaries, seed=seed)
     aug_ds, canary_set = auditor.plant_canaries(fit_ds)
+    emit("canaries", {"planted": num_canaries, "holdout": num_canaries})
 
     profiler = DPDomainProfiler(accountant=acc, eps_budget=plan.profile_eps)
     profile = profiler.profile(aug_ds, seed=seed)
+    emit("profile", {
+        "eps_spent": float(acc.total()),
+        "eps_remaining": float(acc.remaining()),
+        "suppressed_categories": int(sum(c.suppressed_categories
+                                         for c in profile.columns.values())),
+        "public_ranges": int(sum(1 for c in profile.columns.values() if c.is_public_range)),
+    })
 
     gen = MECHANISMS[mechanism](seed=seed)
     gen.fit(aug_ds, profile, acc, target_eps=plan.synthesis_eps)
-    synth = gen.generate(num_samples=dataset.num_rows)
+    emit("fit", {"eps_spent": float(acc.total()), "eps_remaining": float(acc.remaining()),
+                 "charges": len(acc.spends)})
+
+    synth = gen.generate(num_samples=len(fit_df))
+    emit("generate", {"rows": len(synth)})
 
     audit = auditor.audit(synth, canary_set)
+    emit("audit", {"audited_eps": float(audit.audited_eps), "tpr": float(audit.tpr),
+                   "fpr": float(audit.fpr), "p_value": float(audit.p_value)})
+
     # Defaulting to categorical_cols[0] picked `workclass` on UCI Adult — 7 classes, 73%
     # majority — which is not the benchmark's prediction task and produced macro-F1 near
     # chance for every mechanism, hiding any real difference. Callers should name the target.
@@ -168,10 +202,15 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
     if target_col is None:
         raise ValueError("Utility evaluation needs a categorical target column.")
     util = UtilityEvaluator(target_col=target_col, seed=seed).evaluate(dataset.df, synth)
+    emit("utility", {"tstr_f1": float(util.tstr_macro_f1),
+                     "trtr_f1": float(util.trtr_macro_f1)})
+
     mia = DistanceMIABaseline(seed=seed, max_records=400).evaluate(
         synth, train_df=fit_ds.df, test_df=holdout_df)
+    emit("attack", {"auc": float(mia.auc), "advantage": float(mia.advantage),
+                    "tpr_at_1pct_fpr": float(mia.tpr_at_1pct_fpr)})
 
-    return {
+    out: Dict[str, Any] = {
         "proved_eps": float(acc.total()),
         "audited_eps": float(audit.audited_eps),
         "audit_p": float(audit.p_value),
@@ -183,6 +222,14 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
             list(corr_cols) if corr_cols is not None
             else informative_numeric_columns(dataset.df, dataset.numerical_cols)),
     }
+
+    if return_artifacts:
+        out.update({
+            "_synth": synth, "_fit_df": fit_ds.df, "_holdout_df": holdout_df,
+            "_profile": profile, "_canaries": canary_set, "_spends": acc.spends,
+            "_audit": audit, "_mia": mia,
+        })
+    return out
 
 
 def run_grid(dataset: TabularDataset,

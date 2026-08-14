@@ -27,6 +27,7 @@ dependencies = [
     "pydantic>=2.0.0",
     "fastapi>=0.100.0",
     "uvicorn>=0.22.0",
+    "python-multipart>=0.0.9",   # required by the /api/upload form endpoint
     "click>=8.1.0"
 ]
 
@@ -38,7 +39,9 @@ dev = [
     "hypothesis>=6.80.0",
     "ruff>=0.1.0",
     "black>=23.7.0",
-    "mypy>=1.5.0"
+    "mypy>=1.5.0",
+    "bandit>=1.7.5",    # Python SAST
+    "pip-audit>=2.7.0"  # known CVEs in resolved dependencies
 ]
 
 [project.scripts]
@@ -60,7 +63,19 @@ select = ["E", "F", "B", "I"]
 [tool.ruff.lint.per-file-ignores]
 # Emits a markdown results table whose header row is legitimately wider than 100 chars.
 "scripts/run_sweep.py" = ["E501"]
+# B008 flags function calls in argument defaults. FastAPI's dependency injection is
+# *expressed* that way — `file: UploadFile = File(...)` is the documented idiom, not an
+# accident — so the rule does not apply to route handlers.
+"synthproof/api/main.py" = ["B008"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --cov=synthproof --cov-report=term-missing"
+
+[tool.bandit]
+# Vendored environments and build output are not our code.
+exclude_dirs = [".venv311", "web", "synthproof/api/console", "build", "dist"]
+# B101 (assert_used) fires on every pytest assertion. Asserts are the point of a test
+# suite, so the rule is disabled for `tests/` via the CI invocation rather than here,
+# where it would also excuse asserts in library code.
+skips = []
