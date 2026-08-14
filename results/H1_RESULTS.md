@@ -95,15 +95,30 @@ achieves its results at a **11% smaller actual privacy spend** than the mechanis
 compared against — which makes its structure result slightly understated relative to the
 others, not overstated.
 
-### 3.5 ε_audited is still 0 everywhere ⚠️
+### 3.5 ε_audited is 0 everywhere — and we now know exactly why ⚠️
 
-Unchanged, and still the project's biggest open gap. At 60 canaries the auditor detects
-nothing and reports p-values saying so. **We cannot yet distinguish "the mechanisms leak very
-little" from "this auditor is underpowered at this canary count."**
+The detection-floor study ([`DETECTION_FLOOR.md`](DETECTION_FLOOR.md)) has since measured what
+the auditor can see, and the answer disqualifies the privacy half of this table.
 
-Until the detection-floor study lands, the proved-versus-audited gap is *maximal but
-uninformative*, and no claim about the ratio ε_audited/ε_proved should be made from this
-table. Only the utility and structure halves of H1 are answered here.
+These runs use **m = 60 canaries**. At that count:
+
+- **Floor.** The auditor detects nothing below roughly 25% verbatim copying — a bar every DP
+  mechanism clears trivially.
+- **Ceiling.** `ε_audited = log(TPR_lo / FPR_hi)` from Clopper-Pearson intervals is bounded by
+  the sample size. At m = 60 the maximum reportable value is ≈ **2.7**, measured against a
+  release that is 100% verbatim training data with TPR 1.00 and FPR 0.00.
+
+The proved ε here is **7.36**.
+
+> **The gap was structurally guaranteed.** The instrument could not have reported
+> `ε_audited > 2.7` at this canary count even if a mechanism had published its training set
+> verbatim. The observed "7.36 versus 0.00" is a property of the measurement, not of the
+> mechanisms.
+
+**No claim about ε_audited / ε_proved is made from this table, and none should be.** Only the
+utility and structure halves of H1 are answered here. The privacy half is blocked on M2.1 —
+the full Steinke one-run construction — not merely on a larger canary count, since even
+m = 800 only lifts the ceiling to 5.38.
 
 ---
 

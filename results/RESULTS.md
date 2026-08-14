@@ -10,23 +10,29 @@
 
 | Result | Status | Document |
 |---|---|---|
-| **H1** — mechanism families | ✅ Supported on structure and utility; the privacy half is blocked on the auditor | [`H1_RESULTS.md`](H1_RESULTS.md) |
+| **Auditor validation** | ✅ Detection floor and ceiling measured; controls hold | [`DETECTION_FLOOR.md`](DETECTION_FLOOR.md) |
+| **H1** — mechanism families | ✅ Supported on structure and utility; the privacy half is **disqualified** by the auditor's working range | [`H1_RESULTS.md`](H1_RESULTS.md) |
 | **H2** — subgroup disparity | ❌ Not started. Needs per-subgroup audits (M2.8) | — |
 | **H3** — ledger-driven allocation | ❌ Not started. Needs the allocator wired into the generators (M3.5) | — |
 
 Raw output: [`h1_all_families.json`](h1_all_families.json).
 Regenerate everything in this directory with `make h1`.
 
-## The one number that is not yet interpretable
+## The one number that is not interpretable, and why
 
 `ε_audited = 0.000` in every cell of every experiment this project has run. The auditor is a
-real instrument — it recovers ε > 0 with p < 0.05 against a deliberately leaky release, and a
-test asserts that — but its **detection floor has never been measured**. Until it has, a
-proved-versus-audited gap of "7.36 versus 0.00" is an instrument reading its own noise floor,
-not a finding about differential privacy.
+real instrument — the positive and negative controls both hold, and CI enforces them — but
+[the floor study](DETECTION_FLOOR.md) shows its working range does not cover the regime we
+need.
+
+At the 60 canaries these experiments use, the auditor cannot detect leakage below ~25%
+verbatim copying, and **cannot report an epsilon above ~2.7 even against a release that is
+100% training data**. The proved epsilon is 7.36. The gap was guaranteed by the measurement
+before any mechanism ran.
 
 No claim about the ratio ε_audited / ε_proved appears anywhere in this repository, and none
-should until M2.2 lands.
+should until M2.1 (the full Steinke one-run construction) lands. Raising the canary count is
+not sufficient: m = 800 only lifts the ceiling to 5.38.
 
 ## How to read anything here
 

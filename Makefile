@@ -1,4 +1,4 @@
-.PHONY: help install test lint format h1 demo serve data console console-build \
+.PHONY: help install test lint format h1 floor demo serve data console console-build \
         console-install security audit docker-build docker-up
 
 help:
@@ -12,6 +12,7 @@ help:
 	@echo "    make format          Format with black"
 	@echo "    make data            Fetch UCI Adult and verify its SHA-256"
 	@echo "    make h1              Run the H1 grid on UCI Adult (long)"
+	@echo "    make floor           Measure the auditor's detection floor (long)"
 	@echo "    make demo            CLI end-to-end synthesis and audit"
 	@echo ""
 	@echo "  Console (needs Node 20+)"
@@ -55,6 +56,11 @@ data:
 # sweep this replaces ran 100 independent rows and measured nothing.
 h1:
 	python -m scripts.run_h1
+
+# Measures what the auditor can actually see. Every eps_audited in this repo is
+# uninterpretable without it.
+floor:
+	python -m scripts.run_detection_floor
 
 demo:
 	python -m synthproof.cli demo --rows 100 --eps 1.0

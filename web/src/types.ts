@@ -67,6 +67,11 @@ export interface AuditResult {
   num_members: number
   num_holdout: number
   confidence: number
+  /** Largest epsilon this auditor could report at this canary count. */
+  ceiling: number
+  /** Smallest known leak fraction detectable at this canary count, or null. */
+  detects_leak_above: number | null
+  range_note: string
 }
 
 export interface AttackResult {

@@ -151,6 +151,41 @@ MECHANISM_INFO = {
     },
 }
 
+# Measured by scripts/run_detection_floor.py on UCI Adult, n=3000, 5 seeds, alpha=0.05.
+# See results/DETECTION_FLOOR.md. These are the auditor's WORKING RANGE, and without them a
+# reported `eps_audited = 0` is indistinguishable from a broken instrument.
+#
+# The ceiling matters more than the floor: eps_audited = log(TPR_lo / FPR_hi) from
+# Clopper-Pearson intervals is bounded by the canary count alone, so there is a maximum value
+# the audit can report even against a release that is 100% verbatim training data.
+AUDIT_CEILING_BY_CANARIES = {10: 0.81, 25: 1.84, 50: 2.57, 100: 3.28,
+                             200: 3.98, 400: 4.68, 800: 5.38}
+
+# Smallest canary count that reliably detected each known leak fraction.
+AUDIT_DETECTION_FLOOR = {1.0: 10, 0.25: 400, 0.05: None, 0.01: None}
+
+
+def audit_ceiling(num_canaries: int) -> float:
+    """Largest epsilon the auditor could report at this canary count.
+
+    Interpolated between measured points; extrapolated conservatively past the ends. A
+    reported `eps_audited` at or near this value means the instrument is saturated, not that
+    the mechanism leaks exactly that much.
+    """
+    points = sorted(AUDIT_CEILING_BY_CANARIES.items())
+    if num_canaries <= points[0][0]:
+        return points[0][1] * num_canaries / points[0][0]
+    if num_canaries >= points[-1][0]:
+        return points[-1][1]
+    # Deliberately unequal lengths — this is a pairwise sliding window over `points`, so
+    # strict=True would raise on every call.
+    for (m0, c0), (m1, c1) in zip(points, points[1:], strict=False):
+        if m0 <= num_canaries <= m1:
+            t = (num_canaries - m0) / (m1 - m0)
+            return round(c0 + t * (c1 - c0), 3)
+    return points[-1][1]
+
+
 NOT_IMPLEMENTED_ATTACKS = [
     {"name": "LiRA", "reason": "Needs 64+ shadow models; scheduled for milestone M2."},
     {"name": "DOMIAS", "reason": "Density-ratio MIA for synthetic data; scheduled for M2."},
@@ -462,6 +497,20 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
                 "tpr_lower": audit.tpr_lower, "fpr_upper": audit.fpr_upper,
                 "p_value": audit.p_value, "num_members": audit.num_members,
                 "num_holdout": audit.num_holdout, "confidence": audit.confidence,
+                # The instrument's working range at THIS canary count. Without it a
+                # reported zero reads as "no leakage" when it means "below what this
+                # instrument resolves" — the exact misreading the project exists to stop.
+                "ceiling": audit_ceiling(req.num_canaries),
+                "detects_leak_above": next(
+                    (f for f, m in sorted(AUDIT_DETECTION_FLOOR.items())
+                     if m is not None and m <= req.num_canaries), None),
+                "range_note": (
+                    f"At {req.num_canaries} canaries this auditor cannot report an epsilon "
+                    f"above ~{audit_ceiling(req.num_canaries):.2f}, even against a release "
+                    "that is 100% verbatim training data. A value of 0 means 'below this "
+                    "instrument's resolution', not 'no leakage'. See "
+                    "results/DETECTION_FLOOR.md."
+                ),
             },
             "attack": {
                 "name": "Distance MIA baseline", "auc": mia.auc,

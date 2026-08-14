@@ -50,6 +50,27 @@ export function BoundsGauge({
           transition={{ type: 'spring', stiffness: 90, damping: 20 }}
         />
 
+        {/* The auditor's ceiling. Above this line the instrument physically cannot report,
+            regardless of how much the mechanism leaks. Drawing it is what stops the gap
+            from being read as evidence about the mechanism. */}
+        {audit && audit.ceiling < scale && (
+          <div
+            className="absolute top-4 flex -translate-x-1/2 flex-col items-center"
+            style={{ left: pct(audit.ceiling) }}
+          >
+            <div
+              className="h-9 w-px"
+              style={{
+                backgroundImage:
+                  'repeating-linear-gradient(to bottom, #8A93A6 0 3px, transparent 3px 6px)',
+              }}
+            />
+            <span className="mt-1 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.1em] text-graphite-faint">
+              audit ceiling
+            </span>
+          </div>
+        )}
+
         {/* audited marker */}
         <motion.div
           className="absolute top-5 flex -translate-x-1/2 flex-col items-center"
@@ -98,14 +119,29 @@ export function BoundsGauge({
         </div>
       </div>
 
-      {undetected && (
+      {undetected && audit && (
         <div className="mt-3 border-t border-stage-line pt-3">
           <p className="text-[11px] leading-relaxed text-graphite-faint">
             <span className="font-mono text-audited-lift">ε_audited = 0</span> means the audit
-            found no statistically significant leakage
-            {audit ? ` (p = ${audit.p_value.toFixed(3)}, ${audit.num_members} canaries)` : ''} —
-            not that leakage is absent. This auditor&rsquo;s detection floor has not yet been
-            measured, so the gap above is currently uninformative.
+            found no statistically significant leakage (p = {audit.p_value.toFixed(3)},{' '}
+            {audit.num_members} canaries) — <strong className="font-medium">not</strong> that
+            leakage is absent.
+          </p>
+          <p className="mt-2 text-[11px] leading-relaxed text-graphite-faint">
+            At this canary count the instrument cannot report above{' '}
+            <span className="tnum font-mono text-bone">ε ≈ {audit.ceiling.toFixed(2)}</span>{' '}
+            even against a release that is 100% verbatim training data
+            {proved > audit.ceiling && (
+              <>
+                , which is <strong className="font-medium text-bone">below the proved bound
+                of {proved.toFixed(2)}</strong>. The gap above is therefore a property of the
+                measurement, not of the mechanism
+              </>
+            )}
+            .{' '}
+            {audit.detects_leak_above !== null
+              ? `It detects leakage above roughly ${(audit.detects_leak_above * 100).toFixed(0)}% verbatim copying.`
+              : 'No leak level tested was reliably detectable at this count.'}
           </p>
         </div>
       )}

@@ -126,6 +126,27 @@ jobs:
           npm audit --omit=dev --audit-level=moderate
           npm audit --audit-level=moderate || echo "::warning::dev-only advisories present"
 
+  # The auditor is the instrument behind every privacy claim this project makes, and its
+  # failure mode is silent: a blind auditor reports 0.00, which is also what a correct auditor
+  # reports on a good mechanism. The first self-audit found exactly that and it went unnoticed.
+  # These two controls are what separate "no leakage detected" from "nothing was measured".
+  auditor-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: |
+          python -m pip install --upgrade pip setuptools
+          pip install -e ".[dev]"
+      - name: Positive and negative controls must both hold
+        run: |
+          pytest tests/test_detection_floor.py -q \
+            -k "detects_a_verbatim_release or does_not_fire or monotone" \
+            --no-cov
+
   # The headline claim of this project is that a requested epsilon is the epsilon you get.
   # If that regresses, everything downstream — every certificate, every published number —
   # becomes false. It is worth its own job.
