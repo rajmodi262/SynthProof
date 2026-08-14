@@ -15,8 +15,9 @@ authors = [
     {name = "Aaditya Kumar Sinha", email = "aaditya.sinha@mitwpu.edu.in"},
     {name = "Levinesh G R", email = "levinesh.gr@mitwpu.edu.in"}
 ]
-# Only packages actually imported by the codebase are listed. torch, opacus, autodp,
-# duckdb and pyarrow were previously declared but had zero imports anywhere.
+# Only packages actually imported by the codebase are listed. torch, opacus, duckdb and
+# pyarrow were previously declared here with zero imports anywhere. autodp was too, and is
+# now a DEV dependency because a test genuinely uses it -- see the differential test.
 dependencies = [
     "numpy>=1.24.0",
     "pandas>=2.0.0",
@@ -41,7 +42,11 @@ dev = [
     "black>=23.7.0",
     "mypy>=1.5.0",
     "bandit>=1.7.5",    # Python SAST
-    "pip-audit>=2.7.0"  # known CVEs in resolved dependencies
+    "pip-audit>=2.7.0", # known CVEs in resolved dependencies
+    # A SECOND, independent DP accounting implementation. Used only by the differential
+    # test: agreement between dp_accounting and autodp is evidence our composed epsilon is
+    # right; agreement of our code with itself is not. The test skips if it is absent.
+    "autodp>=0.2.3"
 ]
 
 [project.scripts]

@@ -424,3 +424,36 @@ def test_destructive_ledger_endpoints_are_refused_outside_demo_mode(monkeypatch)
     assert client.post(
         "/api/ledger/tamper", json={"entry_id": "x", "eps_spent": 0.1}
     ).status_code == 403
+
+
+def test_audit_result_reports_the_instruments_working_range():
+    """A reported epsilon of 0 is meaningless without the range that produced it.
+
+    The floor study (results/DETECTION_FLOOR.md) measured that at 60 canaries the auditor
+    cannot report above ~2.7 even against a 100%-verbatim release, while the proved epsilon
+    in the H1 experiments is 7.36. Shipping the zero without the ceiling is how a structural
+    limit gets read as evidence about a mechanism.
+    """
+    from synthproof.api.main import audit_ceiling
+
+    events = _run(num_canaries=50)
+    done = next(p for e, p in events if e == "done")
+    a = done["audit"]
+
+    assert a["ceiling"] == pytest.approx(audit_ceiling(50))
+    assert a["audited_eps"] <= a["ceiling"] + 1e-9, "audit exceeded its own ceiling"
+    assert "resolution" in a["range_note"] or "resolves" in a["range_note"]
+
+
+def test_audit_ceiling_is_monotone_in_canary_count():
+    """More canaries must never buy a looser bound."""
+    from synthproof.api.main import audit_ceiling
+
+    counts = [10, 25, 50, 60, 100, 200, 400, 800, 5000]
+    ceilings = [audit_ceiling(m) for m in counts]
+    assert ceilings == sorted(ceilings)
+    # The measured anchors are reproduced exactly.
+    assert audit_ceiling(10) == pytest.approx(0.81)
+    assert audit_ceiling(800) == pytest.approx(5.38)
+    # Past the measured grid it saturates rather than extrapolating optimistically.
+    assert audit_ceiling(5000) == pytest.approx(5.38)
