@@ -57,6 +57,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # gitleaks scans a COMMIT RANGE, so it needs the parent of the first commit in the
+          # push. The default shallow clone (depth 1) does not contain it, and the action
+          # fails with "ambiguous argument <sha>^..<sha>" — which looks like a leak but is
+          # git plumbing. Full history is what makes the scan meaningful anyway: a secret
+          # that was committed and later removed is still in the history and still leaked.
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
