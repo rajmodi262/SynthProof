@@ -812,35 +812,41 @@ ul.clean li b{color:var(--ink)}
 
     <div class="status-list">
       <div class="status-row"><span class="lbl">Privacy accountant
-        <span class="sub">Migrated to dp_accounting — replaced an unsound subsampling bound that under-reported ε by ~2×</span></span>
+        <span class="sub">dp_accounting for composition; cross-checked against autodp to within 0.05% across 12 configurations</span></span>
         <span class="pill done">Built</span></div>
-      <div class="status-row"><span class="lbl">ε-calibration
-        <span class="sub">Binary-search inversion; target ε now achieved to &lt;1e-4 relative, always conservative</span></span>
+      <div class="status-row"><span class="lbl">&#949;-calibration
+        <span class="sub">Binary-search inversion. proved/target = 0.92 on real data, never above 1.0. CI-gated across 24 configurations</span></span>
         <span class="pill done">Built</span></div>
       <div class="status-row"><span class="lbl">Signed append-only ledger
         <span class="sub">Ed25519 over SHA-256 chain; tamper tests mutate and delete rows directly in SQLite</span></span>
         <span class="pill done">Built</span></div>
       <div class="status-row"><span class="lbl">Discrete noise samplers
-        <span class="sub">CKS'20 rejection sampler, χ²-tested against the exact PMF</span></span>
+        <span class="sub">CKS'20 rejection sampler, &#967;&#178;-tested against the exact PMF</span></span>
         <span class="pill done">Built</span></div>
       <div class="status-row"><span class="lbl">DP domain profiler
-        <span class="sub">Category domain now released under a DP threshold instead of verbatim</span></span>
-        <span class="pill part">Partial</span></div>
-      <div class="status-row"><span class="lbl">Canary auditor
-        <span class="sub">Real Clopper-Pearson with a measured null; simplified vs. the full Steinke construction</span></span>
-        <span class="pill part">Partial</span></div>
+        <span class="sub">Public schema bounds cost nothing; category domains released under a noisy threshold</span></span>
+        <span class="pill done">Built</span></div>
       <div class="status-row"><span class="lbl">Generator bank
-        <span class="sub">Independent-marginal baseline only — AIM and a true copula are M1</span></span>
-        <span class="pill part">Baseline</span></div>
+        <span class="sub">4 mechanisms: independent, per-column Gaussian, pairwise tree, and real AIM on private-PGM</span></span>
+        <span class="pill done">Built</span></div>
+      <div class="status-row"><span class="lbl">Signed data sheet + third-party verifier
+        <span class="sub">Persistent key; <code>synthproof verify sheet.json --pubkey org.pub</code>. Editing any field fails verification</span></span>
+        <span class="pill done">Built</span></div>
+      <div class="status-row"><span class="lbl">Auditor, and its working range
+        <span class="sub">One-run Steinke construction, positive AND negative controls in CI. Its ceiling is measured: 2.97 at m=60</span></span>
+        <span class="pill done">Built</span></div>
+      <div class="status-row"><span class="lbl">H1 &#8212; mechanism families
+        <span class="sub">Supported on structure and utility, non-overlapping CIs. The privacy half is disqualified by the audit ceiling</span></span>
+        <span class="pill done">Answered</span></div>
+      <div class="status-row"><span class="lbl">H2 &#8212; subgroup disparity
+        <span class="sub">Run and reported as NOT supported: direction consistent, nothing significant at this canary budget</span></span>
+        <span class="pill part">Null result</span></div>
       <div class="status-row"><span class="lbl">Attack range
-        <span class="sub">2 weak baselines; LiRA, DOMIAS and attribute inference are M2</span></span>
-        <span class="pill part">2 of 4</span></div>
-      <div class="status-row"><span class="lbl">Certificate signing + verifier
-        <span class="sub">Ledger head is real; the sheet itself is not yet signed</span></span>
-        <span class="pill todo">M3</span></div>
-      <div class="status-row"><span class="lbl">Real datasets · H2 · H3
-        <span class="sub">Toy data only so far; subgroup and allocator studies not started</span></span>
-        <span class="pill todo">M1–M3</span></div>
+        <span class="sub">Distance MIA + DOMIAS + exact-match singling out. LiRA and attribute inference are not implemented</span></span>
+        <span class="pill part">3 of 5</span></div>
+      <div class="status-row"><span class="lbl">Second dataset &#183; H3
+        <span class="sub">ACS PUMS not run; the allocator study is not started</span></span>
+        <span class="pill todo">Open</span></div>
     </div>
 
     <div class="kv-inline">
