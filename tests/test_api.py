@@ -17,6 +17,20 @@ from synthproof.api.main import app
 client = TestClient(app)
 
 
+@pytest.fixture(autouse=True)
+def _isolated_ledger():
+    """Resets the process-wide ledger around every test.
+
+    `GLOBAL_LEDGER` is module state shared by the whole suite. Without this, a test's
+    assertions about entry counts or chain validity depend on which tests ran before it,
+    and a tamper test leaves the chain broken for everything after it. Order-dependent
+    tests fail in confusing ways under `-p xdist` or `--lf`.
+    """
+    client.post("/api/ledger/reset")
+    yield
+    client.post("/api/ledger/reset")
+
+
 def _sse_events(text: str):
     """Parses an SSE response body into (event, payload) pairs."""
     out = []
@@ -252,3 +266,155 @@ def test_index_serves_a_pointer_when_the_console_is_not_built():
     res = client.get("/")
     assert res.status_code == 200
     assert "SynthProof" in res.text
+
+
+# ------------------------------------------------------------------ hardening
+
+def test_run_reports_the_reference_it_scored_against():
+    """Utility and structure must declare which table they were compared to.
+
+    Scoring against the full original table mixed in holdout rows the generator never saw.
+    The reference is now the fit split, and it is reported so no consumer can present
+    `correlation_error` as a clean fidelity measurement.
+    """
+    events = _run(num_canaries=15)
+    done = next(p for e, p in events if e == "done")
+
+    assert done["measurements"]["reference"] == "fit_split"
+    assert done["evaluation"]["reference"] == "fit_split"
+    # The fit was contaminated by planted canaries; the fraction must be disclosed.
+    frac = done["evaluation"]["canary_fraction"]
+    assert 0.0 < frac < 1.0
+    assert "canary" in done["evaluation"]["caveat"].lower()
+
+
+def test_spends_agree_with_the_reported_total_epsilon():
+    """The per-charge breakdown must reconcile with the headline number.
+
+    Composition is sublinear, so the total is NOT the sum of the marginals — but the last
+    charge's cumulative figure is by definition the total.
+    """
+    events = _run()
+    done = next(p for e, p in events if e == "done")
+    spends = done["spends"]
+
+    assert spends, "a release that charged nothing is not a release"
+    assert spends[-1]["computed_eps"] == pytest.approx(
+        done["measurements"]["proved_eps"], rel=1e-9
+    )
+    # Cumulative epsilon is monotone across charges.
+    totals = [s["computed_eps"] for s in spends]
+    assert totals == sorted(totals)
+
+
+def test_uploads_never_touch_the_filesystem(tmp_path, monkeypatch):
+    """The property the upload endpoint is built around, asserted rather than commented.
+
+    This service receives sensitive tables by definition. Persisting one silently is the
+    exact habit the project argues against, so any write during an upload is a failure.
+    """
+    opened: list = []
+    real_open = io.open
+
+    def tracking_open(file, mode="r", *args, **kwargs):
+        if any(m in str(mode) for m in ("w", "a", "x", "+")):
+            opened.append(str(file))
+        return real_open(file, mode, *args, **kwargs)
+
+    monkeypatch.setattr(io, "open", tracking_open)
+    monkeypatch.setattr("builtins.open", tracking_open)
+
+    csv = "a,b\n" + "".join(f"{i},{i * 2}\n" for i in range(50))
+    res = client.post(
+        "/api/upload",
+        files={"file": ("secret.csv", io.BytesIO(csv.encode()), "text/csv")},
+    )
+    assert res.status_code == 200
+    assert opened == [], f"upload wrote to disk: {opened}"
+
+
+def test_upload_rejects_a_malformed_schema_without_a_500():
+    """A caller-supplied schema is untrusted input, not a trusted structure."""
+    csv = "a,b\n1,2\n3,4\n"
+    for bad in ("{not json", '{"columns": [{"name": "a"}]}', "[]"):
+        res = client.post(
+            "/api/upload",
+            files={"file": ("x.csv", io.BytesIO(csv.encode()), "text/csv")},
+            params={"schema_json": bad},
+        )
+        assert res.status_code == 400, f"{bad!r} produced {res.status_code}"
+
+
+def test_upload_store_is_bounded():
+    """Uploaded tables must not accumulate for the lifetime of the process."""
+    from synthproof.api.main import _MAX_UPLOADS, _UPLOADS
+
+    csv = "a,b\n" + "".join(f"{i},{i}\n" for i in range(20))
+    ids = []
+    for i in range(_MAX_UPLOADS + 3):
+        res = client.post(
+            "/api/upload",
+            files={"file": (f"f{i}.csv", io.BytesIO(csv.encode()), "text/csv")},
+        )
+        ids.append(res.json()["id"])
+
+    assert len(_UPLOADS) <= _MAX_UPLOADS
+    # Oldest evicted first, newest retained.
+    assert ids[-1] in _UPLOADS
+    assert ids[0] not in _UPLOADS
+
+
+def test_sse_serialiser_refuses_to_stringify_an_unknown_type():
+    """Regression: `default=str` turned a numpy float into a quoted string silently.
+
+    The console would then render "0.093" where it expected a number, with no error
+    anywhere. In a project about trustworthy numbers, a silent coercion in the transport
+    is the wrong failure mode.
+    """
+    import numpy as np
+
+    from synthproof.api.main import _json_default, _sse
+
+    assert _json_default(np.float64(0.5)) == 0.5
+    assert isinstance(_json_default(np.float64(0.5)), float)
+    assert _json_default(np.int64(3)) == 3
+
+    with pytest.raises(TypeError, match="not JSON-serialisable"):
+        _json_default(object())
+
+    # A well-formed payload still round-trips.
+    frame = _sse("stage", {"stage": "fit", "eps_spent": np.float64(0.25)})
+    assert '"eps_spent": 0.25' in frame
+
+
+def test_histograms_expose_out_of_range_synthetic_mass():
+    """Renormalising over in-range mass alone would hide out-of-domain output."""
+    events = _run()
+    done = next(p for e, p in events if e == "done")
+
+    for col, hist in done["histograms"].items():
+        assert len(hist["real"]) == len(hist["synthetic"]), col
+        assert len(hist["edges"]) == len(hist["real"]) + 1, col
+        assert 0.0 <= hist["synthetic_out_of_range"] <= 1.0, col
+        # Mass must not be rescaled back up to 1 when values fall outside the range.
+        assert sum(hist["synthetic"]) <= 1.0 + 1e-6, col
+
+
+def test_destructive_ledger_endpoints_are_refused_outside_demo_mode(monkeypatch):
+    """These endpoints destroy audit records and must not be reachable by default.
+
+    Against a file-backed ledger they would be unauthenticated remote primitives for
+    rewriting a spend and deleting the entire history.
+    """
+    import synthproof.api.main as api_main
+
+    monkeypatch.setattr(api_main, "DEMO_MODE", False)
+    assert client.post("/api/ledger/reset").status_code == 403
+    assert client.post(
+        "/api/ledger/tamper", json={"entry_id": "x", "eps_spent": 0.1}
+    ).status_code == 403
+
+    # Demo mode on, but pointed at a persistent database: still refused.
+    monkeypatch.setattr(api_main, "DEMO_MODE", True)
+    monkeypatch.setattr(api_main, "_LEDGER_DB", "/tmp/real-ledger.db")
+    assert client.post("/api/ledger/reset").status_code == 403

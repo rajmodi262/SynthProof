@@ -170,7 +170,13 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
 
     auditor = CanaryAuditor(num_canaries=num_canaries, seed=seed)
     aug_ds, canary_set = auditor.plant_canaries(fit_ds)
-    emit("canaries", {"planted": num_canaries, "holdout": num_canaries})
+    # Report what was actually planted, not what was requested. They coincide today, but a
+    # reported count that cannot drift from reality is worth one attribute access.
+    emit("canaries", {
+        "planted": len(canary_set.members),
+        "holdout": len(canary_set.holdout),
+        "fraction_of_fit": round(len(canary_set.members) / max(1, len(fit_df)), 5),
+    })
 
     profiler = DPDomainProfiler(accountant=acc, eps_budget=plan.profile_eps)
     profile = profiler.profile(aug_ds, seed=seed)
@@ -201,7 +207,23 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
         target_col = dataset.categorical_cols[0] if dataset.categorical_cols else None
     if target_col is None:
         raise ValueError("Utility evaluation needs a categorical target column.")
-    util = UtilityEvaluator(target_col=target_col, seed=seed).evaluate(dataset.df, synth)
+    # REFERENCE TABLE. Both metrics below score the synthetic output against `fit_ds.df`,
+    # not against `dataset.df`. Two reasons, and the choice is deliberate:
+    #
+    #   * `dataset.df` includes the holdout rows the generator never saw, so scoring against
+    #     it mixes a fidelity question with a generalisation question.
+    #   * `fit_ds.df` is the real population the mechanism was trained on. The canaries in
+    #     `aug_ds` are an audit instrument we injected, not data anyone wants reproduced.
+    #
+    # This does NOT eliminate canary contamination — the generator was still FITTED on a
+    # table containing `num_canaries` extreme rows, and on UCI Adult 60 of them move
+    # corr(age, hours_per_week) substantially. It removes the holdout leak and makes the
+    # reference the closest available match to what the mechanism saw. `canary_fraction` is
+    # returned alongside so no consumer can read `correlation_error` as a clean fidelity
+    # measurement without seeing how contaminated the fit was.
+    reference_df = fit_ds.df
+
+    util = UtilityEvaluator(target_col=target_col, seed=seed).evaluate(reference_df, synth)
     emit("utility", {"tstr_f1": float(util.tstr_macro_f1),
                      "trtr_f1": float(util.trtr_macro_f1)})
 
@@ -218,9 +240,12 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
         "trtr_f1": float(util.trtr_macro_f1),
         "mia_auc": float(mia.auc),
         "correlation_error": _mean_abs_corr_error(
-            dataset.df, synth,
+            reference_df, synth,
             list(corr_cols) if corr_cols is not None
-            else informative_numeric_columns(dataset.df, dataset.numerical_cols)),
+            else informative_numeric_columns(reference_df, fit_ds.numerical_cols)),
+        # Metadata a consumer needs in order to read the two metrics above honestly.
+        "reference": "fit_split",
+        "canary_fraction": len(canary_set.members) / max(1, len(fit_df)),
     }
 
     if return_artifacts:

@@ -42,6 +42,17 @@ export interface Measurements {
   trtr_f1: number
   mia_auc: number
   correlation_error: number
+  /** Which table utility and structure were scored against. */
+  reference: string
+  /** Planted canaries as a fraction of the fit split — how contaminated the fit was. */
+  canary_fraction: number
+}
+
+/** How to read `correlation_error` and the utility figures honestly. */
+export interface EvaluationContext {
+  reference: string
+  canary_fraction: number | null
+  caveat: string
 }
 
 export interface AuditResult {
@@ -82,6 +93,9 @@ export interface Histogram {
   edges: number[]
   real: number[]
   synthetic: number[]
+  /** Fraction of synthetic values falling outside the real column's range. */
+  synthetic_out_of_range?: number
+  real_out_of_range?: number
 }
 
 export interface Spend {
@@ -107,6 +121,7 @@ export interface LedgerRef {
 
 export interface RunResult {
   measurements: Measurements
+  evaluation: EvaluationContext
   audit: AuditResult
   attack: AttackResult
   attacks_not_implemented: NotImplementedAttack[]

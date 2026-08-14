@@ -22,8 +22,21 @@ const STAGE_LABELS: Record<StageName, string> = {
   attack: 'Membership inference',
 }
 
-/** Stages that spend privacy budget get a marker; the rest are post-processing. */
-const CHARGES: ReadonlySet<StageName> = new Set(['profile', 'fit'])
+/**
+ * Whether a stage actually charged the accountant, read from the stage payload.
+ *
+ * This was a hardcoded `Set(['profile', 'fit'])`. That is a client-side assertion about
+ * privacy accounting — the one class of claim this project exists to stop anyone making
+ * without evidence. If a future stage started charging, or `profile` stopped, the badge
+ * would keep saying whatever the constant said. The server reports `eps_spent`, so the
+ * badge is derived from a rise in it rather than from a guess.
+ */
+function chargedAmount(e: StageEvent, previousSpend: number): number | null {
+  const spend = e.eps_spent
+  if (typeof spend !== 'number') return null
+  const delta = spend - previousSpend
+  return delta > 1e-9 ? delta : null
+}
 
 function summarise(e: StageEvent): string {
   // Stage payloads are open-ended (`[key: string]: unknown`), so every field is narrowed
@@ -72,6 +85,14 @@ export function PipelineLog({
   const seen = new Set(stages.map((s) => s.stage))
   const nextPending = STAGE_ORDER.find((s) => !seen.has(s))
 
+  // Running spend, so each stage's badge reflects what it actually cost.
+  let runningSpend = 0
+  const charges = stages.map((s) => {
+    const delta = chargedAmount(s, runningSpend)
+    if (typeof s.eps_spent === 'number') runningSpend = s.eps_spent
+    return delta
+  })
+
   return (
     <div className="display flex h-full flex-col p-5">
       <div className="mb-4 flex items-center justify-between">
@@ -84,7 +105,14 @@ export function PipelineLog({
         )}
       </div>
 
-      <ol className="thin-scroll flex-1 space-y-0 overflow-y-auto">
+      {/* The log updates as the run streams. Without a live region a screen-reader user
+          gets silence for the whole run and then a finished page. */}
+      <ol
+        className="thin-scroll flex-1 space-y-0 overflow-y-auto"
+        aria-live="polite"
+        aria-relevant="additions"
+        aria-busy={running}
+      >
         <AnimatePresence initial={false}>
           {stages.map((s, i) => (
             <motion.li
@@ -101,9 +129,12 @@ export function PipelineLog({
                 <span className="flex-1 font-sans text-[13px] text-bone">
                   {STAGE_LABELS[s.stage] ?? s.stage}
                 </span>
-                {CHARGES.has(s.stage) && (
-                  <span className="rounded-[2px] border border-proved-lift/40 px-1 font-mono text-[9px] uppercase tracking-[0.1em] text-proved-lift">
-                    charged
+                {charges[i] !== null && (
+                  <span
+                    className="tnum rounded-[2px] border border-proved-lift/40 px-1 font-mono text-[9px] uppercase tracking-[0.1em] text-proved-lift"
+                    title="Increase in composed epsilon attributable to this stage"
+                  >
+                    charged +{charges[i]!.toFixed(3)}
                   </span>
                 )}
               </div>

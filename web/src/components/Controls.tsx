@@ -51,9 +51,13 @@ export function Controls({
     <div className="flex flex-col gap-4">
       {/* ---------------------------------------------------------------- data */}
       <section className="panel p-4">
-        <span className="label">Sensitive table</span>
+        {/* A bare <span> is not a label, so the select had no accessible name. */}
+        <label className="label" htmlFor="dataset-select">
+          Sensitive table
+        </label>
 
         <select
+          id="dataset-select"
           className="field mt-2"
           value={config.dataset}
           onChange={(e) => patch({ dataset: e.target.value })}

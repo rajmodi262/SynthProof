@@ -68,8 +68,13 @@ def project(
 
     # Standardise on the REAL table's moments. Using each cloud's own moments would
     # re-centre the synthetic data and hide exactly the distributional shift we want to show.
-    mu = np.nanmean(real, axis=0)
-    sd = np.nanstd(real, axis=0)
+    # An all-NaN column makes nanmean emit NaN (with a warning), which would then propagate
+    # through every cloud and render as nothing at all. `sd` was already guarded; `mu` was
+    # not, which meant the two failed differently on the same bad column.
+    with np.errstate(invalid="ignore"):
+        mu = np.nanmean(real, axis=0)
+        sd = np.nanstd(real, axis=0)
+    mu[~np.isfinite(mu)] = 0.0
     sd[~np.isfinite(sd) | (sd == 0)] = 1.0
 
     def standardise(a: np.ndarray) -> np.ndarray:
@@ -77,8 +82,10 @@ def project(
 
     real_s, synth_s, canary_s = standardise(real), standardise(synth), standardise(canary)
 
-    if len(cols) >= 3:
+    if len(cols) >= 3 and len(real_s) >= 3:
         # PCA via SVD on the real cloud; the same basis is reused for every other cloud.
+        # SVD on an empty or near-empty matrix raises LinAlgError, so the row count is
+        # checked here rather than surfacing as a 500 from inside the run stream.
         _, s, vt = np.linalg.svd(real_s - real_s.mean(axis=0), full_matrices=False)
         basis = vt[:3].T
         var = (s ** 2) / max(1.0, (len(real_s) - 1))
@@ -86,13 +93,17 @@ def project(
         method = "pca"
         to3 = lambda a: a @ basis  # noqa: E731
     else:
-        basis_cols = len(cols)
+        # Capped at 3: the target frame has three axes, and without the cap a table with
+        # more than three numeric columns but too few rows for SVD would try to assign a
+        # wider block into a 3-wide output and raise a shape error.
+        basis_cols = min(3, len(cols))
         explained = [1.0 / basis_cols] * basis_cols
         method = "columns"
 
         def to3(a: np.ndarray) -> np.ndarray:
             out = np.zeros((len(a), 3))
-            out[:, :basis_cols] = a[:, :basis_cols]
+            if len(a):
+                out[:, :basis_cols] = a[:, :basis_cols]
             return out
 
     real_3, synth_3, canary_3 = to3(real_s), to3(synth_s), to3(canary_s)
@@ -139,9 +150,20 @@ def marginal_histograms(real_df: pd.DataFrame, synthetic_df: pd.DataFrame,
         edges = np.linspace(lo, hi, bins + 1)
         r_h, _ = np.histogram(r, bins=edges)
         s_h, _ = np.histogram(s, bins=edges)
+
+        # Normalise by the TOTAL sample count, not by the in-range mass. `np.histogram`
+        # silently drops values outside `edges`, so dividing by `s_h.sum()` would rescale
+        # whatever landed in range back up to 1.0 — a generator emitting 40% of its output
+        # beyond the real column's range would plot as a perfect match. Dividing by len(s)
+        # makes that missing mass visible as a curve that does not sum to 1, and the
+        # out-of-range fraction is reported explicitly alongside.
         out[col] = {
             "edges": [round(float(e), 4) for e in edges],
-            "real": (r_h / max(1, r_h.sum())).round(5).tolist(),
-            "synthetic": (s_h / max(1, s_h.sum())).round(5).tolist(),
+            "real": (r_h / max(1, len(r))).round(5).tolist(),
+            "synthetic": (s_h / max(1, len(s))).round(5).tolist(),
+            "synthetic_out_of_range": round(
+                float(1.0 - (s_h.sum() / max(1, len(s)))), 5
+            ),
+            "real_out_of_range": round(float(1.0 - (r_h.sum() / max(1, len(r)))), 5),
         }
     return out

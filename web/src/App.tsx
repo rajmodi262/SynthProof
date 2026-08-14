@@ -53,6 +53,8 @@ export default function App() {
   const [offline, setOffline] = useState(false)
 
   const [config, setConfig] = useState<RunRequest>(DEFAULT_CONFIG)
+  // The config the displayed result was actually produced with, frozen at launch.
+  const [submitted, setSubmitted] = useState<RunRequest | null>(null)
   const [running, setRunning] = useState(false)
   const [stages, setStages] = useState<StageEvent[]>([])
   const [start, setStart] = useState<StartEvent | null>(null)
@@ -101,7 +103,13 @@ export default function App() {
     setError(null)
     setStart(null)
 
-    const cancel = runRelease(config, {
+    // Freeze the config this run was launched with. The readouts below divide the charged
+    // epsilon by the requested one; reading live `config` meant that moving the slider after
+    // a run silently recomputed the ratio against a budget that run never used.
+    const submitted = config
+    setSubmitted(submitted)
+
+    const cancel = runRelease(submitted, {
       onStart: setStart,
       onStage: (e) => setStages((prev) => [...prev, e]),
       onDone: (r) => {
@@ -287,8 +295,8 @@ export default function App() {
 
           {/* ------------------------------------------------------- readouts */}
           <div className="flex flex-col gap-4">
-            <BoundsGauge measurements={m} audit={result?.audit ?? null} targetEps={config.target_eps} />
-            <BudgetMeter spent={spent} total={config.target_eps} stage={currentStage} />
+            <BoundsGauge measurements={m} audit={result?.audit ?? null} targetEps={(submitted ?? config).target_eps} />
+            <BudgetMeter spent={spent} total={(submitted ?? config).target_eps} stage={currentStage} />
             <div className="min-h-[240px] flex-1">
               <PipelineLog stages={stages} running={running} />
             </div>
@@ -321,9 +329,9 @@ export default function App() {
           >
             <Metric
               label="Requested vs charged"
-              value={`${(m.proved_eps / config.target_eps).toFixed(3)}×`}
+              value={`${(m.proved_eps / (submitted ?? config).target_eps).toFixed(3)}×`}
               tone="proved"
-              hint={`Asked ε ${config.target_eps.toFixed(2)}, charged ${m.proved_eps.toFixed(3)}. Calibration returns the conservative bracket, so this never exceeds 1.0.`}
+              hint={`Asked ε ${(submitted ?? config).target_eps.toFixed(2)}, charged ${m.proved_eps.toFixed(3)}. Calibration returns the conservative bracket, so this never exceeds 1.0.`}
             />
             <Metric
               label="Utility gap"
@@ -334,7 +342,13 @@ export default function App() {
               label="Correlation error"
               value={m.correlation_error.toFixed(3)}
               tone="audited"
-              hint="Mean absolute error over the pairwise correlation matrix. Structured mechanisms should beat the independent baseline here."
+              hint={
+                `Mean absolute error over the pairwise correlation matrix, scored against ` +
+                `the ${result?.evaluation.reference ?? 'fit split'}. ` +
+                (result && typeof result.evaluation.canary_fraction === 'number'
+                  ? `The fit contained ${(result.evaluation.canary_fraction * 100).toFixed(1)}% planted canaries, which biases this figure — treat it as indicative, not a clean fidelity measurement.`
+                  : '')
+              }
             />
             <Metric
               label="MIA AUC"

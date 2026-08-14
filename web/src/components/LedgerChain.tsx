@@ -23,15 +23,22 @@ export function LedgerChain({
 }) {
   const [breakFrom, setBreakFrom] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const entries = ledger?.entries ?? []
 
+  // Both endpoints can legitimately refuse — they are gated behind demo mode and are
+  // rejected outright against a persistent ledger. Swallowing that into an unhandled
+  // rejection would leave the button looking like it worked.
   async function tamper(entryId: string, index: number) {
     setBusy(true)
+    setError(null)
     try {
       const res = await api.tamper(entryId)
       setBreakFrom(res.broken_from_index ?? index)
       onRefresh()
+    } catch (err) {
+      setError((err as Error).message || 'Tamper request failed.')
     } finally {
       setBusy(false)
     }
@@ -39,38 +46,56 @@ export function LedgerChain({
 
   async function reset() {
     setBusy(true)
+    setError(null)
     try {
       await api.resetLedger()
       setBreakFrom(null)
       onRefresh()
+    } catch (err) {
+      setError((err as Error).message || 'Reset request failed.')
     } finally {
       setBusy(false)
     }
   }
 
-  const verified = ledger?.verified ?? true
+  // Three states, not two. `?? true` claimed the chain was verified before any ledger state
+  // had been read — the same defect as the old console's permanent "CHAIN INTEGRITY:
+  // VERIFIED" banner, which asserted a fact it never checked.
+  const verified: boolean | null = ledger ? ledger.verified : null
 
   return (
     <section className="panel p-5">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="font-display text-xl">Privacy budget ledger</h3>
+          {/* Entries are signed, but the key is per-process and never persisted, so a
+              restart makes old signatures unverifiable. Saying "signed" without that
+              qualifier claims a durable guarantee the implementation does not provide. */}
           <p className="mt-0.5 text-[12px] text-graphite-faint">
-            Every release charged, hash-chained and Ed25519-signed.
+            Every release charged and hash-chained. Entries are Ed25519-signed with an
+            ephemeral key.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span
             className={`flex items-center gap-1.5 rounded-sm border px-2 py-1 font-mono text-2xs uppercase tracking-[0.1em] ${
-              verified
-                ? 'border-signal-ok/40 text-signal-ok'
-                : 'border-signal-bad/50 bg-signal-bad/10 text-signal-bad'
+              verified === null
+                ? 'border-bone-edge text-graphite-faint dark:border-stage-line'
+                : verified
+                  ? 'border-signal-ok/40 text-signal-ok'
+                  : 'border-signal-bad/50 bg-signal-bad/10 text-signal-bad'
             }`}
           >
             <span
-              className={`h-1.5 w-1.5 rounded-full ${verified ? 'bg-signal-ok' : 'bg-signal-bad'}`}
+              className={`h-1.5 w-1.5 rounded-full ${
+                verified === null
+                  ? 'bg-graphite-faint'
+                  : verified
+                    ? 'bg-signal-ok'
+                    : 'bg-signal-bad'
+              }`}
             />
-            {verified ? 'chain verified' : 'chain broken'}
+            {verified === null ? 'not checked' : verified ? 'chain verified' : 'chain broken'}
           </span>
           {entries.length > 0 && (
             <button className="btn-ghost !px-2.5 !py-1 !text-xs" onClick={reset} disabled={busy}>
@@ -95,6 +120,15 @@ export function LedgerChain({
             head <span className="text-graphite dark:text-bone">{ledger?.head.slice(0, 20)}…</span>
           </span>
         </div>
+      )}
+
+      {error && (
+        <p
+          role="alert"
+          className="mb-3 rounded-sm border-l-2 border-signal-bad bg-signal-bad/[0.07] p-2.5 font-mono text-[11px] text-signal-bad"
+        >
+          {error}
+        </p>
       )}
 
       {!entries.length ? (
@@ -152,7 +186,10 @@ export function LedgerChain({
                   <button
                     onClick={() => tamper(e.entry_id, i)}
                     disabled={busy}
-                    className="absolute right-2 top-2 rounded-sm border border-bone-edge bg-[#FAF9F6] px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-graphite-faint opacity-0 transition-opacity hover:border-signal-bad hover:text-signal-bad focus-visible:opacity-100 group-hover:opacity-100 dark:border-stage-line dark:bg-stage"
+                    // Every button read as just "Tamper" to a screen reader, giving no way
+                    // to tell which block was about to be altered.
+                    aria-label={`Tamper with ledger block ${i + 1}, run ${e.run_id}`}
+                    className="absolute right-2 top-2 rounded-sm border border-bone-edge bg-[#FAF9F6] px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-graphite-faint opacity-0 transition-opacity hover:border-signal-bad hover:text-signal-bad focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal-bad group-hover:opacity-100 dark:border-stage-line dark:bg-stage"
                   >
                     Tamper
                   </button>

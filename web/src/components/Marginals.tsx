@@ -10,8 +10,28 @@ import type { Histogram } from '@/types'
 function Spark({ hist, name }: { hist: Histogram; name: string }) {
   const w = 240
   const h = 56
-  const peak = Math.max(...hist.real, ...hist.synthetic, 1e-9)
-  const n = hist.real.length
+
+  // The payload is trusted nowhere else, so it is not trusted here either. Two failures
+  // were possible: an empty `real` array made `Math.max(...[])` return -Infinity and
+  // emitted NaN path coordinates (a blank chart, or a React crash); and mismatched array
+  // lengths silently plotted two series against different x-scales, which looks like a
+  // fidelity result but compares nothing.
+  const real = Array.isArray(hist.real) ? hist.real : []
+  const synthetic = Array.isArray(hist.synthetic) ? hist.synthetic : []
+  const n = real.length
+
+  if (!n || synthetic.length !== n || !Array.isArray(hist.edges) || hist.edges.length < 2) {
+    return (
+      <div>
+        <span className="font-mono text-[11px] text-graphite-soft dark:text-bone">{name}</span>
+        <p className="mt-1 font-mono text-[10px] text-graphite-faint">
+          histogram unavailable for this column
+        </p>
+      </div>
+    )
+  }
+
+  const peak = Math.max(...real, ...synthetic, 1e-9)
 
   const path = (vals: number[]) =>
     vals
@@ -39,16 +59,26 @@ function Spark({ hist, name }: { hist: Histogram; name: string }) {
         role="img"
         aria-label={`Distribution of ${name}, real versus synthetic`}
       >
-        <path d={area(hist.real)} className="fill-proved/15" />
-        <path d={path(hist.real)} className="stroke-proved" fill="none" strokeWidth="1.5" />
+        <path d={area(real)} className="fill-proved/15" />
+        <path d={path(real)} className="stroke-proved" fill="none" strokeWidth="1.5" />
         <path
-          d={path(hist.synthetic)}
+          d={path(synthetic)}
           className="stroke-audited"
           fill="none"
           strokeWidth="1.5"
           strokeDasharray="3 2"
         />
       </svg>
+
+      {/* Values outside the real column's range are dropped by the binning, so a curve can
+          legitimately sum to less than 1. Saying so beats letting it read as a shortfall. */}
+      {typeof hist.synthetic_out_of_range === 'number' &&
+        hist.synthetic_out_of_range > 0.005 && (
+          <p className="mt-0.5 font-mono text-[10px] text-audited">
+            {(hist.synthetic_out_of_range * 100).toFixed(1)}% of synthetic values fall
+            outside the real range
+          </p>
+        )}
     </div>
   )
 }

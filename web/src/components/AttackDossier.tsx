@@ -141,9 +141,12 @@ export function AttackDossier({
             </li>
           ))}
         </ul>
+        {/* "two are built" was a literal that would go stale the moment an attack landed
+            or was renamed — the same defect as any other hardcoded figure, and awkward in
+            the one panel whose job is to be honest about what exists. Counted instead. */}
         <p className="mt-2.5 text-[11px] leading-snug text-graphite-faint">
-          These are listed rather than hidden. The synopsis promises four attacks; two are
-          built, and this panel is where that difference stays visible.
+          These are listed rather than hidden. {notImplemented.length} of the attacks named
+          in the synopsis are not implemented, and this panel is where that stays visible.
         </p>
       </div>
     </section>

@@ -11,6 +11,7 @@ than reimplementing the pipeline. That is deliberate: three parallel pipelines a
 apart in this repository, and a fourth living in the web layer would be the worst of them.
 """
 
+import contextlib
 import io
 import json
 import os
@@ -18,8 +19,10 @@ import queue
 import threading
 import traceback
 import uuid
-from typing import Dict, Iterator, Optional
+from collections import OrderedDict
+from typing import Any, Iterator, Optional
 
+import numpy as np
 import pandas as pd
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -51,14 +54,67 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-GLOBAL_LEDGER = Ledger(db_path=os.environ.get("SYNTHPROOF_LEDGER_DB", ":memory:"))
+_LEDGER_DB = os.environ.get("SYNTHPROOF_LEDGER_DB", ":memory:")
+GLOBAL_LEDGER = Ledger(db_path=_LEDGER_DB)
+
+# `/api/ledger/tamper` and `/api/ledger/reset` exist to demonstrate that the chain is
+# tamper-EVIDENT. They are destructive by design: one rewrites a spend, the other deletes the
+# entire history. Against a file-backed ledger they would be unauthenticated remote primitives
+# for destroying audit records, so they are refused unless demo mode is switched on
+# deliberately, and refused outright on anything but an in-memory database.
+DEMO_MODE = os.environ.get("SYNTHPROOF_DEMO", "1" if _LEDGER_DB == ":memory:" else "0") == "1"
+
+
+@contextlib.contextmanager
+def _ledger_conn():
+    """Yields a ledger connection and closes it if it was opened for this call.
+
+    `Ledger._get_conn` returns the SHARED connection for an in-memory database and a NEW
+    one per call for a file-backed database. Closing the shared connection would drop the
+    whole in-memory database, so only per-call connections are closed — the same rule
+    `Ledger.append` and `Ledger.verify` already follow internally.
+    """
+    conn = GLOBAL_LEDGER._get_conn()
+    try:
+        yield conn
+    finally:
+        if conn is not GLOBAL_LEDGER._conn:
+            conn.close()
+
+
+def _require_demo_ledger() -> None:
+    """Refuses destructive ledger operations outside an in-memory demo."""
+    if not DEMO_MODE:
+        raise HTTPException(
+            403,
+            "Destructive ledger endpoints are disabled. Set SYNTHPROOF_DEMO=1 to enable "
+            "them, and only against a throwaway ledger.",
+        )
+    if _LEDGER_DB != ":memory:":
+        raise HTTPException(
+            403,
+            f"Refusing to modify a persistent ledger at {_LEDGER_DB!r}. These endpoints "
+            "destroy audit records and are only ever appropriate against ':memory:'.",
+        )
 
 # Uploaded tables live in memory for the session. Nothing is written to disk: this service
 # receives sensitive data by definition, and persisting it silently would be exactly the
 # habit the project exists to argue against.
-_UPLOADS: Dict[str, TabularDataset] = {}
+# Bounded and FIFO-evicting. An unbounded dict would hold every table ever uploaded for the
+# lifetime of the process — at 20k rows each that is a slow memory leak, and worse, it keeps
+# sensitive data resident long after anyone is using it.
+_UPLOADS: "OrderedDict[str, TabularDataset]" = OrderedDict()
+_MAX_UPLOADS = 8
 _MAX_UPLOAD_BYTES = 25 * 1024 * 1024
 _MAX_UPLOAD_ROWS = 20_000
+_UPLOAD_CHUNK = 1 * 1024 * 1024
+
+
+def _register_upload(upload_id: str, ds: TabularDataset) -> None:
+    """Stores an upload, evicting the oldest once the cap is reached."""
+    _UPLOADS[upload_id] = ds
+    while len(_UPLOADS) > _MAX_UPLOADS:
+        _UPLOADS.popitem(last=False)
 
 
 # --------------------------------------------------------------------------- descriptions
@@ -170,13 +226,17 @@ def mechanisms():
 
 @app.get("/api/datasets")
 def datasets():
+    # `rows` is null for anything not yet loaded rather than a literal. A hardcoded 30162
+    # would keep being reported after the pinned artefact or the drop-missing convention
+    # changed, and the console has no way to notice — which is the same class of defect as a
+    # fabricated metric, just in metadata.
     built_in = [
         {"id": "toy", "label": "Toy table (3 columns)", "rows": None, "kind": "built-in",
          "note": "Columns are drawn INDEPENDENTLY — there is no structure to preserve. "
                  "Useful for a fast demo, meaningless for utility claims."},
-        {"id": "adult", "label": "UCI Adult", "rows": 30162, "kind": "built-in",
-         "note": "SHA-256 verified on load. Hand-declared public schema; strongest numeric "
-                 "correlation is only 0.093."},
+        {"id": "adult", "label": "UCI Adult", "rows": None, "kind": "built-in",
+         "note": "SHA-256 verified on load. Hand-declared public schema. Numeric "
+                 "correlations are weak, so mechanism families may not separate on it."},
     ]
     uploads = [{"id": k, "label": v.name, "rows": v.num_rows, "kind": "upload", "note": None}
                for k, v in _UPLOADS.items()]
@@ -194,12 +254,20 @@ async def upload(file: UploadFile = File(...), schema_json: Optional[str] = None
     if not (file.filename or "").lower().endswith((".csv", ".txt")):
         raise HTTPException(400, "Upload a .csv file.")
 
-    raw = await file.read()
-    if len(raw) > _MAX_UPLOAD_BYTES:
-        raise HTTPException(413, f"File exceeds {_MAX_UPLOAD_BYTES // (1024*1024)} MB.")
+    # Read in chunks and abort as soon as the cap is passed. `await file.read()` would pull
+    # the entire body into memory FIRST and only then reject it, so a 2 GB upload is already
+    # resident by the time the 413 is raised — the limit would not limit anything.
+    buf = io.BytesIO()
+    size = 0
+    while chunk := await file.read(_UPLOAD_CHUNK):
+        size += len(chunk)
+        if size > _MAX_UPLOAD_BYTES:
+            raise HTTPException(413, f"File exceeds {_MAX_UPLOAD_BYTES // (1024 * 1024)} MB.")
+        buf.write(chunk)
+    buf.seek(0)
 
     try:
-        df = pd.read_csv(io.BytesIO(raw), skipinitialspace=True, na_values=["?", ""])
+        df = pd.read_csv(buf, skipinitialspace=True, na_values=["?", ""])
     except Exception as exc:
         raise HTTPException(400, f"Could not parse CSV: {exc}") from exc
 
@@ -210,14 +278,30 @@ async def upload(file: UploadFile = File(...), schema_json: Optional[str] = None
         df = df.sample(n=_MAX_UPLOAD_ROWS, random_state=0).reset_index(drop=True)
 
     inferred = schema_json is None
-    schema = Schema.from_dict(json.loads(schema_json)) if schema_json else \
-        Schema.infer_nonprivate(df)
+    if schema_json:
+        # A caller-supplied schema is untrusted input. Unguarded, a malformed body surfaced
+        # as a 500 from json.loads or a KeyError from from_dict.
+        try:
+            schema = Schema.from_dict(json.loads(schema_json))
+        except Exception as exc:
+            raise HTTPException(
+                400, f"Could not parse schema_json: {type(exc).__name__}: {exc}"
+            ) from exc
+    else:
+        schema = Schema.infer_nonprivate(df)
 
-    name = (file.filename or "upload").rsplit(".", 1)[0]
-    ds = TabularDataset(df, name=name, schema=schema)
+    # The filename is attacker-controlled and ends up in responses and ledger entries.
+    # Keep only the stem, and only characters that cannot be mistaken for a path.
+    raw_name = os.path.basename(file.filename or "upload").rsplit(".", 1)[0]
+    name = "".join(c for c in raw_name if c.isalnum() or c in "-_")[:64] or "upload"
+
+    try:
+        ds = TabularDataset(df, name=name, schema=schema)
+    except ValueError as exc:
+        raise HTTPException(400, f"Schema does not match the CSV: {exc}") from exc
 
     upload_id = f"upload:{uuid.uuid4().hex[:8]}"
-    _UPLOADS[upload_id] = ds
+    _register_upload(upload_id, ds)
 
     return {
         "id": upload_id,
@@ -234,8 +318,31 @@ async def upload(file: UploadFile = File(...), schema_json: Optional[str] = None
 
 # --------------------------------------------------------------------------- run (SSE)
 
+def _json_default(o: Any):
+    """Serialises numpy scalars as NUMBERS, and refuses anything else.
+
+    `default=str` would quietly turn a `numpy.float64` into a quoted string, so the console
+    would receive "0.093" where it expects 0.093 and render it without complaint. In a
+    project whose whole argument is that reported numbers must be trustworthy, a silent
+    type coercion in the transport is exactly the wrong failure mode — so unknown types
+    raise instead.
+    """
+    if isinstance(o, (np.integer,)):
+        return int(o)
+    if isinstance(o, (np.floating,)):
+        return float(o)
+    if isinstance(o, np.ndarray):
+        return o.tolist()
+    if isinstance(o, np.bool_):
+        return bool(o)
+    raise TypeError(
+        f"{type(o).__name__} is not JSON-serialisable; convert it explicitly rather than "
+        "letting it reach the console as a string."
+    )
+
+
 def _sse(event: str, payload: dict) -> str:
-    return f"event: {event}\ndata: {json.dumps(payload, default=str)}\n\n"
+    return f"event: {event}\ndata: {json.dumps(payload, default=_json_default)}\n\n"
 
 
 def _run_stream(req: RunRequest) -> Iterator[str]:
@@ -303,6 +410,10 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
         kind, name, payload = item
 
         if kind == "stage":
+            # `**payload` is merged after the stage name, so a payload key called "stage"
+            # would silently rename the stage. Nest it instead of trusting emit sites.
+            if "stage" in payload:
+                payload = {k: v for k, v in payload.items() if k != "stage"}
             yield _sse("stage", {"stage": name, **payload})
             continue
         if kind == "error":
@@ -332,8 +443,20 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
             seed=req.seed,
         ))
 
+        measurements = {k: v for k, v in payload.items() if not k.startswith("_")}
         yield _sse("done", {
-            "measurements": {k: v for k, v in payload.items() if not k.startswith("_")},
+            "measurements": measurements,
+            # Utility and structure are scored against the fit split, not the full table.
+            # Stated in the payload so the console cannot present `correlation_error` as a
+            # clean fidelity measurement without also showing how contaminated the fit was.
+            "evaluation": {
+                "reference": measurements.get("reference", "unknown"),
+                "canary_fraction": measurements.get("canary_fraction"),
+                "caveat": (
+                    "Scored against the fit split. The generator was fitted on that split "
+                    "plus planted canaries, so a high canary fraction biases these numbers."
+                ),
+            },
             "audit": {
                 "audited_eps": audit.audited_eps, "tpr": audit.tpr, "fpr": audit.fpr,
                 "tpr_lower": audit.tpr_lower, "fpr_upper": audit.fpr_upper,
@@ -419,11 +542,15 @@ def tamper(req: TamperRequest):
     hash. It does not show tamper-PROOF — anyone holding the signing key can rewrite and
     re-sign, which is why key custody is an organisational control, not a cryptographic one.
     """
-    conn = GLOBAL_LEDGER._get_conn()
-    cur = conn.execute("UPDATE ledger_entries SET eps_spent = ? WHERE entry_id = ?",
-                       (req.eps_spent, req.entry_id))
-    conn.commit()
-    if cur.rowcount == 0:
+    _require_demo_ledger()
+
+    with _ledger_conn() as conn:
+        cur = conn.execute("UPDATE ledger_entries SET eps_spent = ? WHERE entry_id = ?",
+                           (req.eps_spent, req.entry_id))
+        conn.commit()
+        rowcount = cur.rowcount
+
+    if rowcount == 0:
         raise HTTPException(404, f"No ledger entry {req.entry_id!r}.")
 
     entries = GLOBAL_LEDGER.get_entries()
@@ -441,9 +568,11 @@ def tamper(req: TamperRequest):
 @app.post("/api/ledger/reset")
 def reset_ledger():
     """Clears the in-memory chain, so the tamper demo can be run again."""
-    conn = GLOBAL_LEDGER._get_conn()
-    conn.execute("DELETE FROM ledger_entries")
-    conn.commit()
+    _require_demo_ledger()
+
+    with _ledger_conn() as conn:
+        conn.execute("DELETE FROM ledger_entries")
+        conn.commit()
     return {"verified": GLOBAL_LEDGER.verify(), "head": GLOBAL_LEDGER.get_latest_hash()}
 
 
