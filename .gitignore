@@ -52,3 +52,7 @@ data/*
 !data/CHECKSUMS.txt
 
 .venv311/
+
+# Console: npm deps and build output (regenerate with `make console-build`)
+web/node_modules/
+synthproof/api/console/
