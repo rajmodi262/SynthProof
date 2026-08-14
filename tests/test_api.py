@@ -414,7 +414,12 @@ def test_destructive_ledger_endpoints_are_refused_outside_demo_mode(monkeypatch)
         "/api/ledger/tamper", json={"entry_id": "x", "eps_spent": 0.1}
     ).status_code == 403
 
-    # Demo mode on, but pointed at a persistent database: still refused.
+    # Demo mode on, but pointed at a persistent database: still refused. The path is a
+    # sentinel that is never opened — the guard only compares it against ":memory:" — so it
+    # deliberately avoids /tmp, which bandit flags as a hardcoded temp directory (B108).
     monkeypatch.setattr(api_main, "DEMO_MODE", True)
-    monkeypatch.setattr(api_main, "_LEDGER_DB", "/tmp/real-ledger.db")
+    monkeypatch.setattr(api_main, "_LEDGER_DB", "persistent-ledger.db")
     assert client.post("/api/ledger/reset").status_code == 403
+    assert client.post(
+        "/api/ledger/tamper", json={"entry_id": "x", "eps_spent": 0.1}
+    ).status_code == 403
