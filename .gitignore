@@ -61,3 +61,7 @@ data/*
 # Console: npm deps and build output (regenerate with `make console-build`)
 web/node_modules/
 synthproof/api/console/
+
+# Thesis figures are generated; regenerate with `make figures`. The PDFs are kept for
+# typesetting, the PNGs are not committed to avoid binary churn on every re-run.
+docs/thesis/figures/*.png
