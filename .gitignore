@@ -1,25 +1,30 @@
 # Python
+#
+# The build-artifact directories below are ANCHORED with a leading slash so they match only
+# at the repository root. Unanchored, `lib/` matches at any depth — which silently excluded
+# `web/src/lib/api.ts` from a commit and broke CI with an unresolvable import. Any generic
+# directory name in this file must stay anchored, or it will eventually eat real source.
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
-venv/
-.venv/
-ENV/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
+/env/
+/venv/
+/.venv/
+/ENV/
+/build/
+/develop-eggs/
+/dist/
+/downloads/
+/eggs/
+/.eggs/
+/lib/
+/lib64/
+/parts/
+/sdist/
+/var/
+/wheels/
 *.egg-info/
 .installed.cfg
 *.egg
