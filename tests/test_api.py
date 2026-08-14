@@ -93,8 +93,8 @@ def test_datasets_flags_the_toy_table_as_structureless():
 def test_run_streams_every_stage_in_order():
     events = _run()
     stages = [p["stage"] for e, p in events if e == "stage"]
-    assert stages == ["split", "budget", "canaries", "profile", "fit",
-                      "generate", "audit", "utility", "attack"]
+    assert stages == ["split", "budget", "canaries", "profile", "fit", "generate",
+                      "audit", "utility_fit", "utility", "attack"]
 
 
 def test_run_never_charges_more_than_the_requested_budget():
@@ -282,9 +282,10 @@ def test_run_reports_the_reference_it_scored_against():
 
     assert done["measurements"]["reference"] == "fit_split"
     assert done["evaluation"]["reference"] == "fit_split"
-    # The fit was contaminated by planted canaries; the fraction must be disclosed.
-    frac = done["evaluation"]["canary_fraction"]
-    assert 0.0 < frac < 1.0
+    # Utility comes from a SECOND fit on the clean split, so the measurement itself is
+    # canary-free. A non-zero fraction here would mean the decoupling had regressed.
+    assert done["measurements"]["utility_source"] == "clean_fit"
+    assert done["evaluation"]["canary_fraction"] == 0.0
     assert "canary" in done["evaluation"]["caveat"].lower()
 
 

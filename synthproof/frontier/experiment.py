@@ -136,8 +136,14 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
              num_canaries: int = 60, target_col: Optional[str] = None,
              corr_cols: Optional[Sequence[str]] = None,
              on_stage: Optional[Callable[[str, dict], None]] = None,
-             return_artifacts: bool = False) -> Dict[str, Any]:
+             return_artifacts: bool = False,
+             separate_utility_fit: bool = True) -> Dict[str, Any]:
     """Runs one (mechanism, epsilon, seed) configuration and returns raw measurements.
+
+    Fits the mechanism TWICE by default: once on the canary-augmented split for the audit,
+    and once on the clean split for utility and structure. Measuring both from a single
+    canary-trained model is what made hypothesis H1 unmeasurable — see the comment at the
+    utility release below.
 
     Args:
         on_stage: Optional callback invoked as `on_stage(name, payload)` after each pipeline
@@ -146,9 +152,14 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
             pipeline is exactly the divergence that let the sweep runner and the frontier
             engine drift apart.
         return_artifacts: When True, the returned dict additionally carries the fitted
-            objects (`_synth`, `_fit_df`, `_holdout_df`, `_profile`, `_canaries`, `_spends`)
-            under underscore-prefixed keys. Numeric keys are unchanged either way, so callers
-            that aggregate results are unaffected.
+            objects (`_synth`, `_fit_df`, `_holdout_df`, `_profile`, `_canaries`, `_spends`,
+            `_audit`, `_mia`) under underscore-prefixed keys. `_synth` is the UTILITY release,
+            since that is the one a consumer should visualise. Numeric keys are unchanged
+            either way, so callers that aggregate results are unaffected.
+        separate_utility_fit: Fit a second, canary-free model for utility and structure.
+            Setting this False restores the single-fit behaviour and reinstates the
+            contamination; it exists for ablation and for halving the cost of a smoke test,
+            and the choice is reported back as `utility_source`.
     """
     if mechanism not in MECHANISMS:
         raise KeyError(f"Unknown mechanism {mechanism!r}. Known: {sorted(MECHANISMS)}")
@@ -178,8 +189,18 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
         "fraction_of_fit": round(len(canary_set.members) / max(1, len(fit_df)), 5),
     })
 
-    profiler = DPDomainProfiler(accountant=acc, eps_budget=plan.profile_eps)
-    profile = profiler.profile(aug_ds, seed=seed)
+    def _synthesise(source: TabularDataset, accountant: Accountant):
+        """Profiles and fits one release from `source`, returning its synthetic table."""
+        prof = DPDomainProfiler(accountant=accountant,
+                                eps_budget=plan.profile_eps).profile(source, seed=seed)
+        generator = MECHANISMS[mechanism](seed=seed)
+        generator.fit(source, prof, accountant, target_eps=plan.synthesis_eps)
+        return generator.generate(num_samples=len(fit_df)), prof
+
+    # ---------------------------------------------------------------- audit release
+    # Fitted on the canary-augmented table, because an audit needs planted canaries to
+    # detect. This release is used for the audit and the membership-inference attack ONLY.
+    audit_synth, profile = _synthesise(aug_ds, acc)
     emit("profile", {
         "eps_spent": float(acc.total()),
         "eps_remaining": float(acc.remaining()),
@@ -187,18 +208,38 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
                                          for c in profile.columns.values())),
         "public_ranges": int(sum(1 for c in profile.columns.values() if c.is_public_range)),
     })
-
-    gen = MECHANISMS[mechanism](seed=seed)
-    gen.fit(aug_ds, profile, acc, target_eps=plan.synthesis_eps)
     emit("fit", {"eps_spent": float(acc.total()), "eps_remaining": float(acc.remaining()),
                  "charges": len(acc.spends)})
+    emit("generate", {"rows": len(audit_synth)})
 
-    synth = gen.generate(num_samples=len(fit_df))
-    emit("generate", {"rows": len(synth)})
-
-    audit = auditor.audit(synth, canary_set)
+    audit = auditor.audit(audit_synth, canary_set)
     emit("audit", {"audited_eps": float(audit.audited_eps), "tpr": float(audit.tpr),
                    "fpr": float(audit.fpr), "p_value": float(audit.p_value)})
+
+    # ---------------------------------------------------------------- utility release
+    # A SECOND, independent fit on the clean split, used for utility and structure.
+    #
+    # This is the fix for the contamination that made H1 unmeasurable. Canaries are extreme
+    # by construction, and enough of them move the joint distribution: measured on UCI Adult,
+    # 60 canaries drop corr(age, hours_per_week) from 0.101 to 0.011. Scoring a
+    # canary-trained model against any clean reference therefore penalises exactly the
+    # mechanisms that model dependence well, because they faithfully reproduce an artefact we
+    # injected. Randomising the canary direction changed the sign of that bias but not its
+    # size.
+    #
+    # These are two measurements of one mechanism CONFIGURATION, not two releases of one
+    # dataset — an experiment asking "what does this mechanism do at this epsilon", not a
+    # data holder publishing twice. Each fit gets its own accountant and composes to the same
+    # epsilon by construction, since the calibration inputs are identical.
+    if separate_utility_fit:
+        util_acc = Accountant(budget_eps=target_eps * 1.02, budget_delta=delta)
+        util_synth, _ = _synthesise(fit_ds, util_acc)
+        utility_source = "clean_fit"
+    else:
+        util_acc, util_synth = acc, audit_synth
+        utility_source = "audit_fit"
+    emit("utility_fit", {"source": utility_source,
+                         "eps_spent": float(util_acc.total())})
 
     # Defaulting to categorical_cols[0] picked `workclass` on UCI Adult — 7 classes, 73%
     # majority — which is not the benchmark's prediction task and produced macro-F1 near
@@ -207,28 +248,21 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
         target_col = dataset.categorical_cols[0] if dataset.categorical_cols else None
     if target_col is None:
         raise ValueError("Utility evaluation needs a categorical target column.")
-    # REFERENCE TABLE. Both metrics below score the synthetic output against `fit_ds.df`,
-    # not against `dataset.df`. Two reasons, and the choice is deliberate:
-    #
-    #   * `dataset.df` includes the holdout rows the generator never saw, so scoring against
-    #     it mixes a fidelity question with a generalisation question.
-    #   * `fit_ds.df` is the real population the mechanism was trained on. The canaries in
-    #     `aug_ds` are an audit instrument we injected, not data anyone wants reproduced.
-    #
-    # This does NOT eliminate canary contamination — the generator was still FITTED on a
-    # table containing `num_canaries` extreme rows, and on UCI Adult 60 of them move
-    # corr(age, hours_per_week) substantially. It removes the holdout leak and makes the
-    # reference the closest available match to what the mechanism saw. `canary_fraction` is
-    # returned alongside so no consumer can read `correlation_error` as a clean fidelity
-    # measurement without seeing how contaminated the fit was.
+    # The reference is the clean fit split: the real population the mechanism was trained
+    # on, and — unlike `dataset.df` — free of the holdout rows it never saw. With
+    # `separate_utility_fit` the synthetic side is now canary-free too, so both sides of the
+    # comparison describe the same population.
     reference_df = fit_ds.df
 
-    util = UtilityEvaluator(target_col=target_col, seed=seed).evaluate(reference_df, synth)
+    util = UtilityEvaluator(target_col=target_col, seed=seed).evaluate(
+        reference_df, util_synth)
     emit("utility", {"tstr_f1": float(util.tstr_macro_f1),
                      "trtr_f1": float(util.trtr_macro_f1)})
 
+    # The MIA runs against the AUDIT release. It asks whether training membership is
+    # recoverable, which is a question about the release that actually contained the members.
     mia = DistanceMIABaseline(seed=seed, max_records=400).evaluate(
-        synth, train_df=fit_ds.df, test_df=holdout_df)
+        audit_synth, train_df=fit_ds.df, test_df=holdout_df)
     emit("attack", {"auc": float(mia.auc), "advantage": float(mia.advantage),
                     "tpr_at_1pct_fpr": float(mia.tpr_at_1pct_fpr)})
 
@@ -240,17 +274,22 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
         "trtr_f1": float(util.trtr_macro_f1),
         "mia_auc": float(mia.auc),
         "correlation_error": _mean_abs_corr_error(
-            reference_df, synth,
+            reference_df, util_synth,
             list(corr_cols) if corr_cols is not None
             else informative_numeric_columns(reference_df, fit_ds.numerical_cols)),
         # Metadata a consumer needs in order to read the two metrics above honestly.
         "reference": "fit_split",
-        "canary_fraction": len(canary_set.members) / max(1, len(fit_df)),
+        "utility_source": utility_source,
+        "canary_fraction": (0.0 if separate_utility_fit
+                            else len(canary_set.members) / max(1, len(fit_df))),
     }
 
     if return_artifacts:
         out.update({
-            "_synth": synth, "_fit_df": fit_ds.df, "_holdout_df": holdout_df,
+            # `_synth` is the UTILITY release — the canary-free one a console should show.
+            # `_audit_synth` is the canary-trained release the audit ran against.
+            "_synth": util_synth, "_audit_synth": audit_synth,
+            "_fit_df": fit_ds.df, "_holdout_df": holdout_df,
             "_profile": profile, "_canaries": canary_set, "_spends": acc.spends,
             "_audit": audit, "_mia": mia,
         })

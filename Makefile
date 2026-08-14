@@ -1,4 +1,4 @@
-.PHONY: help install test lint format sweep demo serve data console console-build \
+.PHONY: help install test lint format h1 demo serve data console console-build \
         console-install security audit docker-build docker-up
 
 help:
@@ -11,7 +11,7 @@ help:
 	@echo "    make security        bandit SAST + pip-audit CVEs + npm audit"
 	@echo "    make format          Format with black"
 	@echo "    make data            Fetch UCI Adult and verify its SHA-256"
-	@echo "    make sweep           Run experimental sweeps, update results/RESULTS.md"
+	@echo "    make h1              Run the H1 grid on UCI Adult (long)"
 	@echo "    make demo            CLI end-to-end synthesis and audit"
 	@echo ""
 	@echo "  Console (needs Node 20+)"
@@ -51,8 +51,10 @@ data:
 	python -c "from synthproof.data.datasets import ADULT, fetch; \
 	           print('verified ->', fetch(ADULT))"
 
-sweep:
-	python -m scripts.run_sweep
+# The H1 grid on UCI Adult -- the experiment the preregistration commits to. The toy
+# sweep this replaces ran 100 independent rows and measured nothing.
+h1:
+	python -m scripts.run_h1
 
 demo:
 	python -m synthproof.cli demo --rows 100 --eps 1.0

@@ -44,6 +44,8 @@ export interface Measurements {
   correlation_error: number
   /** Which table utility and structure were scored against. */
   reference: string
+  /** 'clean_fit' when utility came from a second, canary-free fit. */
+  utility_source: string
   /** Planted canaries as a fraction of the fit split — how contaminated the fit was. */
   canary_fraction: number
 }
@@ -151,6 +153,7 @@ export const STAGE_ORDER = [
   'fit',
   'generate',
   'audit',
+  'utility_fit',
   'utility',
   'attack',
 ] as const

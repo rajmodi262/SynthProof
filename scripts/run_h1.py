@@ -1,5 +1,10 @@
 """Runs the H1 grid across all available mechanism families and writes the result.
 
+H1: the ratio of empirical audited privacy loss to the formal bound differs across generator
+mechanism families at equal target epsilon. Testing it needs a structure metric that can
+actually separate the families, which is why the contamination fix matters more here than
+anywhere else in the project — see `run_cell`'s utility-release comment.
+
 Usage (must be an environment with private-pgm for `aim` to be included):
     .venv311/Scripts/python.exe -m scripts.run_h1
 """
@@ -11,7 +16,7 @@ from synthproof.data.datasets import load_adult
 from synthproof.frontier.experiment import MECHANISMS, run_grid
 
 N_ROWS = 3000
-EPS_GRID = (1.0, 4.0, 8.0)
+EPS_GRID = (1.0, 8.0)
 SEEDS = (0, 1, 2)
 TARGET_COL = "income"
 CORR_COLS = ("age", "hours_per_week")
@@ -26,6 +31,7 @@ def main():
     print(f"dataset: UCI Adult n={ds.num_rows} x {ds.num_cols}")
     print(f"mechanisms: {mechs}")
     print(f"true corr{CORR_COLS} = {true_corr:.4f}")
+    print("utility measured on a SECOND, canary-free fit (contamination fix)")
     if "aim" not in mechs:
         print("WARNING: private-pgm unavailable, so real AIM is NOT in this run.")
 
@@ -36,11 +42,13 @@ def main():
     elapsed = time.time() - t0
 
     print(f"\ncompleted in {elapsed:.0f}s\n")
-    hdr = f"{'mech':<13}{'eps':>5} {'proved':>8} {'corr err (95% CI)':>26} {'TSTR F1 (95% CI)':>24}"
+    hdr = (f"{'mech':<13}{'eps':>5} {'proved':>8} "
+           f"{'corr err (95% CI)':>26} {'TSTR F1 (95% CI)':>24} {'audited':>9}")
     print(hdr)
     for r in res:
         print(f"{r.mechanism:<13}{r.target_eps:>5.1f} {r.proved_eps.mean:>8.3f} "
-              f"{str(r.correlation_error):>26} {str(r.tstr_f1):>24}")
+              f"{str(r.correlation_error):>26} {str(r.tstr_f1):>24} "
+              f"{r.audited_eps.mean:>9.3f}")
     print(f"\nTRTR baseline: {res[0].trtr_f1}")
 
     payload = {
@@ -51,6 +59,7 @@ def main():
         "seeds": list(SEEDS),
         "target_col": TARGET_COL,
         "true_correlation": float(true_corr),
+        "utility_measured_on": "clean_fit",
         "elapsed_seconds": round(elapsed, 1),
         "cells": [r.to_dict() for r in res],
     }
