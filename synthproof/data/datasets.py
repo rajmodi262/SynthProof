@@ -34,6 +34,17 @@ class DatasetSource:
     sha256: str
     filename: str
 
+    def __post_init__(self) -> None:
+        # `urlopen` honours whatever scheme it is given, including `file:` and `ftp:`. A
+        # dataset source is always a remote HTTPS artefact, so anything else is either a
+        # typo or an attempt to make the loader read a local path. Rejecting it here means
+        # the scheme cannot be smuggled in through a caller-constructed DatasetSource.
+        if not self.url.startswith("https://"):
+            raise ValueError(
+                f"Dataset {self.name!r}: url must be https, got {self.url!r}. "
+                "Other schemes (file:, ftp:) are refused."
+            )
+
     def verify(self, blob: bytes) -> None:
         got = hashlib.sha256(blob).hexdigest()
         if self.sha256 and got != self.sha256:
@@ -116,7 +127,9 @@ def fetch(source: DatasetSource, data_dir: str = DEFAULT_DATA_DIR,
             source.verify(f.read())
         return path
 
-    with urllib.request.urlopen(source.url, timeout=120) as resp:
+    # Scheme is pinned to https by DatasetSource.__post_init__, so this cannot be
+    # redirected to file:/ftp:. nosec B310 records that the check is deliberate.
+    with urllib.request.urlopen(source.url, timeout=120) as resp:  # nosec B310
         blob = resp.read()
     source.verify(blob)
 

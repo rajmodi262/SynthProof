@@ -1,0 +1,113 @@
+@import '@fontsource/instrument-serif/400.css';
+@import '@fontsource/instrument-serif/400-italic.css';
+@import '@fontsource/geist-sans/400.css';
+@import '@fontsource/geist-sans/500.css';
+@import '@fontsource/geist-sans/600.css';
+@import '@fontsource/geist-mono/400.css';
+@import '@fontsource/geist-mono/500.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --ground: #f0efea;
+    --ink: #22242e;
+    --rule: #d2cfc4;
+    --surface: #faf9f6;
+  }
+
+  .dark {
+    --ground: #15161c;
+    --ink: #e7e7ec;
+    --rule: #2f313d;
+    --surface: #1b1d25;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    @apply font-sans antialiased;
+  }
+
+  /* Digits that sit in columns must not shimmy as they update. Every readout in this
+     console is a live number, so this is load-bearing rather than cosmetic. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid theme('colors.proved.DEFAULT');
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: theme('colors.proved.DEFAULT');
+    color: white;
+  }
+
+  /* Scrollbars inside the dark stage panels should not punch a light hole in them. */
+  .thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+  .thin-scroll::-webkit-scrollbar-track { background: transparent; }
+  .thin-scroll::-webkit-scrollbar-thumb {
+    background: theme('colors.stage.line');
+    border-radius: 3px;
+  }
+}
+
+@layer components {
+  .label {
+    @apply font-mono text-2xs uppercase tracking-[0.12em] text-graphite-faint;
+  }
+
+  .panel {
+    @apply rounded-sm border border-bone-edge bg-[#FAF9F6] shadow-panel
+           dark:border-stage-line dark:bg-[#1B1D25];
+  }
+
+  /* The recessed display: this is the one dark element in a light instrument, and it
+     stays dark in both themes because it represents a screen, not a surface. */
+  .display {
+    @apply rounded-sm bg-stage shadow-inset;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-sm px-4 py-2.5
+           font-sans text-sm font-medium transition-colors
+           disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-primary {
+    @apply btn bg-graphite text-bone hover:bg-graphite-soft
+           dark:bg-bone dark:text-graphite dark:hover:bg-bone-deep;
+  }
+
+  .btn-ghost {
+    @apply btn border border-bone-edge text-graphite hover:bg-bone-deep
+           dark:border-stage-line dark:text-bone dark:hover:bg-stage-line;
+  }
+
+  .field {
+    @apply w-full rounded-sm border border-bone-edge bg-white px-3 py-2 font-sans text-sm
+           text-graphite outline-none transition-colors
+           focus:border-proved
+           dark:border-stage-line dark:bg-stage-deep dark:text-bone;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
