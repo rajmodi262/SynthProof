@@ -14,6 +14,7 @@ from synthproof.accounting.accountant import Accountant
 from synthproof.accounting.calibration import BudgetPlan
 from synthproof.attacks.distance_mia import DistanceMIABaseline
 from synthproof.audit.canary import CanaryAuditor
+from synthproof.audit.steinke import SteinkeAuditor
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
 from synthproof.evaluate.utility import UtilityEvaluator
@@ -137,7 +138,8 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
              corr_cols: Optional[Sequence[str]] = None,
              on_stage: Optional[Callable[[str, dict], None]] = None,
              return_artifacts: bool = False,
-             separate_utility_fit: bool = True) -> Dict[str, Any]:
+             separate_utility_fit: bool = True,
+             auditor_kind: str = "one_run") -> Dict[str, Any]:
     """Runs one (mechanism, epsilon, seed) configuration and returns raw measurements.
 
     Fits the mechanism TWICE by default: once on the canary-augmented split for the audit,
@@ -179,14 +181,29 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
     emit("budget", {"total_eps": target_eps, "profile_eps": plan.profile_eps,
                     "synthesis_eps": plan.synthesis_eps, "delta": delta})
 
-    auditor = CanaryAuditor(num_canaries=num_canaries, seed=seed)
+    # The one-run construction is the default: it spends one canary per comparison rather
+    # than two, and is measurably more sensitive to PARTIAL leakage, which is the regime a
+    # real mechanism lives in. See results/AUDITOR_COMPARISON.md. The paired auditor stays
+    # selectable so the two can be compared on identical runs.
+    if auditor_kind == "one_run":
+        auditor = SteinkeAuditor(num_canaries=num_canaries, seed=seed)
+    elif auditor_kind == "paired":
+        auditor = CanaryAuditor(num_canaries=num_canaries, seed=seed)
+    else:
+        raise ValueError(
+            f"Unknown auditor {auditor_kind!r}. Use 'one_run' or 'paired'."
+        )
     aug_ds, canary_set = auditor.plant_canaries(fit_ds)
     # Report what was actually planted, not what was requested. They coincide today, but a
     # reported count that cannot drift from reality is worth one attribute access.
+    planted = (canary_set.num_included if auditor_kind == "one_run"
+               else len(canary_set.members))
     emit("canaries", {
-        "planted": len(canary_set.members),
-        "holdout": len(canary_set.holdout),
-        "fraction_of_fit": round(len(canary_set.members) / max(1, len(fit_df)), 5),
+        "auditor": auditor_kind,
+        "planted": planted,
+        "total_canaries": (len(canary_set.canaries) if auditor_kind == "one_run"
+                           else len(canary_set.members) + len(canary_set.holdout)),
+        "fraction_of_fit": round(planted / max(1, len(fit_df)), 5),
     })
 
     def _synthesise(source: TabularDataset, accountant: Accountant):
@@ -212,9 +229,18 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
                  "charges": len(acc.spends)})
     emit("generate", {"rows": len(audit_synth)})
 
-    audit = auditor.audit(audit_synth, canary_set)
-    emit("audit", {"audited_eps": float(audit.audited_eps), "tpr": float(audit.tpr),
-                   "fpr": float(audit.fpr), "p_value": float(audit.p_value)})
+    audit = (auditor.audit(audit_synth, canary_set, delta=delta)
+             if auditor_kind == "one_run" else auditor.audit(audit_synth, canary_set))
+    if auditor_kind == "one_run":
+        emit("audit", {"audited_eps": float(audit.audited_eps),
+                       "ceiling": float(audit.ceiling),
+                       "accuracy": float(audit.accuracy),
+                       "guesses": int(audit.guesses),
+                       "saturated": bool(audit.saturated),
+                       "p_value": float(audit.p_value)})
+    else:
+        emit("audit", {"audited_eps": float(audit.audited_eps), "tpr": float(audit.tpr),
+                       "fpr": float(audit.fpr), "p_value": float(audit.p_value)})
 
     # ---------------------------------------------------------------- utility release
     # A SECOND, independent fit on the clean split, used for utility and structure.
@@ -279,6 +305,10 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
             else informative_numeric_columns(reference_df, fit_ds.numerical_cols)),
         # Metadata a consumer needs in order to read the two metrics above honestly.
         "reference": "fit_split",
+        "auditor": auditor_kind,
+        # The most this audit could have certified. Without it, `audited_eps` is not
+        # interpretable -- see results/AUDITOR_COMPARISON.md.
+        "audit_ceiling": float(getattr(audit, "ceiling", float("nan"))),
         "utility_source": utility_source,
         "canary_fraction": (0.0 if separate_utility_fit
                             else len(canary_set.members) / max(1, len(fit_df))),
