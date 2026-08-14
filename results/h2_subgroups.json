@@ -1,0 +1,190 @@
+{
+  "dataset": "uci_adult",
+  "n_rows": 6000,
+  "mechanism": "pairwise",
+  "total_canaries": 400,
+  "eps_grid": [
+    1.0,
+    8.0
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "cells": [
+    {
+      "attribute": "sex",
+      "target_eps": 1.0,
+      "proved_eps": 0.9122542470732563,
+      "subgroups": [
+        {
+          "subgroup": "Female",
+          "population_share": 0.31966666666666665,
+          "num_canaries": 200,
+          "ceiling": 4.193629987170997,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5233333333333333,
+          "mean_p_value": 0.30773109780613356
+        },
+        {
+          "subgroup": "Male",
+          "population_share": 0.6803333333333333,
+          "num_canaries": 200,
+          "ceiling": 4.193629987170997,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.53,
+          "mean_p_value": 0.22438381913715424
+        }
+      ],
+      "interpretation": "UNMEASURABLE at this scale. No subgroup produced a positive bound; the per-subgroup ceilings run 4.19-4.19, so this says the instrument cannot resolve subgroup differences here, not that none exist."
+    },
+    {
+      "attribute": "sex",
+      "target_eps": 8.0,
+      "proved_eps": 7.3559535878149775,
+      "subgroups": [
+        {
+          "subgroup": "Female",
+          "population_share": 0.31966666666666665,
+          "num_canaries": 200,
+          "ceiling": 4.193629987170997,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5266666666666667,
+          "mean_p_value": 0.2650791847983353
+        },
+        {
+          "subgroup": "Male",
+          "population_share": 0.6803333333333333,
+          "num_canaries": 200,
+          "ceiling": 4.193629987170997,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5066666666666667,
+          "mean_p_value": 0.45483804603696426
+        }
+      ],
+      "interpretation": "UNMEASURABLE at this scale. No subgroup produced a positive bound; the per-subgroup ceilings run 4.19-4.19, so this says the instrument cannot resolve subgroup differences here, not that none exist."
+    },
+    {
+      "attribute": "race",
+      "target_eps": 1.0,
+      "proved_eps": 0.9122542470732563,
+      "subgroups": [
+        {
+          "subgroup": "Amer-Indian-Eskimo",
+          "population_share": 0.009833333333333333,
+          "num_canaries": 80,
+          "ceiling": 3.2660561811214377,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5083333333333333,
+          "mean_p_value": 0.5078202458581503
+        },
+        {
+          "subgroup": "Asian-Pac-Islander",
+          "population_share": 0.03,
+          "num_canaries": 80,
+          "ceiling": 3.2660561811214377,
+          "mean_audited_eps": 0.019480926941751343,
+          "max_audited_eps": 0.05844278082525403,
+          "mean_accuracy": 0.5375,
+          "mean_p_value": 0.36650879953133925
+        },
+        {
+          "subgroup": "Black",
+          "population_share": 0.09533333333333334,
+          "num_canaries": 80,
+          "ceiling": 3.2660561811214377,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5375,
+          "mean_p_value": 0.3139794240735006
+        },
+        {
+          "subgroup": "Other",
+          "population_share": 0.008166666666666666,
+          "num_canaries": 80,
+          "ceiling": 3.2660561811214377,
+          "mean_audited_eps": 0.002636742085385703,
+          "max_audited_eps": 0.007910226256157109,
+          "mean_accuracy": 0.5291666666666667,
+          "mean_p_value": 0.38473934968122014
+        },
+        {
+          "subgroup": "White",
+          "population_share": 0.8566666666666667,
+          "num_canaries": 80,
+          "ceiling": 3.2660561811214377,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5,
+          "mean_p_value": 0.5416752602616394
+        }
+      ],
+      "interpretation": "The rarest subgroup (Other, 0.8% of rows) audited at eps=0.008 against 0.000 for the most common \u2014 MORE leakage, gap +0.008. Ceilings were 3.27 and 3.27 respectively."
+    },
+    {
+      "attribute": "race",
+      "target_eps": 8.0,
+      "proved_eps": 7.3559535878149775,
+      "subgroups": [
+        {
+          "subgroup": "Amer-Indian-Eskimo",
+          "population_share": 0.009833333333333333,
+          "num_canaries": 80,
+          "ceiling": 3.2660561811214377,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5333333333333333,
+          "mean_p_value": 0.3401103803218149
+        },
+        {
+          "subgroup": "Asian-Pac-Islander",
+          "population_share": 0.03,
+          "num_canaries": 80,
+          "ceiling": 3.2660561811214377,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5208333333333334,
+          "mean_p_value": 0.44508780607238957
+        },
+        {
+          "subgroup": "Black",
+          "population_share": 0.09533333333333334,
+          "num_canaries": 80,
+          "ceiling": 3.2660561811214377,
+          "mean_audited_eps": 0.03643034289968919,
+          "max_audited_eps": 0.10929102869906757,
+          "mean_accuracy": 0.5291666666666667,
+          "mean_p_value": 0.43829302663143865
+        },
+        {
+          "subgroup": "Other",
+          "population_share": 0.008166666666666666,
+          "num_canaries": 80,
+          "ceiling": 3.2660561811214377,
+          "mean_audited_eps": 0.03643034289968919,
+          "max_audited_eps": 0.10929102869906757,
+          "mean_accuracy": 0.5625,
+          "mean_p_value": 0.22449625893319866
+        },
+        {
+          "subgroup": "White",
+          "population_share": 0.8566666666666667,
+          "num_canaries": 80,
+          "ceiling": 3.2660561811214377,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5416666666666667,
+          "mean_p_value": 0.26760646994588005
+        }
+      ],
+      "interpretation": "The rarest subgroup (Other, 0.8% of rows) audited at eps=0.109 against 0.000 for the most common \u2014 MORE leakage, gap +0.109. Ceilings were 3.27 and 3.27 respectively."
+    }
+  ],
+  "elapsed_seconds": 23.9
+}

@@ -13,6 +13,7 @@ import numpy as np
 from synthproof.accounting.accountant import Accountant
 from synthproof.accounting.calibration import BudgetPlan
 from synthproof.attacks.distance_mia import DistanceMIABaseline
+from synthproof.attacks.domias import DOMIAS
 from synthproof.audit.canary import CanaryAuditor
 from synthproof.audit.steinke import SteinkeAuditor
 from synthproof.data.dataset import TabularDataset
@@ -292,6 +293,14 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
     emit("attack", {"auc": float(mia.auc), "advantage": float(mia.advantage),
                     "tpr_at_1pct_fpr": float(mia.tpr_at_1pct_fpr)})
 
+    # A second, structurally different adversary. The two fail differently -- the baseline is
+    # a raw proximity heuristic, DOMIAS divides by a reference density to remove the
+    # typicality confound -- so both are reported rather than one standing in for the other.
+    domias = DOMIAS(seed=seed, max_records=400).evaluate(
+        audit_synth, train_df=fit_ds.df, test_df=holdout_df)
+    emit("attack_domias", {"auc": float(domias.auc),
+                           "tpr_at_1pct_fpr": float(domias.tpr_at_1pct_fpr)})
+
     out: Dict[str, Any] = {
         "proved_eps": float(acc.total()),
         "audited_eps": float(audit.audited_eps),
@@ -299,6 +308,8 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
         "tstr_f1": float(util.tstr_macro_f1),
         "trtr_f1": float(util.trtr_macro_f1),
         "mia_auc": float(mia.auc),
+        "domias_auc": float(domias.auc),
+        "domias_tpr_at_1pct": float(domias.tpr_at_1pct_fpr),
         "correlation_error": _mean_abs_corr_error(
             reference_df, util_synth,
             list(corr_cols) if corr_cols is not None
@@ -321,7 +332,7 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
             "_synth": util_synth, "_audit_synth": audit_synth,
             "_fit_df": fit_ds.df, "_holdout_df": holdout_df,
             "_profile": profile, "_canaries": canary_set, "_spends": acc.spends,
-            "_audit": audit, "_mia": mia,
+            "_audit": audit, "_mia": mia, "_domias": domias,
         })
     return out
 

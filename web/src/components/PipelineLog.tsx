@@ -21,6 +21,7 @@ const STAGE_LABELS: Record<StageName, string> = {
   utility_fit: 'Re-fit without canaries',
   utility: 'Downstream utility',
   attack: 'Membership inference',
+  attack_domias: 'Density-ratio attack (DOMIAS)',
 }
 
 /**
@@ -74,6 +75,7 @@ function summarise(e: StageEvent): string {
     case 'utility':
       return `TSTR ${n('tstr_f1')} vs TRTR ${n('trtr_f1')}`
     case 'attack':
+    case 'attack_domias':
       return `AUC ${n('auc')} · TPR@1%FPR ${n('tpr_at_1pct_fpr')}`
     default:
       return ''

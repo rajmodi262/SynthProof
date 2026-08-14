@@ -12,7 +12,8 @@
 |---|---|---|
 | **Auditor validation** | ✅ Detection floor and ceiling measured; controls hold | [`DETECTION_FLOOR.md`](DETECTION_FLOOR.md) |
 | **H1** — mechanism families | ✅ Supported on structure and utility; the privacy half is **disqualified** by the auditor's working range | [`H1_RESULTS.md`](H1_RESULTS.md) |
-| **H2** — subgroup disparity | ❌ Not started. Needs per-subgroup audits (M2.8) | — |
+| **Auditor comparison** | ✅ Paired vs one-run; the ceiling is information-theoretic | [`AUDITOR_COMPARISON.md`](AUDITOR_COMPARISON.md) |
+| **H2** — subgroup disparity | ⚠️ **Not supported** at this scale; direction consistent, nothing significant | [`H2_RESULTS.md`](H2_RESULTS.md) |
 | **H3** — ledger-driven allocation | ❌ Not started. Needs the allocator wired into the generators (M3.5) | — |
 
 Raw output: [`h1_all_families.json`](h1_all_families.json).

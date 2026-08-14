@@ -94,7 +94,7 @@ def test_run_streams_every_stage_in_order():
     events = _run()
     stages = [p["stage"] for e, p in events if e == "stage"]
     assert stages == ["split", "budget", "canaries", "profile", "fit", "generate",
-                      "audit", "utility_fit", "utility", "attack"]
+                      "audit", "utility_fit", "utility", "attack", "attack_domias"]
     # The audit stage must say which estimator produced the number.
     canaries = next(p for e, p in events if e == "stage" and p["stage"] == "canaries")
     assert canaries["auditor"] == "one_run"
