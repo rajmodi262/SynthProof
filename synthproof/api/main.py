@@ -186,6 +186,66 @@ def audit_ceiling(num_canaries: int) -> float:
     return points[-1][1]
 
 
+def _audit_payload(audit, num_canaries: int) -> dict:
+    """Normalises either auditor's result into one shape the console can render.
+
+    The two estimators expose genuinely different quantities — the paired auditor has TPR and
+    FPR with Clopper-Pearson intervals, the one-run construction has a guess count and a
+    binomial tail — so the union is reported rather than forcing one into the other's shape.
+    What both MUST carry is the ceiling: a reported epsilon of 0 without the maximum the
+    instrument could have certified reads as "no leakage" when it means "below resolution".
+    """
+    common = {
+        "audited_eps": float(audit.audited_eps),
+        "p_value": float(audit.p_value),
+    }
+
+    if hasattr(audit, "guesses"):        # one-run (Steinke)
+        # This ceiling is exact rather than interpolated: it is a closed form in the number
+        # of guesses actually made.
+        return {
+            **common,
+            "auditor": "one_run",
+            "ceiling": float(audit.ceiling),
+            "saturated": bool(audit.saturated),
+            "correct": int(audit.correct),
+            "guesses": int(audit.guesses),
+            "accuracy": float(audit.accuracy),
+            "num_canaries": int(audit.num_canaries),
+            "num_included": int(audit.num_included),
+            "detects_leak_above": next(
+                (f for f, m in sorted(AUDIT_DETECTION_FLOOR.items())
+                 if m is not None and m <= num_canaries), None),
+            "range_note": (
+                f"With {audit.guesses} guesses this audit could certify at most "
+                f"eps={audit.ceiling:.2f}, even against a release that is 100% verbatim "
+                "training data. A value of 0 means 'below this instrument's resolution', "
+                "not 'no leakage'. Certifying an epsilon costs roughly ln(1/alpha)*e^eps "
+                "canaries. See results/AUDITOR_COMPARISON.md."
+            ),
+        }
+
+    # paired Clopper-Pearson
+    return {
+        **common,
+        "auditor": "paired",
+        "tpr": float(audit.tpr), "fpr": float(audit.fpr),
+        "tpr_lower": float(audit.tpr_lower), "fpr_upper": float(audit.fpr_upper),
+        "num_members": int(audit.num_members), "num_holdout": int(audit.num_holdout),
+        "confidence": float(audit.confidence),
+        "ceiling": audit_ceiling(num_canaries),
+        "detects_leak_above": next(
+            (f for f, m in sorted(AUDIT_DETECTION_FLOOR.items())
+             if m is not None and m <= num_canaries), None),
+        "range_note": (
+            f"At {num_canaries} canaries this auditor cannot report an epsilon above "
+            f"~{audit_ceiling(num_canaries):.2f}, even against a release that is 100% "
+            "verbatim training data. A value of 0 means 'below this instrument's "
+            "resolution', not 'no leakage'. See results/DETECTION_FLOOR.md."
+        ),
+    }
+
+
 NOT_IMPLEMENTED_ATTACKS = [
     {"name": "LiRA", "reason": "Needs 64+ shadow models; scheduled for milestone M2."},
     {"name": "DOMIAS", "reason": "Density-ratio MIA for synthetic data; scheduled for M2."},
@@ -492,26 +552,7 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
                     "plus planted canaries, so a high canary fraction biases these numbers."
                 ),
             },
-            "audit": {
-                "audited_eps": audit.audited_eps, "tpr": audit.tpr, "fpr": audit.fpr,
-                "tpr_lower": audit.tpr_lower, "fpr_upper": audit.fpr_upper,
-                "p_value": audit.p_value, "num_members": audit.num_members,
-                "num_holdout": audit.num_holdout, "confidence": audit.confidence,
-                # The instrument's working range at THIS canary count. Without it a
-                # reported zero reads as "no leakage" when it means "below what this
-                # instrument resolves" — the exact misreading the project exists to stop.
-                "ceiling": audit_ceiling(req.num_canaries),
-                "detects_leak_above": next(
-                    (f for f, m in sorted(AUDIT_DETECTION_FLOOR.items())
-                     if m is not None and m <= req.num_canaries), None),
-                "range_note": (
-                    f"At {req.num_canaries} canaries this auditor cannot report an epsilon "
-                    f"above ~{audit_ceiling(req.num_canaries):.2f}, even against a release "
-                    "that is 100% verbatim training data. A value of 0 means 'below this "
-                    "instrument's resolution', not 'no leakage'. See "
-                    "results/DETECTION_FLOOR.md."
-                ),
-            },
+            "audit": _audit_payload(audit, req.num_canaries),
             "attack": {
                 "name": "Distance MIA baseline", "auc": mia.auc,
                 "advantage": mia.advantage, "attack_accuracy": mia.attack_accuracy,

@@ -793,12 +793,13 @@ ul.cl li b{color:var(--ink)}
           <div class="statr"><span>ε-calibration<span class="sub">Target ε achieved to &lt;1e-4 relative, always conservative</span></span><span class="pill d">Built</span></div>
           <div class="statr"><span>Signed append-only ledger<span class="sub">Ed25519 + SHA-256; tamper tests mutate SQLite directly</span></span><span class="pill d">Built</span></div>
           <div class="statr"><span>Discrete noise samplers<span class="sub">CKS'20 rejection sampler, χ²-tested against exact PMF</span></span><span class="pill d">Built</span></div>
-          <div class="statr"><span>DP domain profiler<span class="sub">Category domain released under a DP threshold, not verbatim</span></span><span class="pill pt">Partial</span></div>
-          <div class="statr"><span>Canary auditor<span class="sub">Clopper-Pearson with a measured null; simplified vs. full Steinke</span></span><span class="pill pt">Partial</span></div>
-          <div class="statr"><span>Generator bank<span class="sub">Independent-marginal baseline only — AIM is M1</span></span><span class="pill pt">Baseline</span></div>
-          <div class="statr"><span>Attack range<span class="sub">2 weak baselines; LiRA, DOMIAS, AttrInf are M2</span></span><span class="pill pt">2 of 4</span></div>
-          <div class="statr"><span>Certificate signing + verifier<span class="sub">Ledger head is real; the sheet is not yet signed</span></span><span class="pill t">M3</span></div>
-          <div class="statr"><span>Real datasets · H2 · H3<span class="sub">Toy data only; subgroup and allocator studies not started</span></span><span class="pill t">M1–M3</span></div>
+          <div class="statr"><span>DP domain profiler<span class="sub">Public schema bounds cost nothing; category domains released under a noisy threshold</span></span><span class="pill d">Built</span></div>
+          <div class="statr"><span>Auditor, and its working range<span class="sub">One-run Steinke construction; positive AND negative controls in CI. Ceiling measured: 2.97 at m=60</span></span><span class="pill d">Built</span></div>
+          <div class="statr"><span>Generator bank<span class="sub">4 mechanisms: independent, per-column Gaussian, pairwise tree, real AIM on private-PGM</span></span><span class="pill d">Built</span></div>
+          <div class="statr"><span>Attack range<span class="sub">Distance MIA + DOMIAS + exact-match singling out. LiRA and attribute inference are NOT implemented</span></span><span class="pill pt">3 of 5</span></div>
+          <div class="statr"><span>Signed data sheet + verifier<span class="sub">Persistent key; <code>synthproof verify</code> checks it. Editing any field fails verification</span></span><span class="pill d">Built</span></div>
+          <div class="statr"><span>H1 · H2<span class="sub">H1 supported on structure and utility (non-overlapping CIs). H2 run and reported as NOT supported</span></span><span class="pill d">Answered</span></div>
+          <div class="statr"><span>Second dataset · H3<span class="sub">ACS PUMS not run; the allocator study is not started</span></span><span class="pill t">Open</span></div>
         </div>
         <p class="fine" style="margin-top:var(--s3)">
           We ran a full adversarial audit of our own codebase and rated it honestly. Several

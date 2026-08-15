@@ -46,7 +46,8 @@ dev = [
     # A SECOND, independent DP accounting implementation. Used only by the differential
     # test: agreement between dp_accounting and autodp is evidence our composed epsilon is
     # right; agreement of our code with itself is not. The test skips if it is absent.
-    "autodp>=0.2.3"
+    "autodp>=0.2.3",
+    "matplotlib>=3.7"   # thesis figures (scripts/make_figures.py)
 ]
 
 [project.scripts]

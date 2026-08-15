@@ -97,3 +97,44 @@ def test_aim_output_respects_schema_bounds():
     assert len(synth) == 500
     assert synth["x"].between(0, 100).all()
     assert synth["y"].between(0, 100).all()
+
+
+def test_model_size_bound_is_validated():
+    with pytest.raises(ValueError, match="max_model_mb"):
+        AIMGenerator(max_model_mb=0)
+
+
+@requires_mbi
+def test_a_tiny_model_budget_refuses_cliques_rather_than_crashing():
+    """Regression: unbounded inference exhausted memory mid-grid.
+
+    Inference cost is exponential in the junction tree's treewidth, not in the row count, so
+    a candidate clique that looked harmless can make the tree explode. This crashed with
+    `MemoryError: bad allocation` inside variable elimination at cell 59 of a 75-cell grid,
+    on UCI Adult at n=6000 — and NOT at n=3000, because the DP profiler's noisy threshold
+    keeps more rare categories as n grows, so the DOMAIN grows with n even though the model
+    does not.
+
+    With a budget too small for any 2-way clique the generator must degrade to 1-way
+    marginals and record what it refused, not raise.
+    """
+    ds = _correlated(n=600)
+    gen, _ = _fit(ds, 4.0, rounds=2, max_model_mb=1e-6)
+
+    synth = gen.generate(300)
+    assert len(synth) == 300
+    # Every 2-way candidate was refused, and each is recorded rather than dropped silently.
+    assert gen.skipped_cliques_, "refused cliques must be recorded"
+    assert all(len(c) == 1 for c in gen.measured_cliques_), (
+        f"a 2-way clique was measured despite the budget: {gen.measured_cliques_}"
+    )
+
+
+@requires_mbi
+def test_a_generous_budget_still_measures_two_way_marginals():
+    """The bound must not silently disable the thing that makes AIM AIM."""
+    ds = _correlated(n=600)
+    gen, _ = _fit(ds, 4.0, rounds=1, max_model_mb=128.0)
+
+    assert ("x", "y") in gen.measured_cliques_
+    assert not gen.skipped_cliques_

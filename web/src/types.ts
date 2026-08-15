@@ -161,6 +161,7 @@ export const STAGE_ORDER = [
   'utility_fit',
   'utility',
   'attack',
+  'attack_domias',
 ] as const
 
 export type StageName = (typeof STAGE_ORDER)[number]

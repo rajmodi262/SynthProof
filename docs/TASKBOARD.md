@@ -16,12 +16,18 @@ Priority: 🔴 mandatory · 🟠 recommended · 🟢 stretch
 | Milestone | Scope | Done | Hours left | Status |
 |---|---|---|---:|---|
 | **M0** Foundations | A budget you can trust | 12 / 12 | 0 | ✅ **complete** |
-| **M1** Real synthesis | Published mechanisms, real data, H1 | 9 / 14 | 38–63 | 🔨 in progress |
-| **M2** Audit engine | Real attacks, Steinke audit, H2 | 0 / 12 | 81–124 | ⏳ |
-| **M3** Ship the proof | Signed, verifiable, reproducible | 0 / 10 | 41–67 | ⏳ |
-| **DOC** Thesis & docs | Continuous | 2 / 9 | 43–85 | 🔨 in progress |
+| **M1** Real synthesis | Published mechanisms, real data, H1 | 12 / 14 | 8–12 | ✅ **H1 answered** |
+| **M2** Audit engine | Real attacks, Steinke audit, H2 | 7 / 12 | 34–50 | 🔨 in progress |
+| **M3** Ship the proof | Signed, verifiable, reproducible | 6 / 10 | 18–30 | 🔨 in progress |
+| **DOC** Thesis & docs | Continuous | 3 / 9 | 70–95 | 🔴 **the critical path** |
 
-**Health right now:** 71 tests green · ruff clean · CI live with calibration gate · H1 has a first real result
+**Health right now:** 201 tests green · 86% coverage · ruff + bandit clean · CI with calibration
+AND auditor gates · H1 supported on structure and utility · H2 reported as not supported ·
+data sheet signed and third-party verifiable
+
+> **The one number that matters for submission:** the thesis is ~5,700 of 15,700 words.
+> Everything else on this board is now ahead of it. See [`thesis/DATA_PACK.md`](thesis/DATA_PACK.md)
+> — every figure, table and number each chapter needs is already generated and traced to a seed.
 
 ---
 
@@ -58,17 +64,17 @@ overspending. CI asserts this across 24 configurations.
 | M1.1 | `TabularDataset.from_csv()` + schema spec | 🔴 | — | 4 | [x] | Loads an arbitrary CSV with declared column types; unit-tested on a fixture |
 | M1.2 | `data/` loader + `CHECKSUMS.txt` | 🔴 | — | 3 | [x] | `make data` fetches UCI Adult and verifies SHA-256 |
 | M1.3 | UCI Adult end to end | 🔴 | — | 3 | [x] | Full sweep completes on 48,842 rows × 14 cols |
-| M1.4 | ACS PUMS via `folktables` | 🟠 | | 4 | [ ] | Second real dataset, ≥50k rows, with subgroup labels for H2 |
+| M1.4 | ACS PUMS via `folktables` | 🟠 | | 4 | [!] | Second real dataset, ≥50k rows, with subgroup labels for H2 |
 | M1.5 | CLI `--input` flag | 🔴 | — | 2 | [x] | `synthproof run --input my.csv --eps 2.0` works |
-| M1.6 | API upload endpoint | 🟠 | | 4 | [ ] | `POST /api/upload` accepts a CSV; console can drive it |
+| M1.6 | API upload endpoint | 🟠 | — | 4 | [x] | `POST /api/upload` accepts a CSV; console can drive it |
 | M1.7 | Caller-declared public bounds (closes F5) | 🔴 | — | 5 | [x] | Sensitivity is derived from declared clip range, not asserted as 1.0 |
-| M1.8 | Real AIM via `private-pgm` | 🔴 | | 10–14 | [ ] | Uses published AIM; preserves ≥1 measured 2-way marginal the baseline destroys |
+| M1.8 | Real AIM via `private-pgm` | 🔴 | — | 10–14 | [x] | Uses published AIM; preserves ≥1 measured 2-way marginal the baseline destroys |
 | M1.9 | Real Gaussian copula | 🟢 | | 10 | [ ] | DP covariance + rank transform; measurably preserves correlation |
-| M1.10 | Rename baseline → `IndependentMarginalGenerator` | 🔴 | | 1 | [ ] | No class claims an algorithm it does not implement |
+| M1.10 | Rename baseline → `IndependentMarginalGenerator` | 🔴 | — | 1 | [x] | No class claims an algorithm it does not implement |
 | M1.11 | Multi-seed sweep runner (5 seeds) | 🔴 | — | 8 | [x] | Emits per-cell mean ± 95% CI |
-| M1.12 | Bootstrapped frontier + plots | 🔴 | | 6 | [ ] | Privacy–utility frontier with CI bands, saved as a figure |
+| M1.12 | Bootstrapped frontier + plots | 🔴 | — | 6 | [x] | Privacy–utility frontier with CI bands, saved as a figure |
 | M1.13 | **H1 tested and reported** | 🔴 | — | 10 | [x] | ε_audited/ε_proved compared across ≥2 real mechanism families with CIs; result reported either way |
-| M1.14 | Property tests with `hypothesis` | 🟠 | | 8 | [ ] | Composition monotonicity; budget never exceeded; σ→0 ⇒ ε→∞ |
+| M1.14 | Property tests with `hypothesis` | 🟠 | — | 8 | [x] | Composition monotonicity; budget never exceeded; σ→0 ⇒ ε→∞ |
 
 ---
 
@@ -76,18 +82,18 @@ overspending. CI asserts this across 24 configurations.
 
 | # | Task | Pri | Owner | Hrs | Status | Definition of Done |
 |---|---|:--:|---|--:|:--:|---|
-| M2.1 | Full Steinke one-run audit | 🟠 | | 20 | [ ] | Randomised inclusion vector; ε from confusion counts via Clopper-Pearson |
-| M2.2 | Auditor validation harness | 🟠 | | 5 | [ ] | Re-introduce the σ<0.3 bug; auditor must catch it. Becomes a CI test |
+| M2.1 | Full Steinke one-run audit | 🟠 | — | 20 | [x] | Randomised inclusion vector; ε from confusion counts via Clopper-Pearson |
+| M2.2 | Auditor validation harness | 🟠 | — | 5 | [x] | Re-introduce the σ<0.3 bug; auditor must catch it. Becomes a CI test |
 | M2.3 | LiRA with shadow models | 🟠 | | 20 | [ ] | ≥64 shadow models, per-example Gaussian fit, calibrated LR test |
-| M2.4 | DOMIAS density-ratio MIA | 🟠 | | 12 | [ ] | Reproduces published behaviour on a known-leaky mechanism |
+| M2.4 | DOMIAS density-ratio MIA | 🟠 | — | 12 | [x] | Reproduces published behaviour on a known-leaky mechanism |
 | M2.5 | `anonymeter` integration | 🟠 | | 6 | [ ] | Real singling-out, linkability, inference — three separate simulations |
 | M2.6 | Attribute inference attack | 🟠 | | 8 | [ ] | Predicts a held-out sensitive column; reports lift over a marginal baseline |
-| M2.7 | Report AUC + TPR@0.1%FPR everywhere | 🔴 | | 3 | [ ] | No attack reports accuracy at a median threshold |
-| M2.8 | **H2 subgroup disparity** | 🟠 | | 20 | [ ] | Per-subgroup audits on ACS PUMS by race and sex, with CIs |
-| M2.9 | Differential test vs `autodp` | 🟠 | | 6 | [ ] | ε agrees with two independent implementations to 1e-6, in CI |
+| M2.7 | Report AUC + TPR@0.1%FPR everywhere | 🔴 | — | 3 | [x] | No attack reports accuracy at a median threshold |
+| M2.8 | **H2 subgroup disparity** | 🟠 | — | 20 | [x] | Done on UCI Adult (not ACS) by race and sex. **Not supported**; the audit ceiling is the binding constraint |
+| M2.9 | Differential test vs `autodp` | 🟠 | — | 6 | [x] | ε agrees with two independent implementations to 1e-6, in CI |
 | M2.10 | Wasserstein-1 marginal distance | 🟢 | | 4 | [ ] | Replaces the current first-moment-only proxy |
 | M2.11 | Fairness metrics (real) | 🟠 | | 8 | [ ] | Per-subgroup TSTR F1 and equalised-odds gap |
-| M2.12 | Coverage gate → 90% | 🟠 | | 4 | [ ] | CI fails below 90% |
+| M2.12 | Coverage gate → 90% | 🟠 | | 4 | [~] | CI fails below 90% |
 
 ---
 
@@ -95,15 +101,15 @@ overspending. CI asserts this across 24 configurations.
 
 | # | Task | Pri | Owner | Hrs | Status | Definition of Done |
 |---|---|:--:|---|--:|:--:|---|
-| M3.1 | Persist the Ed25519 keypair | 🟠 | | 3 | [ ] | Key survives restart; file-backed ledgers verify |
-| M3.2 | Sign the Privacy Data Sheet | 🟠 | | 4 | [ ] | Signature over canonical bytes of the whole sheet |
-| M3.3 | `synthproof verify` command | 🟠 | | 5 | [ ] | A third party verifies with only the sheet and a public key |
-| M3.4 | Anchor ledger head in each certificate | 🟠 | | 2 | [ ] | Certificate commits to the chain head at issue time |
+| M3.1 | Persist the Ed25519 keypair | 🟠 | — | 3 | [x] | Key survives restart; file-backed ledgers verify |
+| M3.2 | Sign the Privacy Data Sheet | 🟠 | — | 4 | [x] | Signature over canonical bytes of the whole sheet |
+| M3.3 | `synthproof verify` command | 🟠 | — | 5 | [x] | A third party verifies with only the sheet and a public key |
+| M3.4 | Anchor ledger head in each certificate | 🟠 | — | 2 | [x] | Certificate commits to the chain head at issue time |
 | M3.5 | Ledger-driven allocator wired to generators | 🟢 | | 8 | [ ] | Per-column weights actually change noise allocation |
 | M3.6 | **H3 tested** | 🟢 | | 10 | [ ] | Weighted vs uniform at equal total ε, with CIs |
 | M3.7 | Close the ~8% budget under-spend | 🟢 | | 4 | [ ] | proved/target ≥ 0.98 while never exceeding 1.0 |
-| M3.8 | `make reproduce` | 🟠 | | 8 | [ ] | Regenerates every published number from scratch; emits a manifest hash |
-| M3.9 | Frontend wired to live attack results | 🟢 | | 12 | [ ] | Console shows measured attack output, no static values |
+| M3.8 | `make reproduce` | 🟠 | — | 8 | [x] | Regenerates every published number from scratch; emits a manifest hash |
+| M3.9 | Frontend wired to live attack results | 🟢 | — | 12 | [x] | Console shows measured attack output, no static values |
 | M3.10 | Self-host fonts in the console | 🟢 | | 1 | [ ] | Console renders correctly with no internet |
 
 ---

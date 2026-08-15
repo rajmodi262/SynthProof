@@ -1,0 +1,323 @@
+% SynthProof — thesis references.
+%
+% arXiv versions are preferred where they exist, because their pagination is stable and a
+% reviewer can reach them without an institutional subscription. Where a work is primarily
+% known by its venue paper, both are given.
+%
+% Every entry here is cited somewhere in docs/thesis/. If you drop a citation, drop the entry.
+
+% ---------------------------------------------------------------- foundations
+
+@inproceedings{dwork2006calibrating,
+  author    = {Dwork, Cynthia and McSherry, Frank and Nissim, Kobbi and Smith, Adam},
+  title     = {Calibrating Noise to Sensitivity in Private Data Analysis},
+  booktitle = {Theory of Cryptography (TCC)},
+  pages     = {265--284},
+  year      = {2006},
+  doi       = {10.1007/11681878_14}
+}
+
+@article{dwork2014algorithmic,
+  author  = {Dwork, Cynthia and Roth, Aaron},
+  title   = {The Algorithmic Foundations of Differential Privacy},
+  journal = {Foundations and Trends in Theoretical Computer Science},
+  volume  = {9},
+  number  = {3--4},
+  pages   = {211--407},
+  year    = {2014},
+  doi     = {10.1561/0400000042}
+}
+
+@inproceedings{mironov2017renyi,
+  author    = {Mironov, Ilya},
+  title     = {R{\'e}nyi Differential Privacy},
+  booktitle = {IEEE Computer Security Foundations Symposium (CSF)},
+  pages     = {263--275},
+  year      = {2017},
+  eprint    = {1702.07476},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{balle2020hypothesis,
+  author    = {Balle, Borja and Barthe, Gilles and Gaboardi, Marco and Hsu, Justin and Sato, Tetsuya},
+  title     = {Hypothesis Testing Interpretations and R{\'e}nyi Differential Privacy},
+  booktitle = {AISTATS},
+  year      = {2020},
+  eprint    = {1905.09982},
+  archivePrefix = {arXiv}
+}
+
+% ---------------------------------------------------------------- implementation pitfalls
+
+@inproceedings{mironov2012significance,
+  author    = {Mironov, Ilya},
+  title     = {On Significance of the Least Significant Bits for Differential Privacy},
+  booktitle = {ACM Conference on Computer and Communications Security (CCS)},
+  pages     = {650--661},
+  year      = {2012},
+  doi       = {10.1145/2382196.2382264},
+  note      = {The floating-point attack on inverse-CDF Laplace sampling that motivates
+               discrete noise.}
+}
+
+@inproceedings{canonne2020discrete,
+  author    = {Canonne, Cl{\'e}ment L. and Kamath, Gautam and Steinke, Thomas},
+  title     = {The Discrete Gaussian for Differential Privacy},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2020},
+  eprint    = {2004.00010},
+  archivePrefix = {arXiv},
+  note      = {Algorithm 1 is the rejection sampler implemented in accounting/noise.py.}
+}
+
+% ---------------------------------------------------------------- synthetic data
+
+@article{mckenna2019graphical,
+  author  = {McKenna, Ryan and Sheldon, Daniel and Miklau, Gerome},
+  title   = {Graphical-model based estimation and inference for differential privacy},
+  journal = {International Conference on Machine Learning (ICML)},
+  year    = {2019},
+  eprint  = {1901.09136},
+  archivePrefix = {arXiv},
+  note    = {private-PGM; the inference engine behind our AIM generator.}
+}
+
+@article{mckenna2022aim,
+  author  = {McKenna, Ryan and Mullins, Brett and Sheldon, Daniel and Miklau, Gerome},
+  title   = {{AIM}: An Adaptive and Iterative Mechanism for Differentially Private Synthetic Data},
+  journal = {Proceedings of the VLDB Endowment},
+  volume  = {15},
+  number  = {11},
+  year    = {2022},
+  eprint  = {2201.12677},
+  archivePrefix = {arXiv},
+  note    = {Section 4 bounds model size; we adopt that bound after an unbounded model
+             exhausted memory mid-grid.}
+}
+
+@article{mckenna2021nist,
+  author  = {McKenna, Ryan and Miklau, Gerome and Hay, Michael and Machanavajjhala, Ashwin},
+  title   = {Winning the {NIST} Contest: A scalable and general approach to differentially
+             private synthetic data},
+  journal = {Journal of Privacy and Confidentiality},
+  volume  = {11},
+  number  = {3},
+  year    = {2021},
+  eprint  = {2108.04978},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{xie2018dpgan,
+  author    = {Xie, Liyang and Lin, Kaixiang and Wang, Shu and Wang, Fei and Zhou, Jiayu},
+  title     = {Differentially Private Generative Adversarial Network},
+  booktitle = {arXiv preprint},
+  year      = {2018},
+  eprint    = {1802.06739},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{jordon2019pategan,
+  author    = {Jordon, James and Yoon, Jinsung and van der Schaar, Mihaela},
+  title     = {{PATE-GAN}: Generating Synthetic Data with Differential Privacy Guarantees},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2019}
+}
+
+% ---------------------------------------------------------------- the critical literature
+
+@inproceedings{stadler2022groundhog,
+  author    = {Stadler, Theresa and Oprisanu, Bristena and Troncoso, Carmela},
+  title     = {Synthetic Data -- Anonymisation Groundhog Day},
+  booktitle = {USENIX Security Symposium},
+  pages     = {1451--1468},
+  year      = {2022},
+  eprint    = {2011.07018},
+  archivePrefix = {arXiv},
+  note      = {The direct motivation for this work: synthetic data provides neither the
+               privacy nor the utility routinely claimed for it.}
+}
+
+% ---------------------------------------------------------------- attacks
+
+@inproceedings{shokri2017membership,
+  author    = {Shokri, Reza and Stronati, Marco and Song, Congzheng and Shmatikov, Vitaly},
+  title     = {Membership Inference Attacks Against Machine Learning Models},
+  booktitle = {IEEE Symposium on Security and Privacy (S\&P)},
+  pages     = {3--18},
+  year      = {2017},
+  eprint    = {1610.05820},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{carlini2022membership,
+  author    = {Carlini, Nicholas and Chien, Steve and Nasr, Milad and Song, Shuang and
+               Terzis, Andreas and Tramer, Florian},
+  title     = {Membership Inference Attacks From First Principles},
+  booktitle = {IEEE Symposium on Security and Privacy (S\&P)},
+  pages     = {1897--1914},
+  year      = {2022},
+  eprint    = {2112.03570},
+  archivePrefix = {arXiv},
+  note      = {The argument that average accuracy is the wrong metric, and that TPR at low
+               FPR should be reported instead. We follow this throughout.}
+}
+
+@inproceedings{vanbreugel2023domias,
+  author    = {van Breugel, Boris and Sun, Hao and Qian, Zhaozhi and van der Schaar, Mihaela},
+  title     = {Membership Inference Attacks against Synthetic Data through Overfitting
+               Detection},
+  booktitle = {AISTATS},
+  year      = {2023},
+  eprint    = {2302.12580},
+  archivePrefix = {arXiv},
+  note      = {DOMIAS; implemented in attacks/domias.py with a k-NN density estimator.}
+}
+
+@article{giomi2023anonymeter,
+  author  = {Giomi, Matteo and Boenisch, Franziska and Wehmeyer, Christoph and
+             Tasnim, Borbala},
+  title   = {A Unified Framework for Quantifying Privacy Risk in Synthetic Data},
+  journal = {Proceedings on Privacy Enhancing Technologies (PoPETs)},
+  year    = {2023},
+  eprint  = {2211.10459},
+  archivePrefix = {arXiv},
+  note    = {Anonymeter: singling out, linkability and inference as three distinct risks.}
+}
+
+% ---------------------------------------------------------------- auditing
+
+@inproceedings{jagielski2020auditing,
+  author    = {Jagielski, Matthew and Ullman, Jonathan and Oprea, Alina},
+  title     = {Auditing Differentially Private Machine Learning: How Private is Private {SGD}?},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2020},
+  eprint    = {2006.07709},
+  archivePrefix = {arXiv},
+  note      = {Establishes the proved-versus-audited framing this project measures.}
+}
+
+@inproceedings{nasr2021adversary,
+  author    = {Nasr, Milad and Song, Shuang and Thakurta, Abhradeep and Papernot, Nicolas and
+               Carlini, Nicholas},
+  title     = {Adversary Instantiation: Lower Bounds for Differentially Private Machine
+               Learning},
+  booktitle = {IEEE Symposium on Security and Privacy (S\&P)},
+  year      = {2021},
+  eprint    = {2101.04535},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{steinke2023oneRun,
+  author    = {Steinke, Thomas and Nasr, Milad and Jagielski, Matthew},
+  title     = {Privacy Auditing with One (1) Training Run},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2023},
+  eprint    = {2305.08846},
+  archivePrefix = {arXiv},
+  note      = {The construction implemented in audit/steinke.py. Its randomised inclusion
+               vector is what lets every canary carry evidence.}
+}
+
+% ---------------------------------------------------------------- budget management
+
+@inproceedings{lecuyer2019sage,
+  author    = {L{\'e}cuyer, Mathias and Spahn, Riley and Vodrahalli, Kiran and
+               Geambasu, Roxana and Hsu, Daniel},
+  title     = {Privacy Accounting and Quality Control in the {Sage} Differentially Private
+               ML Platform},
+  booktitle = {ACM Symposium on Operating Systems Principles (SOSP)},
+  pages     = {181--195},
+  year      = {2019},
+  doi       = {10.1145/3341301.3359639}
+}
+
+@article{kotsogiannis2019privatesql,
+  author  = {Kotsogiannis, Ios and Tao, Yuchao and He, Xi and Fanaeepour, Maryam and
+             Machanavajjhala, Ashwin and Hay, Michael and Miklau, Gerome},
+  title   = {{PrivateSQL}: A Differentially Private {SQL} Query Engine},
+  journal = {Proceedings of the VLDB Endowment},
+  volume  = {12},
+  number  = {11},
+  year    = {2019},
+  doi     = {10.14778/3342263.3342274}
+}
+
+% ---------------------------------------------------------------- transparency artefacts
+
+@article{gebru2021datasheets,
+  author  = {Gebru, Timnit and Morgenstern, Jamie and Vecchione, Briana and
+             Vaughan, Jennifer Wortman and Wallach, Hanna and Daum{\'e} III, Hal and
+             Crawford, Kate},
+  title   = {Datasheets for Datasets},
+  journal = {Communications of the ACM},
+  volume  = {64},
+  number  = {12},
+  pages   = {86--92},
+  year    = {2021},
+  doi     = {10.1145/3458723}
+}
+
+@inproceedings{mitchell2019modelcards,
+  author    = {Mitchell, Margaret and Wu, Simone and Zaldivar, Andrew and Barnes, Parker and
+               Vasserman, Lucy and Hutchinson, Ben and Spitzer, Elena and
+               Raji, Inioluwa Deborah and Gebru, Timnit},
+  title     = {Model Cards for Model Reporting},
+  booktitle = {ACM Conference on Fairness, Accountability, and Transparency (FAT*)},
+  pages     = {220--229},
+  year      = {2019},
+  doi       = {10.1145/3287560.3287596}
+}
+
+@article{bender2018datastatements,
+  author  = {Bender, Emily M. and Friedman, Batya},
+  title   = {Data Statements for Natural Language Processing},
+  journal = {Transactions of the Association for Computational Linguistics},
+  volume  = {6},
+  pages   = {587--604},
+  year    = {2018},
+  doi     = {10.1162/tacl_a_00041}
+}
+
+% ---------------------------------------------------------------- re-identification
+
+@article{sweeney2000uniqueness,
+  author  = {Sweeney, Latanya},
+  title   = {Simple Demographics Often Identify People Uniquely},
+  journal = {Carnegie Mellon University, Data Privacy Working Paper 3},
+  year    = {2000}
+}
+
+@inproceedings{narayanan2008robust,
+  author    = {Narayanan, Arvind and Shmatikov, Vitaly},
+  title     = {Robust De-anonymization of Large Sparse Datasets},
+  booktitle = {IEEE Symposium on Security and Privacy (S\&P)},
+  pages     = {111--125},
+  year      = {2008},
+  doi       = {10.1109/SP.2008.33}
+}
+
+% ---------------------------------------------------------------- datasets and tools
+
+@misc{uci_adult,
+  author       = {Becker, Barry and Kohavi, Ronny},
+  title        = {{Adult}},
+  howpublished = {UCI Machine Learning Repository},
+  year         = {1996},
+  doi          = {10.24432/C5XW20}
+}
+
+@misc{google_dp_accounting,
+  author       = {{Google}},
+  title        = {{dp\_accounting}: Differential Privacy Accounting Library},
+  howpublished = {\url{https://github.com/google/differential-privacy}},
+  year         = {2023},
+  note         = {All composition in this project is delegated to this library.}
+}
+
+@misc{autodp,
+  author       = {Wang, Yu-Xiang and Zhu, Yuqing and Dong, Jinshuo},
+  title        = {{autodp}: Automating Differential Privacy Computation},
+  howpublished = {\url{https://github.com/yuxiangw/autodp}},
+  year         = {2022},
+  note         = {The second, independent accountant used in our differential test.}
+}

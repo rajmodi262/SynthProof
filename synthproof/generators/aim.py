@@ -45,6 +45,11 @@ DEFAULT_ROUNDS = 6
 # Share of the synthesis budget spent choosing which marginals to measure. Selection is a
 # mechanism and must be paid for; AIM spends a comparable minority of its budget here.
 DEFAULT_SELECTION_FRAC = 0.25
+# Junction-tree budget in megabytes. Inference is exponential in treewidth, so an unbounded
+# model can exhaust memory on a table that looked fine at half the size. AIM bounds this for
+# the same reason (McKenna et al. 2022, section 4). 128 MB comfortably fits UCI Adult's full
+# 12-column domain while still refusing the pathological cliques.
+DEFAULT_MAX_MODEL_MB = 128.0
 
 _MBI_HINT = (
     "AIMGenerator requires private-pgm (package `mbi`), which needs Python >= 3.11.\n"
@@ -59,9 +64,10 @@ _MBI_HINT = (
 def _require_mbi():
     try:
         from mbi import Dataset, Domain, LinearMeasurement, estimation
+        from mbi.junction_tree import hypothetical_model_size
     except ImportError as exc:  # pragma: no cover - exercised only without mbi
         raise ImportError(_MBI_HINT) from exc
-    return Domain, Dataset, LinearMeasurement, estimation
+    return Domain, Dataset, LinearMeasurement, estimation, hypothetical_model_size
 
 
 def mbi_available() -> bool:
@@ -78,13 +84,20 @@ class AIMGenerator(BaseGenerator):
 
     def __init__(self, seed: int = 42, num_bins: int = DEFAULT_BINS,
                  rounds: int = DEFAULT_ROUNDS,
-                 selection_frac: float = DEFAULT_SELECTION_FRAC):
+                 selection_frac: float = DEFAULT_SELECTION_FRAC,
+                 max_model_mb: float = DEFAULT_MAX_MODEL_MB):
         super().__init__(seed=seed)
         if not (0.0 < selection_frac < 1.0):
             raise ValueError(f"selection_frac must be in (0, 1), got {selection_frac}")
+        if max_model_mb <= 0:
+            raise ValueError(f"max_model_mb must be positive, got {max_model_mb}")
         self.num_bins = num_bins
         self.rounds = rounds
         self.selection_frac = selection_frac
+        self.max_model_mb = max_model_mb
+        # Cliques refused by the size bound. Recorded rather than dropped silently: a
+        # marginal we declined to measure is a limitation of the run, not a detail.
+        self.skipped_cliques_: List[Tuple[str, ...]] = []
         self.levels_: Dict[str, list] = {}
         self.bin_edges_: Dict[str, np.ndarray] = {}
         self.measured_cliques_: List[Tuple[str, ...]] = []
@@ -129,7 +142,8 @@ class AIMGenerator(BaseGenerator):
 
     def fit(self, dataset: TabularDataset, profile: DomainProfile,
             accountant: Accountant, target_eps: float) -> None:
-        Domain, Dataset, LinearMeasurement, estimation = _require_mbi()
+        (Domain, Dataset, LinearMeasurement, estimation,
+         hypothetical_model_size) = _require_mbi()
         rng = np.random.default_rng(self.seed)
 
         self.columns = dataset.columns
@@ -146,6 +160,7 @@ class AIMGenerator(BaseGenerator):
         candidates = [(a, b) for i, a in enumerate(self.columns)
                       for b in self.columns[i + 1:]]
         rounds = min(self.rounds, len(candidates))
+        self.skipped_cliques_ = []
 
         # ---- budget split. Measurement: d 1-way + `rounds` 2-way. Selection: `rounds`.
         sel_eps = target_eps * self.selection_frac if rounds else 0.0
@@ -178,11 +193,36 @@ class AIMGenerator(BaseGenerator):
             model = estimation.MirrorDescent().estimate(
                 domain, measurements, known_total=n, iters=150)
 
+            # MODEL-SIZE BOUND. Inference cost is exponential in the junction tree's
+            # treewidth, not in the number of rows, so a candidate that looks harmless can
+            # make the tree explode. Measured: this crashed with `MemoryError: bad
+            # allocation` inside variable elimination at cell 59 of a 75-cell grid, on UCI
+            # Adult at n=6000 — and NOT at n=3000, because the DP profiler's noisy threshold
+            # keeps more rare categories as n grows, so the domain itself grows with n.
+            #
+            # AIM bounds model size for exactly this reason (McKenna et al. 2022 §4). A
+            # candidate whose junction tree would exceed the budget is skipped and recorded,
+            # not silently dropped: refusing to measure a marginal is a real limitation of
+            # the run and belongs in the results.
+            affordable = []
+            for cl in remaining:
+                size_mb = hypothetical_model_size(
+                    domain, [*self.measured_cliques_, cl])
+                if size_mb <= self.max_model_mb:
+                    affordable.append(cl)
+                elif cl not in self.skipped_cliques_:
+                    self.skipped_cliques_.append(cl)
+
+            if not affordable:
+                # Every remaining candidate would blow the budget. Stopping early is correct
+                # and leaves the unspent selection budget unused rather than mis-charged.
+                break
+
             # Score each candidate by how badly the current model predicts it. Adding or
             # removing one record moves a marginal by 1 in one cell, so this L1 error moves
             # by at most 2 — hence sensitivity 2 for the selection score.
             scores = []
-            for cl in remaining:
+            for cl in affordable:
                 true_y = np.asarray(data.project(cl).datavector(), dtype=float)
                 est_y = np.asarray(model.project(cl).datavector(), dtype=float)
                 scores.append(float(np.abs(true_y - est_y).sum()))

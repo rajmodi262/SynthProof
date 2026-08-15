@@ -94,7 +94,10 @@ def test_run_streams_every_stage_in_order():
     events = _run()
     stages = [p["stage"] for e, p in events if e == "stage"]
     assert stages == ["split", "budget", "canaries", "profile", "fit", "generate",
-                      "audit", "utility_fit", "utility", "attack"]
+                      "audit", "utility_fit", "utility", "attack", "attack_domias"]
+    # The audit stage must say which estimator produced the number.
+    canaries = next(p for e, p in events if e == "stage" and p["stage"] == "canaries")
+    assert canaries["auditor"] == "one_run"
 
 
 def test_run_never_charges_more_than_the_requested_budget():
@@ -113,7 +116,11 @@ def test_run_returns_measured_clouds_not_placeholders():
 
     assert cloud["method"] in ("pca", "columns")
     assert len(cloud["real"]) > 0 and len(cloud["synthetic"]) > 0
-    assert len(cloud["canaries"]) == 15
+    # Under the one-run construction each canary is planted with probability 1/2, so the
+    # cloud shows the INCLUDED subset rather than all 15 — those are the ones that were
+    # actually in the training data.
+    assert 0 < len(cloud["canaries"]) <= 15
+    assert len(cloud["canaries"]) == done["audit"]["num_included"]
     assert all(len(p) == 3 for p in cloud["real"])
     # Real and synthetic must be distinct clouds; identical ones would mean the projection
     # is echoing its input rather than projecting the generator's output.
@@ -434,15 +441,18 @@ def test_audit_result_reports_the_instruments_working_range():
     in the H1 experiments is 7.36. Shipping the zero without the ceiling is how a structural
     limit gets read as evidence about a mechanism.
     """
-    from synthproof.api.main import audit_ceiling
+    from synthproof.audit.steinke import max_provable_epsilon
 
     events = _run(num_canaries=50)
     done = next(p for e, p in events if e == "done")
     a = done["audit"]
 
-    assert a["ceiling"] == pytest.approx(audit_ceiling(50))
+    assert a["auditor"] == "one_run"
+    # For the one-run estimator the ceiling is a closed form in the guess count, not an
+    # interpolation, so it can be checked exactly.
+    assert a["ceiling"] == pytest.approx(max_provable_epsilon(a["guesses"]))
     assert a["audited_eps"] <= a["ceiling"] + 1e-9, "audit exceeded its own ceiling"
-    assert "resolution" in a["range_note"] or "resolves" in a["range_note"]
+    assert "resolution" in a["range_note"]
 
 
 def test_audit_ceiling_is_monotone_in_canary_count():

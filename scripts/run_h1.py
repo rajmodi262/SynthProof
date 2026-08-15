@@ -15,9 +15,12 @@ import time
 from synthproof.data.datasets import load_adult
 from synthproof.frontier.experiment import MECHANISMS, run_grid
 
-N_ROWS = 3000
-EPS_GRID = (1.0, 8.0)
-SEEDS = (0, 1, 2)
+# The preregistered protocol: 5 seeds, the full epsilon grid. Earlier runs used a reduction
+# of this (3 seeds, 2 epsilon points) for runtime; the results chapter reports what was
+# committed to, so this is the grid that produces the published table.
+N_ROWS = 6000
+EPS_GRID = (0.5, 1.0, 2.0, 4.0, 8.0)
+SEEDS = (0, 1, 2, 3, 4)
 TARGET_COL = "income"
 CORR_COLS = ("age", "hours_per_week")
 
