@@ -6,6 +6,7 @@ is not evidence, and the preregistration commits to 5 seeds per configuration.
 """
 
 from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
 import numpy as np
@@ -19,6 +20,7 @@ from synthproof.audit.steinke import SteinkeAuditor
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
 from synthproof.evaluate.utility import UtilityEvaluator
+from synthproof.frontier.checkpoint import run_with_checkpoints
 from synthproof.generators.aim import AIMGenerator, mbi_available
 from synthproof.generators.copula import GaussianCopulaGenerator
 from synthproof.generators.independent import IndependentMarginalGenerator
@@ -344,19 +346,57 @@ def run_grid(dataset: TabularDataset,
              delta: float = 1e-5,
              target_col: Optional[str] = None,
              corr_cols: Optional[Sequence[str]] = None,
-             progress: Optional[Callable[[str], None]] = None) -> List[CellResult]:
-    """Runs the full grid, aggregating each cell across seeds."""
+             progress: Optional[Callable[[str], None]] = None,
+             checkpoint_dir: Optional[str] = None) -> List[CellResult]:
+    """Runs the full grid, aggregating each cell across seeds.
+
+    Args:
+        checkpoint_dir: When set, every (mechanism, eps, seed) cell is written there the
+            moment it completes, and a restart skips whatever is already on disk under the
+            same configuration. This grid has been lost twice — once to a MemoryError at cell
+            59, once to a teardown at cell 64 — because results were only written at the end.
+            Aggregation still happens only after every cell has a result, so a partial run can
+            never be mistaken for a complete one.
+    """
+    # Flatten first: checkpointing is per (mechanism, eps, seed), and a flat list makes the
+    # cell index stable across restarts as long as the grid definition is unchanged.
+    cells = [
+        {"mechanism": mech, "target_eps": float(eps), "seed": int(seed),
+         "delta": float(delta), "dataset": dataset.name, "rows": dataset.num_rows,
+         "target_col": target_col,
+         "corr_cols": list(corr_cols) if corr_cols is not None else None}
+        for mech in mechanisms for eps in eps_grid for seed in seeds
+    ]
+
+    def compute(cfg: Dict[str, Any]) -> Dict[str, float]:
+        out = run_cell(dataset, cfg["mechanism"], cfg["target_eps"], cfg["seed"],
+                       delta=cfg["delta"], target_col=target_col, corr_cols=corr_cols)
+        # Only JSON-serialisable scalars go to disk; artefacts stay in memory.
+        return {k: v for k, v in out.items()
+                if not k.startswith("_") and isinstance(v, (int, float, str))}
+
+    if checkpoint_dir is not None:
+        flat = run_with_checkpoints(cells, compute, Path(checkpoint_dir), progress=progress)
+    else:
+        flat = []
+        for cfg in cells:
+            if progress:
+                progress(f"  {cfg['mechanism']:<12} eps={cfg['target_eps']:<5} "
+                         f"seed={cfg['seed']}")
+            flat.append(compute(cfg))
+
+    # Re-group into (mechanism, eps) cells, aggregating across seeds.
+    by_cell: Dict[tuple, Dict[str, List[float]]] = {}
+    for cfg, metrics in zip(cells, flat, strict=True):
+        key = (cfg["mechanism"], cfg["target_eps"])
+        raw = by_cell.setdefault(key, {})
+        for k, v in metrics.items():
+            raw.setdefault(k, []).append(v)
+
     results: List[CellResult] = []
     for mech in mechanisms:
         for eps in eps_grid:
-            raw: Dict[str, List[float]] = {}
-            for seed in seeds:
-                if progress:
-                    progress(f"  {mech:<12} eps={eps:<5} seed={seed}")
-                for k, v in run_cell(dataset, mech, eps, seed, delta=delta,
-                                     target_col=target_col, corr_cols=corr_cols).items():
-                    raw.setdefault(k, []).append(v)
-
+            raw = by_cell[(mech, float(eps))]
             results.append(CellResult(
                 dataset=dataset.name, mechanism=mech, target_eps=float(eps),
                 seeds=len(seeds),

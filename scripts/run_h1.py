@@ -39,8 +39,12 @@ def main():
         print("WARNING: private-pgm unavailable, so real AIM is NOT in this run.")
 
     t0 = time.time()
+    # Per-cell checkpointing. This grid has been lost twice -- a MemoryError at cell 59 and
+    # a session teardown at cell 64 -- so each cell is written the moment it completes and a
+    # restart skips what is already on disk. Delete results/h1_cells/ to force a clean re-run.
     res = run_grid(ds, mechanisms=mechs, eps_grid=EPS_GRID, seeds=SEEDS,
                    target_col=TARGET_COL, corr_cols=CORR_COLS,
+                   checkpoint_dir="results/h1_cells",
                    progress=lambda m: print(m, flush=True))
     elapsed = time.time() - t0
 
