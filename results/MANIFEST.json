@@ -1,0 +1,95 @@
+{
+  "manifest_version": 1,
+  "generated_at": "2026-08-15T18:44:24.867828+00:00",
+  "git": {
+    "commit": "6cb764db94615daaa407a4e6a29eacf432959b7b",
+    "branch": "master",
+    "dirty": true
+  },
+  "environment": {
+    "python": "3.11.4",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "machine": "AMD64"
+  },
+  "dependencies": {
+    "numpy": "2.4.6",
+    "pandas": "3.0.5",
+    "scipy": "1.17.1",
+    "scikit-learn": "1.9.0",
+    "dp-accounting": "0.6.0",
+    "mbi": "1.3.0",
+    "autodp": "0.2.3.1"
+  },
+  "datasets": {
+    "adult_sha256": "7537312dd56c2b98035880805ce99e68183a30ee468aa5329d6df0fbb3cc21bb"
+  },
+  "experiments": {
+    "h1": {
+      "n_rows": 6000,
+      "eps_grid": [
+        0.5,
+        1.0,
+        2.0,
+        4.0,
+        8.0
+      ],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "target_col": "income"
+    },
+    "h2": {
+      "n_rows": 6000,
+      "eps_grid": [
+        1.0,
+        8.0
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "attributes": [
+        "sex",
+        "race"
+      ],
+      "total_canaries": 400
+    },
+    "detection_floor": {
+      "n_rows": 3000,
+      "canary_counts": [
+        10,
+        25,
+        50,
+        100,
+        200,
+        400,
+        800
+      ],
+      "leak_fractions": [
+        0.0,
+        0.01,
+        0.05,
+        0.25,
+        1.0
+      ],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    }
+  },
+  "files": {
+    "results/h1_all_families.json": "18094b9e960e55bad49377af4bdd37ab66063d4a7e46906f52da30528519b9d7",
+    "results/h2_subgroups.json": "3260e18569b929bbdfc560dfb770890a34472ad5e2966c56bb173939077da5c1",
+    "results/detection_floor.json": "614dc5212f0c056dce0f1b70944cdbf64c06d01714e4a0f9394f0d48bf250720"
+  },
+  "manifest_hash": "8bcf178db8861a209cd614bee654e2af7df608ac719b4c2f02b9677fd6739e6c"
+}

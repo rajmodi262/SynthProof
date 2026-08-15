@@ -50,6 +50,20 @@ plt.rcParams.update({
 })
 
 
+
+def _eps_axis(ax, eps_values):
+    """Log x-axis labelled at exactly the epsilon values that were run.
+
+    Matplotlib's log locator adds minor ticks (2x10^-1, 3x10^0, ...) which overlap the
+    explicit labels and render as unreadable overlapping text.
+    """
+    ax.set_xscale("log")
+    ax.set_xticks(list(eps_values))
+    ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+    ax.get_xaxis().set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax.tick_params(axis="x", which="minor", length=0)
+
+
 def _load(name: str):
     path = RESULTS / name
     if not path.exists():
@@ -87,9 +101,7 @@ def fig_structure_frontier(h1):
         ax.plot(eps, mean, marker="o", ms=4, color=col, label=mech, lw=1.6)
         ax.fill_between(eps, lo, hi, color=col, alpha=0.15, lw=0)
 
-    ax.set_xscale("log")
-    ax.set_xticks([c["target_eps"] for c in h1["cells"]][: len(h1["eps_grid"])])
-    ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+    _eps_axis(ax, h1["eps_grid"])
     ax.set_xlabel("target ε (log scale)")
     ax.set_ylabel("mean absolute correlation error")
     ax.set_title("Structure preservation vs privacy budget", loc="left", fontsize=10)
@@ -117,8 +129,7 @@ def fig_utility_frontier(h1):
         ax.plot(eps, mean, marker="o", ms=4, color=col, label=mech, lw=1.6)
         ax.fill_between(eps, lo, hi, color=col, alpha=0.15, lw=0)
 
-    ax.set_xscale("log")
-    ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+    _eps_axis(ax, h1["eps_grid"])
     ax.set_xlabel("target ε (log scale)")
     ax.set_ylabel("TSTR macro F1")
     ax.set_title("Downstream utility vs privacy budget", loc="left", fontsize=10)
@@ -152,8 +163,7 @@ def fig_proved_vs_audited(h1, floor):
         ax.text(eps[0], ceiling, f" audit ceiling at m={m} (ε≈{ceiling:.2f})",
                 fontsize=8, color=BAD, va="bottom")
 
-    ax.set_xscale("log")
-    ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+    _eps_axis(ax, eps)
     ax.set_xlabel("target ε (log scale)")
     ax.set_ylabel("ε")
     ax.set_title("Proved vs audited privacy loss (pairwise)", loc="left", fontsize=10)
@@ -298,8 +308,7 @@ def fig_attack_comparison(h1):
     ax.axhline(0.5, color=NEUTRAL, ls="--", lw=1.0)
     ax.text(0.98, 0.5, " chance ", transform=ax.get_yaxis_transform(), ha="right",
             va="bottom", fontsize=8, color=NEUTRAL)
-    ax.set_xscale("log")
-    ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+    _eps_axis(ax, eps)
     ax.set_xlabel("target ε (log scale)")
     ax.set_ylabel("attack AUC")
     ax.set_ylim(0.35, 0.75)
