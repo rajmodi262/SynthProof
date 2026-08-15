@@ -1,0 +1,86 @@
+cff-version: 1.2.0
+title: >-
+  SynthProof: differentially private synthetic tabular data with
+  measured, not asserted, privacy claims
+message: >-
+  If you use this software or its findings, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Raj
+    family-names: Modi
+    affiliation: MIT World Peace University, Pune
+  - given-names: Krishna
+    family-names: Renuse
+    affiliation: MIT World Peace University, Pune
+  - given-names: Aaditya Kumar
+    family-names: Sinha
+    affiliation: MIT World Peace University, Pune
+  - given-names: Levinesh
+    family-names: G R
+    affiliation: MIT World Peace University, Pune
+repository-code: 'https://github.com/rajmodi262/SynthProof'
+abstract: >-
+  SynthProof generates differentially private synthetic tabular data and
+  reports both a formal upper bound on privacy loss and an empirical lower
+  bound recovered by canary auditing, with every operation that reads the
+  sensitive table charged to a privacy accountant and recorded in a signed
+  append-only ledger. Its principal finding is negative and concerns the
+  measurement rather than the mechanisms: the epsilon a one-run canary audit
+  can certify is bounded by the canary count alone, so certifying a given
+  epsilon costs on the order of ln(1/alpha)*e^epsilon canaries. At the counts
+  used here the instrument could not have certified the epsilons being
+  claimed, regardless of how much the mechanisms leaked. Empirical auditing
+  is therefore a tool for catching broken implementations rather than for
+  confirming tight bounds.
+keywords:
+  - differential privacy
+  - synthetic data
+  - privacy auditing
+  - membership inference
+  - reproducibility
+license: MIT
+version: 0.2.0
+date-released: '2026-08-15'
+references:
+  - type: article
+    title: Privacy Auditing with One (1) Training Run
+    authors:
+      - family-names: Steinke
+        given-names: Thomas
+      - family-names: Nasr
+        given-names: Milad
+      - family-names: Jagielski
+        given-names: Matthew
+    year: 2023
+    notes: >-
+      The one-run audit construction implemented in synthproof/audit/steinke.py.
+  - type: article
+    title: How Well Can Differential Privacy Be Audited in One Run?
+    authors:
+      - family-names: Keinan
+        given-names: Amit
+      - family-names: Shenfeld
+        given-names: Moshe
+      - family-names: Ligett
+        given-names: Katrina
+    year: 2025
+    notes: >-
+      Characterises the maximum achievable efficacy of one-run auditing and
+      identifies interference between data elements as the key barrier. Closest
+      prior art for this project's ceiling result; the ceiling reported here is
+      the simpler saturation point of the estimator itself, not a new limit.
+  - type: article
+    title: >-
+      AIM: An Adaptive and Iterative Mechanism for Differentially Private
+      Synthetic Data
+    authors:
+      - family-names: McKenna
+        given-names: Ryan
+      - family-names: Mullins
+        given-names: Brett
+      - family-names: Sheldon
+        given-names: Daniel
+      - family-names: Miklau
+        given-names: Gerome
+    year: 2022

@@ -141,6 +141,18 @@ applied, name algorithms accurately.
 
 ---
 
+## Citing and reproducing
+
+- **[ARTIFACT.md](ARTIFACT.md)** — artifact-evaluation guide: every thesis claim mapped to the
+  command that reproduces it, with expected output and runtime.
+- **[CITATION.cff](CITATION.cff)** — GitHub renders a "Cite this repository" button from this.
+- **[docs/SYNOPSIS_RECONCILIATION.md](docs/SYNOPSIS_RECONCILIATION.md)** — every promise in the
+  submitted synopsis mapped to built / partial / descoped-and-why.
+
+```bash
+make reproduce
+```
+
 ## License
 
 MIT — see [LICENSE](LICENSE). © 2026-2027 SynthProof Authors
