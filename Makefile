@@ -1,4 +1,4 @@
-.PHONY: help install test lint format h1 h2 floor reproduce reproduce-all manifest figures demo serve data console console-build \
+.PHONY: help install test lint format h1 h2 h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
         console-install security audit docker-build docker-up
 
 help:
@@ -14,6 +14,7 @@ help:
 	@echo "    make h1              Run the H1 grid on UCI Adult (long)"
 	@echo "    make floor           Measure the auditor's detection floor (long)"
 	@echo "    make h2              Run the H2 subgroup-leakage study"
+	@echo "    make h2-analyse      Re-analyse H2: FDR, equivalence, power"
 	@echo "    make reproduce       Check results against the committed manifest"
 	@echo "    make reproduce-all   Re-run every experiment, then check (very long)"
 	@echo "    make figures         Regenerate every thesis figure from results/"
@@ -70,6 +71,11 @@ floor:
 # groups get the same audit ceiling as common ones.
 h2:
 	python -m scripts.run_h2
+
+# Re-analyses the committed H2 results with FDR control, TOST equivalence and a power
+# statement. Reads results only -- runs no experiment.
+h2-analyse:
+	python -m scripts.analyse_h2
 
 # Verify every published number against the committed manifest. `make reproduce-all` re-runs
 # every experiment first; that is long, and it is what the thesis's reproducibility claim

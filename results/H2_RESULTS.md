@@ -104,6 +104,86 @@ experiment H2 actually needs**, and that is a compute problem rather than a desi
 
 ---
 
+## 3a. The reframed analysis — multiplicity, equivalence, and power
+
+A bare "not supported" is uninformative: failing to reject is consistent both with *no effect*
+and with *no power to find one*. This section establishes which. Produced by
+`make h2-analyse` from the committed `h2_subgroups.json`; raw output in
+[`h2_analysis.json`](h2_analysis.json).
+
+### Multiplicity — nothing to correct
+
+14 subgroup-by-epsilon comparisons at α = 0.05. **Raw p < 0.05: zero.** Chance alone predicts
+0.7 false positives, so there was nothing for a correction to remove — and both
+Benjamini-Hochberg (FDR) and Bonferroni (FWER) leave zero surviving, trivially.
+
+| comparison | raw p | BH p | Bonferroni p |
+|---|---:|---:|---:|
+| race=Other ε=8.0 | 0.2245 | 0.5306 | 1.0000 |
+| sex=Male ε=1.0 | 0.2244 | 0.5306 | 1.0000 |
+| race=White ε=8.0 | 0.2676 | 0.5306 | 1.0000 |
+| … 11 more, all p > 0.2 | | | |
+
+Reporting the correction matters even though it changes nothing: had a single raw p landed
+under 0.05, it would have been within the 0.7 expected by chance across 14 tests, and treating
+it as a finding would have been the error this guards against.
+
+### The power result — why H2 is null
+
+At **m = 80** canaries per subgroup and α = 0.05:
+
+| | |
+|---|---|
+| Smallest detectable audited ε | **0.008** |
+| Adversary accuracy required to reach it | **0.600** |
+| Best accuracy actually observed | **0.562** (race=Other, ε=8) |
+| Largest audited ε observed | 0.036 |
+| Ceiling at this canary count | 3.27 |
+| **Fraction of the instrument's range used** | **1.1%** |
+
+> **The adversary fell short of the detection threshold.** It reached 0.562 where 0.600 was
+> needed. H2 is null because the attack was not strong enough at this sample size — a *power*
+> result, not an *absence* result. The distinction is the whole point of this section, and it
+> is asserted as a regression test so the claim cannot rot
+> (`test_the_adversary_fell_short_of_the_detection_threshold`).
+
+### Equivalence testing — a positive bound where power allows
+
+TOST (Lakens 2017) with an equivalence margin of **±0.10 in adversary accuracy**, chosen from
+the measured detection floor *before* this analysis and not from the H2 data — see
+`H2_BOUND_JUSTIFICATION` in `synthproof/audit/equivalence.py`.
+
+- **2 of 14 comparisons** (`sex=Female ε=8`, p = 0.0365; `sex=Male ε=8`, p = 0.0453) are
+  **statistically equivalent to chance** within that margin. For these two, the study
+  positively bounds the effect rather than merely failing to find one.
+- **12 of 14 are not** — the equivalence test is itself underpowered at m = 80. For those the
+  honest statement is that the data neither establish an effect nor rule one out.
+
+That the equivalence test succeeds only for `sex` is expected: `sex` gets 200 canaries per
+group against `race`'s 80, because the budget is split across two levels rather than five.
+
+### What this section establishes
+
+1. **H2 is not supported.** No comparison is significant, before or after correction.
+2. **The null is bounded, not empty.** For two comparisons the effect is positively bounded
+   within ±0.10 of chance.
+3. **The reason is power, not absence.** The adversary needed accuracy 0.600 and reached
+   0.562, using 1.1% of the instrument's dynamic range.
+4. **What would change the answer:** a stronger adversary, or thousands of canaries per
+   subgroup. Both are stated in §4 as the experiment H2 actually needs.
+
+### One limitation of this analysis
+
+`h2_subgroups.json` stores per-subgroup mean accuracy but **not** the per-canary
+correct/incorrect vectors. The TOST therefore reconstructs a Bernoulli sample consistent with
+the recorded sufficient statistic rather than replaying the actual outcomes. The seed is fixed
+so the numbers are reproducible, but a different seed would move each TOST p slightly. Storing
+the raw outcome vectors in the H2 runner removes the reconstruction entirely and is the
+correct fix.
+
+
+---
+
 ## 4. What would make this measurable
 
 | | |
