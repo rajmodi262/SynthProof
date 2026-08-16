@@ -11,10 +11,12 @@ the formal bound (ε_proved) and an empirical lower bound (ε_audited).
 
 > [!WARNING]
 > **This is a capstone research prototype, not a system for releasing real data.**
-> The privacy accounting is sound and the calibration is verified in CI, but the empirical
-> auditor's detection floor has never been measured, so `ε_audited = 0` currently means
-> "below this instrument's sensitivity", not "no leakage". Known gaps and the remediation
-> plan are in **[docs/AUDIT_AND_ROADMAP.md](docs/AUDIT_AND_ROADMAP.md)**.
+> The accounting is sound and CI-verified, and the auditor's detection floor and ceiling are
+> now both measured — so `ε_audited = 0` is reported alongside the smallest leak the
+> instrument could have seen, rather than passed off as "no leakage". What still rules this
+> out for real releases: **no authentication on the API**, no cross-session budget
+> enforcement, no multi-table support, and single-table CSV only. Known gaps and the
+> remediation plan are in **[docs/AUDIT_AND_ROADMAP.md](docs/AUDIT_AND_ROADMAP.md)**.
 
 ---
 
@@ -26,14 +28,14 @@ the formal bound (ε_proved) and an empirical lower bound (ε_audited).
 | **ε-calibration** | ✅ Working | Inverts the composition theorem by bisection. proved/target ≈ 0.92, **never overspends**. CI-gated across 24 configurations. |
 | **Discrete Gaussian / Laplace** | ✅ Working | CKS'20 rejection sampler, χ²-tested against the exact PMF. |
 | **DP domain profiler** | ✅ Working | Public schema bounds cost nothing; category domains released through a noisy threshold. |
-| **Append-only signed ledger** | ✅ Working | Ed25519 over a SHA-256 hash chain, tamper-tested against live SQLite. |
+| **Append-only signed ledger** | ✅ Working | Ed25519 over a SHA-256 hash chain **plus a signed head** committing to `(entry_count, tip_hash)`. Stops modification, insertion, reordering, replay and **truncation** — 12 adversarial tests in [tests/test_ledger_adversarial.py](tests/test_ledger_adversarial.py), each an attack run against live SQLite by an adversary with file access but no key. Does not stop an adversary who holds the signing key. |
 | **Signed Privacy Data Sheet** | ✅ Working | Persistent key; `synthproof verify sheet.json --pubkey org.pub` is runnable by a third party. |
 | **Generators** | ✅ 3 real families | `independent` (baseline) · `pairwise` (tree-structured 2-way) · `aim` (private-PGM) · `copula` (per-column control) |
-| **Canary auditor** | ⚠️ Underpowered | Real Clopper-Pearson bound, measured FPR, Fisher exact test — but **detection floor unmeasured**, so it reads 0 everywhere. |
-| **Attack suite** | ⚠️ 1 of 4 | Nearest-neighbour MIA + exact-match singling-out. **LiRA, DOMIAS and attribute inference are NOT implemented.** |
+| **Canary auditor** | ✅ Working, and its limits are measured | Paired Clopper-Pearson *and* the one-run Steinke construction. The **detection floor is now measured** ([results/DETECTION_FLOOR.md](results/DETECTION_FLOOR.md)): at 400 canaries the auditor resolves a 25% leak; at 10 canaries it needs a 100% leak. The **audit ceiling** `log(r/ln(1/α))` is reported beside every ε_audited, so a 0 is never mistaken for evidence of no leakage. |
+| **Attack suite** | ✅ 4 attacks | `distance_mia` (nearest-neighbour) · `exact_match_risk` (singling-out) · `domias` (k-NN density ratio, Breugel et al. 2023) · `attribute_inference` (scored against a conditional baseline, not a marginal one). **LiRA is deliberately NOT implemented** — a shadow-model attack is ~21h of compute for a likely wide-CI null, and calling anything cheaper "LiRA" would misname it. |
 | **Web console** | ✅ Working | React + R3F. Live SSE pipeline, 3D record space, ledger tamper demo. |
-| **H1** — mechanism families | ✅ **Supported** | Structure and utility separate with non-overlapping CIs. See [results/H1_RESULTS.md](results/H1_RESULTS.md). Privacy half blocked on the auditor. |
-| **H2** — subgroup disparity | ❌ Not started | |
+| **H1** — mechanism families | ⚠️ **Supported on Adult, NOT reproduced on ACS** | On UCI Adult all three families separate at ε=8 with non-overlapping CIs (aim > pairwise > independent). On ACSIncome the ordering **inverts** and AIM is indistinguishable from the independent baseline. Diagnosed: the structure metric's column pair is one AIM selects at every ε on Adult and at one of three on ACS, so the Adult result is partly a metric/mechanism coincidence. Reported, not tuned away — [results/acs/H1_RESULTS.md](results/acs/H1_RESULTS.md). |
+| **H2** — subgroup disparity | ✅ **Bounded null** | 14 subgroup comparisons, 0 significant raw, 0 surviving BH-FDR or Bonferroni. 2 of 14 are statistically **equivalent** to chance within a pre-specified margin (TOST) — a bound on the effect, not merely absence of evidence. Detectability is stated: the adversary needed accuracy 0.600 and reached 0.562. See [results/H2_RESULTS.md](results/H2_RESULTS.md). |
 | **H3** — ledger-driven allocation | ❌ Not started | `Allocator` exists; nothing drives generators with it. |
 
 ---
@@ -99,8 +101,9 @@ synthproof/
 ├── ledger/         # Ed25519-signed hash-chain ledger, allocator, data sheet signing
 ├── data/           # Schema, dataset wrapper, benchmark loaders, DP domain profiler
 ├── generators/     # independent · pairwise · aim (private-PGM) · copula
-├── audit/          # Canary auditor (Clopper-Pearson lower bound)
-├── attacks/        # Distance MIA baseline, exact-match singling-out
+├── audit/          # Paired Clopper-Pearson + one-run Steinke, subgroup auditor,
+│                   #   detection floor, audit ceiling, TOST equivalence
+├── attacks/        # Distance MIA, exact-match singling-out, DOMIAS, attribute inference
 ├── evaluate/       # Downstream ML utility (TSTR / TRTR)
 ├── frontier/       # Experiment runner, Privacy Data Sheet exporter
 ├── api/            # FastAPI service backing the console
@@ -112,17 +115,27 @@ web/                # React console
 
 ## Results
 
-See **[results/H1_RESULTS.md](results/H1_RESULTS.md)**. Regenerate with `make h1`.
+See **[results/H1_RESULTS.md](results/H1_RESULTS.md)** (Adult),
+**[results/acs/H1_RESULTS.md](results/acs/H1_RESULTS.md)** (ACSIncome) and
+**[results/acs/CROSS_DATASET.md](results/acs/CROSS_DATASET.md)**.
+Regenerate with `make h1` and `make h1-acs`.
 
-The headline: `pairwise` and `aim` both preserve joint structure substantially better than the
-independent baseline at ε = 8, with non-overlapping confidence intervals, and both improve as
-the budget grows while the baseline stays flat.
+**On UCI Adult**, the three mechanism families separate at ε = 8 with mutually non-overlapping
+CIs: `aim` (0.0078) < `pairwise` (0.0283) < `independent` (0.0947) correlation error.
 
-That result required fixing our own measurement harness first — utility was being scored on a
-model trained with 60 planted canaries, which destroyed 89% of the correlation signal being
-measured and systematically penalised the mechanisms that model dependence best. Two earlier
-versions of the H1 document reported the opposite conclusion in good faith. §4 of the results
-document explains it.
+**On ACSIncome the ordering does not reproduce.** It inverts — `pairwise` (0.0202) <
+`independent` (0.0535) ≈ `aim` (0.0626) — and AIM is not statistically distinguishable from
+the independent-marginals baseline. We diagnosed rather than adjusted: the structure metric is
+the correlation of a *single column pair*, and AIM selects exactly that pair as a clique at
+every ε tested on Adult but at only one of three on ACS. The Adult headline is therefore partly
+a coincidence between the metric and the mechanism's internal clique selection. That is a
+finding about how DP-synthesis benchmarks are scored, and it is the most useful thing the
+second dataset bought.
+
+Both results required fixing our own measurement harness first — utility had been scored on a
+model trained with 60 planted canaries, destroying 89% of the correlation signal and
+systematically penalising the mechanisms that model dependence best. Two earlier versions of
+the H1 document reported the opposite conclusion in good faith. §4 explains it.
 
 ---
 

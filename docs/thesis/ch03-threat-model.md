@@ -95,22 +95,43 @@ operator, and it is the kind of specific, self-critical detail that reads as rig
 
 ---
 
-## 3.5 Out of scope (~200 words)
+## 3.5 Out of scope
 
-Be generous here. Naming what you do not defend is a strength.
+Naming what we do not defend is a strength, so this list is deliberately generous.
 
 - **Hardware side channels** — timing, power, EM, cache.
-- **Floating-point attacks beyond the noise sampler.** We use discrete Gaussian/Laplace
-  sampling (Canonne–Kamath–Steinke 2020) to avoid Mironov's (2012) inverse-CDF attack, but a
-  full constant-time audit of the pipeline is out of scope.
+- **Exact-arithmetic noise sampling.** We sample the discrete Gaussian and discrete Laplace
+  directly (Canonne–Kamath–Steinke 2020), which avoids Mironov's (2012) attack in its usual
+  form: leakage through the *output* representation when a continuous sample is rounded. We
+  do **not** implement CKS'20's exact-arithmetic Bernoulli — the acceptance step uses a
+  floating-point comparison, as do the underlying geometric draws. The sampled distributions
+  are correct (χ² against the exact PMF; empirical variance within 0.3% of theory at
+  σ ∈ {0.5, 1, 3, 10}), but an adversary who can observe the sampler at bit level or through
+  timing is out of scope. `synthproof/accounting/noise.py` states this at the call site.
 - **Upstream poisoning** of *D* before ingestion.
 - **Compromise of the signing key.** The ledger is tamper-*evident*, not tamper-*proof*; an
   adversary holding the private key can rewrite history and re-sign. Key custody is an
-  organisational control, not a cryptographic one. **Say this explicitly** — it is the honest
-  limitation of the ledger design and a reviewer will find it.
+  organisational control, not a cryptographic one. This is the honest limitation of the
+  design and a reviewer will find it, so it is stated rather than buried.
+
+  Within that boundary the adversary we *do* defend against is a **malicious operator with
+  full write access to the ledger database and knowledge of the source, but no key** — not
+  merely a careless one. Nine attacks in that model are executed against live SQLite in
+  `tests/test_ledger_adversarial.py`: field modification, modification with the stored hash
+  recomputed, middle-entry deletion, reordering, replay under a fresh entry id, appending a
+  forged entry with the head rewritten, tail truncation, and truncation combined with
+  deleting the head row. All nine are detected.
+
+  Truncation deserves specific mention because hash chaining alone does **not** catch it: a
+  shortened chain is internally consistent, so before the signed head existed, deleting the
+  final two entries left `verify()` returning `True`. An operator could therefore have
+  deleted the entries recording a budget overspend. The head commits to
+  `(entry_count, tip_hash)` and is signed, so shortening the chain now requires forging a
+  signature over the new length.
 - **Multi-party or federated settings.** Single data holder only.
-- **Correctness of `dp_accounting`.** We treat it as trusted, mitigated by the planned
-  differential test against `autodp` (M2.9).
+- **Correctness of `dp_accounting`.** We treat it as trusted, mitigated by a differential
+  test against the independent `autodp` implementation — agreement between two libraries is
+  evidence; agreement of our code with itself is not.
 
 ---
 

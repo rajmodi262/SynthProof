@@ -76,11 +76,75 @@ Every deviation, its reason, and its likely direction of effect on inference.
 
 | # | Deviation | Reason | Effect on inference |
 |---|---|---|---|
-| D1 | **ACSIncome not run.** UCI Adult only | Time budget | Weakens external validity. Any H1/H2 conclusion is single-dataset and must be stated as such |
+| ~~D1~~ | ~~**ACSIncome not run.** UCI Adult only~~ **CLOSED.** Both hypotheses now run on ACSIncome (CA 2018, n=6,000) under the identical protocol — same seeds, epsilon grid, and structure column pair | — | See §6.9. External validity was **tested**, and the H1 structure ordering **did not transfer**. That is now a reported finding rather than an unexamined limitation |
 | D2 | **Utility measured on a second, canary-free fit** | Measuring it on the canary-trained model destroyed the signal being measured — 60 canaries cut corr(age, hours) from 0.1014 to 0.0109 | Removes a bias that had been penalising exactly the mechanisms that model dependence. Direction: made H1 *measurable*; without it H1 was falsely null |
 | D3 | **Auditor changed** from paired Clopper-Pearson to the one-run construction | The paired estimator spends two canaries per comparison and saturates sooner | Slightly raises the audited bound at fixed canary budget. Both are reported and compared |
 | D4 | **H1 primary metric supplemented.** Preregistration named TSTR macro F1; correlation error was added as a structure metric | TSTR alone cannot distinguish an independent-marginal mechanism from a structured one on this data | Additive, not substitutive — TSTR is still reported. The structure metric is what separates the families |
 | D5 | **H3 not run** | Time budget | H3 is untested and reported as such, not omitted |
+
+## 6.9 External validity: what the second dataset changed
+
+D1 was closed by running the full preregistered protocol on **ACSIncome (California, 2018)**
+via `folktables` — the dataset Ding et al. (NeurIPS 2021) built as UCI Adult's modern
+replacement. Everything the protocol controls was held identical: n = 6,000, seeds 0-4,
+ε ∈ {0.5, 1, 2, 4, 8}, and the same structure-metric column pair by analogy (`AGEP`×`WKHP`
+for `age`×`hours_per_week`). A difference between the datasets is therefore attributable to
+the data, not the procedure. This is enforced by
+`tests/test_experiment_scripts.py::test_the_two_datasets_share_the_protocol_that_makes_them_comparable`.
+
+Two things could not be held identical, and both are reported rather than corrected away:
+
+1. **The true correlation differs** (Adult 0.1034, ACS 0.0721), so *absolute* correlation
+   error is not comparable across the datasets. Only the mechanism **ordering** transfers.
+2. **The per-subgroup audit ceiling differs.** H2 allocates a fixed 400-canary budget equally
+   across an attribute's levels; `race` has 5 levels on Adult and `RAC1P` has 9 on ACS, giving
+   80 vs 44 canaries per group and ceilings of 3.27 vs 2.65. ACS's race instrument is
+   genuinely weaker *before any mechanism runs*. Raising ACS's budget to equalise the ceilings
+   would have confounded group count with total canary count instead.
+
+### What transferred, and what did not
+
+**H2 replicated.** The null holds on both datasets and for the same reason. On Adult, 0 of 14
+comparisons survive BH-FDR or Bonferroni; on ACS, 0 of 22. On ACS the largest observed bound
+was 0.096 at adversary accuracy 0.591, against a ceiling of 2.65 — 3.6% of the instrument's
+range. The conclusion is unchanged and is now dataset-independent: at this canary budget the
+instrument cannot resolve subgroup differences, which bounds the effect rather than
+establishing its absence.
+
+**H1's structure ordering did not.** At ε = 8 on Adult the three families separate with
+mutually non-overlapping CIs, `aim` (0.0078) < `pairwise` (0.0283) < `independent` (0.0947).
+On ACS the ordering inverts — `pairwise` (0.0202) < `independent` (0.0535) ≈ `aim` (0.0626) —
+and AIM is **not statistically distinguishable** from the independent-marginals baseline.
+
+Per the analysis plan, a contradicting result is diagnosed, not adjusted. The diagnosis:
+
+- The engineering model-size bound is **not** responsible — `skipped_cliques_` is empty at
+  both ε = 0.5 and ε = 8, with 17 cliques measured at each.
+- The structure metric is the correlation of a **single column pair**, and AIM's score on it
+  is largely determined by whether that pair is among the ~6 two-way cliques AIM selects. On
+  Adult, AIM selects `age`×`hours_per_week` at *every* ε tested. On ACS it selects
+  `AGEP`×`WKHP` at one of three, and the ACS correlation error tracks that selection exactly:
+  0.0977 (not selected) → 0.0395 (selected) → 0.0626 (not selected).
+
+The Adult headline is therefore, to a degree this design cannot bound, a coincidence between
+the metric's chosen column pair and the mechanism's internal clique selection — not a general
+claim about structure preservation. **This was invisible from a single dataset**, and is the
+principal methodological contribution the second dataset bought. It generalises beyond this
+project: any DP-synthesis benchmark scoring a marginal-based mechanism on a small fixed set of
+low-order statistics risks measuring clique selection rather than fidelity.
+
+A secondary observation, reported because it is counter-intuitive and was verified before
+being written down: on ACS, AIM's downstream utility **falls** as ε rises (TSTR F1 0.704
+[0.695, 0.713] at ε = 0.5 against 0.581 [0.539, 0.629] at ε = 8; the endpoint CIs do not
+overlap). The cause is the same mechanism — the DP profiler suppresses far fewer rare
+categories at a larger budget (OCCP 3 → 23 categories, RELP 3 → 14), so a roughly fixed clique
+allowance covers proportionally less of the domain and fewer cliques land on the target
+column. AIM optimises global marginal approximation, not a downstream task.
+
+These observations are pinned by `tests/test_acs_h1_findings.py`, so the prose above cannot
+drift from the committed results without a test failing.
+
+---
 
 D2 is the deviation most likely to be challenged, because changing a measurement mid-study can
 look like fishing. The defence is that the change was made for a diagnosed measurement defect,

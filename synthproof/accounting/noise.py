@@ -3,8 +3,14 @@
 Implements:
   - Discrete Laplace (DLap): Two-sided geometric (Ghosh, Roughgarden & Sundararajan, 2012).
   - Discrete Gaussian (DGauss): Rejection sampler from Canonne, Kamath & Steinke (2020),
-    Section 5.2 Algorithm 1. Avoids the floating-point vulnerability of rounding continuous
-    Gaussian samples (Mironov, 2012).
+    Section 5.2 Algorithm 1.
+
+SCOPE OF THE FLOATING-POINT CLAIM. Both samplers emit integers, which avoids the Mironov
+(2012) attack in its usual form — leakage through the output representation when a continuous
+sample is rounded. Neither is an exact-arithmetic implementation: the acceptance test and the
+underlying geometric draws use floating point. The distributions are correct (verified against
+the exact PMFs by chi-square), but an adversary observing the sampler at bit level or through
+timing is out of scope. `sample_discrete_gaussian` documents this in full.
 """
 
 import math
@@ -13,8 +19,7 @@ from typing import Optional
 import numpy as np
 
 
-def sample_discrete_laplace(scale: float, size: int = 1,
-                            seed: Optional[int] = None) -> np.ndarray:
+def sample_discrete_laplace(scale: float, size: int = 1, seed: Optional[int] = None) -> np.ndarray:
     """Samples from Discrete Laplace distribution DLap(scale) using two-sided geometric.
 
     The Discrete Laplace with parameter b = scale places mass proportional to
@@ -86,17 +91,31 @@ def _discrete_gaussian_single(sigma_sq: float, rng: np.random.Generator) -> int:
         # Otherwise, reject and loop
 
 
-def sample_discrete_gaussian(sigma: float, size: int = 1,
-                              seed: Optional[int] = None) -> np.ndarray:
+def sample_discrete_gaussian(sigma: float, size: int = 1, seed: Optional[int] = None) -> np.ndarray:
     """Samples from Discrete Gaussian distribution N_Z(0, sigma^2).
 
-    Implements the rejection sampler from Canonne, Kamath & Steinke (2020),
-    Algorithm 1. This is the provably correct sampler for the discrete
-    Gaussian mechanism that provides concentrated DP (zCDP) guarantees.
+    Implements the rejection sampler from Canonne, Kamath & Steinke (2020), Algorithm 1 —
+    the sampler for the discrete Gaussian mechanism underpinning zCDP guarantees.
 
-    Unlike rounding continuous Gaussian samples, this sampler:
-      - Produces the exact discrete Gaussian distribution over integers
-      - Is immune to the Mironov (2012) floating-point side-channel
+    WHAT THIS DOES AND DOES NOT DEFEND, stated precisely because the difference matters.
+
+    It produces the discrete Gaussian over the integers directly, so it avoids the Mironov
+    (2012) attack in its usual form: leakage through the *output* representation, where
+    rounding or inverse-CDF sampling of a continuous Gaussian leaves gaps in the reachable
+    float values that reveal the noise.
+
+    It does NOT achieve exact-arithmetic sampling. The accept/reject step below uses
+    `rng.random() < math.exp(log_accept)` — a floating-point Bernoulli — where CKS'20
+    specify a Bernoulli(exp(-x)) built from integer arithmetic precisely so that no
+    floating-point rounding enters the decision. `np.random.Generator.geometric` is likewise
+    float-backed. A determined adversary with exact timing or bit-level observation of the
+    sampler is therefore not in scope; see docs/thesis/ch03-threat-model.md.
+
+    Concretely:
+      - Produces the discrete Gaussian distribution over integers (verified against the
+        exact PMF by chi-square in tests/test_accounting.py)
+      - Avoids the output-representation form of the Mironov (2012) attack
+      - Does NOT provide the exact-arithmetic guarantee of a full CKS'20 implementation
 
     Args:
         sigma: Standard deviation parameter sigma > 0.
