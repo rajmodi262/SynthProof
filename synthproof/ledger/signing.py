@@ -33,6 +33,19 @@ PRIVATE_KEY_NAME = "synthproof_ed25519"
 PUBLIC_KEY_NAME = "synthproof_ed25519.pub"
 
 
+def resolve_key_dir() -> Path:
+    """Where keys live, resolved at CALL time rather than at import.
+
+    `DEFAULT_KEY_DIR` is evaluated when this module is first imported, so anything that sets
+    SYNTHPROOF_KEY_DIR afterwards — a test, an embedding application, a notebook — was
+    silently ignored and the process went on using `.keys/`. Reading the variable per call
+    removes that trap. `DEFAULT_KEY_DIR` is kept as the documented default and as the value
+    used when the variable is unset.
+    """
+    override = os.environ.get("SYNTHPROOF_KEY_DIR")
+    return Path(override) if override else DEFAULT_KEY_DIR
+
+
 class SignatureError(Exception):
     """Raised when a signature is absent, malformed, or does not verify."""
 
@@ -40,15 +53,19 @@ class SignatureError(Exception):
 # --------------------------------------------------------------------------- key management
 
 
-def generate_keypair(key_dir: Path = DEFAULT_KEY_DIR, overwrite: bool = False) -> Tuple[Path, Path]:
+def generate_keypair(key_dir: Optional[Path] = None, overwrite: bool = False) -> Tuple[Path, Path]:
     """Creates a persistent Ed25519 keypair and returns (private_path, public_path).
+
+    `key_dir` defaults to `resolve_key_dir()` — resolved at call time, so SYNTHPROOF_KEY_DIR is
+    honoured however late it is set. It used to default to the import-time constant, which
+    meant writing the key somewhere the loaders would not look.
 
     The private key is written unencrypted, which is appropriate for a capstone artefact and
     NOT for a real deployment — a production holder would keep it in an HSM or a secrets
     manager. `.keys/` is gitignored; the permission tightening below is a second line of
     defence rather than the primary one.
     """
-    key_dir = Path(key_dir)
+    key_dir = Path(key_dir) if key_dir is not None else resolve_key_dir()
     key_dir.mkdir(parents=True, exist_ok=True)
     priv_path = key_dir / PRIVATE_KEY_NAME
     pub_path = key_dir / PUBLIC_KEY_NAME
@@ -86,7 +103,7 @@ def generate_keypair(key_dir: Path = DEFAULT_KEY_DIR, overwrite: bool = False) -
 
 def load_private_key(path: Optional[Path] = None) -> ed25519.Ed25519PrivateKey:
     """Loads the persistent signing key, with an actionable error when it is absent."""
-    path = Path(path) if path else DEFAULT_KEY_DIR / PRIVATE_KEY_NAME
+    path = Path(path) if path else resolve_key_dir() / PRIVATE_KEY_NAME
     if not path.exists():
         raise FileNotFoundError(
             f"No signing key at {path}. Create one with:\n"
@@ -101,7 +118,7 @@ def load_private_key(path: Optional[Path] = None) -> ed25519.Ed25519PrivateKey:
 
 def load_public_key(path: Optional[Path] = None) -> ed25519.Ed25519PublicKey:
     """Loads a public key for verification."""
-    path = Path(path) if path else DEFAULT_KEY_DIR / PUBLIC_KEY_NAME
+    path = Path(path) if path else resolve_key_dir() / PUBLIC_KEY_NAME
     if not path.exists():
         raise FileNotFoundError(f"No public key at {path}.")
     key = serialization.load_pem_public_key(path.read_bytes())
