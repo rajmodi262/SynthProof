@@ -1,4 +1,4 @@
-.PHONY: help install test lint format h1 h2 h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
+.PHONY: help install install-locked lock test lint format h1 h1-acs h2 h2-acs h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
         console-install security audit docker-build docker-up
 
 help:
@@ -6,14 +6,17 @@ help:
 	@echo ""
 	@echo "  Python"
 	@echo "    make install         Install the package with dev dependencies"
+	@echo "    make install-locked  Install the EXACT versions behind the committed results"
 	@echo "    make test            Run the test suite with coverage"
 	@echo "    make lint            ruff + black checks (matches CI)"
 	@echo "    make security        bandit SAST + pip-audit CVEs + npm audit"
 	@echo "    make format          Format with black"
 	@echo "    make data            Fetch UCI Adult and verify its SHA-256"
 	@echo "    make h1              Run the H1 grid on UCI Adult (long)"
+	@echo "    make h1-acs          Run the same grid on ACSIncome"
 	@echo "    make floor           Measure the auditor's detection floor (long)"
 	@echo "    make h2              Run the H2 subgroup-leakage study"
+	@echo "    make h2-acs          Run the same subgroup study on ACSIncome"
 	@echo "    make h2-analyse      Re-analyse H2: FDR, equivalence, power"
 	@echo "    make reproduce       Check results against the committed manifest"
 	@echo "    make reproduce-all   Re-run every experiment, then check (very long)"
@@ -30,6 +33,15 @@ help:
 
 install:
 	pip install -e ".[dev]"
+
+# The exact resolved dependency set the committed results were produced with. Use this, not
+# `make install`, when the goal is to REPRODUCE rather than to develop.
+install-locked:
+	pip install -r requirements.lock
+	pip install -e . --no-deps
+
+lock:
+	pip freeze --exclude-editable > requirements.lock
 
 test:
 	python -m pytest
@@ -62,6 +74,11 @@ data:
 h1:
 	python -m scripts.run_h1
 
+# The same protocol on ACSIncome. Same n, seeds, epsilon grid and structure column pair as
+# Adult, so a difference between them is the data and not the protocol.
+h1-acs:
+	python -m scripts.run_h1 --dataset acs
+
 # Measures what the auditor can actually see. Every eps_audited in this repo is
 # uninterpretable without it.
 floor:
@@ -71,6 +88,12 @@ floor:
 # groups get the same audit ceiling as common ones.
 h2:
 	python -m scripts.run_h2
+
+# The same subgroup protocol on ACSIncome. NOTE: RAC1P has 9 levels against Adult's 5, so an
+# equal split of the same fixed canary budget gives ACS a LOWER per-group ceiling (2.65 vs
+# 3.27). That difference is reported, not corrected away.
+h2-acs:
+	python -m scripts.run_h2 --dataset acs
 
 # Re-analyses the committed H2 results with FDR control, TOST equivalence and a power
 # statement. Reads results only -- runs no experiment.

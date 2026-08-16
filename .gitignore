@@ -68,3 +68,7 @@ docs/thesis/figures/*.png
 
 # Per-cell grid checkpoints. Intermediate state; the aggregate is what gets committed.
 results/h1_cells/
+results/acs/h1_cells/
+results/acs/h2_cells/
+# folktables downloads ACS microdata here; ~200 MB, re-fetchable
+data/acs/

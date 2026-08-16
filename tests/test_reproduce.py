@@ -31,11 +31,14 @@ def test_manifest_has_everything_needed_to_reproduce_a_run():
     assert set(m["experiments"]) == {"h1", "h2", "detection_floor"}
     assert "seeds" in m["experiments"]["h1"]
     assert "eps_grid" in m["experiments"]["h1"]
+    # One runner drives both benchmarks; each records its own target and structure pair.
+    assert {"adult", "acs"} <= set(m["experiments"]["h1"]["datasets"])
 
 
 def test_manifest_hash_is_deterministic_for_unchanged_results():
-    assert reproduce.build_manifest()["manifest_hash"] == \
-        reproduce.build_manifest()["manifest_hash"]
+    assert (
+        reproduce.build_manifest()["manifest_hash"] == reproduce.build_manifest()["manifest_hash"]
+    )
 
 
 def test_manifest_hash_changes_when_a_result_file_changes(tmp_path, monkeypatch):
@@ -77,10 +80,10 @@ def test_comparison_reports_every_kind_of_divergence():
     diffs = "\n".join(reproduce.compare(current, committed))
 
     assert "manifest hash" in diffs
-    assert "a.json" in diffs                    # contents changed
-    assert "MISSING" in diffs                   # b.json disappeared
+    assert "a.json" in diffs  # contents changed
+    assert "MISSING" in diffs  # b.json disappeared
     assert "not in committed manifest" in diffs  # c.json is new
-    assert "numpy" in diffs                     # dependency moved
+    assert "numpy" in diffs  # dependency moved
 
 
 def test_identical_manifests_report_no_divergence():

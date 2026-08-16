@@ -4,9 +4,11 @@ Reads results/h2_subgroups.json — it does NOT re-run any experiment, so the nu
 the same ones already committed, viewed through a stricter lens.
 
 Usage:
-    python -m scripts.analyse_h2
+    python -m scripts.analyse_h2                 # UCI Adult (default)
+    python -m scripts.analyse_h2 --dataset acs   # ACSIncome, CA 2018
 """
 
+import argparse
 import json
 from pathlib import Path
 
@@ -22,13 +24,22 @@ from synthproof.audit.equivalence import (
     test_equivalence,
 )
 
-SRC = Path("results/h2_subgroups.json")
-OUT = Path("results/h2_analysis.json")
+# Each dataset keeps its own analysis file. Sharing one would silently overwrite the other's
+# committed numbers — the same defect that was caught in scripts/run_h2.py.
+DATASETS = {
+    "adult": (Path("results/h2_subgroups.json"), Path("results/h2_analysis.json")),
+    "acs": (Path("results/acs/h2_subgroups.json"), Path("results/acs/h2_analysis.json")),
+}
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--dataset", default="adult", choices=sorted(DATASETS))
+    args = ap.parse_args()
+    SRC, OUT = DATASETS[args.dataset]
+
     if not SRC.exists():
-        raise SystemExit(f"{SRC} not found. Run `make h2` first.")
+        raise SystemExit(f"{SRC} not found. Run `make h2` / `make h2-acs` first.")
     data = json.loads(SRC.read_text(encoding="utf-8"))
 
     labels, pvals, epsilons, accuracies = [], [], [], []
@@ -64,20 +75,25 @@ def main():
             # Bernoulli(0.5) draws are the exact null for a guess-counting adversary.
             observed = rng.binomial(1, g["mean_accuracy"], size=m).astype(float)
             chance = rng.binomial(1, 0.5, size=m).astype(float)
-            equivalence.append(test_equivalence(
-                label=f"{cell['attribute']}={g['subgroup']} eps={cell['target_eps']}",
-                sample=observed, reference=chance,
-                bound=H2_EQUIVALENCE_BOUND_ACCURACY,
-                justification=H2_BOUND_JUSTIFICATION,
-            ))
+            equivalence.append(
+                test_equivalence(
+                    label=f"{cell['attribute']}={g['subgroup']} eps={cell['target_eps']}",
+                    sample=observed,
+                    reference=chance,
+                    bound=H2_EQUIVALENCE_BOUND_ACCURACY,
+                    justification=H2_BOUND_JUSTIFICATION,
+                )
+            )
 
     detectability = describe_detectability(
-        num_canaries=min(canary_counts), observed_epsilons=epsilons,
+        num_canaries=min(canary_counts),
+        observed_epsilons=epsilons,
         observed_accuracies=accuracies,
     )
 
-    analysis = H2Analysis(multiplicity=multiplicity, equivalence=equivalence,
-                          detectability=detectability)
+    analysis = H2Analysis(
+        multiplicity=multiplicity, equivalence=equivalence, detectability=detectability
+    )
 
     print(format_h2_table(analysis))
     print("\n" + "=" * 78)

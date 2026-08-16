@@ -1,0 +1,275 @@
+{
+  "dataset": "acs",
+  "dataset_label": "ACSIncome (CA 2018)",
+  "n_rows": 6000,
+  "mechanism": "pairwise",
+  "attributes": [
+    "SEX",
+    "RAC1P"
+  ],
+  "total_canaries": 400,
+  "eps_grid": [
+    1.0,
+    8.0
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "cells": [
+    {
+      "attribute": "SEX",
+      "target_eps": 1.0,
+      "proved_eps": 0.9122464987698526,
+      "subgroups": [
+        {
+          "subgroup": "Female",
+          "population_share": 0.47883333333333333,
+          "num_canaries": 200,
+          "ceiling": 4.193629987170997,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5333333333333333,
+          "mean_p_value": 0.21012302607842684
+        },
+        {
+          "subgroup": "Male",
+          "population_share": 0.5211666666666667,
+          "num_canaries": 200,
+          "ceiling": 4.193629987170997,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5316666666666667,
+          "mean_p_value": 0.2557571456150977
+        }
+      ],
+      "interpretation": "UNMEASURABLE at this scale. No subgroup produced a positive bound; the per-subgroup ceilings run 4.19-4.19, so this says the instrument cannot resolve subgroup differences here, not that none exist."
+    },
+    {
+      "attribute": "SEX",
+      "target_eps": 8.0,
+      "proved_eps": 7.356396403533939,
+      "subgroups": [
+        {
+          "subgroup": "Female",
+          "population_share": 0.47883333333333333,
+          "num_canaries": 200,
+          "ceiling": 4.193629987170997,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5066666666666667,
+          "mean_p_value": 0.4559939670105407
+        },
+        {
+          "subgroup": "Male",
+          "population_share": 0.5211666666666667,
+          "num_canaries": 200,
+          "ceiling": 4.193629987170997,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5116666666666667,
+          "mean_p_value": 0.427517641397366
+        }
+      ],
+      "interpretation": "UNMEASURABLE at this scale. No subgroup produced a positive bound; the per-subgroup ceilings run 4.19-4.19, so this says the instrument cannot resolve subgroup differences here, not that none exist."
+    },
+    {
+      "attribute": "RAC1P",
+      "target_eps": 1.0,
+      "proved_eps": 0.9122464987698526,
+      "subgroups": [
+        {
+          "subgroup": "AlaskaNative",
+          "population_share": 0.00016666666666666666,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.09644003601626433,
+          "max_audited_eps": 0.289320108048793,
+          "mean_accuracy": 0.5303030303030304,
+          "mean_p_value": 0.5444939683191024
+        },
+        {
+          "subgroup": "AmerIndian",
+          "population_share": 0.005666666666666667,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5454545454545454,
+          "mean_p_value": 0.36236185787845443
+        },
+        {
+          "subgroup": "AmerIndianAlaska",
+          "population_share": 0.0028333333333333335,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5075757575757576,
+          "mean_p_value": 0.5134338026822434
+        },
+        {
+          "subgroup": "Asian",
+          "population_share": 0.16916666666666666,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.46212121212121215,
+          "mean_p_value": 0.7409417513331391
+        },
+        {
+          "subgroup": "Black",
+          "population_share": 0.0445,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.42424242424242425,
+          "mean_p_value": 0.8602103627728942
+        },
+        {
+          "subgroup": "Other",
+          "population_share": 0.11333333333333333,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0328434703817882,
+          "max_audited_eps": 0.0985304111453646,
+          "mean_accuracy": 0.5303030303030303,
+          "mean_p_value": 0.4909663510499058
+        },
+        {
+          "subgroup": "PacificIslander",
+          "population_share": 0.0026666666666666666,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5,
+          "mean_p_value": 0.5329389285949068
+        },
+        {
+          "subgroup": "TwoOrMore",
+          "population_share": 0.043,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5757575757575758,
+          "mean_p_value": 0.20566971671678402
+        },
+        {
+          "subgroup": "White",
+          "population_share": 0.6186666666666667,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5151515151515151,
+          "mean_p_value": 0.4686255705098574
+        }
+      ],
+      "interpretation": "The rarest subgroup (AlaskaNative, 0.0% of rows) audited at eps=0.289 against 0.000 for the most common \u2014 MORE leakage, gap +0.289. Ceilings were 2.65 and 2.65 respectively."
+    },
+    {
+      "attribute": "RAC1P",
+      "target_eps": 8.0,
+      "proved_eps": 7.356396403533939,
+      "subgroups": [
+        {
+          "subgroup": "AlaskaNative",
+          "population_share": 0.00016666666666666666,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5757575757575758,
+          "mean_p_value": 0.21285663447929437
+        },
+        {
+          "subgroup": "AmerIndian",
+          "population_share": 0.005666666666666667,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5151515151515152,
+          "mean_p_value": 0.45476508625358747
+        },
+        {
+          "subgroup": "AmerIndianAlaska",
+          "population_share": 0.0028333333333333335,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5378787878787878,
+          "mean_p_value": 0.3639285792830833
+        },
+        {
+          "subgroup": "Asian",
+          "population_share": 0.16916666666666666,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0019088038919531924,
+          "max_audited_eps": 0.005726411675859577,
+          "mean_accuracy": 0.5227272727272728,
+          "mean_p_value": 0.49886218246926245
+        },
+        {
+          "subgroup": "Black",
+          "population_share": 0.0445,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5,
+          "mean_p_value": 0.5466282957615931
+        },
+        {
+          "subgroup": "Other",
+          "population_share": 0.11333333333333333,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5454545454545454,
+          "mean_p_value": 0.33056074681428527
+        },
+        {
+          "subgroup": "PacificIslander",
+          "population_share": 0.0026666666666666666,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5909090909090909,
+          "mean_p_value": 0.1527945360354579
+        },
+        {
+          "subgroup": "TwoOrMore",
+          "population_share": 0.043,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.4545454545454546,
+          "mean_p_value": 0.7490086998420793
+        },
+        {
+          "subgroup": "White",
+          "population_share": 0.6186666666666667,
+          "num_canaries": 44,
+          "ceiling": 2.6527653811764287,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.4696969696969697,
+          "mean_p_value": 0.6961335191607532
+        }
+      ],
+      "interpretation": "UNMEASURABLE at this scale. No subgroup produced a positive bound; the per-subgroup ceilings run 2.65-2.65, so this says the instrument cannot resolve subgroup differences here, not that none exist."
+    }
+  ],
+  "elapsed_seconds": 38.0
+}

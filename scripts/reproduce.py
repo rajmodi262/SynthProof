@@ -37,21 +37,31 @@ MANIFEST_PATH = Path("results/MANIFEST.json")
 # Every file whose contents a published claim depends on.
 RESULT_FILES = [
     "results/h1_all_families.json",
+    "results/acs/h1_all_families.json",
     "results/h2_subgroups.json",
+    "results/h2_analysis.json",
     "results/detection_floor.json",
 ]
 
 # The experiments that produce them, in dependency order.
 EXPERIMENTS = [
-    ("h1", [sys.executable, "-m", "scripts.run_h1"]),
+    ("h1_adult", [sys.executable, "-m", "scripts.run_h1"]),
+    ("h1_acs", [sys.executable, "-m", "scripts.run_h1", "--dataset", "acs"]),
     ("h2", [sys.executable, "-m", "scripts.run_h2"]),
+    ("h2_analysis", [sys.executable, "-m", "scripts.analyse_h2"]),
     ("detection_floor", [sys.executable, "-m", "scripts.run_detection_floor"]),
 ]
 
 # Only packages whose version can change a number. Formatters and linters cannot, so listing
 # them would make the manifest churn without meaning.
 NUMERIC_DEPENDENCIES = [
-    "numpy", "pandas", "scipy", "scikit-learn", "dp-accounting", "mbi", "autodp",
+    "numpy",
+    "pandas",
+    "scipy",
+    "scikit-learn",
+    "dp-accounting",
+    "mbi",
+    "autodp",
 ]
 
 
@@ -67,8 +77,9 @@ def _sha256(path: Path) -> Optional[str]:
 
 def _git(*args: str) -> str:
     try:
-        return subprocess.run(["git", *args], capture_output=True, text=True,
-                              check=True).stdout.strip()
+        return subprocess.run(
+            ["git", *args], capture_output=True, text=True, check=True
+        ).stdout.strip()
     except Exception:
         return "unknown"
 
@@ -88,23 +99,41 @@ def _experiment_config() -> Dict[str, dict]:
     cfg: Dict[str, dict] = {}
     try:
         from scripts import run_h1
-        cfg["h1"] = {"n_rows": run_h1.N_ROWS, "eps_grid": list(run_h1.EPS_GRID),
-                     "seeds": list(run_h1.SEEDS), "target_col": run_h1.TARGET_COL}
+
+        # One runner drives both datasets, so the grid is shared and only the per-dataset
+        # target column and structure pair differ.
+        cfg["h1"] = {
+            "n_rows": run_h1.N_ROWS,
+            "eps_grid": list(run_h1.EPS_GRID),
+            "seeds": list(run_h1.SEEDS),
+            "datasets": {
+                k: {"target_col": v["target_col"], "corr_cols": list(v["corr_cols"])}
+                for k, v in run_h1.DATASETS.items()
+            },
+        }
     except Exception as exc:
         cfg["h1"] = {"error": str(exc)}
     try:
         from scripts import run_h2
-        cfg["h2"] = {"n_rows": run_h2.N_ROWS, "eps_grid": list(run_h2.EPS_GRID),
-                     "seeds": list(run_h2.SEEDS), "attributes": list(run_h2.ATTRIBUTES),
-                     "total_canaries": run_h2.TOTAL_CANARIES}
+
+        cfg["h2"] = {
+            "n_rows": run_h2.N_ROWS,
+            "eps_grid": list(run_h2.EPS_GRID),
+            "seeds": list(run_h2.SEEDS),
+            "attributes": list(run_h2.ATTRIBUTES),
+            "total_canaries": run_h2.TOTAL_CANARIES,
+        }
     except Exception as exc:
         cfg["h2"] = {"error": str(exc)}
     try:
         from scripts import run_detection_floor as rdf
-        cfg["detection_floor"] = {"n_rows": rdf.N_ROWS,
-                                  "canary_counts": list(rdf.CANARY_COUNTS),
-                                  "leak_fractions": list(rdf.LEAK_FRACTIONS),
-                                  "seeds": list(rdf.SEEDS)}
+
+        cfg["detection_floor"] = {
+            "n_rows": rdf.N_ROWS,
+            "canary_counts": list(rdf.CANARY_COUNTS),
+            "leak_fractions": list(rdf.LEAK_FRACTIONS),
+            "seeds": list(rdf.SEEDS),
+        }
     except Exception as exc:
         cfg["detection_floor"] = {"error": str(exc)}
     return cfg
@@ -194,30 +223,37 @@ def compare(current: dict, committed: dict) -> List[str]:
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--run", action="store_true", help="Re-run every experiment first (long)")
-    ap.add_argument("--update", action="store_true",
-                    help="Re-run and rewrite the manifest")
+    ap.add_argument("--update", action="store_true", help="Re-run and rewrite the manifest")
     args = ap.parse_args()
 
     if args.run or args.update:
         failed = run_experiments()
         if failed:
-            raise SystemExit(f"\nExperiments failed: {', '.join(failed)}. "
-                             "Not writing a manifest for a partial run.")
+            raise SystemExit(
+                f"\nExperiments failed: {', '.join(failed)}. "
+                "Not writing a manifest for a partial run."
+            )
 
     manifest = build_manifest()
 
     print(f"\n{'=' * 70}\n  MANIFEST\n{'=' * 70}")
-    print(f"  commit       {manifest['git']['commit'][:12]}"
-          f"{'  (DIRTY TREE)' if manifest['git']['dirty'] else ''}")
-    print(f"  python       {manifest['environment']['python']}  "
-          f"{manifest['environment']['machine']}")
+    print(
+        f"  commit       {manifest['git']['commit'][:12]}"
+        f"{'  (DIRTY TREE)' if manifest['git']['dirty'] else ''}"
+    )
+    print(
+        f"  python       {manifest['environment']['python']}  "
+        f"{manifest['environment']['machine']}"
+    )
     for name, digest in manifest["files"].items():
         print(f"  {name:<38} {digest[:16] + '...' if digest else 'MISSING'}")
     print(f"\n  manifest hash  {manifest['manifest_hash']}")
 
     if manifest["git"]["dirty"]:
-        print("\n  WARNING: the working tree is dirty, so the commit above does not "
-              "describe what ran.")
+        print(
+            "\n  WARNING: the working tree is dirty, so the commit above does not "
+            "describe what ran."
+        )
 
     missing = [n for n, d in manifest["files"].items() if d is None]
     if missing:
@@ -230,8 +266,10 @@ def main():
         return
 
     if not MANIFEST_PATH.exists():
-        print(f"\n  No committed manifest at {MANIFEST_PATH}. "
-              "Create one with --update once the results are final.")
+        print(
+            f"\n  No committed manifest at {MANIFEST_PATH}. "
+            "Create one with --update once the results are final."
+        )
         return
 
     committed = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
@@ -244,9 +282,11 @@ def main():
     print(f"\n  DIVERGED from the committed manifest ({len(diffs)}):")
     for d in diffs:
         print(f"    - {d}")
-    print("\n  Note that floating-point results can differ across BLAS builds and CPU\n"
-          "  architectures even at a fixed seed. A mismatch means something changed, not\n"
-          "  necessarily that a number was edited.")
+    print(
+        "\n  Note that floating-point results can differ across BLAS builds and CPU\n"
+        "  architectures even at a fixed seed. A mismatch means something changed, not\n"
+        "  necessarily that a number was edited."
+    )
     raise SystemExit(1)
 
 
