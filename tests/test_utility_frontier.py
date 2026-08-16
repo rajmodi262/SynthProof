@@ -54,8 +54,11 @@ def test_utility_result_has_no_fabricated_fairness_field():
 def _sheet(mechanism="independent", eps_grid=(1.0)):
     ds = TabularDataset.create_synthetic_toy(num_rows=200)
     grid = list(eps_grid) if isinstance(eps_grid, (list, tuple)) else [eps_grid]
+    # skip_preflight: the toy table is 200 generated rows, below the 500-row refusal floor.
+    # These tests are about the data sheet's contents, not about admission control, which has
+    # its own tests in tests/test_preflight.py.
     return FrontierEngine(seed=42).run_sweep(
-        ds, eps_grid=grid, mechanism=mechanism, num_canaries=10
+        ds, eps_grid=grid, mechanism=mechanism, num_canaries=10, skip_preflight=True
     )
 
 

@@ -15,14 +15,18 @@ def csv(tmp_path):
     import numpy as np
     import pandas as pd
 
+    # Above the pre-flight row floor. These tests are about epsilon validation, not admission
+    # control; a table below the floor is refused before epsilon is ever used, which would make
+    # them test the wrong thing. Admission control has its own tests in tests/test_preflight.py.
     rng = np.random.default_rng(0)
+    n = 800
     p = tmp_path / "t.csv"
     pd.DataFrame(
         {
-            "age": rng.integers(18, 90, 200),
-            "hours": rng.integers(1, 60, 200),
-            "grp": rng.choice(["a", "b", "c"], 200),
-            "label": rng.choice(["yes", "no"], 200),
+            "age": rng.integers(18, 90, n),
+            "hours": rng.integers(1, 60, n),
+            "grp": rng.choice(["a", "b", "c"], n),
+            "label": rng.choice(["yes", "no"], n),
         }
     ).to_csv(p, index=False)
     return str(p)
@@ -124,3 +128,43 @@ def test_help_lists_every_command_a_user_needs(tmp_path):
     assert r.exit_code == 0
     for cmd in ("run", "verify", "keygen", "demo", "mechanisms", "infer-schema"):
         assert cmd in r.output
+
+
+# ------------------------------------------------------------------ admission control
+
+
+def test_a_table_below_the_row_floor_is_refused_by_the_cli(tmp_path):
+    """The refusal must reach the user as an actionable message, not a traceback.
+
+    Epsilon validation fires in a click callback and so precedes this; a table that clears
+    epsilon must still be declined if it cannot be released honestly.
+    """
+    import numpy as np
+    import pandas as pd
+
+    rng = np.random.default_rng(0)
+    p = tmp_path / "small.csv"
+    pd.DataFrame({"age": rng.integers(18, 90, 50), "grp": rng.choice(["a", "b"], 50)}).to_csv(
+        p, index=False
+    )
+
+    r = CliRunner().invoke(
+        main, ["run", "--input", str(p), "--out", str(tmp_path / "o.json"), "--eps", "1.0"]
+    )
+    assert r.exit_code != 0
+    assert "R1" in r.output
+    assert "500-row floor" in r.output
+    assert "Traceback" not in r.output
+
+
+def test_the_run_output_states_what_epsilon_means(csv, tmp_path):
+    """Epsilon alone is not interpretable; the odds statement is what a reader can act on."""
+    r = run(csv, tmp_path, "--eps", "1.0")
+    assert r.exit_code == 0, r.output
+    assert "50 in 100" in r.output
+
+
+def test_an_inferred_schema_is_disclosed_in_the_run_output(csv, tmp_path):
+    """Without --schema the bounds were read from the data. The user must be told, every time."""
+    r = run(csv, tmp_path, "--eps", "1.0")
+    assert "inferred-nonprivate" in r.output

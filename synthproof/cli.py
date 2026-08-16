@@ -6,6 +6,7 @@ from pathlib import Path
 import click
 
 from synthproof.data.dataset import TabularDataset
+from synthproof.data.preflight import PreflightRefused
 from synthproof.data.schema import Schema
 from synthproof.frontier.certificate import FrontierEngine
 from synthproof.frontier.experiment import MECHANISMS
@@ -86,11 +87,16 @@ def _validate_delta(ctx, param, value):
 
 
 def _load(input_path, schema_path, rows, seed):
-    """Loads a dataset from CSV, or builds the toy table when no input is given."""
+    """Loads a dataset and reports how its schema was obtained.
+
+    Returns (dataset, domain_source). The second value is not cosmetic: it is what the data
+    sheet uses to tell a reader whether the column bounds were public facts or were read out
+    of the sensitive table.
+    """
     if input_path is None:
         click.echo(f"No --input given; using the built-in toy table ({rows} rows).")
         click.echo("  NOTE: toy columns are independent, so utility numbers mean little.")
-        return TabularDataset.create_synthetic_toy(num_rows=rows, seed=seed)
+        return TabularDataset.create_synthetic_toy(num_rows=rows, seed=seed), "declared"
 
     schema = None
     if schema_path:
@@ -101,12 +107,14 @@ def _load(input_path, schema_path, rows, seed):
         click.echo("  inferred from the data, which is NOT safe for a real release.")
 
     ds = TabularDataset.from_csv(input_path, schema=schema)
+    domain_source = "declared"
     if schema is None:
         # Re-load through an inferred schema so numeric columns are still clipped to a
         # concrete range. That range is data-derived, hence the warning above.
         ds = TabularDataset(ds.df, name=ds.name, schema=Schema.infer_nonprivate(ds.df))
+        domain_source = "inferred-nonprivate"
     click.echo(f"Loaded {ds.num_rows} rows x {ds.num_cols} columns from {input_path}")
-    return ds
+    return ds, domain_source
 
 
 @main.command("mechanisms")
@@ -170,12 +178,21 @@ def list_mechanisms():
 )
 def run(input_path, schema_path, eps, delta, mechanism, rows, seed, canaries, sign, out):
     """Synthesises a dataset and emits its Privacy Data Sheet."""
-    ds = _load(input_path, schema_path, rows, seed)
+    ds, domain_source = _load(input_path, schema_path, rows, seed)
 
     click.echo(f"Synthesising at total eps={eps} (delta={delta}) with '{mechanism}'...")
-    datasheet = FrontierEngine(seed=seed).run_sweep(
-        ds, eps_grid=[eps], delta=delta, mechanism=mechanism, num_canaries=canaries
-    )
+    try:
+        datasheet = FrontierEngine(seed=seed).run_sweep(
+            ds,
+            eps_grid=[eps],
+            delta=delta,
+            mechanism=mechanism,
+            num_canaries=canaries,
+            domain_source=domain_source,
+        )
+    except PreflightRefused as exc:
+        # A refusal is an outcome, not a crash. Show every blocking reason and its remedy.
+        raise click.ClickException(str(exc)) from exc
 
     if sign:
         try:
@@ -198,6 +215,25 @@ def run(input_path, schema_path, eps, delta, mechanism, rows, seed, canaries, si
         f"\nRequested eps={eps:.3f}  ->  proved eps={datasheet.total_proved_eps:.3f}"
         f"  (ratio {datasheet.total_proved_eps / eps:.3f}; calibration never overspends)"
     )
+
+    # Epsilon on its own is not interpretable. Nanayakkara et al. (USENIX Security 2023) found
+    # odds-based explanations beat both example outputs and omitting epsilon entirely.
+    click.echo(f"\n  {datasheet.plain_statement()}")
+
+    if not datasheet.audit_is_informative():
+        click.echo(
+            f"  NOTE: the audit ceiling at {canaries} canaries is "
+            f"{datasheet.audit_ceiling:.2f}, below the proved eps of "
+            f"{datasheet.total_proved_eps:.2f}. An audited eps of "
+            f"{datasheet.total_audited_eps:.2f} means the auditor COULD NOT have detected "
+            "this budget -- not that nothing leaked."
+        )
+    if datasheet.domain_source == "inferred-nonprivate":
+        click.echo(
+            "  NOTE: domain_source=inferred-nonprivate. The bounds and category domains here "
+            "were read from your data and were not charged. Declare a schema before anyone "
+            "else relies on this sheet."
+        )
     if not sign:
         click.echo("This sheet is UNSIGNED. Re-run with --sign to make it verifiable.")
 
@@ -303,8 +339,20 @@ def demo(rows: int, eps: float, mechanism: str):
     """Runs a quick end-to-end synthesis, audit, and certificate demo."""
     click.echo(f"SynthProof demo (rows={rows}, eps={eps}, mechanism={mechanism})...")
     ds = TabularDataset.create_synthetic_toy(num_rows=rows)
+    # The toy table is generated, not sensitive, and is deliberately smaller than the
+    # pre-flight row floor so the demo stays quick. Bypassing the refusal checks is therefore
+    # legitimate here and nowhere else — and it is announced rather than done quietly, because
+    # a demo that silently takes a path real releases cannot take teaches the wrong thing.
+    click.echo(
+        "  NOTE: pre-flight refusal checks are SKIPPED for the toy table. A real table of "
+        f"{rows} rows would be refused (R1: below the 500-row floor)."
+    )
     datasheet = FrontierEngine(seed=42).run_sweep(
-        ds, eps_grid=[eps], mechanism=mechanism, num_canaries=min(20, rows // 5)
+        ds,
+        eps_grid=[eps],
+        mechanism=mechanism,
+        num_canaries=min(20, rows // 5),
+        skip_preflight=True,
     )
     click.echo("=" * 60)
     click.echo("PRIVACY DATA SHEET")
