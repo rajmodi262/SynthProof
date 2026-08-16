@@ -65,14 +65,40 @@ NUMERIC_DEPENDENCIES = [
 ]
 
 
+# Fields that record how long a run took, not what it produced. Hashing them makes the
+# manifest unstable by construction: two identical re-runs differ only in wall-clock timing,
+# so `make reproduce` reports DIVERGED even when every number is bit-identical. Observed
+# doing exactly that — three consecutive clean re-runs produced three different manifest
+# hashes, with `elapsed_seconds` the only differing field.
+#
+# Anything added here must be metadata a reproducer would NOT expect to match. Do not add a
+# field to silence a mismatch that reflects a real change in a result.
+NON_DETERMINISTIC_KEYS = frozenset({"elapsed_seconds"})
+
+
+def _canonical_bytes(path: Path) -> bytes:
+    """Bytes to hash for a result file, with timing metadata stripped.
+
+    JSON result files are re-serialised with the non-deterministic keys removed and keys
+    sorted, so the hash tracks the RESULT rather than the run. Non-JSON files, and JSON that
+    fails to parse, are hashed verbatim — a file we cannot interpret is not one to normalise.
+    """
+    raw = path.read_bytes()
+    if path.suffix != ".json":
+        return raw
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return raw
+    if isinstance(payload, dict):
+        payload = {k: v for k, v in payload.items() if k not in NON_DETERMINISTIC_KEYS}
+    return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+
+
 def _sha256(path: Path) -> Optional[str]:
     if not path.exists():
         return None
-    h = hashlib.sha256()
-    with path.open("rb") as f:
-        for chunk in iter(lambda: f.read(65536), b""):
-            h.update(chunk)
-    return h.hexdigest()
+    return hashlib.sha256(_canonical_bytes(path)).hexdigest()
 
 
 def _git(*args: str) -> str:

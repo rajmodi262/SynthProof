@@ -112,3 +112,61 @@ def test_every_experiment_names_a_runnable_module(experiment, cmd):
     assert cmd[1] == "-m"
     module = importlib.import_module(cmd[2])
     assert hasattr(module, "main"), f"{experiment} runner has no main()"
+
+
+def test_the_manifest_hash_ignores_timing_but_not_results(tmp_path):
+    """REGRESSION: the manifest hashed whole result files, including `elapsed_seconds`.
+
+    Wall-clock timing differs on every run, so two byte-identical reproductions produced
+    different manifest hashes and `make reproduce` reported DIVERGED even though no number
+    had moved. Observed live: three consecutive clean re-runs, three different hashes, with
+    `elapsed_seconds` the only differing field.
+
+    The hash must ignore timing and nothing else — a manifest that cannot detect a changed
+    result is worse than no manifest.
+    """
+    import json as _json
+
+    from scripts.reproduce import _sha256
+
+    p = tmp_path / "r.json"
+    payload = {
+        "dataset": "adult",
+        "true_correlation": 0.1034,
+        "elapsed_seconds": 12.3,
+        "cells": [{"mechanism": "aim", "correlation_error": {"mean": 0.0078}}],
+    }
+    p.write_text(_json.dumps(payload, indent=2), encoding="utf-8")
+    baseline = _sha256(p)
+
+    payload["elapsed_seconds"] = 9999.9
+    p.write_text(_json.dumps(payload, indent=2), encoding="utf-8")
+    assert _sha256(p) == baseline, "timing must not change the manifest hash"
+
+    payload["cells"][0]["correlation_error"]["mean"] = 0.0079
+    p.write_text(_json.dumps(payload, indent=2), encoding="utf-8")
+    assert _sha256(p) != baseline, "a changed metric MUST change the manifest hash"
+
+
+def test_the_manifest_hash_survives_reformatting_but_not_reordering_of_values(tmp_path):
+    """Re-serialising with different indentation is not a change to the result."""
+    import json as _json
+
+    from scripts.reproduce import _sha256
+
+    a, b = tmp_path / "a.json", tmp_path / "b.json"
+    payload = {"z": 1, "a": {"n": [1, 2, 3]}}
+    a.write_text(_json.dumps(payload, indent=4), encoding="utf-8")
+    b.write_text(_json.dumps(payload, separators=(",", ":")), encoding="utf-8")
+    assert _sha256(a) == _sha256(b)
+
+
+def test_a_non_json_result_file_is_hashed_verbatim(tmp_path):
+    """We do not normalise what we cannot parse."""
+    from scripts.reproduce import _sha256
+
+    p = tmp_path / "r.csv"
+    p.write_text("a,b\n1,2\n", encoding="utf-8")
+    first = _sha256(p)
+    p.write_text("a,b\n1,3\n", encoding="utf-8")
+    assert _sha256(p) != first

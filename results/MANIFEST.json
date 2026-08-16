@@ -1,9 +1,9 @@
 {
   "manifest_version": 1,
-  "generated_at": "2026-08-16T09:57:24.493423+00:00",
+  "generated_at": "2026-08-16T15:00:34.128655+00:00",
   "git": {
-    "commit": "e0c3eeeff3797550fc91297d34bfde46f31a466a",
-    "branch": "master",
+    "commit": "5448ed68a126054dba00421a09d970ffaa6a077d",
+    "branch": "audit-fixes-and-acs",
     "dirty": true
   },
   "environment": {
@@ -88,11 +88,11 @@
     }
   },
   "files": {
-    "results/h1_all_families.json": "529643d0de3232450209b7cdd0adf20f4f4e0bb0b899ce697d3e197f925f11d5",
-    "results/acs/h1_all_families.json": "8a2bca15d86a07fbc1953baef08b9a06d9394951e9eef8e943d5315e63a97395",
-    "results/h2_subgroups.json": "5eab26f1bacb1147e526298407ddd18a10d650446c4034fa0427d68c3469d8bb",
-    "results/h2_analysis.json": "6286dc238ab8609c4e16e9e494f9f0255a3cfc6b8261685f70f797317ffe1f01",
-    "results/detection_floor.json": "614dc5212f0c056dce0f1b70944cdbf64c06d01714e4a0f9394f0d48bf250720"
+    "results/h1_all_families.json": "7107ba2d57e73f6573ca82b6b828986aa94b48ddd4d52b2833b99ef5f3df70f7",
+    "results/acs/h1_all_families.json": "4927c18a21a0c692b3f08c1899f50f00d1cf4f1f274b148d8462e43c1c53a9fd",
+    "results/h2_subgroups.json": "0072495d534915b91aea57fb1e7b93ad77d9b1d0f6f85342c1a9ac1d67066842",
+    "results/h2_analysis.json": "3c6df3f6ccc56f08d4f63d1b9f4500f532809442c4fcf3aa060e12b3fe630977",
+    "results/detection_floor.json": "1bb59d07222093dc5d31f09a2d2edd7cdd624da730dfa1adeedf9b79fa14c6af"
   },
-  "manifest_hash": "57da96321db5af0467e3851cce9fb7c06f02d89e95a541382ff9168630e7d5f7"
+  "manifest_hash": "9349aaf2caccba0840ea2f8ffea866a5346c44e15a0f92e0836b4460a15e517f"
 }
