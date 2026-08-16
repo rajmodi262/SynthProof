@@ -126,12 +126,35 @@ Per the analysis plan, a contradicting result is diagnosed, not adjusted. The di
   `AGEP`×`WKHP` at one of three, and the ACS correlation error tracks that selection exactly:
   0.0977 (not selected) → 0.0395 (selected) → 0.0626 (not selected).
 
-The Adult headline is therefore, to a degree this design cannot bound, a coincidence between
-the metric's chosen column pair and the mechanism's internal clique selection — not a general
-claim about structure preservation. **This was invisible from a single dataset**, and is the
-principal methodological contribution the second dataset bought. It generalises beyond this
-project: any DP-synthesis benchmark scoring a marginal-based mechanism on a small fixed set of
-low-order statistics risks measuring clique selection rather than fidelity.
+This was later tested directly rather than left as an inference from one pair, by recording
+AIM's error and its clique selection for EVERY numeric pair across the grid
+(`scripts/run_clique_confound.py`). The test weakened the claim, and the weakened version is
+what this thesis states.
+
+It is **not** true that AIM beats the no-dependence baseline only on pairs it selects — each
+dataset has one unselected pair where it still wins, which is mechanistically expected, since
+measuring a clique constrains the joint and a graphical model propagates that constraint
+outside the clique. What is true is a large difference in degree, which itself does not
+transfer:
+
+| | largest advantage on a selected pair | largest on an unselected pair | ratio |
+|---|---:|---:|---:|
+| Adult | +0.0852 | +0.0072 | 11.9x |
+| ACS | +0.0285 | +0.0123 | 2.3x |
+
+On Adult, AIM's advantage on the pair it selects is nearly twelve times its best advantage
+anywhere else, and `age x hours_per_week` — the pair the H1 headline measured — is that pair,
+selected in 22 of 25 cells. On ACS the effect is roughly five times weaker and the run's own
+verdict is inconclusive.
+
+The defensible claim is therefore narrower than a first reading of the single-pair evidence
+suggested: **the structure metric's choice of column pair materially affects the measured
+ranking, and on Adult it happened to fall on AIM's strongest pair by an order of magnitude.**
+That still carries a generalisable warning — a benchmark scoring a marginal-based mechanism on
+a small fixed set of low-order statistics may be measuring which statistics the mechanism
+chose to spend budget on — but it does not support the stronger reading that AIM's advantage
+is entirely an artefact of selection. The cross-dataset pattern is the same one H1 itself
+showed: an effect on Adult that does not carry to ACS.
 
 A secondary observation, reported because it is counter-intuitive and was verified before
 being written down: on ACS, AIM's downstream utility **falls** as ε rises (TSTR F1 0.704

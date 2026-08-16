@@ -109,6 +109,58 @@ reproduce the finding because on ACS the coincidence does not hold.
 This was not visible from a single dataset. It is the kind of thing a second dataset exists
 to expose.
 
+### 4a. Tested directly — and the claim above needs weakening
+
+The argument in §4 rests on one measured pair per dataset. `scripts/run_clique_confound.py`
+tests it properly: for every numeric pair, at every epsilon and seed, record AIM's correlation
+error and whether that pair was among its selected cliques, with the independent-marginal
+generator — which models no cross-column dependence — as the floor.
+
+**Adult, per pair (25 cells each):**
+
+| pair | AIM selected | AIM err | independent err | AIM beats floor |
+|---|---:|---:|---:|---|
+| age x hours_per_week | 22/25 | 0.0263 | 0.1115 | yes |
+| hours_per_week x capital_loss | 0/25 | 0.0431 | 0.0502 | yes |
+| age x capital_gain | 0/25 | 0.0742 | 0.0758 | no |
+| age x capital_loss | 0/25 | 0.0671 | 0.0691 | no |
+| capital_gain x capital_loss | 0/25 | 0.0311 | 0.0296 | no |
+| hours_per_week x capital_gain | 0/25 | 0.0805 | 0.0795 | no |
+
+**ACS, per pair:**
+
+| pair | AIM selected | AIM err | independent err | AIM beats floor |
+|---|---:|---:|---:|---|
+| AGEP x WKHP | 12/25 | 0.0541 | 0.0826 | yes |
+| WKHP x SCHL | 0/25 | 0.0440 | 0.0564 | yes |
+| AGEP x SCHL | 0/25 | 0.0187 | 0.0167 | no |
+
+**What this does and does not establish.**
+
+It does NOT establish "AIM only beats the baseline on pairs it selects". That is false on both
+datasets — each has one unselected pair where AIM still wins. That is mechanistically
+expected rather than anomalous: measuring a clique constrains the joint distribution, and a
+graphical model propagates that constraint to pairs outside the clique.
+
+What it does establish is a large difference in DEGREE, and that the difference itself does
+not transfer:
+
+| | largest advantage on a selected pair | largest on an unselected pair | ratio |
+|---|---:|---:|---:|
+| Adult | +0.0852 | +0.0072 | **11.9x** |
+| ACS | +0.0285 | +0.0123 | **2.3x** |
+
+On Adult, AIM's advantage on the pair it selects is nearly twelve times its best advantage
+anywhere else — and `age x hours_per_week`, the pair the H1 headline measured, is exactly
+that pair, selected in 22 of 25 cells. On ACS the same effect is present but roughly five
+times weaker, and the ACS run's own verdict is INCONCLUSIVE.
+
+So the defensible claim is narrower than §4 originally implied: **the structure metric's choice
+of column pair materially affects the measured ranking, and on Adult it happened to select
+AIM's strongest pair by an order of magnitude.** The stronger reading — that AIM's advantage
+is entirely an artefact of selection — is not supported, and the cross-dataset picture is the
+same pattern H1 itself showed: an effect on Adult that does not carry to ACS.
+
 ## 5. What was and was not changed in response
 
 Per the standing rules:
