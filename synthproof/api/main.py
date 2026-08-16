@@ -12,6 +12,7 @@ apart in this repository, and a fourth living in the web layer would be the wors
 """
 
 import contextlib
+import hmac
 import io
 import json
 import os
@@ -24,7 +25,7 @@ from typing import Any, Iterator, Optional
 
 import numpy as np
 import pandas as pd
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -44,11 +45,23 @@ app = FastAPI(
 )
 
 # Wildcard origins with credentials is rejected by browsers and unsafe besides. Credentials
-# are off because this service carries no authentication; adding auth is a prerequisite to
-# turning them on. The dev console runs on a different port, hence the wildcard.
+# stay off: this service authenticates with a header, not a cookie, so there is nothing for a
+# browser to attach automatically and nothing for CSRF to abuse.
+#
+# The wildcard is narrowed once a key is configured. SYNTHPROOF_CORS_ORIGINS takes a
+# comma-separated list; it defaults to the dev console's origin rather than "*", because a
+# deployment with a key should not also be reachable from any page on the internet.
+_CORS = os.environ.get("SYNTHPROOF_CORS_ORIGINS", "").strip()
+if _CORS:
+    _ALLOWED_ORIGINS = [o.strip() for o in _CORS.split(",") if o.strip()]
+elif os.environ.get("SYNTHPROOF_API_KEY", "").strip():
+    _ALLOWED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
+else:
+    _ALLOWED_ORIGINS = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_ALLOWED_ORIGINS,
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
@@ -63,6 +76,53 @@ GLOBAL_LEDGER = Ledger(db_path=_LEDGER_DB)
 # for destroying audit records, so they are refused unless demo mode is switched on
 # deliberately, and refused outright on anything but an in-memory database.
 DEMO_MODE = os.environ.get("SYNTHPROOF_DEMO", "1" if _LEDGER_DB == ":memory:" else "0") == "1"
+
+# --------------------------------------------------------------------------- authentication
+#
+# WHAT THIS IS AND, MORE IMPORTANTLY, WHAT IT IS NOT.
+#
+# Setting SYNTHPROOF_API_KEY requires a shared bearer token on every endpoint that reads
+# uploaded data, spends budget, or reveals the ledger. That closes the gap where anyone who
+# could reach the port could upload a sensitive table, consume the privacy budget attached to
+# someone else's dataset, or read the spend history.
+#
+# It is NOT user authentication. There is one key, so every caller is the same principal: the
+# ledger's `actor` field cannot distinguish them, key rotation invalidates everyone at once,
+# and there is no per-user budget or audit trail. A deployment that needs to know WHO spent
+# the budget needs real identity, which is also the missing prerequisite for the cross-session
+# budget filter described in docs/design/USER_FACING_SYSTEM.md §2.3. This is the smallest
+# honest step, not the destination.
+#
+# Unset by default so the local demo keeps working. `/api/health` reports which mode is
+# active, because a service that is open and does not say so is worse than one that is open.
+API_KEY = os.environ.get("SYNTHPROOF_API_KEY", "").strip()
+AUTH_ENABLED = bool(API_KEY)
+
+
+def require_api_key(
+    authorization: Optional[str] = Header(default=None),
+    x_api_key: Optional[str] = Header(default=None),
+) -> None:
+    """Rejects a request that lacks the configured key. A no-op when no key is set.
+
+    Accepts either `Authorization: Bearer <key>` or `X-API-Key: <key>`. Comparison is
+    constant-time: a plain `==` on a secret leaks its prefix through response timing, which is
+    a small thing to get wrong and a silly one to get wrong in a privacy project.
+    """
+    if not AUTH_ENABLED:
+        return
+    supplied = x_api_key or ""
+    if authorization and authorization.lower().startswith("bearer "):
+        supplied = authorization[7:].strip()
+    if not supplied or not hmac.compare_digest(supplied, API_KEY):
+        raise HTTPException(
+            status_code=401,
+            detail=(
+                "This service requires an API key. Send it as `Authorization: Bearer <key>` "
+                "or `X-API-Key: <key>`."
+            ),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 @contextlib.contextmanager
@@ -329,15 +389,26 @@ def _describe(ds: TabularDataset) -> dict:
 
 @app.get("/api/health")
 def health():
+    # Deliberately unauthenticated: a readiness probe must not need a secret, and this is
+    # where an operator finds out whether the service is open. Reporting `auth: "disabled"`
+    # loudly is the point — an open service that does not say so is worse than one that does.
     return {
         "status": "ok",
+        "auth": "required" if AUTH_ENABLED else "disabled",
+        "auth_note": (
+            "A shared API key is required on data and ledger endpoints."
+            if AUTH_ENABLED
+            else "NO AUTHENTICATION. Anyone who can reach this port can upload data, spend "
+            "budget and read the ledger. Set SYNTHPROOF_API_KEY before exposing it."
+        ),
+        "demo_mode": DEMO_MODE,
         "ledger_verified": GLOBAL_LEDGER.verify(),
         "ledger_head": GLOBAL_LEDGER.get_latest_hash(),
         "mechanisms_available": sorted(MECHANISMS),
     }
 
 
-@app.get("/api/mechanisms")
+@app.get("/api/mechanisms", dependencies=[Depends(require_api_key)])
 def mechanisms():
     """Mechanisms this build can actually run, plus honest notes on the ones it cannot."""
     out = []
@@ -357,7 +428,7 @@ def mechanisms():
     return {"mechanisms": out, "attacks_not_implemented": NOT_IMPLEMENTED_ATTACKS}
 
 
-@app.get("/api/datasets")
+@app.get("/api/datasets", dependencies=[Depends(require_api_key)])
 def datasets():
     # `rows` is null for anything not yet loaded rather than a literal. A hardcoded 30162
     # would keep being reported after the pinned artefact or the drop-missing convention
@@ -388,7 +459,7 @@ def datasets():
     return {"datasets": built_in + uploads}
 
 
-@app.post("/api/upload")
+@app.post("/api/upload", dependencies=[Depends(require_api_key)])
 async def upload(file: UploadFile = File(...), schema_json: Optional[str] = None):
     """Accepts a CSV and registers it for this session.
 
@@ -691,7 +762,7 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
         )
 
 
-@app.post("/api/run")
+@app.post("/api/run", dependencies=[Depends(require_api_key)])
 def run(req: RunRequest):
     """Runs one release and streams every stage as server-sent events."""
     return StreamingResponse(
@@ -708,7 +779,7 @@ def run(req: RunRequest):
 # --------------------------------------------------------------------------- ledger
 
 
-@app.get("/api/ledger")
+@app.get("/api/ledger", dependencies=[Depends(require_api_key)])
 def get_ledger():
     entries = GLOBAL_LEDGER.get_entries()
     return {
@@ -740,7 +811,7 @@ class TamperRequest(BaseModel):
     eps_spent: float = 0.01
 
 
-@app.post("/api/ledger/tamper")
+@app.post("/api/ledger/tamper", dependencies=[Depends(require_api_key)])
 def tamper(req: TamperRequest):
     """Rewrites one entry's epsilon directly in SQLite, bypassing `append`.
 
@@ -774,7 +845,7 @@ def tamper(req: TamperRequest):
     }
 
 
-@app.post("/api/ledger/reset")
+@app.post("/api/ledger/reset", dependencies=[Depends(require_api_key)])
 def reset_ledger():
     """Clears the in-memory chain, so the tamper demo can be run again."""
     _require_demo_ledger()

@@ -12,8 +12,27 @@ import type {
 
 const BASE = '/api'
 
+/**
+ * Optional API key, injected at build time via VITE_SYNTHPROOF_API_KEY.
+ *
+ * The service is unauthenticated by default so the local demo needs no configuration. When a
+ * deployment sets SYNTHPROOF_API_KEY, the console must send it or every data endpoint answers
+ * 401. Sent as X-API-Key rather than a cookie, so there is nothing a browser attaches
+ * automatically and nothing for CSRF to abuse.
+ *
+ * A build-time key is visible to anyone who can read the bundle. That is acceptable for a
+ * console served from the same origin as the API it talks to, and unacceptable for a public
+ * deployment — which would need a real login rather than a shared secret.
+ */
+const API_KEY = (import.meta.env?.VITE_SYNTHPROOF_API_KEY ?? '') as string
+
+function authHeaders(init?: RequestInit): RequestInit | undefined {
+  if (!API_KEY) return init
+  return { ...init, headers: { ...(init?.headers ?? {}), 'X-API-Key': API_KEY } }
+}
+
 async function json<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, init)
+  const res = await fetch(`${BASE}${path}`, authHeaders(init))
   if (!res.ok) {
     const detail = await res.text().catch(() => '')
     throw new Error(detail ? `${res.status}: ${detail}` : `Request failed (${res.status})`)
@@ -57,7 +76,7 @@ export const api = {
   upload: async (file: File): Promise<UploadResult> => {
     const form = new FormData()
     form.append('file', file)
-    const res = await fetch(`${BASE}/upload`, { method: 'POST', body: form })
+    const res = await fetch(`${BASE}/upload`, authHeaders({ method: 'POST', body: form }))
     if (!res.ok) throw new Error((await res.text()) || 'Upload failed')
     return res.json()
   },
@@ -85,12 +104,15 @@ export function runRelease(req: RunRequest, handlers: RunHandlers): () => void {
 
   ;(async () => {
     try {
-      const res = await fetch(`${BASE}/run`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-        body: JSON.stringify(req),
-        signal: controller.signal,
-      })
+      const res = await fetch(
+        `${BASE}/run`,
+        authHeaders({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+          body: JSON.stringify(req),
+          signal: controller.signal,
+        })!,
+      )
 
       if (!res.ok || !res.body) {
         handlers.onError?.(`Server refused the run (${res.status}).`)

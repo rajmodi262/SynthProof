@@ -38,8 +38,8 @@ describe('runRelease SSE parsing', () => {
       vi.fn().mockResolvedValue(
         sseResponse([
           frame('start', { stages: ['profile', 'fit'] }),
-          frame('stage', { name: 'profile' }),
-          frame('stage', { name: 'fit' }),
+          frame('stage', { stage: 'profile' }),
+          frame('stage', { stage: 'fit' }),
           frame('done', { total_proved_eps: 0.91 }),
         ]),
       ),
@@ -49,7 +49,7 @@ describe('runRelease SSE parsing', () => {
     const done = vi.fn()
     runRelease({} as never, {
       onStart: () => seen.push('start'),
-      onStage: (e) => seen.push(`stage:${(e as { name: string }).name}`),
+      onStage: (e) => seen.push(`stage:${e.stage}`),
       onDone: done,
     })
     await vi.waitFor(() => expect(done).toHaveBeenCalled())
@@ -60,7 +60,7 @@ describe('runRelease SSE parsing', () => {
 
   it('reassembles a frame split across two chunks', async () => {
     // The case the buffer exists for. Without it this stage is dropped in silence.
-    const whole = frame('stage', { name: 'audit' })
+    const whole = frame('stage', { stage: 'audit' })
     const cut = Math.floor(whole.length / 2)
     vi.stubGlobal(
       'fetch',
@@ -70,14 +70,14 @@ describe('runRelease SSE parsing', () => {
     const onStage = vi.fn()
     runRelease({} as never, { onStage })
     await vi.waitFor(() => expect(onStage).toHaveBeenCalledTimes(1))
-    expect(onStage).toHaveBeenCalledWith({ name: 'audit' })
+    expect(onStage).toHaveBeenCalledWith({ stage: 'audit' })
   })
 
   it('handles several frames arriving in one chunk', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
-        sseResponse([frame('stage', { name: 'a' }) + frame('stage', { name: 'b' })]),
+        sseResponse([frame('stage', { stage: 'a' }) + frame('stage', { stage: 'b' })]),
       ),
     )
     const onStage = vi.fn()
@@ -119,7 +119,7 @@ describe('runRelease SSE parsing', () => {
   })
 
   it('returns an abort function that stops the stream quietly', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sseResponse([frame('stage', { name: 'x' })])))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sseResponse([frame('stage', { stage: 'x' })])))
     const onError = vi.fn()
     const abort = runRelease({} as never, { onError })
     expect(typeof abort).toBe('function')

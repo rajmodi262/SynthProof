@@ -14,8 +14,9 @@ the formal bound (ε_proved) and an empirical lower bound (ε_audited).
 > The accounting is sound and CI-verified, and the auditor's detection floor and ceiling are
 > now both measured — so `ε_audited = 0` is reported alongside the smallest leak the
 > instrument could have seen, rather than passed off as "no leakage". What still rules this
-> out for real releases: **no authentication on the API**, no cross-session budget
-> enforcement, no multi-table support, and single-table CSV only. Known gaps and the
+> out for real releases: authentication is a **single shared key** rather than real identity
+> (so the ledger cannot say WHO spent the budget), no cross-session budget enforcement, no
+> multi-table support, and single-table CSV only. Known gaps and the
 > remediation plan are in **[docs/AUDIT_AND_ROADMAP.md](docs/AUDIT_AND_ROADMAP.md)**.
 
 ---
@@ -34,6 +35,7 @@ the formal bound (ε_proved) and an empirical lower bound (ε_audited).
 | **Generators** | ✅ 3 real families | `independent` (baseline) · `pairwise` (tree-structured 2-way) · `aim` (private-PGM) · `copula` (per-column control) |
 | **Canary auditor** | ✅ Working, and its limits are measured | Paired Clopper-Pearson *and* the one-run Steinke construction. The **detection floor is now measured** ([results/DETECTION_FLOOR.md](results/DETECTION_FLOOR.md)): at 400 canaries the auditor resolves a 25% leak; at 10 canaries it needs a 100% leak. The **audit ceiling** `log(r/ln(1/α))` is reported beside every ε_audited, so a 0 is never mistaken for evidence of no leakage. |
 | **Attack suite** | ✅ 4 attacks | `distance_mia` (nearest-neighbour) · `exact_match_risk` (singling-out) · `domias` (k-NN density ratio, Breugel et al. 2023) · `attribute_inference` (scored against a conditional baseline, not a marginal one). **LiRA is deliberately NOT implemented** — a shadow-model attack is ~21h of compute for a likely wide-CI null, and calling anything cheaper "LiRA" would misname it. |
+| **API authentication** | ⚠️ Shared key only | Set `SYNTHPROOF_API_KEY` and every endpoint that reads uploaded data, spends budget or exposes the ledger requires `Authorization: Bearer <key>` or `X-API-Key`. Unset by default so the local demo needs no configuration, and `/api/health` reports `auth: "disabled"` loudly when it is. **Not user authentication**: one key means one principal, so the ledger's `actor` cannot distinguish callers and rotation invalidates everyone at once. |
 | **Web console** | ✅ Working, now tested | React + R3F. Live SSE pipeline, 3D record space, ledger tamper demo. **10 vitest tests** (`make console-test`) cover the hand-rolled SSE parser in `src/lib/api.ts` — including a frame split across two network chunks, which previously would have dropped a pipeline stage in silence. |
 | **H1** — mechanism families | ⚠️ **Supported on Adult, NOT reproduced on ACS** | On UCI Adult all three families separate at ε=8 with non-overlapping CIs (aim > pairwise > independent). On ACSIncome the ordering **inverts** and AIM is indistinguishable from the independent baseline. Diagnosed: the structure metric's column pair is one AIM selects at every ε on Adult and at one of three on ACS, so the Adult result is partly a metric/mechanism coincidence. Reported, not tuned away — [results/acs/H1_RESULTS.md](results/acs/H1_RESULTS.md). |
 | **H2** — subgroup disparity | ✅ **Bounded null** | 14 subgroup comparisons, 0 significant raw, 0 surviving BH-FDR or Bonferroni. 2 of 14 are statistically **equivalent** to chance within a pre-specified margin (TOST) — a bound on the effect, not merely absence of evidence. Detectability is stated: the adversary needed accuracy 0.600 and reached 0.562. See [results/H2_RESULTS.md](results/H2_RESULTS.md). |
