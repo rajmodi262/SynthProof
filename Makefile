@@ -1,5 +1,5 @@
-.PHONY: help install install-locked lock test lint format h1 h1-acs h2 h2-acs h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
-        console-install security audit docker-build docker-up
+.PHONY: help install install-locked lock test lint format h1 h1-acs h2 h2-acs h3 h3-acs h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
+        console-install console-test security audit docker-build docker-up
 
 help:
 	@echo "SynthProof — commands"
@@ -17,6 +17,8 @@ help:
 	@echo "    make floor           Measure the auditor's detection floor (long)"
 	@echo "    make h2              Run the H2 subgroup-leakage study"
 	@echo "    make h2-acs          Run the same subgroup study on ACSIncome"
+	@echo "    make h3              Run the H3 allocation study on UCI Adult"
+	@echo "    make h3-acs          Run the same allocation study on ACSIncome"
 	@echo "    make h2-analyse      Re-analyse H2: FDR, equivalence, power"
 	@echo "    make reproduce       Check results against the committed manifest"
 	@echo "    make reproduce-all   Re-run every experiment, then check (very long)"
@@ -28,6 +30,7 @@ help:
 	@echo "    make console-install Install the console's npm dependencies"
 	@echo "    make console         Start the console dev server on :5173"
 	@echo "    make console-build   Build the console into synthproof/api/static"
+	@echo "    make console-test    Run the console test suite (vitest)"
 	@echo ""
 	@echo "  For the live demo, run 'make serve' and 'make console' in two terminals."
 
@@ -95,6 +98,15 @@ h2:
 h2-acs:
 	python -m scripts.run_h2 --dataset acs
 
+# H3 -- utility-weighted vs uniform budget allocation at fixed total epsilon. Weights are
+# DECLARED public metadata, never measured from the table; deriving them from the data would
+# be an uncharged query and would make every epsilon here a false statement.
+h3:
+	python -m scripts.run_h3
+
+h3-acs:
+	python -m scripts.run_h3 --dataset acs
+
 # Re-analyses the committed H2 results with FDR control, TOST equivalence and a power
 # statement. Reads results only -- runs no experiment.
 h2-analyse:
@@ -131,6 +143,12 @@ console:
 
 console-build:
 	cd web && npm run build
+
+# The console's own test suite. Targets the hand-rolled SSE parser in src/lib/api.ts, which
+# is the riskiest frontend code: a frame can straddle two network chunks, and mis-buffering
+# drops pipeline stages silently rather than erroring.
+console-test:
+	cd web && npm test
 
 docker-build:
 	docker build -t synthproof:latest .

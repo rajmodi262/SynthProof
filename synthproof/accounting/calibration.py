@@ -166,3 +166,94 @@ class BudgetPlan:
             profile_eps=shares["profile"],
             synthesis_eps=shares["synthesis"],
         )
+
+
+def calibrate_weighted_scales(
+    weights: Sequence[float],
+    target_eps: float,
+    target_delta: float = 1e-5,
+    name: str = "gaussian",
+    sensitivity: float = 1.0,
+    orders: Optional[Sequence[float]] = None,
+    tol: float = 1e-4,
+    max_iter: int = 200,
+) -> list:
+    """Per-query noise scales that spend `target_eps` in total, split by `weights`.
+
+    This is what makes a NON-UNIFORM budget allocation possible without any hand-derived
+    composition. Hypothesis H3 asks whether spending more of a fixed budget on the columns an
+    analyst cares about buys downstream utility; answering it needs each query to carry its
+    own noise scale while the composed total still lands on `target_eps`.
+
+    The shape of the split is fixed analytically — for Gaussian mechanisms under RDP the
+    per-query cost goes as `1/scale^2`, so a query with weight `w` gets
+    `scale ∝ 1/sqrt(w)` — but the SIZE of the split is found by bisecting against the
+    accountant, exactly as `calibrate_noise_scale` does. No epsilon here is computed by this
+    module: the returned scales are the ones the accountant agrees compose to at most
+    `target_eps`, and a caller that charges them gets that verified again on the way through.
+
+    A uniform weight vector reproduces `calibrate_noise_scale` to within the bisection
+    tolerance, which is asserted in the tests rather than assumed.
+
+    Args:
+        weights: One positive weight per query. Relative size is what matters, not scale.
+        target_eps: Total epsilon after composing every query.
+
+    Returns:
+        One noise scale per weight, in the same order.
+
+    Raises:
+        ValueError: on a non-positive target, an empty weight vector, or any weight <= 0.
+    """
+    if target_eps <= 0:
+        raise ValueError(f"target_eps must be positive, got {target_eps}")
+    w = [float(x) for x in weights]
+    if not w:
+        raise ValueError("weights must not be empty")
+    if any(x <= 0 for x in w):
+        raise ValueError(f"every weight must be positive, got {w}")
+
+    k = len(w)
+    total_w = sum(w)
+    # Shape of the allocation: scale_i proportional to 1/sqrt(w_i), normalised so a uniform
+    # vector leaves every scale equal to the multiplier.
+    shape = [((total_w / (x * k)) ** 0.5) for x in w]
+
+    def eps_at(mult: float) -> float:
+        acct = Accountant(budget_eps=float("inf"), budget_delta=target_delta, orders=orders)
+        events = [
+            (
+                acct.to_dp_event(
+                    MechanismSpec(name=name, sensitivity=sensitivity, noise_scale=mult * s, steps=1)
+                ),
+                1,
+            )
+            for s in shape
+        ]
+        return acct._epsilon_for(events, target_delta)
+
+    lo = hi = float(sensitivity)
+    while eps_at(hi) > target_eps:
+        hi *= 2.0
+        if hi > _MAX_SCALE:
+            raise ValueError(
+                f"Cannot reach eps={target_eps} at delta={target_delta} with {k} weighted "
+                f"queries: required noise exceeds {_MAX_SCALE:g}."
+            )
+    while eps_at(lo) < target_eps:
+        lo /= 2.0
+        if lo < _MIN_SCALE:
+            return [_MIN_SCALE * s for s in shape]
+
+    # Same invariant as calibrate_noise_scale: eps(hi) <= target < eps(lo). Return `hi`, the
+    # conservative side, so the calibration never overspends.
+    for _ in range(max_iter):
+        if hi - lo <= tol * hi:
+            break
+        mid = 0.5 * (lo + hi)
+        if eps_at(mid) > target_eps:
+            lo = mid
+        else:
+            hi = mid
+
+    return [hi * s for s in shape]

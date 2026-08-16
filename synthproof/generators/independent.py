@@ -10,11 +10,16 @@ renamed once the real AIM (`generators/aim.py`, backed by private-PGM) landed. S
 brutal_project_audit.md, finding F6, and TASKBOARD item M1.10.
 """
 
+from typing import Dict, Optional
+
 import numpy as np
 import pandas as pd
 
 from synthproof.accounting.accountant import Accountant
-from synthproof.accounting.calibration import calibrate_noise_scale
+from synthproof.accounting.calibration import (
+    calibrate_noise_scale,
+    calibrate_weighted_scales,
+)
 from synthproof.accounting.noise import sample_discrete_gaussian
 from synthproof.accounting.types import MechanismSpec
 from synthproof.data.dataset import TabularDataset
@@ -27,10 +32,26 @@ NUM_BINS = 10
 class IndependentMarginalGenerator(BaseGenerator):
     """Measures one noisy 1-D marginal per column under a calibrated DP budget."""
 
-    def __init__(self, seed: int = 42):
+    def __init__(self, seed: int = 42, column_weights: Optional[Dict[str, float]] = None):
+        """
+        Args:
+            column_weights: Optional PUBLIC per-column budget weights. A column with weight 2
+                receives twice the share of a column with weight 1; missing columns default
+                to 1. `None` means uniform, which is the behaviour every committed result was
+                produced with.
+
+                These weights MUST be public — an analyst's declared statement of which
+                columns matter, not a quantity measured from the table. Deriving them from
+                the data (mutual information with the target, variance, anything) would be an
+                uncharged query on sensitive records and would make the epsilon below a false
+                statement. This is the mechanism hypothesis H3 tests, and it is only a fair
+                test if the weights cost nothing.
+        """
         super().__init__(seed=seed)
         self.marginals: dict = {}
         self.columns: list = []
+        self.column_weights = dict(column_weights) if column_weights else None
+        self.noise_scales_: Dict[str, float] = {}
 
     def fit(
         self,
@@ -48,21 +69,36 @@ class IndependentMarginalGenerator(BaseGenerator):
 
         n_queries = max(1, len(self.columns))
 
-        # Calibrate once for the whole fit so the measured marginals cost exactly
-        # target_eps. The previous heuristic, noise_scale = sqrt(d) / target_eps, was not
-        # an inversion of the composition theorem: a target of 8.0 composed to 70.49.
-        noise_scale = calibrate_noise_scale(
-            target_eps=target_eps,
-            target_delta=accountant.budget.delta,
-            name="gaussian",
-            sensitivity=1.0,
-            steps=n_queries,
-        )
+        # Calibrate so the measured marginals cost exactly target_eps. The previous
+        # heuristic, noise_scale = sqrt(d) / target_eps, was not an inversion of the
+        # composition theorem: a target of 8.0 composed to 70.49.
+        if self.column_weights is None:
+            scale = calibrate_noise_scale(
+                target_eps=target_eps,
+                target_delta=accountant.budget.delta,
+                name="gaussian",
+                sensitivity=1.0,
+                steps=n_queries,
+            )
+            self.noise_scales_ = {c: scale for c in self.columns}
+        else:
+            # Weighted allocation (H3). Columns absent from the mapping get weight 1, so a
+            # caller naming only the columns they care about does not silently zero the rest.
+            w = [float(self.column_weights.get(c, 1.0)) for c in self.columns]
+            scales = calibrate_weighted_scales(
+                w,
+                target_eps=target_eps,
+                target_delta=accountant.budget.delta,
+                name="gaussian",
+                sensitivity=1.0,
+            )
+            self.noise_scales_ = dict(zip(self.columns, scales, strict=True))
 
         for col in self.columns:
+            noise_scale = self.noise_scales_[col]
             accountant.charge(
                 MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=noise_scale, steps=1),
-                run_id=f"aim_marginal_{col}",
+                run_id=f"marginal_{col}",
             )
             seed = int(rng.integers(0, 2**31 - 1))
             if col in self.numerical_cols:

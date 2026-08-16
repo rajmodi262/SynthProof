@@ -80,7 +80,7 @@ Every deviation, its reason, and its likely direction of effect on inference.
 | D2 | **Utility measured on a second, canary-free fit** | Measuring it on the canary-trained model destroyed the signal being measured — 60 canaries cut corr(age, hours) from 0.1014 to 0.0109 | Removes a bias that had been penalising exactly the mechanisms that model dependence. Direction: made H1 *measurable*; without it H1 was falsely null |
 | D3 | **Auditor changed** from paired Clopper-Pearson to the one-run construction | The paired estimator spends two canaries per comparison and saturates sooner | Slightly raises the audited bound at fixed canary budget. Both are reported and compared |
 | D4 | **H1 primary metric supplemented.** Preregistration named TSTR macro F1; correlation error was added as a structure metric | TSTR alone cannot distinguish an independent-marginal mechanism from a structured one on this data | Additive, not substitutive — TSTR is still reported. The structure metric is what separates the families |
-| D5 | **H3 not run** | Time budget | H3 is untested and reported as such, not omitted |
+| ~~D5~~ | ~~**H3 not run**~~ **CLOSED.** H3 now run on both datasets, 5 epsilon values x 5 seeds x 2 arms | — | See §6.10. H3 is **not supported** on either dataset, and the null replicates |
 
 ## 6.9 External validity: what the second dataset changed
 
@@ -143,6 +143,72 @@ column. AIM optimises global marginal approximation, not a downstream task.
 
 These observations are pinned by `tests/test_acs_h1_findings.py`, so the prose above cannot
 drift from the committed results without a test failing.
+
+---
+
+## 6.10 H3: utility-weighted budget allocation
+
+D5 was closed by running H3 on both datasets under the same protocol as H1: 5 epsilon values,
+5 seeds, and a paired design in which the two arms differ **only** in how a fixed total budget
+is split across columns.
+
+**Where the weights come from, because that is the whole design question.** They are
+*declared*, not measured. The analyst names the columns they care about — for Adult,
+`income`, `education`, `hours_per_week`, `occupation` — and those columns receive weight 4
+while every other column keeps weight 1. That declaration is public metadata, exactly like the
+schema's numeric bounds, and so costs nothing.
+
+Deriving the weights from the data instead — mutual information with the target, a
+feature-importance run, anything measured — would be a data-dependent parameter choice made
+with an uncharged query, and every epsilon reported here would be a false statement. That
+version of H3 is not testable at any budget and was not run.
+
+**How the split is priced.** `calibrate_weighted_scales` fixes the *shape* of the allocation
+analytically (for Gaussian mechanisms under RDP the per-query cost goes as `1/scale^2`, so a
+column of weight `w` takes `scale ∝ 1/sqrt(w)`) and then finds its *size* by bisecting against
+the accountant, exactly as the scalar calibration does. No epsilon in this section is computed
+by hand. Two properties are asserted by test rather than assumed: a uniform weight vector
+reproduces the scalar calibration to within tolerance, and the weighted arm never composes to
+more than the uniform arm. The second matters most — a weighted arm that quietly overspent
+would manufacture a utility gain out of extra privacy loss.
+
+### Result: not supported, on either dataset
+
+**UCI Adult** — TSTR macro F1, paired weighted-minus-uniform gap with 95% bootstrap CI:
+
+| eps | uniform | weighted | gap [95% CI] | supports H3 |
+|---:|---:|---:|---|---|
+| 0.5 | 0.4314 | 0.4493 | +0.0179 [-0.1142, +0.1145] | no |
+| 1 | 0.4160 | 0.4333 | +0.0173 [-0.0268, +0.0519] | no |
+| 2 | 0.3983 | 0.4289 | +0.0305 [-0.0136, +0.0857] | no |
+| 4 | 0.4663 | 0.4427 | -0.0236 [-0.0549, +0.0076] | no |
+| 8 | 0.4698 | 0.4749 | +0.0051 [-0.0266, +0.0486] | no |
+
+**ACSIncome (CA 2018)**:
+
+| eps | uniform | weighted | gap [95% CI] | supports H3 |
+|---:|---:|---:|---|---|
+| 0.5 | 0.4753 | 0.4796 | +0.0043 [-0.0070, +0.0149] | no |
+| 1 | 0.4850 | 0.4828 | -0.0023 [-0.0115, +0.0073] | no |
+| 2 | 0.4829 | 0.4869 | +0.0040 [-0.0184, +0.0265] | no |
+| 4 | 0.4871 | 0.4854 | -0.0016 [-0.0148, +0.0147] | no |
+| 8 | 0.4893 | 0.4873 | -0.0021 [-0.0142, +0.0076] | no |
+
+At none of the ten dataset-epsilon combinations does the paired gap have an interval excluding
+zero. On Adult the point estimates are mixed in sign (three positive, two negative) and the
+intervals are wide; on ACS the gaps are smaller still (|gap| <= 0.004) with tighter intervals,
+which is the stronger null of the two.
+
+**Reading it honestly.** This is a null about *this mechanism*, not about budget allocation in
+general. The independent-marginal generator measures one 1-way marginal per column and samples
+each column independently, so a better-measured marginal on the target improves that column's
+own distribution and nothing else — there is no cross-column structure for the extra budget to
+sharpen. The result is therefore consistent with the mechanism's design, and the interesting
+version of H3 would repeat it on `pairwise` or `aim`, where budget could be steered toward
+*cliques* rather than columns. That is stated as future work rather than claimed here.
+
+The same caveat that governs H2 applies: a null bounds the effect at this scale, it does not
+establish that no effect exists.
 
 ---
 
