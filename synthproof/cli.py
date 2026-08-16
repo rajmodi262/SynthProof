@@ -18,6 +18,73 @@ def main():
     pass
 
 
+# Epsilon bands. These are conventions from the DP deployment literature, not theorems:
+# eps <= 1 is conservative, 1-10 is the range most deployments sit in, and above ~10 the
+# formal guarantee is so weak that quoting it is closer to marketing than to privacy.
+EPS_WARN_ABOVE = 10.0
+EPS_REFUSE_ABOVE = 1e6
+
+
+def _validate_eps(ctx, param, value):
+    """Rejects impossible epsilon and warns loudly about meaningless epsilon.
+
+    Previously any value was accepted in silence: `--eps 1000000000` produced a Privacy Data
+    Sheet reporting `proved eps=999986985.822` with no indication that this is not privacy in
+    any useful sense. A number that large is almost always a typo or a misunderstanding, and
+    a tool that prints it without comment is lending it credibility.
+    """
+    if value is None:
+        return value
+    if value <= 0:
+        raise click.BadParameter(
+            f"epsilon must be positive, got {value:g}. "
+            "Epsilon bounds a likelihood ratio, so zero or negative has no meaning. "
+            "Try --eps 1.0 for a conservative release."
+        )
+    if value > EPS_REFUSE_ABOVE:
+        raise click.BadParameter(
+            f"epsilon {value:g} is not a privacy parameter in any useful sense — "
+            f"at this scale the mechanism is effectively releasing the raw data.\n"
+            "If you genuinely want an unprotected baseline, say so explicitly by using the "
+            "control generators in `synthproof.generators.leaky` rather than by inflating "
+            "epsilon."
+        )
+    if value > EPS_WARN_ABOVE:
+        click.secho(
+            f"  WARNING: eps={value:g} is far above the range where the formal guarantee is "
+            "meaningful.\n"
+            f"  Above about {EPS_WARN_ABOVE:g}, exp(eps) is large enough that the bound "
+            "permits an adversary to\n"
+            "  distinguish membership almost perfectly. The number below is still correctly "
+            "computed;\n"
+            "  it just does not mean much. Reduce --eps for a defensible release.",
+            fg="yellow",
+            err=True,
+        )
+    return value
+
+
+def _validate_delta(ctx, param, value):
+    """Delta is a failure probability, so it must be a probability — and a small one."""
+    if value is None:
+        return value
+    if not (0.0 < value < 1.0):
+        raise click.BadParameter(
+            f"delta must be in (0, 1), got {value:g}. It is the probability the epsilon "
+            "bound fails to hold."
+        )
+    if value > 1e-3:
+        click.secho(
+            f"  WARNING: delta={value:g} is large. Convention is delta << 1/n, so for n rows "
+            "of data\n"
+            "  a delta above ~1e-3 admits mechanisms that may release individual records "
+            "outright.",
+            fg="yellow",
+            err=True,
+        )
+    return value
+
+
 def _load(input_path, schema_path, rows, seed):
     """Loads a dataset from CSV, or builds the toy table when no input is given."""
     if input_path is None:
@@ -58,22 +125,49 @@ def list_mechanisms():
 
 
 @main.command()
-@click.option("--input", "input_path", default=None, type=click.Path(exists=True),
-              help="CSV file to synthesise. Omit to use the built-in toy table.")
-@click.option("--schema", "schema_path", default=None, type=click.Path(exists=True),
-              help="Public schema JSON declaring column kinds and numeric bounds.")
-@click.option("--eps", default=1.0, help="Total privacy budget for the release.")
-@click.option("--delta", default=1e-5, help="Target delta.")
-@click.option("--mechanism", default="pairwise",
-              type=click.Choice(sorted(MECHANISMS)),
-              help="Generator to use. `synthproof mechanisms` lists what is available.")
+@click.option(
+    "--input",
+    "input_path",
+    default=None,
+    type=click.Path(exists=True),
+    help="CSV file to synthesise. Omit to use the built-in toy table.",
+)
+@click.option(
+    "--schema",
+    "schema_path",
+    default=None,
+    type=click.Path(exists=True),
+    help="Public schema JSON declaring column kinds and numeric bounds.",
+)
+@click.option(
+    "--eps",
+    default=1.0,
+    callback=_validate_eps,
+    help="Total privacy budget for the release. Must be > 0; warns above 10.",
+)
+@click.option(
+    "--delta",
+    default=1e-5,
+    callback=_validate_delta,
+    help="Target delta: the probability the epsilon bound fails. Must be in (0, 1).",
+)
+@click.option(
+    "--mechanism",
+    default="pairwise",
+    type=click.Choice(sorted(MECHANISMS)),
+    help="Generator to use. `synthproof mechanisms` lists what is available.",
+)
 @click.option("--rows", default=100, help="Rows for the toy table when --input is omitted.")
 @click.option("--seed", default=42, help="Random seed.")
 @click.option("--canaries", default=30, help="Canaries planted for the audit.")
-@click.option("--sign/--no-sign", default=False,
-              help="Sign the data sheet with the persistent key (see `synthproof keygen`).")
-@click.option("--out", default=None, type=click.Path(),
-              help="Write the Privacy Data Sheet JSON here.")
+@click.option(
+    "--sign/--no-sign",
+    default=False,
+    help="Sign the data sheet with the persistent key (see `synthproof keygen`).",
+)
+@click.option(
+    "--out", default=None, type=click.Path(), help="Write the Privacy Data Sheet JSON here."
+)
 def run(input_path, schema_path, eps, delta, mechanism, rows, seed, canaries, sign, out):
     """Synthesises a dataset and emits its Privacy Data Sheet."""
     ds = _load(input_path, schema_path, rows, seed)
@@ -109,10 +203,17 @@ def run(input_path, schema_path, eps, delta, mechanism, rows, seed, canaries, si
 
 
 @main.command()
-@click.option("--key-dir", default=None, type=click.Path(),
-              help="Where to write the keypair. Defaults to .keys/")
-@click.option("--overwrite", is_flag=True,
-              help="Replace an existing key. Every signature it made becomes unverifiable.")
+@click.option(
+    "--key-dir",
+    default=None,
+    type=click.Path(),
+    help="Where to write the keypair. Defaults to .keys/",
+)
+@click.option(
+    "--overwrite",
+    is_flag=True,
+    help="Replace an existing key. Every signature it made becomes unverifiable.",
+)
 def keygen(key_dir, overwrite):
     """Creates the persistent Ed25519 signing key."""
     kwargs = {"overwrite": overwrite}
@@ -133,8 +234,12 @@ def keygen(key_dir, overwrite):
 
 @main.command()
 @click.argument("datasheet", type=click.Path(exists=True))
-@click.option("--pubkey", required=True, type=click.Path(exists=True),
-              help="The public key you expect the sheet to be signed with.")
+@click.option(
+    "--pubkey",
+    required=True,
+    type=click.Path(exists=True),
+    help="The public key you expect the sheet to be signed with.",
+)
 def verify(datasheet, pubkey):
     """Verifies a signed Privacy Data Sheet. Needs only this file and a public key.
 
@@ -163,8 +268,9 @@ def verify(datasheet, pubkey):
 
 
 @main.command("infer-schema")
-@click.option("--input", "input_path", required=True, type=click.Path(exists=True),
-              help="CSV to inspect.")
+@click.option(
+    "--input", "input_path", required=True, type=click.Path(exists=True), help="CSV to inspect."
+)
 @click.option("--out", default=None, type=click.Path(), help="Write the schema JSON here.")
 def infer_schema(input_path, out):
     """Infers a starter schema from a CSV. Review the bounds before using it for a release.
@@ -186,7 +292,12 @@ def infer_schema(input_path, out):
 
 @main.command()
 @click.option("--rows", default=100, help="Number of rows for the toy benchmark.")
-@click.option("--eps", default=1.0, help="Target privacy budget epsilon.")
+@click.option(
+    "--eps",
+    default=1.0,
+    callback=_validate_eps,
+    help="Target privacy budget epsilon. Must be > 0; warns above 10.",
+)
 @click.option("--mechanism", default="pairwise", type=click.Choice(sorted(MECHANISMS)))
 def demo(rows: int, eps: float, mechanism: str):
     """Runs a quick end-to-end synthesis, audit, and certificate demo."""
