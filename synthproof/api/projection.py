@@ -63,8 +63,11 @@ def project(
 
     real = _numeric_frame(real_df, cols)
     synth = _numeric_frame(synthetic_df, cols)
-    canary = (_numeric_frame(canary_df, cols)
-              if canary_df is not None and len(canary_df) else np.empty((0, len(cols))))
+    canary = (
+        _numeric_frame(canary_df, cols)
+        if canary_df is not None and len(canary_df)
+        else np.empty((0, len(cols)))
+    )
 
     # Standardise on the REAL table's moments. Using each cloud's own moments would
     # re-centre the synthetic data and hide exactly the distributional shift we want to show.
@@ -88,7 +91,7 @@ def project(
         # checked here rather than surfacing as a 500 from inside the run stream.
         _, s, vt = np.linalg.svd(real_s - real_s.mean(axis=0), full_matrices=False)
         basis = vt[:3].T
-        var = (s ** 2) / max(1.0, (len(real_s) - 1))
+        var = (s**2) / max(1.0, (len(real_s) - 1))
         explained = (var[:3] / var.sum()).tolist() if var.sum() > 0 else [0.0, 0.0, 0.0]
         method = "pca"
         to3 = lambda a: a @ basis  # noqa: E731
@@ -129,8 +132,9 @@ def project(
     )
 
 
-def marginal_histograms(real_df: pd.DataFrame, synthetic_df: pd.DataFrame,
-                        cols: Sequence[str], bins: int = 24) -> Dict[str, dict]:
+def marginal_histograms(
+    real_df: pd.DataFrame, synthetic_df: pd.DataFrame, cols: Sequence[str], bins: int = 24
+) -> Dict[str, dict]:
     """Per-column real-vs-synthetic histograms on a shared binning.
 
     Shared edges matter: comparing two histograms binned independently is meaningless, and
@@ -161,9 +165,7 @@ def marginal_histograms(real_df: pd.DataFrame, synthetic_df: pd.DataFrame,
             "edges": [round(float(e), 4) for e in edges],
             "real": (r_h / max(1, len(r))).round(5).tolist(),
             "synthetic": (s_h / max(1, len(s))).round(5).tolist(),
-            "synthetic_out_of_range": round(
-                float(1.0 - (s_h.sum() / max(1, len(s)))), 5
-            ),
+            "synthetic_out_of_range": round(float(1.0 - (s_h.sum() / max(1, len(s)))), 5),
             "real_out_of_range": round(float(1.0 - (r_h.sum() / max(1, len(r)))), 5),
         }
     return out

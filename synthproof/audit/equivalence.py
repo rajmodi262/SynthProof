@@ -42,14 +42,15 @@ DEFAULT_ALPHA = 0.05
 
 # --------------------------------------------------------------------------- multiplicity
 
+
 @dataclass
 class MultiplicityResult:
     """Raw and corrected p-values for a family of tests."""
 
     labels: List[str]
     raw_p: List[float]
-    bh_p: List[float]              # Benjamini-Hochberg, controls FDR
-    bonferroni_p: List[float]      # controls FWER; strictly more conservative
+    bh_p: List[float]  # Benjamini-Hochberg, controls FDR
+    bonferroni_p: List[float]  # controls FWER; strictly more conservative
     bh_reject: List[bool]
     bonferroni_reject: List[bool]
     alpha: float
@@ -74,8 +75,9 @@ class MultiplicityResult:
         )
 
 
-def correct_multiplicity(labels: Sequence[str], pvals: Sequence[float],
-                         alpha: float = DEFAULT_ALPHA) -> MultiplicityResult:
+def correct_multiplicity(
+    labels: Sequence[str], pvals: Sequence[float], alpha: float = DEFAULT_ALPHA
+) -> MultiplicityResult:
     """Applies Benjamini-Hochberg and Bonferroni to a family of p-values.
 
     `method` is passed explicitly in both calls. `multipletests` defaults to Holm-Sidak
@@ -102,14 +104,15 @@ def correct_multiplicity(labels: Sequence[str], pvals: Sequence[float],
 
 # --------------------------------------------------------------------------- equivalence
 
+
 @dataclass
 class EquivalenceResult:
     """TOST outcome for one comparison."""
 
     label: str
     observed: float
-    bound: float                   # the +/- equivalence margin
-    p_value: float                 # TOST p; < alpha means statistically EQUIVALENT
+    bound: float  # the +/- equivalence margin
+    p_value: float  # TOST p; < alpha means statistically EQUIVALENT
     equivalent: bool
     bound_justification: str
     n: int
@@ -129,9 +132,14 @@ class EquivalenceResult:
         )
 
 
-def test_equivalence(label: str, sample: Sequence[float], reference: Sequence[float],
-                     bound: float, justification: str,
-                     alpha: float = DEFAULT_ALPHA) -> EquivalenceResult:
+def test_equivalence(
+    label: str,
+    sample: Sequence[float],
+    reference: Sequence[float],
+    bound: float,
+    justification: str,
+    alpha: float = DEFAULT_ALPHA,
+) -> EquivalenceResult:
     """Two one-sided tests that `sample` lies within +/-`bound` of `reference`.
 
     Args:
@@ -142,8 +150,7 @@ def test_equivalence(label: str, sample: Sequence[float], reference: Sequence[fl
     x = np.asarray([v for v in sample if np.isfinite(v)], dtype=float)
     y = np.asarray([v for v in reference if np.isfinite(v)], dtype=float)
     if len(x) < 2 or len(y) < 2:
-        return EquivalenceResult(label, float("nan"), bound, 1.0, False,
-                                 justification, len(x))
+        return EquivalenceResult(label, float("nan"), bound, 1.0, False, justification, len(x))
 
     p, _, _ = ttost_ind(x, y, -bound, bound)
     return EquivalenceResult(
@@ -159,15 +166,16 @@ def test_equivalence(label: str, sample: Sequence[float], reference: Sequence[fl
 
 # --------------------------------------------------------------------------- power / MDE
 
+
 @dataclass
 class DetectabilityReport:
     """What this instrument could and could not have found."""
 
     num_canaries: int
     alpha: float
-    ceiling: float                    # max certifiable epsilon at this canary count
-    mde_epsilon: float                # smallest epsilon a majority-seed detection could show
-    mde_accuracy: float               # adversary accuracy needed to reach it
+    ceiling: float  # max certifiable epsilon at this canary count
+    mde_epsilon: float  # smallest epsilon a majority-seed detection could show
+    mde_accuracy: float  # adversary accuracy needed to reach it
     observed_max_epsilon: float
     observed_max_accuracy: float
     fraction_of_range_used: float
@@ -201,9 +209,12 @@ def minimum_detectable_epsilon(num_guesses: int, alpha: float = DEFAULT_ALPHA) -
     return float("inf"), 1.0
 
 
-def describe_detectability(num_canaries: int, observed_epsilons: Sequence[float],
-                           observed_accuracies: Sequence[float],
-                           alpha: float = DEFAULT_ALPHA) -> DetectabilityReport:
+def describe_detectability(
+    num_canaries: int,
+    observed_epsilons: Sequence[float],
+    observed_accuracies: Sequence[float],
+    alpha: float = DEFAULT_ALPHA,
+) -> DetectabilityReport:
     """Places the observed results inside the instrument's measured dynamic range."""
     from synthproof.audit.steinke import max_provable_epsilon
 
@@ -290,16 +301,25 @@ class H2Analysis:
                 "summary": self.multiplicity.summary(),
             },
             "equivalence": [
-                {"label": e.label, "observed": e.observed, "bound": e.bound,
-                 "p_value": e.p_value, "equivalent": e.equivalent, "n": e.n,
-                 "justification": e.bound_justification,
-                 "interpretation": e.interpretation()}
+                {
+                    "label": e.label,
+                    "observed": e.observed,
+                    "bound": e.bound,
+                    "p_value": e.p_value,
+                    "equivalent": e.equivalent,
+                    "n": e.n,
+                    "justification": e.bound_justification,
+                    "interpretation": e.interpretation(),
+                }
                 for e in self.equivalence
             ],
             "detectability": (
-                {**self.detectability.__dict__,
-                 "interpretation": self.detectability.interpretation()}
-                if self.detectability else None
+                {
+                    **self.detectability.__dict__,
+                    "interpretation": self.detectability.interpretation(),
+                }
+                if self.detectability
+                else None
             ),
             "verdict": self.verdict(),
         }

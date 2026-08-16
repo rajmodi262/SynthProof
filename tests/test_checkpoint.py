@@ -25,6 +25,7 @@ def _cells(n=6):
 
 # ------------------------------------------------------------------ hashing
 
+
 def test_config_hash_is_order_independent():
     """Dict ordering must not change the hash, or every restart recomputes everything."""
     assert config_hash({"a": 1, "b": 2}) == config_hash({"b": 2, "a": 1})
@@ -44,6 +45,7 @@ def test_config_hash_changes_when_configuration_changes():
 
 # ------------------------------------------------------------------ resume
 
+
 def test_a_completed_cell_is_reused_and_not_recomputed(tmp_path):
     calls = []
 
@@ -62,6 +64,7 @@ def test_a_completed_cell_is_reused_and_not_recomputed(tmp_path):
 
 def test_a_teardown_mid_grid_loses_at_most_one_cell(tmp_path):
     """THE regression test. Simulates the exact failure that cost two full grid runs."""
+
     class Teardown(Exception):
         pass
 
@@ -92,6 +95,7 @@ def test_a_teardown_mid_grid_loses_at_most_one_cell(tmp_path):
 def test_a_changed_configuration_invalidates_the_cache(tmp_path):
     """Silently reusing a cell computed under different settings would publish numbers that
     never came from the code claiming them."""
+
     def compute(cfg):
         return {"metric": cfg["target_eps"]}
 
@@ -110,6 +114,7 @@ def test_a_changed_configuration_invalidates_the_cache(tmp_path):
 
 
 # ------------------------------------------------------------------ robustness
+
 
 def test_a_truncated_cell_file_is_recomputed_not_trusted(tmp_path):
     """A half-written JSON must never be read as a completed cell."""
@@ -142,8 +147,9 @@ def test_saved_cell_records_its_configuration_and_seed(tmp_path):
     """A result file that cannot say what produced it is not traceable to an experiment."""
     ckpt = GridCheckpoint(tmp_path)
     cfg = {"mechanism": "aim", "target_eps": 8.0, "seed": 3}
-    ckpt.save(CellRecord(index=7, config=cfg, config_hash=config_hash(cfg),
-                         metrics={"proved_eps": 6.5}))
+    ckpt.save(
+        CellRecord(index=7, config=cfg, config_hash=config_hash(cfg), metrics={"proved_eps": 6.5})
+    )
 
     data = json.loads(ckpt.path_for(7).read_text(encoding="utf-8"))
     assert data["config"] == cfg

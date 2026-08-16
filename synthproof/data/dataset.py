@@ -23,8 +23,7 @@ _FALLBACK_CATEGORICAL_MAX_UNIQUE = 10
 class TabularDataset:
     """Wraps a dataframe with column-type classification and an optional public schema."""
 
-    def __init__(self, df: pd.DataFrame, name: str = "dataset",
-                 schema: Optional[Schema] = None):
+    def __init__(self, df: pd.DataFrame, name: str = "dataset", schema: Optional[Schema] = None):
         self.name = name
         self.schema = schema
 
@@ -53,9 +52,11 @@ class TabularDataset:
             if spec.kind == NUMERICAL:
                 # Clipping to a PUBLIC range is what bounds sensitivity. Clipping against
                 # data-derived bounds instead would leak the true extremes.
-                self.df[spec.name] = pd.to_numeric(
-                    self.df[spec.name], errors="coerce"
-                ).fillna(spec.lower).clip(lower=spec.lower, upper=spec.upper)
+                self.df[spec.name] = (
+                    pd.to_numeric(self.df[spec.name], errors="coerce")
+                    .fillna(spec.lower)
+                    .clip(lower=spec.lower, upper=spec.upper)
+                )
             else:
                 self.df[spec.name] = self.df[spec.name].astype(str)
                 if spec.categories is not None:
@@ -79,8 +80,13 @@ class TabularDataset:
                 self.categorical_cols.append(col)
 
     @classmethod
-    def from_csv(cls, path: str, schema: Optional[Schema] = None,
-                 name: Optional[str] = None, **read_csv_kwargs) -> "TabularDataset":
+    def from_csv(
+        cls,
+        path: str,
+        schema: Optional[Schema] = None,
+        name: Optional[str] = None,
+        **read_csv_kwargs,
+    ) -> "TabularDataset":
         """Loads a CSV, applying a public schema if one is supplied.
 
         Args:
@@ -111,16 +117,20 @@ class TabularDataset:
         """
         np.random.seed(seed)
         rng = np.random.default_rng(seed)
-        df = pd.DataFrame({
-            "age": rng.integers(18, 70, size=num_rows),
-            "income": rng.normal(50000, 15000, size=num_rows),
-            "category": rng.choice(["A", "B", "C"], size=num_rows),
-        })
-        schema = Schema(columns=[
-            ColumnSpec("age", NUMERICAL, lower=18.0, upper=70.0),
-            ColumnSpec("income", NUMERICAL, lower=0.0, upper=150000.0),
-            ColumnSpec("category", CATEGORICAL, categories=["A", "B", "C"]),
-        ])
+        df = pd.DataFrame(
+            {
+                "age": rng.integers(18, 70, size=num_rows),
+                "income": rng.normal(50000, 15000, size=num_rows),
+                "category": rng.choice(["A", "B", "C"], size=num_rows),
+            }
+        )
+        schema = Schema(
+            columns=[
+                ColumnSpec("age", NUMERICAL, lower=18.0, upper=70.0),
+                ColumnSpec("income", NUMERICAL, lower=0.0, upper=150000.0),
+                ColumnSpec("category", CATEGORICAL, categories=["A", "B", "C"]),
+            ]
+        )
         return cls(df=df, name="toy_dataset", schema=schema)
 
     # ------------------------------------------------------------------ properties

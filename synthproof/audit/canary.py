@@ -52,22 +52,23 @@ class CanarySet:
 class AuditResult:
     """Result of an empirical canary privacy audit."""
 
-    audited_eps: float          # one-sided empirical lower bound on epsilon
-    tpr: float                  # detection rate on planted canaries
-    fpr: float                  # detection rate on held-out canaries
-    tpr_lower: float            # Clopper-Pearson lower bound on TPR
-    fpr_upper: float            # Clopper-Pearson upper bound on FPR
+    audited_eps: float  # one-sided empirical lower bound on epsilon
+    tpr: float  # detection rate on planted canaries
+    fpr: float  # detection rate on held-out canaries
+    tpr_lower: float  # Clopper-Pearson lower bound on TPR
+    fpr_upper: float  # Clopper-Pearson upper bound on FPR
     num_members: int
     num_holdout: int
-    p_value: float              # Fisher exact test, H0: TPR == FPR
+    p_value: float  # Fisher exact test, H0: TPR == FPR
     confidence: float
 
 
 class CanaryAuditor:
     """Plants canary records and derives an empirical epsilon lower bound."""
 
-    def __init__(self, num_canaries: int = 10, seed: int = 42,
-                 confidence: float = DEFAULT_CONFIDENCE):
+    def __init__(
+        self, num_canaries: int = 10, seed: int = 42, confidence: float = DEFAULT_CONFIDENCE
+    ):
         if num_canaries < 1:
             raise ValueError(f"num_canaries must be >= 1, got {num_canaries}")
         if not (0.0 < confidence < 1.0):
@@ -78,8 +79,9 @@ class CanaryAuditor:
 
     # ------------------------------------------------------------------ planting
 
-    def _make_canaries(self, dataset: TabularDataset, count: int,
-                       rng: np.random.Generator) -> pd.DataFrame:
+    def _make_canaries(
+        self, dataset: TabularDataset, count: int, rng: np.random.Generator
+    ) -> pd.DataFrame:
         """Builds `count` outlier canary rows from the dataset's observed ranges.
 
         Members and holdout canaries are drawn from the SAME distribution, which is what
@@ -132,19 +134,19 @@ class CanaryAuditor:
         rng = np.random.default_rng(self.seed)
         all_canaries = self._make_canaries(dataset, self.num_canaries * 2, rng)
         members = all_canaries.iloc[: self.num_canaries].reset_index(drop=True)
-        holdout = all_canaries.iloc[self.num_canaries:].reset_index(drop=True)
+        holdout = all_canaries.iloc[self.num_canaries :].reset_index(drop=True)
 
         augmented_df = pd.concat([dataset.df, members], ignore_index=True)
         # Carry the schema through. Dropping it here silently disabled public bounds for the
         # whole downstream pipeline, pushing the profiler onto its noisy-min/max fallback.
-        augmented = TabularDataset(df=augmented_df, name=f"{dataset.name}_canary",
-                                   schema=dataset.schema)
+        augmented = TabularDataset(
+            df=augmented_df, name=f"{dataset.name}_canary", schema=dataset.schema
+        )
         return augmented, CanarySet(members=members, holdout=holdout)
 
     # ------------------------------------------------------------------ scoring
 
-    def _similarity_scores(self, canary_df: pd.DataFrame,
-                           synthetic_df: pd.DataFrame) -> np.ndarray:
+    def _similarity_scores(self, canary_df: pd.DataFrame, synthetic_df: pd.DataFrame) -> np.ndarray:
         """Scores each canary by its similarity to the nearest synthetic record.
 
         Higher score = the canary looks more like something the generator emitted, i.e.
@@ -167,14 +169,13 @@ class CanaryAuditor:
             canary_num = canary_df[num_cols].to_numpy(dtype=float)
             for i in range(len(canary_df)):
                 d = (synth_num - canary_num[i]) / scale
-                min_dist = float(np.min(np.sqrt(np.nansum(d ** 2, axis=1))))
+                min_dist = float(np.min(np.sqrt(np.nansum(d**2, axis=1))))
                 scores[i] += 1.0 / (1.0 + min_dist)
 
         if cat_cols:
             for i in range(len(canary_df)):
                 hits = sum(
-                    1 for c in cat_cols
-                    if canary_df.iloc[i][c] in set(synthetic_df[c].unique())
+                    1 for c in cat_cols if canary_df.iloc[i][c] in set(synthetic_df[c].unique())
                 )
                 scores[i] += hits / len(cat_cols)
 
@@ -188,11 +189,15 @@ class CanaryAuditor:
         if trials == 0:
             return 0.0, 1.0
         alpha = 1.0 - confidence
-        lower = 0.0 if successes == 0 else float(
-            stats.beta.ppf(alpha / 2.0, successes, trials - successes + 1)
+        lower = (
+            0.0
+            if successes == 0
+            else float(stats.beta.ppf(alpha / 2.0, successes, trials - successes + 1))
         )
-        upper = 1.0 if successes == trials else float(
-            stats.beta.ppf(1.0 - alpha / 2.0, successes + 1, trials - successes)
+        upper = (
+            1.0
+            if successes == trials
+            else float(stats.beta.ppf(1.0 - alpha / 2.0, successes + 1, trials - successes))
         )
         return lower, upper
 

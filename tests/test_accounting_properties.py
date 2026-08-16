@@ -24,8 +24,7 @@ from synthproof.accounting.types import BudgetExceededError, MechanismSpec
 
 # Composition is not cheap, so property tests get a modest example budget and a relaxed
 # deadline rather than hypothesis's defaults.
-SLOW = settings(max_examples=25, deadline=None,
-                suppress_health_check=[HealthCheck.too_slow])
+SLOW = settings(max_examples=25, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 
 scales = st.floats(min_value=0.5, max_value=50.0, allow_nan=False, allow_infinity=False)
 steps = st.integers(min_value=1, max_value=30)
@@ -34,6 +33,7 @@ mechanisms = st.sampled_from(["gaussian", "laplace"])
 
 
 # ------------------------------------------------------------------ composition laws
+
 
 @given(scale=scales, k=steps, name=mechanisms)
 @SLOW
@@ -87,6 +87,7 @@ def test_zero_noise_is_infinite_epsilon():
 
 
 # ------------------------------------------------------------------ budget enforcement
+
 
 @given(budget=st.floats(min_value=0.1, max_value=8.0), k=steps)
 @SLOW
@@ -145,6 +146,7 @@ def test_snapshot_restore_round_trips(k):
 
 # ------------------------------------------------------------------ calibration
 
+
 @given(target=targets, k=steps, name=mechanisms)
 @SLOW
 def test_calibration_never_overspends(target, k, name):
@@ -174,11 +176,14 @@ def test_a_larger_budget_calibrates_to_less_noise(a, b, k):
     """More budget must buy less noise; the inverse must respect the ordering."""
     assume(abs(a - b) > 0.05)
     lo, hi = min(a, b), max(a, b)
-    assert (calibrate_noise_scale(hi, 1e-5, "gaussian", 1.0, k)
-            <= calibrate_noise_scale(lo, 1e-5, "gaussian", 1.0, k) + 1e-9)
+    assert (
+        calibrate_noise_scale(hi, 1e-5, "gaussian", 1.0, k)
+        <= calibrate_noise_scale(lo, 1e-5, "gaussian", 1.0, k) + 1e-9
+    )
 
 
 # ------------------------------------------------------------------ noise samplers
+
 
 @given(sigma=st.floats(min_value=0.5, max_value=20.0), seed=st.integers(0, 2**31 - 1))
 @SLOW
@@ -228,9 +233,9 @@ def test_epsilon_agrees_with_autodp(sigma, k):
     ours = epsilon_for_noise_scale(sigma, 1e-5, "gaussian", 1.0, k)
     theirs = Composition()([GaussianMechanism(sigma=sigma, name="g")], [k]).get_approxDP(1e-5)
 
-    assert ours == pytest.approx(theirs, rel=0.01), (
-        f"sigma={sigma} k={k}: ours={ours:.6f} autodp={theirs:.6f}"
-    )
+    assert ours == pytest.approx(
+        theirs, rel=0.01
+    ), f"sigma={sigma} k={k}: ours={ours:.6f} autodp={theirs:.6f}"
 
 
 @pytest.mark.parametrize("sigma", [1.0, 2.0, 5.0])
@@ -249,6 +254,6 @@ def test_we_never_under_report_epsilon_relative_to_autodp(sigma, k):
     ours = epsilon_for_noise_scale(sigma, 1e-5, "gaussian", 1.0, k)
     theirs = Composition()([GaussianMechanism(sigma=sigma, name="g")], [k]).get_approxDP(1e-5)
 
-    assert ours >= theirs * 0.999, (
-        f"UNDER-REPORTING at sigma={sigma}, k={k}: ours={ours:.6f} < autodp={theirs:.6f}"
-    )
+    assert (
+        ours >= theirs * 0.999
+    ), f"UNDER-REPORTING at sigma={sigma}, k={k}: ours={ours:.6f} < autodp={theirs:.6f}"

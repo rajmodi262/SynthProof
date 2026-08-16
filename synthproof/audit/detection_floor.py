@@ -39,7 +39,7 @@ class FloorCell:
     leak_fraction: float
     num_canaries: int
     seeds: int
-    detection_rate: float          # fraction of seeds where the audit fired
+    detection_rate: float  # fraction of seeds where the audit fired
     mean_audited_eps: float
     max_audited_eps: float
     mean_p_value: float
@@ -64,15 +64,13 @@ class FloorResult:
     def floor_for(self, leak_fraction: float) -> Optional[int]:
         """Smallest canary count that reliably detects this leak level, or None."""
         candidates = sorted(
-            (c for c in self.cells
-             if c.leak_fraction == leak_fraction and c.detected),
+            (c for c in self.cells if c.leak_fraction == leak_fraction and c.detected),
             key=lambda c: c.num_canaries,
         )
         return candidates[0].num_canaries if candidates else None
 
     def floors(self) -> Dict[float, Optional[int]]:
-        return {f: self.floor_for(f)
-                for f in sorted({c.leak_fraction for c in self.cells})}
+        return {f: self.floor_for(f) for f in sorted({c.leak_fraction for c in self.cells})}
 
     def to_dict(self) -> dict:
         return {
@@ -135,17 +133,19 @@ def measure_detection_floor(
                 tprs.append(res.tpr)
                 fprs.append(res.fpr)
 
-            result.cells.append(FloorCell(
-                leak_fraction=float(leak),
-                num_canaries=int(m),
-                seeds=len(seeds),
-                detection_rate=fired / max(1, len(seeds)),
-                mean_audited_eps=float(np.mean(eps_vals)),
-                max_audited_eps=float(np.max(eps_vals)),
-                mean_p_value=float(np.mean(p_vals)),
-                mean_tpr=float(np.mean(tprs)),
-                mean_fpr=float(np.mean(fprs)),
-            ))
+            result.cells.append(
+                FloorCell(
+                    leak_fraction=float(leak),
+                    num_canaries=int(m),
+                    seeds=len(seeds),
+                    detection_rate=fired / max(1, len(seeds)),
+                    mean_audited_eps=float(np.mean(eps_vals)),
+                    max_audited_eps=float(np.max(eps_vals)),
+                    mean_p_value=float(np.mean(p_vals)),
+                    mean_tpr=float(np.mean(tprs)),
+                    mean_fpr=float(np.mean(fprs)),
+                )
+            )
 
     return result
 
@@ -156,8 +156,7 @@ def format_floor_table(result: FloorResult) -> str:
     fractions = sorted({c.leak_fraction for c in result.cells})
     by_key = {(c.leak_fraction, c.num_canaries): c for c in result.cells}
 
-    lines = ["detection rate (fraction of seeds where the audit fired, p < "
-             f"{result.alpha})", ""]
+    lines = ["detection rate (fraction of seeds where the audit fired, p < " f"{result.alpha})", ""]
     lines.append("leak\\m   " + "".join(f"{m:>8}" for m in counts))
     for f in fractions:
         row = f"{f:<8.2f}" + "".join(

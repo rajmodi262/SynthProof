@@ -44,9 +44,9 @@ from sklearn.preprocessing import StandardScaler
 class DomiasResult:
     """Density-ratio membership inference outcome. Every field is computed."""
 
-    auc: float                  # threshold-free discrimination; 0.5 is chance
-    advantage: float            # max_t (TPR(t) - FPR(t))
-    tpr_at_1pct_fpr: float      # the low-FPR regime that actually matters
+    auc: float  # threshold-free discrimination; 0.5 is chance
+    advantage: float  # max_t (TPR(t) - FPR(t))
+    tpr_at_1pct_fpr: float  # the low-FPR regime that actually matters
     tpr_at_01pct_fpr: float
     num_members: int
     num_nonmembers: int
@@ -63,9 +63,14 @@ class DomiasResult:
 class DOMIAS:
     """Membership inference by the synthetic-to-reference density ratio."""
 
-    def __init__(self, seed: int = 42, bandwidth: Optional[float] = None,
-                 max_records: Optional[int] = None, estimator: str = "knn",
-                 k: int = 5):
+    def __init__(
+        self,
+        seed: int = 42,
+        bandwidth: Optional[float] = None,
+        max_records: Optional[int] = None,
+        estimator: str = "knn",
+        k: int = 5,
+    ):
         """
         Args:
             bandwidth: KDE bandwidth. None selects Scott's rule from the synthetic sample,
@@ -94,8 +99,11 @@ class DOMIAS:
         shared = set(frames[0].columns)
         for f in frames[1:]:
             shared &= set(f.columns)
-        return [c for c in frames[0].columns
-                if c in shared and pd.api.types.is_numeric_dtype(frames[0][c])]
+        return [
+            c
+            for c in frames[0].columns
+            if c in shared and pd.api.types.is_numeric_dtype(frames[0][c])
+        ]
 
     def _scott_bandwidth(self, x: np.ndarray) -> float:
         """Scott's rule on standardised data: n^(-1/(d+4))."""
@@ -104,13 +112,13 @@ class DOMIAS:
             return 1.0
         return float(max(1e-3, n ** (-1.0 / (d + 4))))
 
-    def _log_density_kde(self, train: np.ndarray, query: np.ndarray,
-                         bw: float) -> np.ndarray:
+    def _log_density_kde(self, train: np.ndarray, query: np.ndarray, bw: float) -> np.ndarray:
         kde = KernelDensity(kernel="gaussian", bandwidth=bw).fit(train)
         return kde.score_samples(query)
 
-    def _log_density_knn(self, train: np.ndarray, query: np.ndarray,
-                         k: int, leave_one_out: bool = False) -> np.ndarray:
+    def _log_density_knn(
+        self, train: np.ndarray, query: np.ndarray, k: int, leave_one_out: bool = False
+    ) -> np.ndarray:
         """k-nearest-neighbour log density, up to a constant that cancels in the ratio.
 
         WHY NOT KDE. A fixed-bandwidth KDE cannot see the signal this attack depends on.
@@ -159,9 +167,13 @@ class DOMIAS:
 
     # ------------------------------------------------------------------ attack
 
-    def evaluate(self, synthetic_df: pd.DataFrame, train_df: pd.DataFrame,
-                 test_df: pd.DataFrame,
-                 reference_df: Optional[pd.DataFrame] = None) -> DomiasResult:
+    def evaluate(
+        self,
+        synthetic_df: pd.DataFrame,
+        train_df: pd.DataFrame,
+        test_df: pd.DataFrame,
+        reference_df: Optional[pd.DataFrame] = None,
+    ) -> DomiasResult:
         """Scores members vs non-members by density ratio.
 
         Args:

@@ -57,8 +57,9 @@ class Interval:
         return f"{self.mean:.3f} [{self.lo:.3f}, {self.hi:.3f}]"
 
 
-def bootstrap_ci(values: Sequence[float], confidence: float = 0.95,
-                 resamples: int = 4000, seed: int = 0) -> Interval:
+def bootstrap_ci(
+    values: Sequence[float], confidence: float = 0.95, resamples: int = 4000, seed: int = 0
+) -> Interval:
     """Percentile bootstrap interval over `values`."""
     arr = np.asarray([v for v in values if np.isfinite(v)], dtype=float)
     if arr.size == 0:
@@ -109,8 +110,9 @@ class CellResult:
 MAX_MODAL_SHARE = 0.85
 
 
-def informative_numeric_columns(df, cols: Sequence[str],
-                                max_modal_share: float = MAX_MODAL_SHARE) -> List[str]:
+def informative_numeric_columns(
+    df, cols: Sequence[str], max_modal_share: float = MAX_MODAL_SHARE
+) -> List[str]:
     """Numeric columns with enough spread for a correlation to mean anything."""
     keep = []
     for c in cols:
@@ -135,14 +137,21 @@ def _mean_abs_corr_error(real, synth, cols: List[str]) -> float:
     return float(np.nanmean(diff)) if diff.size else float("nan")
 
 
-def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
-             seed: int, delta: float = 1e-5, holdout_frac: float = 0.3,
-             num_canaries: int = 60, target_col: Optional[str] = None,
-             corr_cols: Optional[Sequence[str]] = None,
-             on_stage: Optional[Callable[[str, dict], None]] = None,
-             return_artifacts: bool = False,
-             separate_utility_fit: bool = True,
-             auditor_kind: str = "one_run") -> Dict[str, Any]:
+def run_cell(
+    dataset: TabularDataset,
+    mechanism: str,
+    target_eps: float,
+    seed: int,
+    delta: float = 1e-5,
+    holdout_frac: float = 0.3,
+    num_canaries: int = 60,
+    target_col: Optional[str] = None,
+    corr_cols: Optional[Sequence[str]] = None,
+    on_stage: Optional[Callable[[str, dict], None]] = None,
+    return_artifacts: bool = False,
+    separate_utility_fit: bool = True,
+    auditor_kind: str = "one_run",
+) -> Dict[str, Any]:
     """Runs one (mechanism, epsilon, seed) configuration and returns raw measurements.
 
     Fits the mechanism TWICE by default: once on the canary-augmented split for the audit,
@@ -181,8 +190,15 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
 
     plan = BudgetPlan.split(target_eps, delta=delta, profile_frac=0.1)
     acc = Accountant(budget_eps=target_eps * 1.02, budget_delta=delta)
-    emit("budget", {"total_eps": target_eps, "profile_eps": plan.profile_eps,
-                    "synthesis_eps": plan.synthesis_eps, "delta": delta})
+    emit(
+        "budget",
+        {
+            "total_eps": target_eps,
+            "profile_eps": plan.profile_eps,
+            "synthesis_eps": plan.synthesis_eps,
+            "delta": delta,
+        },
+    )
 
     # The one-run construction is the default: it spends one canary per comparison rather
     # than two, and is measurably more sensitive to PARTIAL leakage, which is the regime a
@@ -193,26 +209,30 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
     elif auditor_kind == "paired":
         auditor = CanaryAuditor(num_canaries=num_canaries, seed=seed)
     else:
-        raise ValueError(
-            f"Unknown auditor {auditor_kind!r}. Use 'one_run' or 'paired'."
-        )
+        raise ValueError(f"Unknown auditor {auditor_kind!r}. Use 'one_run' or 'paired'.")
     aug_ds, canary_set = auditor.plant_canaries(fit_ds)
     # Report what was actually planted, not what was requested. They coincide today, but a
     # reported count that cannot drift from reality is worth one attribute access.
-    planted = (canary_set.num_included if auditor_kind == "one_run"
-               else len(canary_set.members))
-    emit("canaries", {
-        "auditor": auditor_kind,
-        "planted": planted,
-        "total_canaries": (len(canary_set.canaries) if auditor_kind == "one_run"
-                           else len(canary_set.members) + len(canary_set.holdout)),
-        "fraction_of_fit": round(planted / max(1, len(fit_df)), 5),
-    })
+    planted = canary_set.num_included if auditor_kind == "one_run" else len(canary_set.members)
+    emit(
+        "canaries",
+        {
+            "auditor": auditor_kind,
+            "planted": planted,
+            "total_canaries": (
+                len(canary_set.canaries)
+                if auditor_kind == "one_run"
+                else len(canary_set.members) + len(canary_set.holdout)
+            ),
+            "fraction_of_fit": round(planted / max(1, len(fit_df)), 5),
+        },
+    )
 
     def _synthesise(source: TabularDataset, accountant: Accountant):
         """Profiles and fits one release from `source`, returning its synthetic table."""
-        prof = DPDomainProfiler(accountant=accountant,
-                                eps_budget=plan.profile_eps).profile(source, seed=seed)
+        prof = DPDomainProfiler(accountant=accountant, eps_budget=plan.profile_eps).profile(
+            source, seed=seed
+        )
         generator = MECHANISMS[mechanism](seed=seed)
         generator.fit(source, prof, accountant, target_eps=plan.synthesis_eps)
         return generator.generate(num_samples=len(fit_df)), prof
@@ -221,29 +241,54 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
     # Fitted on the canary-augmented table, because an audit needs planted canaries to
     # detect. This release is used for the audit and the membership-inference attack ONLY.
     audit_synth, profile = _synthesise(aug_ds, acc)
-    emit("profile", {
-        "eps_spent": float(acc.total()),
-        "eps_remaining": float(acc.remaining()),
-        "suppressed_categories": int(sum(c.suppressed_categories
-                                         for c in profile.columns.values())),
-        "public_ranges": int(sum(1 for c in profile.columns.values() if c.is_public_range)),
-    })
-    emit("fit", {"eps_spent": float(acc.total()), "eps_remaining": float(acc.remaining()),
-                 "charges": len(acc.spends)})
+    emit(
+        "profile",
+        {
+            "eps_spent": float(acc.total()),
+            "eps_remaining": float(acc.remaining()),
+            "suppressed_categories": int(
+                sum(c.suppressed_categories for c in profile.columns.values())
+            ),
+            "public_ranges": int(sum(1 for c in profile.columns.values() if c.is_public_range)),
+        },
+    )
+    emit(
+        "fit",
+        {
+            "eps_spent": float(acc.total()),
+            "eps_remaining": float(acc.remaining()),
+            "charges": len(acc.spends),
+        },
+    )
     emit("generate", {"rows": len(audit_synth)})
 
-    audit = (auditor.audit(audit_synth, canary_set, delta=delta)
-             if auditor_kind == "one_run" else auditor.audit(audit_synth, canary_set))
+    audit = (
+        auditor.audit(audit_synth, canary_set, delta=delta)
+        if auditor_kind == "one_run"
+        else auditor.audit(audit_synth, canary_set)
+    )
     if auditor_kind == "one_run":
-        emit("audit", {"audited_eps": float(audit.audited_eps),
-                       "ceiling": float(audit.ceiling),
-                       "accuracy": float(audit.accuracy),
-                       "guesses": int(audit.guesses),
-                       "saturated": bool(audit.saturated),
-                       "p_value": float(audit.p_value)})
+        emit(
+            "audit",
+            {
+                "audited_eps": float(audit.audited_eps),
+                "ceiling": float(audit.ceiling),
+                "accuracy": float(audit.accuracy),
+                "guesses": int(audit.guesses),
+                "saturated": bool(audit.saturated),
+                "p_value": float(audit.p_value),
+            },
+        )
     else:
-        emit("audit", {"audited_eps": float(audit.audited_eps), "tpr": float(audit.tpr),
-                       "fpr": float(audit.fpr), "p_value": float(audit.p_value)})
+        emit(
+            "audit",
+            {
+                "audited_eps": float(audit.audited_eps),
+                "tpr": float(audit.tpr),
+                "fpr": float(audit.fpr),
+                "p_value": float(audit.p_value),
+            },
+        )
 
     # ---------------------------------------------------------------- utility release
     # A SECOND, independent fit on the clean split, used for utility and structure.
@@ -267,8 +312,7 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
     else:
         util_acc, util_synth = acc, audit_synth
         utility_source = "audit_fit"
-    emit("utility_fit", {"source": utility_source,
-                         "eps_spent": float(util_acc.total())})
+    emit("utility_fit", {"source": utility_source, "eps_spent": float(util_acc.total())})
 
     # Defaulting to categorical_cols[0] picked `workclass` on UCI Adult — 7 classes, 73%
     # majority — which is not the benchmark's prediction task and produced macro-F1 near
@@ -283,25 +327,33 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
     # comparison describe the same population.
     reference_df = fit_ds.df
 
-    util = UtilityEvaluator(target_col=target_col, seed=seed).evaluate(
-        reference_df, util_synth)
-    emit("utility", {"tstr_f1": float(util.tstr_macro_f1),
-                     "trtr_f1": float(util.trtr_macro_f1)})
+    util = UtilityEvaluator(target_col=target_col, seed=seed).evaluate(reference_df, util_synth)
+    emit("utility", {"tstr_f1": float(util.tstr_macro_f1), "trtr_f1": float(util.trtr_macro_f1)})
 
     # The MIA runs against the AUDIT release. It asks whether training membership is
     # recoverable, which is a question about the release that actually contained the members.
     mia = DistanceMIABaseline(seed=seed, max_records=400).evaluate(
-        audit_synth, train_df=fit_ds.df, test_df=holdout_df)
-    emit("attack", {"auc": float(mia.auc), "advantage": float(mia.advantage),
-                    "tpr_at_1pct_fpr": float(mia.tpr_at_1pct_fpr)})
+        audit_synth, train_df=fit_ds.df, test_df=holdout_df
+    )
+    emit(
+        "attack",
+        {
+            "auc": float(mia.auc),
+            "advantage": float(mia.advantage),
+            "tpr_at_1pct_fpr": float(mia.tpr_at_1pct_fpr),
+        },
+    )
 
     # A second, structurally different adversary. The two fail differently -- the baseline is
     # a raw proximity heuristic, DOMIAS divides by a reference density to remove the
     # typicality confound -- so both are reported rather than one standing in for the other.
     domias = DOMIAS(seed=seed, max_records=400).evaluate(
-        audit_synth, train_df=fit_ds.df, test_df=holdout_df)
-    emit("attack_domias", {"auc": float(domias.auc),
-                           "tpr_at_1pct_fpr": float(domias.tpr_at_1pct_fpr)})
+        audit_synth, train_df=fit_ds.df, test_df=holdout_df
+    )
+    emit(
+        "attack_domias",
+        {"auc": float(domias.auc), "tpr_at_1pct_fpr": float(domias.tpr_at_1pct_fpr)},
+    )
 
     out: Dict[str, Any] = {
         "proved_eps": float(acc.total()),
@@ -313,9 +365,14 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
         "domias_auc": float(domias.auc),
         "domias_tpr_at_1pct": float(domias.tpr_at_1pct_fpr),
         "correlation_error": _mean_abs_corr_error(
-            reference_df, util_synth,
-            list(corr_cols) if corr_cols is not None
-            else informative_numeric_columns(reference_df, fit_ds.numerical_cols)),
+            reference_df,
+            util_synth,
+            (
+                list(corr_cols)
+                if corr_cols is not None
+                else informative_numeric_columns(reference_df, fit_ds.numerical_cols)
+            ),
+        ),
         # Metadata a consumer needs in order to read the two metrics above honestly.
         "reference": "fit_split",
         "auditor": auditor_kind,
@@ -323,31 +380,42 @@ def run_cell(dataset: TabularDataset, mechanism: str, target_eps: float,
         # interpretable -- see results/AUDITOR_COMPARISON.md.
         "audit_ceiling": float(getattr(audit, "ceiling", float("nan"))),
         "utility_source": utility_source,
-        "canary_fraction": (0.0 if separate_utility_fit
-                            else len(canary_set.members) / max(1, len(fit_df))),
+        "canary_fraction": (
+            0.0 if separate_utility_fit else len(canary_set.members) / max(1, len(fit_df))
+        ),
     }
 
     if return_artifacts:
-        out.update({
-            # `_synth` is the UTILITY release — the canary-free one a console should show.
-            # `_audit_synth` is the canary-trained release the audit ran against.
-            "_synth": util_synth, "_audit_synth": audit_synth,
-            "_fit_df": fit_ds.df, "_holdout_df": holdout_df,
-            "_profile": profile, "_canaries": canary_set, "_spends": acc.spends,
-            "_audit": audit, "_mia": mia, "_domias": domias,
-        })
+        out.update(
+            {
+                # `_synth` is the UTILITY release — the canary-free one a console should show.
+                # `_audit_synth` is the canary-trained release the audit ran against.
+                "_synth": util_synth,
+                "_audit_synth": audit_synth,
+                "_fit_df": fit_ds.df,
+                "_holdout_df": holdout_df,
+                "_profile": profile,
+                "_canaries": canary_set,
+                "_spends": acc.spends,
+                "_audit": audit,
+                "_mia": mia,
+                "_domias": domias,
+            }
+        )
     return out
 
 
-def run_grid(dataset: TabularDataset,
-             mechanisms: Sequence[str] = tuple(MECHANISMS),
-             eps_grid: Sequence[float] = DEFAULT_EPS_GRID,
-             seeds: Sequence[int] = DEFAULT_SEEDS,
-             delta: float = 1e-5,
-             target_col: Optional[str] = None,
-             corr_cols: Optional[Sequence[str]] = None,
-             progress: Optional[Callable[[str], None]] = None,
-             checkpoint_dir: Optional[str] = None) -> List[CellResult]:
+def run_grid(
+    dataset: TabularDataset,
+    mechanisms: Sequence[str] = tuple(MECHANISMS),
+    eps_grid: Sequence[float] = DEFAULT_EPS_GRID,
+    seeds: Sequence[int] = DEFAULT_SEEDS,
+    delta: float = 1e-5,
+    target_col: Optional[str] = None,
+    corr_cols: Optional[Sequence[str]] = None,
+    progress: Optional[Callable[[str], None]] = None,
+    checkpoint_dir: Optional[str] = None,
+) -> List[CellResult]:
     """Runs the full grid, aggregating each cell across seeds.
 
     Args:
@@ -361,19 +429,37 @@ def run_grid(dataset: TabularDataset,
     # Flatten first: checkpointing is per (mechanism, eps, seed), and a flat list makes the
     # cell index stable across restarts as long as the grid definition is unchanged.
     cells = [
-        {"mechanism": mech, "target_eps": float(eps), "seed": int(seed),
-         "delta": float(delta), "dataset": dataset.name, "rows": dataset.num_rows,
-         "target_col": target_col,
-         "corr_cols": list(corr_cols) if corr_cols is not None else None}
-        for mech in mechanisms for eps in eps_grid for seed in seeds
+        {
+            "mechanism": mech,
+            "target_eps": float(eps),
+            "seed": int(seed),
+            "delta": float(delta),
+            "dataset": dataset.name,
+            "rows": dataset.num_rows,
+            "target_col": target_col,
+            "corr_cols": list(corr_cols) if corr_cols is not None else None,
+        }
+        for mech in mechanisms
+        for eps in eps_grid
+        for seed in seeds
     ]
 
     def compute(cfg: Dict[str, Any]) -> Dict[str, float]:
-        out = run_cell(dataset, cfg["mechanism"], cfg["target_eps"], cfg["seed"],
-                       delta=cfg["delta"], target_col=target_col, corr_cols=corr_cols)
+        out = run_cell(
+            dataset,
+            cfg["mechanism"],
+            cfg["target_eps"],
+            cfg["seed"],
+            delta=cfg["delta"],
+            target_col=target_col,
+            corr_cols=corr_cols,
+        )
         # Only JSON-serialisable scalars go to disk; artefacts stay in memory.
-        return {k: v for k, v in out.items()
-                if not k.startswith("_") and isinstance(v, (int, float, str))}
+        return {
+            k: v
+            for k, v in out.items()
+            if not k.startswith("_") and isinstance(v, (int, float, str))
+        }
 
     if checkpoint_dir is not None:
         flat = run_with_checkpoints(cells, compute, Path(checkpoint_dir), progress=progress)
@@ -381,8 +467,9 @@ def run_grid(dataset: TabularDataset,
         flat = []
         for cfg in cells:
             if progress:
-                progress(f"  {cfg['mechanism']:<12} eps={cfg['target_eps']:<5} "
-                         f"seed={cfg['seed']}")
+                progress(
+                    f"  {cfg['mechanism']:<12} eps={cfg['target_eps']:<5} " f"seed={cfg['seed']}"
+                )
             flat.append(compute(cfg))
 
     # Re-group into (mechanism, eps) cells, aggregating across seeds.
@@ -397,16 +484,20 @@ def run_grid(dataset: TabularDataset,
     for mech in mechanisms:
         for eps in eps_grid:
             raw = by_cell[(mech, float(eps))]
-            results.append(CellResult(
-                dataset=dataset.name, mechanism=mech, target_eps=float(eps),
-                seeds=len(seeds),
-                proved_eps=bootstrap_ci(raw["proved_eps"]),
-                audited_eps=bootstrap_ci(raw["audited_eps"]),
-                audit_p=bootstrap_ci(raw["audit_p"]),
-                tstr_f1=bootstrap_ci(raw["tstr_f1"]),
-                trtr_f1=bootstrap_ci(raw["trtr_f1"]),
-                mia_auc=bootstrap_ci(raw["mia_auc"]),
-                correlation_error=bootstrap_ci(raw["correlation_error"]),
-                raw=raw,
-            ))
+            results.append(
+                CellResult(
+                    dataset=dataset.name,
+                    mechanism=mech,
+                    target_eps=float(eps),
+                    seeds=len(seeds),
+                    proved_eps=bootstrap_ci(raw["proved_eps"]),
+                    audited_eps=bootstrap_ci(raw["audited_eps"]),
+                    audit_p=bootstrap_ci(raw["audit_p"]),
+                    tstr_f1=bootstrap_ci(raw["tstr_f1"]),
+                    trtr_f1=bootstrap_ci(raw["trtr_f1"]),
+                    mia_auc=bootstrap_ci(raw["mia_auc"]),
+                    correlation_error=bootstrap_ci(raw["correlation_error"]),
+                    raw=raw,
+                )
+            )
     return results

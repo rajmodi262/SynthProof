@@ -13,9 +13,7 @@ class LedgerEntry:
 
     entry_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     prev_hash: str = "0" * 64
-    timestamp: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     dataset_id: str = "default_dataset"
     run_id: str = "default_run"
     mechanism_name: str = "gaussian"

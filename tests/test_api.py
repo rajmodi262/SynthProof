@@ -47,8 +47,14 @@ def _sse_events(text: str):
 
 
 def _run(**overrides):
-    body = {"dataset": "toy", "mechanism": "independent", "target_eps": 1.0,
-            "rows": 400, "num_canaries": 15, "seed": 0}
+    body = {
+        "dataset": "toy",
+        "mechanism": "independent",
+        "target_eps": 1.0,
+        "rows": 400,
+        "num_canaries": 15,
+        "seed": 0,
+    }
     body.update(overrides)
     res = client.post("/api/run", json=body)
     assert res.status_code == 200
@@ -56,6 +62,7 @@ def _run(**overrides):
 
 
 # ------------------------------------------------------------------ discovery
+
 
 def test_health_reports_real_ledger_state():
     data = client.get("/api/health").json()
@@ -90,11 +97,23 @@ def test_datasets_flags_the_toy_table_as_structureless():
 
 # ------------------------------------------------------------------ run stream
 
+
 def test_run_streams_every_stage_in_order():
     events = _run()
     stages = [p["stage"] for e, p in events if e == "stage"]
-    assert stages == ["split", "budget", "canaries", "profile", "fit", "generate",
-                      "audit", "utility_fit", "utility", "attack", "attack_domias"]
+    assert stages == [
+        "split",
+        "budget",
+        "canaries",
+        "profile",
+        "fit",
+        "generate",
+        "audit",
+        "utility_fit",
+        "utility",
+        "attack",
+        "attack_domias",
+    ]
     # The audit stage must say which estimator produced the number.
     canaries = next(p for e, p in events if e == "stage" and p["stage"] == "canaries")
     assert canaries["auditor"] == "one_run"
@@ -172,6 +191,7 @@ def test_run_rejects_an_unknown_dataset():
 
 # ------------------------------------------------------------------ upload
 
+
 def test_upload_accepts_a_csv_and_warns_that_inferred_bounds_leak():
     csv = "age,income,grp\n" + "".join(
         f"{20 + i % 40},{30000 + i * 7},{'a' if i % 2 else 'b'}\n" for i in range(200)
@@ -215,6 +235,7 @@ def test_upload_rejects_a_table_with_no_complete_rows():
 
 # ------------------------------------------------------------------ ledger demo
 
+
 def test_tampering_breaks_the_chain_from_that_entry_onward():
     """The demo's central claim: the chain is tamper-EVIDENT."""
     client.post("/api/ledger/reset")
@@ -239,8 +260,10 @@ def test_tampering_breaks_the_chain_from_that_entry_onward():
 
 
 def test_tampering_an_unknown_entry_is_a_404():
-    assert client.post("/api/ledger/tamper",
-                       json={"entry_id": "nope", "eps_spent": 0.1}).status_code == 404
+    assert (
+        client.post("/api/ledger/tamper", json={"entry_id": "nope", "eps_spent": 0.1}).status_code
+        == 404
+    )
 
 
 def test_ledger_accumulates_spend_across_releases():
@@ -256,15 +279,24 @@ def test_ledger_accumulates_spend_across_releases():
     client.post("/api/ledger/reset")
 
 
-@pytest.mark.parametrize("bad", [
-    {"target_eps": -1.0},
-    {"target_eps": 0},
-    {"num_canaries": 0},
-    {"rows": 10},
-])
+@pytest.mark.parametrize(
+    "bad",
+    [
+        {"target_eps": -1.0},
+        {"target_eps": 0},
+        {"num_canaries": 0},
+        {"rows": 10},
+    ],
+)
 def test_run_request_validation_rejects_nonsense(bad):
-    body = {"dataset": "toy", "mechanism": "independent", "target_eps": 1.0,
-            "rows": 400, "num_canaries": 15, "seed": 0}
+    body = {
+        "dataset": "toy",
+        "mechanism": "independent",
+        "target_eps": 1.0,
+        "rows": 400,
+        "num_canaries": 15,
+        "seed": 0,
+    }
     body.update(bad)
     assert client.post("/api/run", json=body).status_code == 422
 
@@ -276,6 +308,7 @@ def test_index_serves_a_pointer_when_the_console_is_not_built():
 
 
 # ------------------------------------------------------------------ hardening
+
 
 def test_run_reports_the_reference_it_scored_against():
     """Utility and structure must declare which table they were compared to.
@@ -307,9 +340,7 @@ def test_spends_agree_with_the_reported_total_epsilon():
     spends = done["spends"]
 
     assert spends, "a release that charged nothing is not a release"
-    assert spends[-1]["computed_eps"] == pytest.approx(
-        done["measurements"]["proved_eps"], rel=1e-9
-    )
+    assert spends[-1]["computed_eps"] == pytest.approx(done["measurements"]["proved_eps"], rel=1e-9)
     # Cumulative epsilon is monotone across charges.
     totals = [s["computed_eps"] for s in spends]
     assert totals == sorted(totals)
@@ -418,9 +449,10 @@ def test_destructive_ledger_endpoints_are_refused_outside_demo_mode(monkeypatch)
 
     monkeypatch.setattr(api_main, "DEMO_MODE", False)
     assert client.post("/api/ledger/reset").status_code == 403
-    assert client.post(
-        "/api/ledger/tamper", json={"entry_id": "x", "eps_spent": 0.1}
-    ).status_code == 403
+    assert (
+        client.post("/api/ledger/tamper", json={"entry_id": "x", "eps_spent": 0.1}).status_code
+        == 403
+    )
 
     # Demo mode on, but pointed at a persistent database: still refused. The path is a
     # sentinel that is never opened — the guard only compares it against ":memory:" — so it
@@ -428,9 +460,10 @@ def test_destructive_ledger_endpoints_are_refused_outside_demo_mode(monkeypatch)
     monkeypatch.setattr(api_main, "DEMO_MODE", True)
     monkeypatch.setattr(api_main, "_LEDGER_DB", "persistent-ledger.db")
     assert client.post("/api/ledger/reset").status_code == 403
-    assert client.post(
-        "/api/ledger/tamper", json={"entry_id": "x", "eps_spent": 0.1}
-    ).status_code == 403
+    assert (
+        client.post("/api/ledger/tamper", json={"entry_id": "x", "eps_spent": 0.1}).status_code
+        == 403
+    )
 
 
 def test_audit_result_reports_the_instruments_working_range():

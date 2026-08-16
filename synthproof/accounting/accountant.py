@@ -28,9 +28,7 @@ from synthproof.accounting.types import (
 # Standard RDP order grid (as used by TensorFlow Privacy). Includes integer orders,
 # which the subsampled-RDP bounds require.
 DEFAULT_ORDERS: Sequence[float] = (
-    [1 + x / 10.0 for x in range(1, 100)]
-    + list(range(11, 64))
-    + [128, 256, 512, 1024]
+    [1 + x / 10.0 for x in range(1, 100)] + list(range(11, 64)) + [128, 256, 512, 1024]
 )
 
 # Mechanism names accepted in MechanismSpec.name, mapped to how they are accounted.
@@ -48,8 +46,12 @@ class Accountant:
       - Budget enforcement, dry-run, and snapshot/restore
     """
 
-    def __init__(self, budget_eps: float, budget_delta: float = 1e-5,
-                 orders: Optional[Sequence[float]] = None):
+    def __init__(
+        self,
+        budget_eps: float,
+        budget_delta: float = 1e-5,
+        orders: Optional[Sequence[float]] = None,
+    ):
         self.budget = PrivacyParams(epsilon=budget_eps, delta=budget_delta)
         self._orders = list(orders) if orders is not None else list(DEFAULT_ORDERS)
         self._events: List[Tuple[dp_event.DpEvent, int]] = []

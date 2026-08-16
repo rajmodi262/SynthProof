@@ -22,10 +22,15 @@ def _correlated(n=3000, seed=5):
     rng = np.random.default_rng(seed)
     x = rng.uniform(0, 100, n)
     y = np.clip(x * 0.9 + rng.normal(0, 6, n), 0, 100)
-    return TabularDataset(pd.DataFrame({"x": x, "y": y}), schema=Schema([
-        ColumnSpec("x", NUMERICAL, lower=0.0, upper=100.0),
-        ColumnSpec("y", NUMERICAL, lower=0.0, upper=100.0),
-    ]))
+    return TabularDataset(
+        pd.DataFrame({"x": x, "y": y}),
+        schema=Schema(
+            [
+                ColumnSpec("x", NUMERICAL, lower=0.0, upper=100.0),
+                ColumnSpec("y", NUMERICAL, lower=0.0, upper=100.0),
+            ]
+        ),
+    )
 
 
 def _synth(cls, ds, eps, seed=0):

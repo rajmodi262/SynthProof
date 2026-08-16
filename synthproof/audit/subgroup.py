@@ -47,14 +47,14 @@ class SubgroupAudit:
     """Audit outcome for one subgroup."""
 
     subgroup: str
-    population_share: float     # fraction of the real table in this subgroup
+    population_share: float  # fraction of the real table in this subgroup
     num_canaries: int
     num_included: int
     guesses: int
     correct: int
     accuracy: float
     audited_eps: float
-    ceiling: float              # most this subgroup's canary count could ever certify
+    ceiling: float  # most this subgroup's canary count could ever certify
     p_value: float
     saturated: bool
 
@@ -130,9 +130,15 @@ class SubgroupAuditResult:
 class SubgroupCanaryAuditor:
     """Plants canaries stratified by a sensitive attribute and audits each group separately."""
 
-    def __init__(self, attribute: str, num_canaries: int = 300, seed: int = 42,
-                 alpha: float = DEFAULT_ALPHA, min_per_group: int = 20,
-                 balanced: bool = True):
+    def __init__(
+        self,
+        attribute: str,
+        num_canaries: int = 300,
+        seed: int = 42,
+        alpha: float = DEFAULT_ALPHA,
+        min_per_group: int = 20,
+        balanced: bool = True,
+    ):
         """
         Args:
             attribute: Categorical column defining the subgroups (e.g. "race", "sex").
@@ -187,8 +193,9 @@ class SubgroupCanaryAuditor:
         result = SubgroupAuditResult(attribute=self.attribute, alpha=self.alpha)
 
         for level, cset in canary_sets.items():
-            maker = SteinkeAuditor(num_canaries=len(cset.canaries), seed=self.seed,
-                                   alpha=self.alpha)
+            maker = SteinkeAuditor(
+                num_canaries=len(cset.canaries), seed=self.seed, alpha=self.alpha
+            )
             scores = maker._maker._similarity_scores(cset.canaries, synthetic_df)
             included = cset.included
             m = len(scores)
@@ -202,19 +209,22 @@ class SubgroupCanaryAuditor:
             ceiling = max_provable_epsilon(m, self.alpha)
 
             from scipy import stats
-            result.subgroups.append(SubgroupAudit(
-                subgroup=str(level),
-                population_share=float(shares.get(level, 0.0)),
-                num_canaries=m,
-                num_included=int(included.sum()),
-                guesses=m,
-                correct=correct,
-                accuracy=correct / max(1, m),
-                audited_eps=eps,
-                ceiling=ceiling,
-                p_value=float(stats.binom.sf(correct - 1, m, 0.5)),
-                saturated=eps > 0.0 and eps >= ceiling - 1e-6,
-            ))
+
+            result.subgroups.append(
+                SubgroupAudit(
+                    subgroup=str(level),
+                    population_share=float(shares.get(level, 0.0)),
+                    num_canaries=m,
+                    num_included=int(included.sum()),
+                    guesses=m,
+                    correct=correct,
+                    accuracy=correct / max(1, m),
+                    audited_eps=eps,
+                    ceiling=ceiling,
+                    p_value=float(stats.binom.sf(correct - 1, m, 0.5)),
+                    saturated=eps > 0.0 and eps >= ceiling - 1e-6,
+                )
+            )
 
         result.total_canaries = sum(s.num_canaries for s in result.subgroups)
         return result
@@ -237,8 +247,7 @@ class SubgroupCanaryAuditor:
         frames, sets = [dataset.df], {}
 
         for i, (level, count) in enumerate(sorted(alloc.items())):
-            maker = SteinkeAuditor(num_canaries=count, seed=self.seed + i * 1000,
-                                   alpha=self.alpha)
+            maker = SteinkeAuditor(num_canaries=count, seed=self.seed + i * 1000, alpha=self.alpha)
             canaries = maker._maker._make_canaries(dataset, count, rng)
             # Force group membership. Without this a "subgroup canary" would only belong to
             # its group by chance, and the per-group audit would be measuring nothing.
@@ -253,6 +262,7 @@ class SubgroupCanaryAuditor:
             frames.append(canaries.loc[included].reset_index(drop=True))
 
             from synthproof.audit.steinke import OneRunCanarySet
+
             sets[level] = OneRunCanarySet(canaries=canaries, included=included)
 
         augmented = TabularDataset(
@@ -268,7 +278,9 @@ def summarise(results: Sequence[SubgroupAuditResult]) -> str:
     lines = []
     for res in results:
         lines.append(f"\nattribute: {res.attribute}   (total canaries {res.total_canaries})")
-        lines.append(f"{'subgroup':<22}{'share':>8}{'m':>6}{'acc':>7}{'eps':>8}{'ceiling':>9}{'p':>8}")
+        lines.append(
+            f"{'subgroup':<22}{'share':>8}{'m':>6}{'acc':>7}{'eps':>8}{'ceiling':>9}{'p':>8}"
+        )
         for s in res.by_share():
             lines.append(
                 f"{s.subgroup:<22}{s.population_share:>8.3f}{s.num_canaries:>6}"

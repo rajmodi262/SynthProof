@@ -25,10 +25,10 @@ from sklearn.metrics import roc_auc_score, roc_curve
 class MIAResult:
     """Membership inference outcome. All fields are computed, none are assumed."""
 
-    auc: float                  # threshold-free discrimination (0.5 == no signal)
-    advantage: float            # max_t (TPR(t) - FPR(t)); the standard MIA advantage
-    attack_accuracy: float      # balanced accuracy at the optimal threshold
-    tpr_at_1pct_fpr: float      # low-FPR regime, the metric that actually matters
+    auc: float  # threshold-free discrimination (0.5 == no signal)
+    advantage: float  # max_t (TPR(t) - FPR(t)); the standard MIA advantage
+    attack_accuracy: float  # balanced accuracy at the optimal threshold
+    tpr_at_1pct_fpr: float  # low-FPR regime, the metric that actually matters
     num_train: int
     num_test: int
 
@@ -47,8 +47,7 @@ class DistanceMIABaseline:
         self.seed = seed
         self.max_records = max_records
 
-    def _scores(self, df: pd.DataFrame, synthetic_df: pd.DataFrame,
-                num_cols: list) -> np.ndarray:
+    def _scores(self, df: pd.DataFrame, synthetic_df: pd.DataFrame, num_cols: list) -> np.ndarray:
         """Similarity to the nearest synthetic record; higher == more likely a member."""
         if not num_cols or len(synthetic_df) == 0 or len(df) == 0:
             return np.zeros(len(df))
@@ -61,18 +60,20 @@ class DistanceMIABaseline:
         out = np.zeros(len(df))
         for i in range(len(df)):
             d = (synth - target[i]) / scale
-            out[i] = 1.0 / (1.0 + float(np.min(np.sqrt(np.nansum(d ** 2, axis=1)))))
+            out[i] = 1.0 / (1.0 + float(np.min(np.sqrt(np.nansum(d**2, axis=1)))))
         return out
 
-    def evaluate(self, synthetic_df: pd.DataFrame, train_df: pd.DataFrame,
-                 test_df: pd.DataFrame) -> MIAResult:
+    def evaluate(
+        self, synthetic_df: pd.DataFrame, train_df: pd.DataFrame, test_df: pd.DataFrame
+    ) -> MIAResult:
         """Scores train (members) vs test (non-members) and reports real metrics."""
         if self.max_records is not None:
             train_df = train_df.head(self.max_records)
             test_df = test_df.head(self.max_records)
 
         num_cols = [
-            c for c in train_df.columns
+            c
+            for c in train_df.columns
             if c in synthetic_df.columns and pd.api.types.is_numeric_dtype(synthetic_df[c])
         ]
 

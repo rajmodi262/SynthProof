@@ -41,11 +41,11 @@ class AttributeInferenceResult:
     """Attack accuracy alongside the baselines that make it interpretable."""
 
     target_column: str
-    attack_accuracy: float          # trained on the synthetic release
-    marginal_baseline: float        # most-frequent-value, ignores the release
-    conditional_baseline: float     # trained on real reference data, ignores the release
+    attack_accuracy: float  # trained on the synthetic release
+    marginal_baseline: float  # most-frequent-value, ignores the release
+    conditional_baseline: float  # trained on real reference data, ignores the release
     leakage_vs_marginal: float
-    leakage_vs_conditional: float   # THE number: evidence of individual-level leakage
+    leakage_vs_conditional: float  # THE number: evidence of individual-level leakage
     attack_macro_f1: float
     num_targets: int
     num_classes: int
@@ -76,8 +76,13 @@ class AttributeInferenceResult:
 class AttributeInferenceAttack:
     """Predicts a sensitive column, and measures what the release actually contributed."""
 
-    def __init__(self, target_column: str, seed: int = 42,
-                 max_records: Optional[int] = None, n_estimators: int = 50):
+    def __init__(
+        self,
+        target_column: str,
+        seed: int = 42,
+        max_records: Optional[int] = None,
+        n_estimators: int = 50,
+    ):
         self.target_column = target_column
         self.seed = seed
         self.max_records = max_records
@@ -104,15 +109,17 @@ class AttributeInferenceAttack:
         return [encoded.xs(i, level=0) for i in range(len(frames))]
 
     def _fit_predict(self, X_train, y_train, X_test) -> np.ndarray:
-        clf = RandomForestClassifier(n_estimators=self.n_estimators,
-                                     random_state=self.seed, n_jobs=1)
+        clf = RandomForestClassifier(
+            n_estimators=self.n_estimators, random_state=self.seed, n_jobs=1
+        )
         clf.fit(X_train, y_train)
         return clf.predict(X_test)
 
     # ------------------------------------------------------------------ attack
 
-    def evaluate(self, synthetic_df: pd.DataFrame, target_df: pd.DataFrame,
-                 reference_df: pd.DataFrame) -> AttributeInferenceResult:
+    def evaluate(
+        self, synthetic_df: pd.DataFrame, target_df: pd.DataFrame, reference_df: pd.DataFrame
+    ) -> AttributeInferenceResult:
         """Runs the attack and both baselines on the same targets.
 
         Args:
@@ -122,8 +129,11 @@ class AttributeInferenceAttack:
                 baseline — an attacker's population knowledge, obtained without the release.
         """
         t = self.target_column
-        for name, df in (("synthetic", synthetic_df), ("target", target_df),
-                         ("reference", reference_df)):
+        for name, df in (
+            ("synthetic", synthetic_df),
+            ("target", target_df),
+            ("reference", reference_df),
+        ):
             if t not in df.columns:
                 raise ValueError(f"Target column {t!r} missing from the {name} frame.")
 
@@ -134,8 +144,7 @@ class AttributeInferenceAttack:
         if not features:
             raise ValueError("No shared auxiliary columns to infer from.")
 
-        X_syn, X_tgt, X_ref = self._encode(
-            [synthetic_df, target_df, reference_df], features)
+        X_syn, X_tgt, X_ref = self._encode([synthetic_df, target_df, reference_df], features)
         y_syn = synthetic_df[t].to_numpy()
         y_tgt = target_df[t].to_numpy()
         y_ref = reference_df[t].to_numpy()
@@ -161,8 +170,7 @@ class AttributeInferenceAttack:
             conditional_baseline=cond_acc,
             leakage_vs_marginal=attack_acc - marginal_acc,
             leakage_vs_conditional=attack_acc - cond_acc,
-            attack_macro_f1=float(f1_score(y_tgt, pred_attack, average="macro",
-                                           zero_division=0)),
+            attack_macro_f1=float(f1_score(y_tgt, pred_attack, average="macro", zero_division=0)),
             num_targets=len(y_tgt),
             num_classes=int(pd.Series(y_ref).nunique()),
             majority_class_share=float(counts.iloc[0]) if len(counts) else 0.0,

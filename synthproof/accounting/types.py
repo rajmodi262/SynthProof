@@ -66,10 +66,8 @@ class PrivacySpend:
 
     spend_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     mechanism: MechanismSpec = field(default_factory=lambda: MechanismSpec("gaussian", 1.0, 1.0))
-    computed_eps: float = 0.0     # cumulative total epsilon AFTER this charge
-    marginal_eps: float = 0.0     # increase in the total attributable to this charge
+    computed_eps: float = 0.0  # cumulative total epsilon AFTER this charge
+    marginal_eps: float = 0.0  # increase in the total attributable to this charge
     delta: float = 1e-5
-    timestamp: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     run_id: Optional[str] = None

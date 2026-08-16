@@ -74,6 +74,7 @@ def mbi_available() -> bool:
     """True when private-PGM can be imported, for tests and mechanism registration."""
     try:
         import mbi  # noqa: F401
+
         return True
     except ImportError:
         return False
@@ -82,10 +83,14 @@ def mbi_available() -> bool:
 class AIMGenerator(BaseGenerator):
     """Adaptive marginal selection with graphical-model inference."""
 
-    def __init__(self, seed: int = 42, num_bins: int = DEFAULT_BINS,
-                 rounds: int = DEFAULT_ROUNDS,
-                 selection_frac: float = DEFAULT_SELECTION_FRAC,
-                 max_model_mb: float = DEFAULT_MAX_MODEL_MB):
+    def __init__(
+        self,
+        seed: int = 42,
+        num_bins: int = DEFAULT_BINS,
+        rounds: int = DEFAULT_ROUNDS,
+        selection_frac: float = DEFAULT_SELECTION_FRAC,
+        max_model_mb: float = DEFAULT_MAX_MODEL_MB,
+    ):
         super().__init__(seed=seed)
         if not (0.0 < selection_frac < 1.0):
             raise ValueError(f"selection_frac must be in (0, 1), got {selection_frac}")
@@ -125,8 +130,7 @@ class AIMGenerator(BaseGenerator):
         for col in dataset.columns:
             if col in dataset.numerical_cols:
                 edges = self.bin_edges_[col]
-                idx = np.digitize(dataset.df[col].to_numpy(dtype=float),
-                                  edges[1:-1], right=False)
+                idx = np.digitize(dataset.df[col].to_numpy(dtype=float), edges[1:-1], right=False)
                 out[col] = np.clip(idx, 0, self.num_bins - 1)
             else:
                 lookup = {v: i for i, v in enumerate(self.levels_[col])}
@@ -134,16 +138,21 @@ class AIMGenerator(BaseGenerator):
                 # silently widening the domain the release commits to.
                 # `lookup` bound as a default argument: a bare closure over the loop
                 # variable is a latent bug if the mapping is ever deferred.
-                out[col] = dataset.df[col].map(
-                    lambda v, _lk=lookup: _lk.get(v, 0)).to_numpy(dtype=int)
+                out[col] = (
+                    dataset.df[col].map(lambda v, _lk=lookup: _lk.get(v, 0)).to_numpy(dtype=int)
+                )
         return pd.DataFrame(out)
 
     # ------------------------------------------------------------------ fitting
 
-    def fit(self, dataset: TabularDataset, profile: DomainProfile,
-            accountant: Accountant, target_eps: float) -> None:
-        (Domain, Dataset, LinearMeasurement, estimation,
-         hypothetical_model_size) = _require_mbi()
+    def fit(
+        self,
+        dataset: TabularDataset,
+        profile: DomainProfile,
+        accountant: Accountant,
+        target_eps: float,
+    ) -> None:
+        Domain, Dataset, LinearMeasurement, estimation, hypothetical_model_size = _require_mbi()
         rng = np.random.default_rng(self.seed)
 
         self.columns = dataset.columns
@@ -157,8 +166,7 @@ class AIMGenerator(BaseGenerator):
         data = Dataset(coded, domain)
         n = len(coded)
 
-        candidates = [(a, b) for i, a in enumerate(self.columns)
-                      for b in self.columns[i + 1:]]
+        candidates = [(a, b) for i, a in enumerate(self.columns) for b in self.columns[i + 1 :]]
         rounds = min(self.rounds, len(candidates))
         self.skipped_cliques_ = []
 
@@ -168,11 +176,23 @@ class AIMGenerator(BaseGenerator):
         n_meas = len(self.columns) + rounds
 
         meas_sigma = calibrate_noise_scale(
-            target_eps=meas_eps, target_delta=accountant.budget.delta,
-            name="gaussian", sensitivity=1.0, steps=n_meas)
-        sel_scale = calibrate_noise_scale(
-            target_eps=sel_eps, target_delta=accountant.budget.delta,
-            name="laplace", sensitivity=2.0, steps=rounds) if rounds else 0.0
+            target_eps=meas_eps,
+            target_delta=accountant.budget.delta,
+            name="gaussian",
+            sensitivity=1.0,
+            steps=n_meas,
+        )
+        sel_scale = (
+            calibrate_noise_scale(
+                target_eps=sel_eps,
+                target_delta=accountant.budget.delta,
+                name="laplace",
+                sensitivity=2.0,
+                steps=rounds,
+            )
+            if rounds
+            else 0.0
+        )
 
         measurements = []
 
@@ -180,10 +200,12 @@ class AIMGenerator(BaseGenerator):
         for col in self.columns:
             accountant.charge(
                 MechanismSpec("gaussian", sensitivity=1.0, noise_scale=meas_sigma, steps=1),
-                run_id=f"aim_1way_{col}")
+                run_id=f"aim_1way_{col}",
+            )
             y = np.asarray(data.project((col,)).datavector(), dtype=float)
-            noise = sample_discrete_gaussian(sigma=meas_sigma, size=y.size,
-                                             seed=int(rng.integers(0, 2**31 - 1)))
+            noise = sample_discrete_gaussian(
+                sigma=meas_sigma, size=y.size, seed=int(rng.integers(0, 2**31 - 1))
+            )
             measurements.append(LinearMeasurement(y + noise, (col,), stddev=meas_sigma))
             self.measured_cliques_.append((col,))
 
@@ -191,7 +213,8 @@ class AIMGenerator(BaseGenerator):
         remaining = list(candidates)
         for r in range(rounds):
             model = estimation.MirrorDescent().estimate(
-                domain, measurements, known_total=n, iters=150)
+                domain, measurements, known_total=n, iters=150
+            )
 
             # MODEL-SIZE BOUND. Inference cost is exponential in the junction tree's
             # treewidth, not in the number of rows, so a candidate that looks harmless can
@@ -206,8 +229,7 @@ class AIMGenerator(BaseGenerator):
             # the run and belongs in the results.
             affordable = []
             for cl in remaining:
-                size_mb = hypothetical_model_size(
-                    domain, [*self.measured_cliques_, cl])
+                size_mb = hypothetical_model_size(domain, [*self.measured_cliques_, cl])
                 if size_mb <= self.max_model_mb:
                     affordable.append(cl)
                 elif cl not in self.skipped_cliques_:
@@ -229,26 +251,30 @@ class AIMGenerator(BaseGenerator):
 
             accountant.charge(
                 MechanismSpec("laplace", sensitivity=2.0, noise_scale=sel_scale, steps=1),
-                run_id=f"aim_select_round_{r}")
+                run_id=f"aim_select_round_{r}",
+            )
             # Report-noisy-max: perturb every score and take the argmax. Equivalent in
             # guarantee to the exponential mechanism, and expressible in our accountant.
             gumbelish = sample_discrete_laplace(
-                scale=max(sel_scale, 1e-9), size=len(scores),
-                seed=int(rng.integers(0, 2**31 - 1)))
+                scale=max(sel_scale, 1e-9), size=len(scores), seed=int(rng.integers(0, 2**31 - 1))
+            )
             pick = int(np.argmax(np.asarray(scores) + gumbelish))
             clique = remaining.pop(pick)
 
             accountant.charge(
                 MechanismSpec("gaussian", sensitivity=1.0, noise_scale=meas_sigma, steps=1),
-                run_id=f"aim_2way_{clique[0]}__{clique[1]}")
+                run_id=f"aim_2way_{clique[0]}__{clique[1]}",
+            )
             y = np.asarray(data.project(clique).datavector(), dtype=float)
-            noise = sample_discrete_gaussian(sigma=meas_sigma, size=y.size,
-                                             seed=int(rng.integers(0, 2**31 - 1)))
+            noise = sample_discrete_gaussian(
+                sigma=meas_sigma, size=y.size, seed=int(rng.integers(0, 2**31 - 1))
+            )
             measurements.append(LinearMeasurement(y + noise, clique, stddev=meas_sigma))
             self.measured_cliques_.append(clique)
 
         self._model = estimation.MirrorDescent().estimate(
-            domain, measurements, known_total=n, iters=400)
+            domain, measurements, known_total=n, iters=400
+        )
         self.is_fitted = True
 
     # ------------------------------------------------------------------ sampling

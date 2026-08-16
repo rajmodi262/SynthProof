@@ -22,10 +22,15 @@ def _correlated(n=1500, seed=5):
     rng = np.random.default_rng(seed)
     x = rng.uniform(0, 100, n)
     y = np.clip(x * 0.9 + rng.normal(0, 6, n), 0, 100)
-    return TabularDataset(pd.DataFrame({"x": x, "y": y}), schema=Schema([
-        ColumnSpec("x", NUMERICAL, lower=0.0, upper=100.0),
-        ColumnSpec("y", NUMERICAL, lower=0.0, upper=100.0),
-    ]))
+    return TabularDataset(
+        pd.DataFrame({"x": x, "y": y}),
+        schema=Schema(
+            [
+                ColumnSpec("x", NUMERICAL, lower=0.0, upper=100.0),
+                ColumnSpec("y", NUMERICAL, lower=0.0, upper=100.0),
+            ]
+        ),
+    )
 
 
 def _fit(ds, eps, seed=0, **kw):
@@ -125,9 +130,9 @@ def test_a_tiny_model_budget_refuses_cliques_rather_than_crashing():
     assert len(synth) == 300
     # Every 2-way candidate was refused, and each is recorded rather than dropped silently.
     assert gen.skipped_cliques_, "refused cliques must be recorded"
-    assert all(len(c) == 1 for c in gen.measured_cliques_), (
-        f"a 2-way clique was measured despite the budget: {gen.measured_cliques_}"
-    )
+    assert all(
+        len(c) == 1 for c in gen.measured_cliques_
+    ), f"a 2-way clique was measured despite the budget: {gen.measured_cliques_}"
 
 
 @requires_mbi

@@ -22,8 +22,12 @@ def _split(n=1200, seed=0):
     x = rng.uniform(0, 100, n)
     y = np.clip(x * 0.8 + rng.normal(0, 10, n), 0, 100)
     df = pd.DataFrame({"x": x, "y": y})
-    schema = Schema([ColumnSpec("x", NUMERICAL, lower=0.0, upper=100.0),
-                     ColumnSpec("y", NUMERICAL, lower=0.0, upper=100.0)])
+    schema = Schema(
+        [
+            ColumnSpec("x", NUMERICAL, lower=0.0, upper=100.0),
+            ColumnSpec("y", NUMERICAL, lower=0.0, upper=100.0),
+        ]
+    )
     half = n // 2
     train, test = df.iloc[:half], df.iloc[half:]
     return TabularDataset(train.reset_index(drop=True), schema=schema), train, test
@@ -36,6 +40,7 @@ def _release(train_ds, leak, seed=0):
 
 
 # ------------------------------------------------------------------ controls
+
 
 def test_positive_control_detects_a_verbatim_release():
     """A release that IS its training data must be attackable above chance."""
@@ -55,16 +60,15 @@ def test_negative_control_stays_at_chance_on_a_release_with_no_real_records():
     """
     ds, train, test = _split()
     res = DOMIAS(seed=0).evaluate(_release(ds, 0.0), train, test)
-    assert 0.45 < res.auc < 0.55, (
-        f"false positive: AUC {res.auc:.3f} on a shuffled release with no real records"
-    )
+    assert (
+        0.45 < res.auc < 0.55
+    ), f"false positive: AUC {res.auc:.3f} on a shuffled release with no real records"
 
 
 def test_score_is_monotone_in_leakage():
     """More memorisation must be easier to detect."""
     ds, train, test = _split()
-    aucs = [DOMIAS(seed=0).evaluate(_release(ds, lf), train, test).auc
-            for lf in (0.0, 0.5, 1.0)]
+    aucs = [DOMIAS(seed=0).evaluate(_release(ds, lf), train, test).auc for lf in (0.0, 0.5, 1.0)]
     assert aucs[0] < aucs[-1], f"not monotone in leakage: {aucs}"
 
 
@@ -87,6 +91,7 @@ def test_a_private_release_is_not_attackable():
 
 
 # ------------------------------------------------------------------ honest comparison
+
 
 def test_domias_is_not_uniformly_stronger_than_the_nearest_neighbour_baseline():
     """Recorded because it is a finding, not a defect.
@@ -112,6 +117,7 @@ def test_domias_is_not_uniformly_stronger_than_the_nearest_neighbour_baseline():
 
 
 # ------------------------------------------------------------------ mechanics
+
 
 def test_reports_low_fpr_rates_not_just_average_accuracy():
     """Carlini et al. (2022): average accuracy is the wrong metric for membership inference."""

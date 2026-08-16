@@ -24,7 +24,7 @@ import pandas as pd
 class SinglingOutResult:
     """Exact-match singling-out risk. One measured field, no derived stand-ins."""
 
-    singling_out_risk: float    # fraction of scored target records uniquely matched
+    singling_out_risk: float  # fraction of scored target records uniquely matched
     num_scored: int
     num_unique_matches: int
 
@@ -36,8 +36,7 @@ class ExactMatchRiskEvaluator:
         self.seed = seed
         self.max_records = max_records
 
-    def evaluate(self, synthetic_df: pd.DataFrame,
-                 target_df: pd.DataFrame) -> SinglingOutResult:
+    def evaluate(self, synthetic_df: pd.DataFrame, target_df: pd.DataFrame) -> SinglingOutResult:
         """Evaluates exact-match singling-out risk.
 
         Note: for continuous columns an exact match is essentially impossible, so this

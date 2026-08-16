@@ -37,10 +37,12 @@ def test_schema_rejects_duplicate_columns():
 
 
 def test_schema_roundtrips_through_json(tmp_path):
-    schema = Schema([
-        ColumnSpec("age", NUMERICAL, lower=0.0, upper=120.0),
-        ColumnSpec("city", CATEGORICAL, categories=["pune", "delhi"]),
-    ])
+    schema = Schema(
+        [
+            ColumnSpec("age", NUMERICAL, lower=0.0, upper=120.0),
+            ColumnSpec("city", CATEGORICAL, categories=["pune", "delhi"]),
+        ]
+    )
     p = tmp_path / "schema.json"
     schema.to_json(str(p))
 
@@ -54,10 +56,12 @@ def test_schema_roundtrips_through_json(tmp_path):
 def test_clipping_uses_declared_bounds_not_observed_ones():
     """Values beyond the public range are clipped, so extremes never reach a mechanism."""
     df = pd.DataFrame({"age": [-5, 30, 500], "grp": ["a", "b", "a"]})
-    schema = Schema([
-        ColumnSpec("age", NUMERICAL, lower=0.0, upper=120.0),
-        ColumnSpec("grp", CATEGORICAL, categories=["a", "b"]),
-    ])
+    schema = Schema(
+        [
+            ColumnSpec("age", NUMERICAL, lower=0.0, upper=120.0),
+            ColumnSpec("grp", CATEGORICAL, categories=["a", "b"]),
+        ]
+    )
     ds = TabularDataset(df, schema=schema)
 
     assert ds.df["age"].min() == 0.0
@@ -69,35 +73,37 @@ def test_clipping_uses_declared_bounds_not_observed_ones():
 def test_undeclared_categories_go_to_a_sentinel():
     """An unexpected value must not silently widen the domain the release commits to."""
     df = pd.DataFrame({"grp": ["a", "b", "surprise"]})
-    ds = TabularDataset(df, schema=Schema([
-        ColumnSpec("grp", CATEGORICAL, categories=["a", "b"])
-    ]))
+    ds = TabularDataset(df, schema=Schema([ColumnSpec("grp", CATEGORICAL, categories=["a", "b"])]))
     assert set(ds.df["grp"]) == {"a", "b", "__OTHER__"}
 
 
 def test_schema_selects_and_orders_columns():
     df = pd.DataFrame({"z": [1, 2], "a": ["x", "y"], "ignored": [9, 9]})
-    ds = TabularDataset(df, schema=Schema([
-        ColumnSpec("a", CATEGORICAL), ColumnSpec("z", NUMERICAL, lower=0.0, upper=10.0)
-    ]))
+    ds = TabularDataset(
+        df,
+        schema=Schema(
+            [ColumnSpec("a", CATEGORICAL), ColumnSpec("z", NUMERICAL, lower=0.0, upper=10.0)]
+        ),
+    )
     assert ds.columns == ["a", "z"]
 
 
 def test_missing_declared_column_is_an_error():
     with pytest.raises(ValueError, match="absent from data"):
-        TabularDataset(pd.DataFrame({"a": [1]}),
-                       schema=Schema([ColumnSpec("nope", CATEGORICAL)]))
+        TabularDataset(pd.DataFrame({"a": [1]}), schema=Schema([ColumnSpec("nope", CATEGORICAL)]))
 
 
 def test_from_csv_roundtrip(tmp_path):
     csv = tmp_path / "people.csv"
     csv.write_text("age,income,city\n34,50000,pune\n61,120000,delhi\n", encoding="utf-8")
 
-    schema = Schema([
-        ColumnSpec("age", NUMERICAL, lower=0.0, upper=120.0),
-        ColumnSpec("income", NUMERICAL, lower=0.0, upper=1e6),
-        ColumnSpec("city", CATEGORICAL, categories=["pune", "delhi"]),
-    ])
+    schema = Schema(
+        [
+            ColumnSpec("age", NUMERICAL, lower=0.0, upper=120.0),
+            ColumnSpec("income", NUMERICAL, lower=0.0, upper=1e6),
+            ColumnSpec("city", CATEGORICAL, categories=["pune", "delhi"]),
+        ]
+    )
     ds = TabularDataset.from_csv(str(csv), schema=schema)
 
     assert ds.name == "people"

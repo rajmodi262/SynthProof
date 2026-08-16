@@ -27,12 +27,12 @@ class Allocator:
             raise ValueError(f"Total epsilon must be positive, got {total_eps}")
         if not weights:
             return {}
-        
+
         sum_weights = sum(max(0.0, w) for w in weights.values())
         if sum_weights <= 0:
             # Fallback to uniform if all weights <= 0
             return Allocator.allocate_uniform(total_eps, list(weights.keys()))
-        
+
         allocation = {}
         for item, w in weights.items():
             clean_w = max(0.0, w)

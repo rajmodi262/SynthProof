@@ -15,9 +15,4 @@ def fresh_accountant():
 @pytest.fixture
 def standard_gaussian_spec():
     """Provides a standard Gaussian mechanism specification."""
-    return MechanismSpec(
-        name="gaussian",
-        sensitivity=1.0,
-        noise_scale=2.0,
-        steps=1
-    )
+    return MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=2.0, steps=1)

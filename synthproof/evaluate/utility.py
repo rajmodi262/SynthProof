@@ -24,6 +24,7 @@ class UtilityResult:
     metric. Real subgroup fairness analysis (and hypothesis H2, which depends on it)
     is tracked as Tier 3 work in brutal_project_audit.md.
     """
+
     tstr_macro_f1: float
     trtr_macro_f1: float
     utility_gap: float
@@ -33,8 +34,7 @@ class UtilityResult:
 class UtilityEvaluator:
     """Evaluates ML utility (TSTR vs TRTR) and statistical fidelity."""
 
-    def __init__(self, target_col: str = "category", seed: int = 42,
-                 test_size: float = 0.2):
+    def __init__(self, target_col: str = "category", seed: int = 42, test_size: float = 0.2):
         if not (0.0 < test_size < 1.0):
             raise ValueError(f"test_size must be in (0, 1), got {test_size}")
         self.target_col = target_col
@@ -53,7 +53,8 @@ class UtilityEvaluator:
 
         # Numerical columns excluding target
         num_cols = [
-            c for c in real_df.columns
+            c
+            for c in real_df.columns
             if pd.api.types.is_numeric_dtype(real_df[c]) and c != self.target_col
         ]
 
@@ -75,8 +76,10 @@ class UtilityEvaluator:
         # The previous version called clf_trtr.predict(X_real) on its own training data,
         # reporting in-sample accuracy (a constant 0.971) as the TRTR baseline.
         X_real_tr, X_real_te, y_real_tr, y_real_te = train_test_split(
-            real_df[num_cols], real_df[self.target_col],
-            test_size=self.test_size, random_state=self.seed,
+            real_df[num_cols],
+            real_df[self.target_col],
+            test_size=self.test_size,
+            random_state=self.seed,
             stratify=self._stratify_labels(real_df[self.target_col]),
         )
 

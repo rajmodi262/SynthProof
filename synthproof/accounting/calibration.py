@@ -40,8 +40,9 @@ def epsilon_for_noise_scale(
         steps=steps,
     )
     # Budget is irrelevant here; we only use the accountant's composition.
-    return Accountant(budget_eps=float("inf"), budget_delta=target_delta,
-                      orders=orders).dry_run(spec)
+    return Accountant(budget_eps=float("inf"), budget_delta=target_delta, orders=orders).dry_run(
+        spec
+    )
 
 
 def calibrate_noise_scale(
@@ -115,9 +116,9 @@ def calibrate_noise_scale(
             break
         mid = 0.5 * (lo + hi)
         if eps_at(mid) > target_eps:
-            lo = mid          # too little noise
+            lo = mid  # too little noise
         else:
-            hi = mid          # enough noise
+            hi = mid  # enough noise
 
     return hi
 
@@ -137,8 +138,9 @@ class BudgetPlan:
     synthesis_eps: float
 
     @classmethod
-    def split(cls, total_eps: float, delta: float = 1e-5,
-              profile_frac: float = 0.1) -> "BudgetPlan":
+    def split(
+        cls, total_eps: float, delta: float = 1e-5, profile_frac: float = 0.1
+    ) -> "BudgetPlan":
         """Splits `total_eps` between domain profiling and synthesis.
 
         Args:

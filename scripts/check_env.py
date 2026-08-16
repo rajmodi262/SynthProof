@@ -38,5 +38,6 @@ def check_environment():
     print("SynthProof is CPU-only. No GPU dependency is required or declared.")
     print("=" * 60)
 
+
 if __name__ == "__main__":
     check_environment()

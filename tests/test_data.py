@@ -18,11 +18,11 @@ def test_tabular_dataset_classification():
 def test_dp_domain_profiler_charges_budget():
     ds = TabularDataset.create_synthetic_toy(num_rows=50)
     acc = Accountant(budget_eps=2.0, budget_delta=1e-5)
-    
+
     initial_spends = len(acc.spends)
     profiler = DPDomainProfiler(accountant=acc, eps_budget=0.5)
     profile = profiler.profile(ds)
-    
+
     assert len(profile.columns) == 3
     assert len(acc.spends) > initial_spends
     assert acc.total() > 0.0
@@ -40,16 +40,23 @@ def _bounded_dataset(n=200):
     from synthproof.data.schema import CATEGORICAL, NUMERICAL, ColumnSpec, Schema
 
     rng = np.random.default_rng(1)
-    df = pd.DataFrame({
-        "age": rng.integers(18, 80, n),
-        "income": rng.normal(5e4, 1e4, n),
-        "g": rng.choice(["a", "b"], n),
-    })
-    return TabularDataset(df, schema=Schema([
-        ColumnSpec("age", NUMERICAL, lower=0.0, upper=120.0),
-        ColumnSpec("income", NUMERICAL, lower=0.0, upper=5e5),
-        ColumnSpec("g", CATEGORICAL, categories=["a", "b"]),
-    ]))
+    df = pd.DataFrame(
+        {
+            "age": rng.integers(18, 80, n),
+            "income": rng.normal(5e4, 1e4, n),
+            "g": rng.choice(["a", "b"], n),
+        }
+    )
+    return TabularDataset(
+        df,
+        schema=Schema(
+            [
+                ColumnSpec("age", NUMERICAL, lower=0.0, upper=120.0),
+                ColumnSpec("income", NUMERICAL, lower=0.0, upper=5e5),
+                ColumnSpec("g", CATEGORICAL, categories=["a", "b"]),
+            ]
+        ),
+    )
 
 
 def test_public_ranges_cost_no_budget_and_are_used_verbatim():
@@ -76,7 +83,7 @@ def test_public_ranges_cost_no_budget_and_are_used_verbatim():
 def test_undeclared_numeric_range_still_falls_back_to_a_noisy_estimate():
     import pandas as pd
 
-    ds = TabularDataset(pd.DataFrame({"v": range(300)}))   # no schema
+    ds = TabularDataset(pd.DataFrame({"v": range(300)}))  # no schema
     profiler = DPDomainProfiler(accountant=Accountant(10.0, 1e-5), eps_budget=0.5)
     assert profiler._query_count(ds) == 2
 
@@ -122,4 +129,5 @@ def test_dataset_source_refuses_non_https_urls():
 
     # The real source is unaffected.
     from synthproof.data.datasets import ADULT
+
     assert ADULT.url.startswith("https://")

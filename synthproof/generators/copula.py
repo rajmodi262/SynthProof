@@ -27,8 +27,13 @@ class GaussianCopulaGenerator(BaseGenerator):
         self.stds: dict = {}
         self.categories: dict = {}
 
-    def fit(self, dataset: TabularDataset, profile: DomainProfile,
-            accountant: Accountant, target_eps: float) -> None:
+    def fit(
+        self,
+        dataset: TabularDataset,
+        profile: DomainProfile,
+        accountant: Accountant,
+        target_eps: float,
+    ) -> None:
         """Fits per-column parameters, spending `target_eps` in total."""
         rng = np.random.default_rng(self.seed)
 
@@ -59,8 +64,7 @@ class GaussianCopulaGenerator(BaseGenerator):
 
     def _fit_numeric(self, dataset, profile, col, noise_scale, seed, accountant):
         accountant.charge(
-            MechanismSpec(name="gaussian", sensitivity=1.0,
-                          noise_scale=noise_scale, steps=2),
+            MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=noise_scale, steps=2),
             run_id=f"copula_moments_{col}",
         )
 
@@ -87,8 +91,7 @@ class GaussianCopulaGenerator(BaseGenerator):
 
     def _fit_categorical(self, dataset, profile, col, noise_scale, seed, accountant):
         accountant.charge(
-            MechanismSpec(name="gaussian", sensitivity=1.0,
-                          noise_scale=noise_scale, steps=1),
+            MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=noise_scale, steps=1),
             run_id=f"copula_hist_{col}",
         )
 
@@ -118,8 +121,7 @@ class GaussianCopulaGenerator(BaseGenerator):
         data = {}
         for col in self.columns:
             if col in self.numerical_cols:
-                data[col] = rng.normal(loc=self.means[col], scale=self.stds[col],
-                                       size=num_samples)
+                data[col] = rng.normal(loc=self.means[col], scale=self.stds[col], size=num_samples)
             else:
                 cats, probs = self.categories[col]
                 data[col] = rng.choice(cats, p=probs, size=num_samples)

@@ -54,10 +54,14 @@ def main():
     full = result.floor_for(1.0)
     clean = result.floor_for(0.0)
 
-    positive = "OK" if full is not None else (
-        "FAILED - the auditor cannot see the worst possible release")
-    negative = "OK - no false positive" if clean is None else (
-        "FAILED - fired on a release containing no real records")
+    positive = (
+        "OK" if full is not None else ("FAILED - the auditor cannot see the worst possible release")
+    )
+    negative = (
+        "OK - no false positive"
+        if clean is None
+        else ("FAILED - fired on a release containing no real records")
+    )
 
     print("\nsanity checks")
     print(f"  verbatim release (leak=1.0): floor m={full}   {positive}")

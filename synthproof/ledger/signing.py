@@ -39,8 +39,8 @@ class SignatureError(Exception):
 
 # --------------------------------------------------------------------------- key management
 
-def generate_keypair(key_dir: Path = DEFAULT_KEY_DIR,
-                     overwrite: bool = False) -> Tuple[Path, Path]:
+
+def generate_keypair(key_dir: Path = DEFAULT_KEY_DIR, overwrite: bool = False) -> Tuple[Path, Path]:
     """Creates a persistent Ed25519 keypair and returns (private_path, public_path).
 
     The private key is written unencrypted, which is appropriate for a capstone artefact and
@@ -61,15 +61,19 @@ def generate_keypair(key_dir: Path = DEFAULT_KEY_DIR,
         )
 
     private_key = ed25519.Ed25519PrivateKey.generate()
-    priv_path.write_bytes(private_key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption(),
-    ))
-    pub_path.write_bytes(private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    ))
+    priv_path.write_bytes(
+        private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+    )
+    pub_path.write_bytes(
+        private_key.public_key().public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+    )
 
     # Owner read/write only. A no-op on Windows, hence "second line of defence".
     try:
@@ -120,8 +124,10 @@ def public_key_from_hex(value: str) -> ed25519.Ed25519PublicKey:
 
 # --------------------------------------------------------------------------- sign / verify
 
-def sign_datasheet(sheet, private_key: Optional[ed25519.Ed25519PrivateKey] = None,
-                   key_path: Optional[Path] = None):
+
+def sign_datasheet(
+    sheet, private_key: Optional[ed25519.Ed25519PrivateKey] = None, key_path: Optional[Path] = None
+):
     """Signs a `PrivacyDataSheet` in place and returns it.
 
     The signature covers `sheet.signing_payload()` — every field except the signature and the
@@ -136,9 +142,11 @@ def sign_datasheet(sheet, private_key: Optional[ed25519.Ed25519PrivateKey] = Non
     return sheet
 
 
-def verify_datasheet(sheet_dict: dict,
-                     public_key: Optional[ed25519.Ed25519PublicKey] = None,
-                     key_path: Optional[Path] = None) -> bool:
+def verify_datasheet(
+    sheet_dict: dict,
+    public_key: Optional[ed25519.Ed25519PublicKey] = None,
+    key_path: Optional[Path] = None,
+) -> bool:
     """Verifies a data sheet loaded from JSON. Raises `SignatureError` on any failure.
 
     Args:
@@ -178,6 +186,7 @@ def verify_datasheet(sheet_dict: dict,
     payload.pop("public_key", None)
 
     import json
+
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
     try:

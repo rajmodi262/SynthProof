@@ -51,7 +51,7 @@ class PrivacyDataSheet:
 
     dataset_name: str
     num_rows: int
-    mechanism: str                 # registry key — the algorithm that actually ran
+    mechanism: str  # registry key — the algorithm that actually ran
     mechanism_available: bool
     delta: float
     seed: int
@@ -111,9 +111,11 @@ class FrontierEngine:
         ledger = ledger or Ledger(db_path=":memory:")
 
         if target_col is None:
-            target_col = ("income" if "income" in dataset.categorical_cols
-                          else (dataset.categorical_cols[0]
-                                if dataset.categorical_cols else None))
+            target_col = (
+                "income"
+                if "income" in dataset.categorical_cols
+                else (dataset.categorical_cols[0] if dataset.categorical_cols else None)
+            )
         if target_col is None:
             raise ValueError(
                 "A data sheet needs a categorical target column for the utility evaluation."
@@ -123,19 +125,28 @@ class FrontierEngine:
         evaluation: Dict = {}
 
         for eps in eps_grid:
-            res = run_cell(dataset, mechanism, float(eps), seed=self.seed, delta=delta,
-                           num_canaries=num_canaries, target_col=target_col)
+            res = run_cell(
+                dataset,
+                mechanism,
+                float(eps),
+                seed=self.seed,
+                delta=delta,
+                num_canaries=num_canaries,
+                target_col=target_col,
+            )
 
-            curve.append(FrontierPoint(
-                target_eps=float(eps),
-                proved_eps=res["proved_eps"],
-                audited_eps=res["audited_eps"],
-                audit_p=res["audit_p"],
-                tstr_f1=res["tstr_f1"],
-                trtr_f1=res["trtr_f1"],
-                correlation_error=res["correlation_error"],
-                mia_auc=res["mia_auc"],
-            ))
+            curve.append(
+                FrontierPoint(
+                    target_eps=float(eps),
+                    proved_eps=res["proved_eps"],
+                    audited_eps=res["audited_eps"],
+                    audit_p=res["audit_p"],
+                    tstr_f1=res["tstr_f1"],
+                    trtr_f1=res["trtr_f1"],
+                    correlation_error=res["correlation_error"],
+                    mia_auc=res["mia_auc"],
+                )
+            )
             evaluation = {
                 "reference": res["reference"],
                 "utility_source": res["utility_source"],
@@ -143,14 +154,16 @@ class FrontierEngine:
                 "num_canaries": num_canaries,
             }
 
-            ledger.append(LedgerEntry(
-                dataset_id=dataset.name,
-                run_id=f"{mechanism}_eps{eps}_seed{self.seed}",
-                mechanism_name=mechanism,
-                eps_spent=float(res["proved_eps"]),
-                delta=delta,
-                seed=self.seed,
-            ))
+            ledger.append(
+                LedgerEntry(
+                    dataset_id=dataset.name,
+                    run_id=f"{mechanism}_eps{eps}_seed{self.seed}",
+                    mechanism_name=mechanism,
+                    eps_spent=float(res["proved_eps"]),
+                    delta=delta,
+                    seed=self.seed,
+                )
+            )
 
         last = curve[-1]
         return PrivacyDataSheet(

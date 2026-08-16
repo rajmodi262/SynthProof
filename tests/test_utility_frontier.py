@@ -50,6 +50,7 @@ def test_utility_result_has_no_fabricated_fairness_field():
 
 # ------------------------------------------------------------------ data sheet
 
+
 def _sheet(mechanism="independent", eps_grid=(1.0)):
     ds = TabularDataset.create_synthetic_toy(num_rows=200)
     grid = list(eps_grid) if isinstance(eps_grid, (list, tuple)) else [eps_grid]
@@ -106,6 +107,7 @@ def test_unsigned_sheet_is_reported_as_unsigned(tmp_path):
 
 # ------------------------------------------------------------------ signing
 
+
 def test_signed_sheet_verifies_against_the_published_key(tmp_path):
     """The project's title, made literally true: a third party can check the claim."""
     priv, pub = signing.generate_keypair(key_dir=tmp_path / "keys")
@@ -142,11 +144,11 @@ def test_a_sheet_cannot_vouch_for_itself(tmp_path):
     priv_b, _ = signing.generate_keypair(key_dir=tmp_path / "b")
 
     sheet = _sheet()
-    signing.sign_datasheet(sheet, key_path=priv_b)   # signed by B
+    signing.sign_datasheet(sheet, key_path=priv_b)  # signed by B
     loaded = json.loads(sheet.to_json())
 
     with pytest.raises(signing.SignatureError, match="different key"):
-        signing.verify_datasheet(loaded, key_path=pub_a)   # verified against A
+        signing.verify_datasheet(loaded, key_path=pub_a)  # verified against A
 
     # And with no key at all, verification is refused rather than trusting the sheet.
     with pytest.raises(signing.SignatureError, match="public key is required"):

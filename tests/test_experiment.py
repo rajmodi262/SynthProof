@@ -30,11 +30,13 @@ def test_bootstrap_ci_handles_degenerate_input():
 
 def test_degenerate_columns_are_excluded_from_structure_metric():
     """capital_gain-style columns (>85% one value) measure noise, not correlation."""
-    df = pd.DataFrame({
-        "spread": np.arange(100.0),
-        "mostly_zero": [0.0] * 95 + [1.0] * 5,
-        "constant": [7.0] * 100,
-    })
+    df = pd.DataFrame(
+        {
+            "spread": np.arange(100.0),
+            "mostly_zero": [0.0] * 95 + [1.0] * 5,
+            "constant": [7.0] * 100,
+        }
+    )
     keep = informative_numeric_columns(df, ["spread", "mostly_zero", "constant"])
     assert keep == ["spread"]
 

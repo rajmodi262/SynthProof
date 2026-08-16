@@ -55,8 +55,13 @@ class LeakyGenerator(BaseGenerator):
         self.leak_fraction = leak_fraction
         self._train: Optional[pd.DataFrame] = None
 
-    def fit(self, dataset: TabularDataset, profile: DomainProfile,
-            accountant: Accountant, target_eps: float) -> None:
+    def fit(
+        self,
+        dataset: TabularDataset,
+        profile: DomainProfile,
+        accountant: Accountant,
+        target_eps: float,
+    ) -> None:
         """Memorises the training table. Charges NOTHING, because it applies no mechanism.
 
         Charging here would be worse than not charging: the accountant would report a finite
@@ -80,20 +85,19 @@ class LeakyGenerator(BaseGenerator):
         parts = []
 
         if n_leak > 0:
-            idx = rng.choice(len(self._train), size=n_leak,
-                             replace=n_leak > len(self._train))
+            idx = rng.choice(len(self._train), size=n_leak, replace=n_leak > len(self._train))
             parts.append(self._train.iloc[idx].reset_index(drop=True))
 
         if n_shuffle > 0:
             # Independently permute each column. Marginals are preserved exactly; the joint
             # distribution and every real record are destroyed.
-            base = self._train.sample(n=n_shuffle, replace=True,
-                                      random_state=self.seed).reset_index(drop=True)
+            base = self._train.sample(
+                n=n_shuffle, replace=True, random_state=self.seed
+            ).reset_index(drop=True)
             shuffled = {c: rng.permutation(base[c].to_numpy()) for c in base.columns}
             parts.append(pd.DataFrame(shuffled))
 
-        out = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame(
-            columns=self.columns)
+        out = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame(columns=self.columns)
         # Shuffle rows so leaked records are not all at the top, which would let a naive
         # attack succeed on position alone.
         return out.sample(frac=1.0, random_state=self.seed).reset_index(drop=True)

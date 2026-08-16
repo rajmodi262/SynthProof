@@ -77,9 +77,7 @@ def test_distance_mia_requires_both_classes():
 def test_exact_match_risk_is_a_single_measured_field():
     """Regression: linkability/inference were affine fakes and must not return."""
     ds = TabularDataset.create_synthetic_toy(num_rows=100)
-    res = ExactMatchRiskEvaluator(seed=42).evaluate(
-        synthetic_df=ds.df, target_df=ds.df.head(50)
-    )
+    res = ExactMatchRiskEvaluator(seed=42).evaluate(synthetic_df=ds.df, target_df=ds.df.head(50))
 
     assert 0.0 <= res.singling_out_risk <= 1.0
     assert res.num_scored == 50

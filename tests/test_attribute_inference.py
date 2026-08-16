@@ -28,17 +28,20 @@ def _population(n=2400, seed=0):
     # Threshold 4.2 gives a ~75/25 class split, matching UCI Adult's imbalance. That
     # imbalance is what makes the point: a naive attacker scores ~0.75 on prevalence alone.
     high = (0.03 * age + 0.05 * hours + rng.normal(0, 1.2, n)) > 4.2
-    df = pd.DataFrame({"age": age, "hours": hours,
-                       "income": np.where(high, ">50K", "<=50K")})
-    schema = Schema([
-        ColumnSpec("age", NUMERICAL, lower=18.0, upper=80.0),
-        ColumnSpec("hours", NUMERICAL, lower=10.0, upper=60.0),
-        ColumnSpec("income", CATEGORICAL, categories=["<=50K", ">50K"]),
-    ])
+    df = pd.DataFrame({"age": age, "hours": hours, "income": np.where(high, ">50K", "<=50K")})
+    schema = Schema(
+        [
+            ColumnSpec("age", NUMERICAL, lower=18.0, upper=80.0),
+            ColumnSpec("hours", NUMERICAL, lower=10.0, upper=60.0),
+            ColumnSpec("income", CATEGORICAL, categories=["<=50K", ">50K"]),
+        ]
+    )
     third = n // 3
-    return (TabularDataset(df.iloc[:third].reset_index(drop=True), schema=schema),
-            df.iloc[:400].reset_index(drop=True),             # targets (in the fit set)
-            df.iloc[third:2 * third].reset_index(drop=True))  # reference (unseen)
+    return (
+        TabularDataset(df.iloc[:third].reset_index(drop=True), schema=schema),
+        df.iloc[:400].reset_index(drop=True),  # targets (in the fit set)
+        df.iloc[third : 2 * third].reset_index(drop=True),
+    )  # reference (unseen)
 
 
 def _release(fit_ds, leak, seed=0):
@@ -48,6 +51,7 @@ def _release(fit_ds, leak, seed=0):
 
 
 # ------------------------------------------------------------------ the central point
+
 
 def test_a_release_with_no_real_records_shows_no_leakage_despite_high_raw_accuracy():
     """THE test. Raw attack accuracy is not leakage.
@@ -60,15 +64,16 @@ def test_a_release_with_no_real_records_shows_no_leakage_despite_high_raw_accura
     """
     fit_ds, targets, reference = _population()
     res = AttributeInferenceAttack("income", seed=0).evaluate(
-        _release(fit_ds, 0.0), targets, reference)
+        _release(fit_ds, 0.0), targets, reference
+    )
 
     assert res.attack_accuracy > 0.65, (
         f"the attack scored only {res.attack_accuracy:.3f}; it should look non-trivially "
         "good here, because that is exactly what makes raw accuracy misleading"
     )
-    assert res.leakage_vs_conditional <= 0.02, (
-        f"false leakage {res.leakage_vs_conditional:+.3f} on a release with no real records"
-    )
+    assert (
+        res.leakage_vs_conditional <= 0.02
+    ), f"false leakage {res.leakage_vs_conditional:+.3f} on a release with no real records"
     assert not res.leaks
     assert "No individual-level leakage" in res.interpretation()
 
@@ -77,11 +82,12 @@ def test_a_verbatim_release_shows_real_leakage():
     """The positive control: a release that IS the training data must beat the baseline."""
     fit_ds, targets, reference = _population()
     res = AttributeInferenceAttack("income", seed=0).evaluate(
-        _release(fit_ds, 1.0), targets, reference)
-
-    assert res.leakage_vs_conditional > 0.02, (
-        f"no leakage detected on a verbatim release ({res.leakage_vs_conditional:+.3f})"
+        _release(fit_ds, 1.0), targets, reference
     )
+
+    assert (
+        res.leakage_vs_conditional > 0.02
+    ), f"no leakage detected on a verbatim release ({res.leakage_vs_conditional:+.3f})"
     assert res.leaks
     assert "Leakage of" in res.interpretation()
 
@@ -89,8 +95,10 @@ def test_a_verbatim_release_shows_real_leakage():
 def test_leakage_is_monotone_in_memorisation():
     fit_ds, targets, reference = _population()
     atk = AttributeInferenceAttack("income", seed=0)
-    leaks = [atk.evaluate(_release(fit_ds, lf), targets, reference).leakage_vs_conditional
-             for lf in (0.0, 1.0)]
+    leaks = [
+        atk.evaluate(_release(fit_ds, lf), targets, reference).leakage_vs_conditional
+        for lf in (0.0, 1.0)
+    ]
     assert leaks[0] < leaks[1]
 
 
@@ -108,23 +116,26 @@ def test_a_dp_release_does_not_leak_beyond_the_population():
     gen.fit(fit_ds, profile, acc, target_eps=plan.synthesis_eps)
 
     res = AttributeInferenceAttack("income", seed=0).evaluate(
-        gen.generate(fit_ds.num_rows), targets, reference)
+        gen.generate(fit_ds.num_rows), targets, reference
+    )
     assert not res.leaks, f"DP release leaked {res.leakage_vs_conditional:+.3f}"
 
 
 # ------------------------------------------------------------------ baselines
+
 
 def test_both_baselines_are_computed_and_the_conditional_is_the_stronger_one():
     """The marginal baseline is the floor; the conditional captures everything an attacker
     could learn about the population without the release, so it is the one that matters."""
     fit_ds, targets, reference = _population()
     res = AttributeInferenceAttack("income", seed=0).evaluate(
-        _release(fit_ds, 1.0), targets, reference)
+        _release(fit_ds, 1.0), targets, reference
+    )
 
     assert 0.0 < res.marginal_baseline < 1.0
-    assert res.conditional_baseline >= res.marginal_baseline - 0.05, (
-        "the conditional baseline should be at least as strong as always-guess-majority"
-    )
+    assert (
+        res.conditional_baseline >= res.marginal_baseline - 0.05
+    ), "the conditional baseline should be at least as strong as always-guess-majority"
     assert res.leakage_vs_conditional <= res.leakage_vs_marginal + 1e-9
 
 
@@ -132,7 +143,8 @@ def test_the_marginal_baseline_matches_the_majority_class_share():
     """Always predicting the most frequent value must score its prevalence."""
     fit_ds, targets, reference = _population()
     res = AttributeInferenceAttack("income", seed=0).evaluate(
-        _release(fit_ds, 1.0), targets, reference)
+        _release(fit_ds, 1.0), targets, reference
+    )
     assert res.marginal_baseline == pytest.approx(
         max(targets["income"].value_counts(normalize=True)), abs=0.05
     )
@@ -141,7 +153,8 @@ def test_the_marginal_baseline_matches_the_majority_class_share():
 def test_result_carries_the_context_needed_to_read_it():
     fit_ds, targets, reference = _population()
     res = AttributeInferenceAttack("income", seed=0).evaluate(
-        _release(fit_ds, 1.0), targets, reference)
+        _release(fit_ds, 1.0), targets, reference
+    )
     assert res.num_targets == 400
     assert res.num_classes == 2
     assert 0.0 < res.majority_class_share < 1.0
@@ -150,19 +163,20 @@ def test_result_carries_the_context_needed_to_read_it():
 
 # ------------------------------------------------------------------ mechanics
 
+
 def test_a_missing_target_column_raises_rather_than_guessing():
     fit_ds, targets, reference = _population()
     with pytest.raises(ValueError, match="missing from the"):
         AttributeInferenceAttack("nonexistent", seed=0).evaluate(
-            _release(fit_ds, 1.0), targets, reference)
+            _release(fit_ds, 1.0), targets, reference
+        )
 
 
 def test_no_shared_auxiliary_columns_raises():
     fit_ds, targets, reference = _population()
     only_target = targets[["income"]]
     with pytest.raises(ValueError, match="No shared auxiliary columns"):
-        AttributeInferenceAttack("income", seed=0).evaluate(
-            only_target, only_target, only_target)
+        AttributeInferenceAttack("income", seed=0).evaluate(only_target, only_target, only_target)
 
 
 def test_categories_are_encoded_over_the_union_so_frames_stay_aligned():

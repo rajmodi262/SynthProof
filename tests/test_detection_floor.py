@@ -29,6 +29,7 @@ def _factory(leak, seed):
 
 # ------------------------------------------------------------------ the control itself
 
+
 def test_leaky_generator_reproduces_training_rows_verbatim():
     """At leak_fraction=1.0 the output IS the training table — the worst possible release."""
     ds = TabularDataset.create_synthetic_toy(num_rows=200)
@@ -92,6 +93,7 @@ def test_generate_before_fit_raises():
 
 # ------------------------------------------------------------------ the positive control
 
+
 def test_auditor_detects_a_verbatim_release():
     """THE POSITIVE CONTROL. If this fails, every null result in the project is worthless.
 
@@ -147,6 +149,7 @@ def test_detection_is_monotone_in_leakage():
 
 # ------------------------------------------------------------------ the sweep
 
+
 def test_floor_sweep_finds_the_floor_for_a_verbatim_release():
     result = measure_detection_floor(
         TabularDataset.create_synthetic_toy(num_rows=500),
@@ -163,12 +166,28 @@ def test_floor_sweep_finds_the_floor_for_a_verbatim_release():
 
 def test_floor_requires_a_majority_of_seeds():
     """One lucky seed is not a detection floor."""
-    lucky = FloorCell(leak_fraction=0.1, num_canaries=10, seeds=3, detection_rate=1 / 3,
-                      mean_audited_eps=0.1, max_audited_eps=0.3, mean_p_value=0.2,
-                      mean_tpr=0.5, mean_fpr=0.4)
-    solid = FloorCell(leak_fraction=0.1, num_canaries=50, seeds=3, detection_rate=1.0,
-                      mean_audited_eps=0.5, max_audited_eps=0.6, mean_p_value=0.01,
-                      mean_tpr=0.9, mean_fpr=0.2)
+    lucky = FloorCell(
+        leak_fraction=0.1,
+        num_canaries=10,
+        seeds=3,
+        detection_rate=1 / 3,
+        mean_audited_eps=0.1,
+        max_audited_eps=0.3,
+        mean_p_value=0.2,
+        mean_tpr=0.5,
+        mean_fpr=0.4,
+    )
+    solid = FloorCell(
+        leak_fraction=0.1,
+        num_canaries=50,
+        seeds=3,
+        detection_rate=1.0,
+        mean_audited_eps=0.5,
+        max_audited_eps=0.6,
+        mean_p_value=0.01,
+        mean_tpr=0.9,
+        mean_fpr=0.2,
+    )
 
     assert lucky.detected is False
     assert solid.detected is True
@@ -176,11 +195,13 @@ def test_floor_requires_a_majority_of_seeds():
 
 
 def test_floor_table_renders_and_reports_undetected_levels():
-    result = FloorResult(cells=[
-        FloorCell(0.0, 10, 3, 0.0, 0.0, 0.0, 0.6, 0.5, 0.5),
-        FloorCell(1.0, 10, 3, 1.0, 2.0, 2.4, 0.001, 1.0, 0.1),
-    ])
+    result = FloorResult(
+        cells=[
+            FloorCell(0.0, 10, 3, 0.0, 0.0, 0.0, 0.6, 0.5, 0.5),
+            FloorCell(1.0, 10, 3, 1.0, 2.0, 2.4, 0.001, 1.0, 0.1),
+        ]
+    )
     text = format_floor_table(result)
     assert "detection floor" in text
-    assert "not detected" in text      # the 0.0 row
+    assert "not detected" in text  # the 0.0 row
     assert "10" in text

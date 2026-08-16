@@ -62,6 +62,7 @@ DEFAULT_ALPHA = 0.05
 
 # --------------------------------------------------------------------------- the estimator
 
+
 def _p_correct(eps: float) -> float:
     """Max per-guess success probability under eps-DP (randomised-response view)."""
     return math.exp(eps) / (1.0 + math.exp(eps))
@@ -93,8 +94,13 @@ def canaries_needed_for(epsilon: float, alpha: float = DEFAULT_ALPHA) -> int:
     return max(1, math.ceil(math.log(alpha) / math.log(p)))
 
 
-def epsilon_lower_bound(correct: int, guesses: int, alpha: float = DEFAULT_ALPHA,
-                        delta: float = 0.0, max_eps: float = 30.0) -> float:
+def epsilon_lower_bound(
+    correct: int,
+    guesses: int,
+    alpha: float = DEFAULT_ALPHA,
+    delta: float = 0.0,
+    max_eps: float = 30.0,
+) -> float:
     """Largest epsilon ruled out by `correct` correct guesses out of `guesses`.
 
     Returns 0.0 when the evidence rules out nothing — which is the honest answer, not a
@@ -115,9 +121,9 @@ def epsilon_lower_bound(correct: int, guesses: int, alpha: float = DEFAULT_ALPHA
         return stats.binom.sf(correct - 1, guesses, _p_correct(eps)) <= alpha_eff
 
     if not rejects(0.0):
-        return 0.0                      # even a perfectly private mechanism explains this
+        return 0.0  # even a perfectly private mechanism explains this
     if rejects(max_eps):
-        return max_eps                  # saturated; report the cap rather than extrapolating
+        return max_eps  # saturated; report the cap rather than extrapolating
 
     lo, hi = 0.0, max_eps
     for _ in range(60):
@@ -131,22 +137,23 @@ def epsilon_lower_bound(correct: int, guesses: int, alpha: float = DEFAULT_ALPHA
 
 # --------------------------------------------------------------------------- results
 
+
 @dataclass
 class SteinkeResult:
     """Outcome of a one-run audit."""
 
-    audited_eps: float          # epsilon lower bound from the confusion counts
-    ceiling: float              # most this many guesses could ever certify
-    saturated: bool             # the bound hit the ceiling, so the true value may be higher
+    audited_eps: float  # epsilon lower bound from the confusion counts
+    ceiling: float  # most this many guesses could ever certify
+    saturated: bool  # the bound hit the ceiling, so the true value may be higher
     correct: int
     guesses: int
     abstained: int
     num_canaries: int
     num_included: int
-    accuracy: float             # correct / guesses; 0.5 is chance
+    accuracy: float  # correct / guesses; 0.5 is chance
     alpha: float
     delta: float
-    p_value: float              # P[at least this many correct | mechanism is perfectly private]
+    p_value: float  # P[at least this many correct | mechanism is perfectly private]
 
     def interpretation(self) -> str:
         """One sentence a reader can act on, rather than a bare number."""
@@ -172,7 +179,7 @@ class OneRunCanarySet:
     """Canaries plus the randomised inclusion vector that decided which were planted."""
 
     canaries: pd.DataFrame
-    included: np.ndarray        # bool[m]; True for canaries actually added to the training set
+    included: np.ndarray  # bool[m]; True for canaries actually added to the training set
 
     @property
     def num_included(self) -> int:
@@ -195,12 +202,18 @@ class OneRunCanarySet:
 
 # --------------------------------------------------------------------------- the auditor
 
+
 class SteinkeAuditor:
     """Plants canaries under a randomised inclusion vector and audits from one run."""
 
-    def __init__(self, num_canaries: int = 100, seed: int = 42,
-                 alpha: float = DEFAULT_ALPHA, inclusion_prob: float = 0.5,
-                 abstain_frac: float = 0.0):
+    def __init__(
+        self,
+        num_canaries: int = 100,
+        seed: int = 42,
+        alpha: float = DEFAULT_ALPHA,
+        inclusion_prob: float = 0.5,
+        abstain_frac: float = 0.0,
+    ):
         """
         Args:
             num_canaries: Total canaries generated. Unlike the paired auditor, ALL of them
@@ -242,14 +255,13 @@ class SteinkeAuditor:
         planted = canaries.loc[included].reset_index(drop=True)
         augmented = pd.concat([dataset.df, planted], ignore_index=True)
         return (
-            TabularDataset(df=augmented, name=f"{dataset.name}_canary",
-                           schema=dataset.schema),
+            TabularDataset(df=augmented, name=f"{dataset.name}_canary", schema=dataset.schema),
             OneRunCanarySet(canaries=canaries, included=included),
         )
 
-    def audit(self, synthetic_df: pd.DataFrame,
-              canary_set: OneRunCanarySet,
-              delta: float = 0.0) -> SteinkeResult:
+    def audit(
+        self, synthetic_df: pd.DataFrame, canary_set: OneRunCanarySet, delta: float = 0.0
+    ) -> SteinkeResult:
         """Scores every canary, guesses membership, and converts the count into an epsilon."""
         scores = self._maker._similarity_scores(canary_set.canaries, synthetic_df)
         m = len(scores)
@@ -264,7 +276,7 @@ class SteinkeAuditor:
         k_low = n_guess - k_high
 
         guessed_in = order[:k_high]
-        guessed_out = order[m - k_low:]
+        guessed_out = order[m - k_low :]
 
         correct = int(included[guessed_in].sum() + (~included[guessed_out]).sum())
         guesses = len(guessed_in) + len(guessed_out)
@@ -308,8 +320,9 @@ def compare_auditors(num_canaries: int, alpha: float = DEFAULT_ALPHA) -> dict:
     }
 
 
-def default_delta_correction(guesses: int, delta: float,
-                             alpha: float = DEFAULT_ALPHA) -> Optional[str]:
+def default_delta_correction(
+    guesses: int, delta: float, alpha: float = DEFAULT_ALPHA
+) -> Optional[str]:
     """Warns when delta is large enough to matter against the chosen alpha."""
     if guesses * delta > 0.1 * alpha:
         return (

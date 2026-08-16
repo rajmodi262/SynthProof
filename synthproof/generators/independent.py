@@ -32,8 +32,13 @@ class IndependentMarginalGenerator(BaseGenerator):
         self.marginals: dict = {}
         self.columns: list = []
 
-    def fit(self, dataset: TabularDataset, profile: DomainProfile,
-            accountant: Accountant, target_eps: float) -> None:
+    def fit(
+        self,
+        dataset: TabularDataset,
+        profile: DomainProfile,
+        accountant: Accountant,
+        target_eps: float,
+    ) -> None:
         """Measures one DP marginal per column, spending `target_eps` in total."""
         rng = np.random.default_rng(self.seed)
         self.columns = dataset.columns
@@ -56,17 +61,16 @@ class IndependentMarginalGenerator(BaseGenerator):
 
         for col in self.columns:
             accountant.charge(
-                MechanismSpec(name="gaussian", sensitivity=1.0,
-                              noise_scale=noise_scale, steps=1),
+                MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=noise_scale, steps=1),
                 run_id=f"aim_marginal_{col}",
             )
             seed = int(rng.integers(0, 2**31 - 1))
             if col in self.numerical_cols:
-                self.marginals[col] = self._fit_numeric(
-                    dataset, profile, col, noise_scale, seed)
+                self.marginals[col] = self._fit_numeric(dataset, profile, col, noise_scale, seed)
             else:
                 self.marginals[col] = self._fit_categorical(
-                    dataset, profile, col, noise_scale, seed)
+                    dataset, profile, col, noise_scale, seed
+                )
 
         self.is_fitted = True
 
@@ -76,8 +80,7 @@ class IndependentMarginalGenerator(BaseGenerator):
         if col_min is None or col_max is None:
             raise ValueError(f"Column {col!r} has no DP range in the profile.")
 
-        hist, bin_edges = np.histogram(dataset.df[col], bins=NUM_BINS,
-                                       range=(col_min, col_max))
+        hist, bin_edges = np.histogram(dataset.df[col], bins=NUM_BINS, range=(col_min, col_max))
         noise = sample_discrete_gaussian(sigma=noise_scale, size=len(hist), seed=seed)
         return bin_edges, self._normalise(np.maximum(0, hist + noise), NUM_BINS)
 

@@ -58,9 +58,21 @@ class DatasetSource:
 
 # UCI Adult (Becker & Kohavi, 1996). The column names are not in the CSV itself.
 ADULT_COLUMNS = [
-    "age", "workclass", "fnlwgt", "education", "education_num", "marital_status",
-    "occupation", "relationship", "race", "sex", "capital_gain", "capital_loss",
-    "hours_per_week", "native_country", "income",
+    "age",
+    "workclass",
+    "fnlwgt",
+    "education",
+    "education_num",
+    "marital_status",
+    "occupation",
+    "relationship",
+    "race",
+    "sex",
+    "capital_gain",
+    "capital_loss",
+    "hours_per_week",
+    "native_country",
+    "income",
 ]
 
 ADULT = DatasetSource(
@@ -79,42 +91,110 @@ def adult_schema() -> Schema:
     excluded: releasing redundant encodings of the same attribute spends budget twice for no
     additional utility.
     """
-    return Schema(columns=[
-        ColumnSpec("age", NUMERICAL, lower=17.0, upper=90.0),
-        ColumnSpec("hours_per_week", NUMERICAL, lower=1.0, upper=99.0),
-        ColumnSpec("capital_gain", NUMERICAL, lower=0.0, upper=100000.0),
-        ColumnSpec("capital_loss", NUMERICAL, lower=0.0, upper=5000.0),
-        ColumnSpec("workclass", CATEGORICAL, categories=[
-            "Private", "Self-emp-not-inc", "Self-emp-inc", "Federal-gov",
-            "Local-gov", "State-gov", "Without-pay", "Never-worked"]),
-        ColumnSpec("education", CATEGORICAL, categories=[
-            "Bachelors", "Some-college", "11th", "HS-grad", "Prof-school",
-            "Assoc-acdm", "Assoc-voc", "9th", "7th-8th", "12th", "Masters",
-            "1st-4th", "10th", "Doctorate", "5th-6th", "Preschool"]),
-        ColumnSpec("marital_status", CATEGORICAL, categories=[
-            "Married-civ-spouse", "Divorced", "Never-married", "Separated",
-            "Widowed", "Married-spouse-absent", "Married-AF-spouse"]),
-        ColumnSpec("occupation", CATEGORICAL, categories=[
-            "Tech-support", "Craft-repair", "Other-service", "Sales", "Exec-managerial",
-            "Prof-specialty", "Handlers-cleaners", "Machine-op-inspct", "Adm-clerical",
-            "Farming-fishing", "Transport-moving", "Priv-house-serv", "Protective-serv",
-            "Armed-Forces"]),
-        ColumnSpec("relationship", CATEGORICAL, categories=[
-            "Wife", "Own-child", "Husband", "Not-in-family", "Other-relative", "Unmarried"]),
-        # race and sex are the subgroup variables for hypothesis H2.
-        ColumnSpec("race", CATEGORICAL, categories=[
-            "White", "Asian-Pac-Islander", "Amer-Indian-Eskimo", "Other", "Black"]),
-        ColumnSpec("sex", CATEGORICAL, categories=["Female", "Male"]),
-        ColumnSpec("income", CATEGORICAL, categories=["<=50K", ">50K"]),
-    ])
+    return Schema(
+        columns=[
+            ColumnSpec("age", NUMERICAL, lower=17.0, upper=90.0),
+            ColumnSpec("hours_per_week", NUMERICAL, lower=1.0, upper=99.0),
+            ColumnSpec("capital_gain", NUMERICAL, lower=0.0, upper=100000.0),
+            ColumnSpec("capital_loss", NUMERICAL, lower=0.0, upper=5000.0),
+            ColumnSpec(
+                "workclass",
+                CATEGORICAL,
+                categories=[
+                    "Private",
+                    "Self-emp-not-inc",
+                    "Self-emp-inc",
+                    "Federal-gov",
+                    "Local-gov",
+                    "State-gov",
+                    "Without-pay",
+                    "Never-worked",
+                ],
+            ),
+            ColumnSpec(
+                "education",
+                CATEGORICAL,
+                categories=[
+                    "Bachelors",
+                    "Some-college",
+                    "11th",
+                    "HS-grad",
+                    "Prof-school",
+                    "Assoc-acdm",
+                    "Assoc-voc",
+                    "9th",
+                    "7th-8th",
+                    "12th",
+                    "Masters",
+                    "1st-4th",
+                    "10th",
+                    "Doctorate",
+                    "5th-6th",
+                    "Preschool",
+                ],
+            ),
+            ColumnSpec(
+                "marital_status",
+                CATEGORICAL,
+                categories=[
+                    "Married-civ-spouse",
+                    "Divorced",
+                    "Never-married",
+                    "Separated",
+                    "Widowed",
+                    "Married-spouse-absent",
+                    "Married-AF-spouse",
+                ],
+            ),
+            ColumnSpec(
+                "occupation",
+                CATEGORICAL,
+                categories=[
+                    "Tech-support",
+                    "Craft-repair",
+                    "Other-service",
+                    "Sales",
+                    "Exec-managerial",
+                    "Prof-specialty",
+                    "Handlers-cleaners",
+                    "Machine-op-inspct",
+                    "Adm-clerical",
+                    "Farming-fishing",
+                    "Transport-moving",
+                    "Priv-house-serv",
+                    "Protective-serv",
+                    "Armed-Forces",
+                ],
+            ),
+            ColumnSpec(
+                "relationship",
+                CATEGORICAL,
+                categories=[
+                    "Wife",
+                    "Own-child",
+                    "Husband",
+                    "Not-in-family",
+                    "Other-relative",
+                    "Unmarried",
+                ],
+            ),
+            # race and sex are the subgroup variables for hypothesis H2.
+            ColumnSpec(
+                "race",
+                CATEGORICAL,
+                categories=["White", "Asian-Pac-Islander", "Amer-Indian-Eskimo", "Other", "Black"],
+            ),
+            ColumnSpec("sex", CATEGORICAL, categories=["Female", "Male"]),
+            ColumnSpec("income", CATEGORICAL, categories=["<=50K", ">50K"]),
+        ]
+    )
 
 
 def _cache_path(source: DatasetSource, data_dir: str) -> str:
     return os.path.join(data_dir, source.filename)
 
 
-def fetch(source: DatasetSource, data_dir: str = DEFAULT_DATA_DIR,
-          force: bool = False) -> str:
+def fetch(source: DatasetSource, data_dir: str = DEFAULT_DATA_DIR, force: bool = False) -> str:
     """Downloads `source` into `data_dir` if absent, verifying its digest.
 
     Returns the local path. Raises if the digest does not match a pinned value.
@@ -144,8 +224,7 @@ def pin_checksum(source: DatasetSource, data_dir: str = DEFAULT_DATA_DIR) -> str
         return hashlib.sha256(f.read()).hexdigest()
 
 
-def load_adult(data_dir: str = DEFAULT_DATA_DIR,
-               schema: Optional[Schema] = None) -> TabularDataset:
+def load_adult(data_dir: str = DEFAULT_DATA_DIR, schema: Optional[Schema] = None) -> TabularDataset:
     """Loads UCI Adult as a `TabularDataset` under its public schema.
 
     Rows with missing values (encoded as "?") are dropped, matching the convention used by
@@ -157,10 +236,17 @@ def load_adult(data_dir: str = DEFAULT_DATA_DIR,
         member = next(n for n in zf.namelist() if n.endswith("adult.data"))
         raw = zf.read(member)
 
-    df = pd.read_csv(
-        io.BytesIO(raw), header=None, names=ADULT_COLUMNS,
-        skipinitialspace=True, na_values=["?"],
-    ).dropna().reset_index(drop=True)
+    df = (
+        pd.read_csv(
+            io.BytesIO(raw),
+            header=None,
+            names=ADULT_COLUMNS,
+            skipinitialspace=True,
+            na_values=["?"],
+        )
+        .dropna()
+        .reset_index(drop=True)
+    )
 
     return TabularDataset(df, name="uci_adult", schema=schema or adult_schema())
 

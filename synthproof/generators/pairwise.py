@@ -44,8 +44,12 @@ DEFAULT_BINS = 12
 class PairwiseMarginalGenerator(BaseGenerator):
     """Tree-structured DP generator preserving pairwise dependence."""
 
-    def __init__(self, seed: int = 42, num_bins: int = DEFAULT_BINS,
-                 tree: Optional[List[Tuple[str, str]]] = None):
+    def __init__(
+        self,
+        seed: int = 42,
+        num_bins: int = DEFAULT_BINS,
+        tree: Optional[List[Tuple[str, str]]] = None,
+    ):
         """
         Args:
             seed: RNG seed.
@@ -93,8 +97,13 @@ class PairwiseMarginalGenerator(BaseGenerator):
 
     # ------------------------------------------------------------------ fitting
 
-    def fit(self, dataset: TabularDataset, profile: DomainProfile,
-            accountant: Accountant, target_eps: float) -> None:
+    def fit(
+        self,
+        dataset: TabularDataset,
+        profile: DomainProfile,
+        accountant: Accountant,
+        target_eps: float,
+    ) -> None:
         rng = np.random.default_rng(self.seed)
         self.columns = dataset.columns
         self.numerical_cols = dataset.numerical_cols
@@ -107,9 +116,11 @@ class PairwiseMarginalGenerator(BaseGenerator):
             raise ValueError("Cannot fit on a dataset with no columns.")
         self.root_ = cols[0]
         # Public structure: a chain. No data is consulted, so no budget is charged for it.
-        self.edges_ = self.tree if self.tree is not None else [
-            (cols[i], cols[i + 1]) for i in range(len(cols) - 1)
-        ]
+        self.edges_ = (
+            self.tree
+            if self.tree is not None
+            else [(cols[i], cols[i + 1]) for i in range(len(cols) - 1)]
+        )
 
         n_queries = 1 + len(self.edges_)
         noise_scale = calibrate_noise_scale(
@@ -129,15 +140,15 @@ class PairwiseMarginalGenerator(BaseGenerator):
         )
         k = len(self.levels_[self.root_])
         hist = np.bincount(codes[self.root_][codes[self.root_] >= 0], minlength=k).astype(float)
-        noise = sample_discrete_gaussian(sigma=noise_scale, size=k,
-                                         seed=int(rng.integers(0, 2**31 - 1)))
+        noise = sample_discrete_gaussian(
+            sigma=noise_scale, size=k, seed=int(rng.integers(0, 2**31 - 1))
+        )
         self.root_probs_ = self._normalise(np.maximum(0.0, hist + noise))
 
         # 2-way marginals along the tree, stored as conditionals P(child | parent).
         for parent, child in self.edges_:
             accountant.charge(
-                MechanismSpec(name="gaussian", sensitivity=1.0,
-                              noise_scale=noise_scale, steps=1),
+                MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=noise_scale, steps=1),
                 run_id=f"pairwise_edge_{parent}__{child}",
             )
             kp, kc = len(self.levels_[parent]), len(self.levels_[child])
@@ -153,9 +164,7 @@ class PairwiseMarginalGenerator(BaseGenerator):
 
             # Row-normalise into a conditional. A parent level whose row is entirely noise-
             # clipped falls back to uniform rather than producing NaNs downstream.
-            self.cond_[(parent, child)] = np.vstack([
-                self._normalise(joint[i]) for i in range(kp)
-            ])
+            self.cond_[(parent, child)] = np.vstack([self._normalise(joint[i]) for i in range(kp)])
 
         self.is_fitted = True
 

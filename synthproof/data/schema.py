@@ -31,10 +31,10 @@ class ColumnSpec:
     """Public declaration for one column."""
 
     name: str
-    kind: str                                    # NUMERICAL or CATEGORICAL
-    lower: Optional[float] = None                # public clip bound (numerical)
-    upper: Optional[float] = None                # public clip bound (numerical)
-    categories: Optional[List[Any]] = None       # public domain (categorical), if known
+    kind: str  # NUMERICAL or CATEGORICAL
+    lower: Optional[float] = None  # public clip bound (numerical)
+    upper: Optional[float] = None  # public clip bound (numerical)
+    categories: Optional[List[Any]] = None  # public domain (categorical), if known
 
     def __post_init__(self):
         if self.kind not in (NUMERICAL, CATEGORICAL):
@@ -130,8 +130,7 @@ class Schema:
     # ------------------------------------------------------------------ inference
 
     @classmethod
-    def infer_nonprivate(cls, df: pd.DataFrame,
-                         max_categories: int = 20) -> "Schema":
+    def infer_nonprivate(cls, df: pd.DataFrame, max_categories: int = 20) -> "Schema":
         """Infers a schema BY READING THE DATA. Not safe for a real release.
 
         Every bound this produces is a function of the sensitive table, so publishing a
@@ -150,6 +149,9 @@ class Schema:
                     hi = lo + 1.0
                 specs.append(ColumnSpec(name=col, kind=NUMERICAL, lower=lo, upper=hi))
             else:
-                specs.append(ColumnSpec(name=col, kind=CATEGORICAL,
-                                        categories=sorted(map(str, series.unique()))))
+                specs.append(
+                    ColumnSpec(
+                        name=col, kind=CATEGORICAL, categories=sorted(map(str, series.unique()))
+                    )
+                )
         return cls(columns=specs)

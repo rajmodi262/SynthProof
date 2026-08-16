@@ -21,6 +21,7 @@ from synthproof.generators.leaky import LeakyGenerator
 
 # ------------------------------------------------------------------ the estimator
 
+
 def test_chance_level_evidence_certifies_nothing():
     """Half the guesses correct is exactly what a perfectly private mechanism produces."""
     assert epsilon_lower_bound(30, 60) == 0.0
@@ -61,6 +62,7 @@ def test_tiny_samples_cannot_certify_anything():
 def test_the_ceiling_matches_its_closed_form():
     """eps_max = log(a/(1-a)) with a = alpha^(1/r). Guards against a silent regression."""
     import math
+
     for r in (10, 60, 500):
         a = 0.05 ** (1.0 / r)
         assert max_provable_epsilon(r) == pytest.approx(math.log(a / (1 - a)), rel=1e-9)
@@ -90,11 +92,12 @@ def test_delta_is_absorbed_conservatively():
 
 
 def test_delta_correction_warns_only_when_it_matters():
-    assert default_delta_correction(60, 1e-5) is None       # negligible
-    assert default_delta_correction(60, 1e-3) is not None   # consumes >10% of alpha
+    assert default_delta_correction(60, 1e-5) is None  # negligible
+    assert default_delta_correction(60, 1e-3) is not None  # consumes >10% of alpha
 
 
 # ------------------------------------------------------------------ planting
+
 
 def test_inclusion_is_randomised_and_only_included_canaries_are_planted():
     ds = TabularDataset.create_synthetic_toy(num_rows=500)
@@ -127,6 +130,7 @@ def test_constructor_validates_its_arguments():
 
 
 # ------------------------------------------------------------------ controls
+
 
 def test_positive_control_a_verbatim_release_is_detected():
     """THE control. An auditor that cannot see this has no standing to report a null."""

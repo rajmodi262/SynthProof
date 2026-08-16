@@ -38,6 +38,7 @@ def config_hash(config: Dict[str, Any]) -> str:
     Sorted keys and a fixed separator, so the same configuration always hashes the same way
     regardless of dict ordering. Floats are formatted rather than repr'd so 1.0 and 1 agree.
     """
+
     def norm(v):
         # bool before int: bool IS an int in Python, and True would otherwise hash as "1",
         # colliding with the integer 1.
@@ -142,7 +143,7 @@ class GridCheckpoint:
             with os.fdopen(fd, "w", encoding="utf-8") as f:
                 json.dump(record.to_dict(), f, indent=2, default=str)
                 f.flush()
-                os.fsync(f.fileno())   # the rename is atomic; the CONTENTS must be on disk first
+                os.fsync(f.fileno())  # the rename is atomic; the CONTENTS must be on disk first
             os.replace(tmp, path)
         except BaseException:
             # Never leave a stray temp file that a later glob might pick up.

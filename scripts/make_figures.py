@@ -33,22 +33,22 @@ AUDITED = "#C2622A"
 NEUTRAL = "#5C6472"
 GOOD = "#1D7A4C"
 BAD = "#B2382F"
-MECH_COLORS = {"independent": NEUTRAL, "pairwise": PROVED, "aim": AUDITED,
-               "copula": "#7C8093"}
+MECH_COLORS = {"independent": NEUTRAL, "pairwise": PROVED, "aim": AUDITED, "copula": "#7C8093"}
 
-plt.rcParams.update({
-    "figure.dpi": 150,
-    "savefig.dpi": 300,
-    "savefig.bbox": "tight",
-    "font.size": 9,
-    "axes.grid": True,
-    "grid.alpha": 0.25,
-    "grid.linewidth": 0.5,
-    "axes.spines.top": False,
-    "axes.spines.right": False,
-    "legend.frameon": False,
-})
-
+plt.rcParams.update(
+    {
+        "figure.dpi": 150,
+        "savefig.dpi": 300,
+        "savefig.bbox": "tight",
+        "font.size": 9,
+        "axes.grid": True,
+        "grid.alpha": 0.25,
+        "grid.linewidth": 0.5,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+        "legend.frameon": False,
+    }
+)
 
 
 def _eps_axis(ax, eps_values):
@@ -74,13 +74,14 @@ def _load(name: str):
 
 def _save(fig, name: str):
     OUT.mkdir(parents=True, exist_ok=True)
-    for ext in ("png", "pdf"):        # png to read, pdf to typeset
+    for ext in ("png", "pdf"):  # png to read, pdf to typeset
         fig.savefig(OUT / f"{name}.{ext}")
     plt.close(fig)
     print(f"  wrote {name}.png / .pdf")
 
 
 # --------------------------------------------------------------------------- figures
+
 
 def fig_structure_frontier(h1):
     """Correlation error vs epsilon, per mechanism, with bootstrapped CI bands.
@@ -91,8 +92,9 @@ def fig_structure_frontier(h1):
     fig, ax = plt.subplots(figsize=(5.2, 3.4))
 
     for mech in sorted({c["mechanism"] for c in h1["cells"]}):
-        cells = sorted((c for c in h1["cells"] if c["mechanism"] == mech),
-                       key=lambda c: c["target_eps"])
+        cells = sorted(
+            (c for c in h1["cells"] if c["mechanism"] == mech), key=lambda c: c["target_eps"]
+        )
         eps = [c["target_eps"] for c in cells]
         mean = [c["correlation_error"]["mean"] for c in cells]
         lo = [c["correlation_error"]["lo"] for c in cells]
@@ -115,12 +117,21 @@ def fig_utility_frontier(h1):
 
     trtr = h1["cells"][0]["trtr_f1"]["mean"]
     ax.axhline(trtr, color=NEUTRAL, ls="--", lw=1.2)
-    ax.text(0.98, trtr, f" TRTR ceiling {trtr:.3f}", transform=ax.get_yaxis_transform(),
-            ha="right", va="bottom", fontsize=8, color=NEUTRAL)
+    ax.text(
+        0.98,
+        trtr,
+        f" TRTR ceiling {trtr:.3f}",
+        transform=ax.get_yaxis_transform(),
+        ha="right",
+        va="bottom",
+        fontsize=8,
+        color=NEUTRAL,
+    )
 
     for mech in sorted({c["mechanism"] for c in h1["cells"]}):
-        cells = sorted((c for c in h1["cells"] if c["mechanism"] == mech),
-                       key=lambda c: c["target_eps"])
+        cells = sorted(
+            (c for c in h1["cells"] if c["mechanism"] == mech), key=lambda c: c["target_eps"]
+        )
         eps = [c["target_eps"] for c in cells]
         mean = [c["tstr_f1"]["mean"] for c in cells]
         lo = [c["tstr_f1"]["lo"] for c in cells]
@@ -141,8 +152,9 @@ def fig_proved_vs_audited(h1, floor):
     """The project's central picture: the two bounds, and why the gap is uninformative."""
     fig, ax = plt.subplots(figsize=(5.6, 3.4))
 
-    cells = sorted((c for c in h1["cells"] if c["mechanism"] == "pairwise"),
-                   key=lambda c: c["target_eps"])
+    cells = sorted(
+        (c for c in h1["cells"] if c["mechanism"] == "pairwise"), key=lambda c: c["target_eps"]
+    )
     eps = [c["target_eps"] for c in cells]
     proved = [c["proved_eps"]["mean"] for c in cells]
     audited = [c["audited_eps"]["mean"] for c in cells]
@@ -155,13 +167,24 @@ def fig_proved_vs_audited(h1, floor):
     # this line no matter how badly the mechanism leaked.
     if floor:
         m = 60
-        ceilings = {int(k): v for k, v in
-                    zip([10, 25, 50, 100, 200, 400, 800],
-                        [0.81, 1.84, 2.57, 3.28, 3.98, 4.68, 5.38], strict=False)}
+        ceilings = {
+            int(k): v
+            for k, v in zip(
+                [10, 25, 50, 100, 200, 400, 800],
+                [0.81, 1.84, 2.57, 3.28, 3.98, 4.68, 5.38],
+                strict=False,
+            )
+        }
         ceiling = np.interp(m, sorted(ceilings), [ceilings[k] for k in sorted(ceilings)])
         ax.axhline(ceiling, color=BAD, ls=":", lw=1.4)
-        ax.text(eps[0], ceiling, f" audit ceiling at m={m} (ε≈{ceiling:.2f})",
-                fontsize=8, color=BAD, va="bottom")
+        ax.text(
+            eps[0],
+            ceiling,
+            f" audit ceiling at m={m} (ε≈{ceiling:.2f})",
+            fontsize=8,
+            color=BAD,
+            va="bottom",
+        )
 
     _eps_axis(ax, eps)
     ax.set_xlabel("target ε (log scale)")
@@ -178,8 +201,7 @@ def fig_detection_floor(floor):
     counts = sorted({c["num_canaries"] for c in cells})
     grid = np.full((len(leaks), len(counts)), np.nan)
     for c in cells:
-        grid[leaks.index(c["leak_fraction"]), counts.index(c["num_canaries"])] = \
-            c["detection_rate"]
+        grid[leaks.index(c["leak_fraction"]), counts.index(c["num_canaries"])] = c["detection_rate"]
 
     fig, ax = plt.subplots(figsize=(5.2, 3.0))
     im = ax.imshow(grid, cmap="RdYlGn", vmin=0, vmax=1, aspect="auto", origin="lower")
@@ -193,8 +215,9 @@ def fig_detection_floor(floor):
     for i in range(len(leaks)):
         for j in range(len(counts)):
             if np.isfinite(grid[i, j]):
-                ax.text(j, i, f"{grid[i, j]:.1f}", ha="center", va="center", fontsize=7,
-                        color="black")
+                ax.text(
+                    j, i, f"{grid[i, j]:.1f}", ha="center", va="center", fontsize=7, color="black"
+                )
 
     fig.colorbar(im, ax=ax, label="fraction of seeds detecting", shrink=0.85)
     _save(fig, "fig-detection-floor")
@@ -247,8 +270,15 @@ def fig_calibration():
             for t in targets:
                 scale = calibrate_noise_scale(t, 1e-5, name, 1.0, steps)
                 got.append(epsilon_for_noise_scale(scale, 1e-5, name, 1.0, steps))
-            ax.plot(targets, got, marker=marker, ms=3.5, lw=1.2, alpha=alpha,
-                    label=f"{name}, {steps} step{'s' if steps > 1 else ''}")
+            ax.plot(
+                targets,
+                got,
+                marker=marker,
+                ms=3.5,
+                lw=1.2,
+                alpha=alpha,
+                label=f"{name}, {steps} step{'s' if steps > 1 else ''}",
+            )
 
     lim = [0.2, 18]
     ax.plot(lim, lim, color=NEUTRAL, ls="--", lw=1.0, zorder=0)
@@ -276,12 +306,25 @@ def fig_h2_subgroups(h2):
         acc = [g["mean_accuracy"] for g in groups]
         ax.plot(shares, acc, marker="o", ms=5, lw=1.4, label=f"ε = {c['target_eps']}")
         for g in groups:
-            ax.annotate(g["subgroup"], (g["population_share"], g["mean_accuracy"]),
-                        fontsize=6.5, xytext=(3, 4), textcoords="offset points")
+            ax.annotate(
+                g["subgroup"],
+                (g["population_share"], g["mean_accuracy"]),
+                fontsize=6.5,
+                xytext=(3, 4),
+                textcoords="offset points",
+            )
 
     ax.axhline(0.5, color=NEUTRAL, ls="--", lw=1.0)
-    ax.text(0.98, 0.5, " chance ", transform=ax.get_yaxis_transform(), ha="right",
-            va="bottom", fontsize=8, color=NEUTRAL)
+    ax.text(
+        0.98,
+        0.5,
+        " chance ",
+        transform=ax.get_yaxis_transform(),
+        ha="right",
+        va="bottom",
+        fontsize=8,
+        color=NEUTRAL,
+    )
     ax.set_xscale("log")
     ax.set_xlabel("subgroup share of population (log scale)")
     ax.set_ylabel("membership attack accuracy")
@@ -292,22 +335,45 @@ def fig_h2_subgroups(h2):
 
 def fig_attack_comparison(h1):
     """The two membership attacks side by side across epsilon."""
-    cells = sorted((c for c in h1["cells"] if c["mechanism"] == "pairwise"),
-                   key=lambda c: c["target_eps"])
+    cells = sorted(
+        (c for c in h1["cells"] if c["mechanism"] == "pairwise"), key=lambda c: c["target_eps"]
+    )
     if not cells or "mia_auc" not in cells[0]:
         return
 
     fig, ax = plt.subplots(figsize=(5.0, 3.2))
     eps = [c["target_eps"] for c in cells]
-    ax.plot(eps, [c["mia_auc"]["mean"] for c in cells], marker="o", ms=4,
-            color=PROVED, lw=1.6, label="nearest-neighbour MIA")
+    ax.plot(
+        eps,
+        [c["mia_auc"]["mean"] for c in cells],
+        marker="o",
+        ms=4,
+        color=PROVED,
+        lw=1.6,
+        label="nearest-neighbour MIA",
+    )
     if "domias_auc" in cells[0]:
-        ax.plot(eps, [c["domias_auc"]["mean"] for c in cells], marker="s", ms=4,
-                color=AUDITED, lw=1.6, label="DOMIAS (density ratio)")
+        ax.plot(
+            eps,
+            [c["domias_auc"]["mean"] for c in cells],
+            marker="s",
+            ms=4,
+            color=AUDITED,
+            lw=1.6,
+            label="DOMIAS (density ratio)",
+        )
 
     ax.axhline(0.5, color=NEUTRAL, ls="--", lw=1.0)
-    ax.text(0.98, 0.5, " chance ", transform=ax.get_yaxis_transform(), ha="right",
-            va="bottom", fontsize=8, color=NEUTRAL)
+    ax.text(
+        0.98,
+        0.5,
+        " chance ",
+        transform=ax.get_yaxis_transform(),
+        ha="right",
+        va="bottom",
+        fontsize=8,
+        color=NEUTRAL,
+    )
     _eps_axis(ax, eps)
     ax.set_xlabel("target ε (log scale)")
     ax.set_ylabel("attack AUC")
