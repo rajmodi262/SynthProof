@@ -158,7 +158,12 @@ def test_calibration_never_overspends(target, k, name):
     """
     scale = calibrate_noise_scale(target, 1e-5, name, 1.0, k)
     achieved = epsilon_for_noise_scale(scale, 1e-5, name, 1.0, k)
-    assert achieved <= target * 1.001, f"overspend: asked {target}, got {achieved}"
+    # No slack. The bisection returns the conservative end of a bracket that converges to
+    # 1e-4 relative width, so the achieved epsilon is genuinely at or below target -- the
+    # worst ratio over 56 hand-checked configurations is 0.99999839. The previous 0.1%
+    # tolerance was wider than the bracket itself, so returning the OPTIMISTIC end of the
+    # bracket still passed; a mutation probe caught exactly that.
+    assert achieved <= target, f"overspend: asked {target}, got {achieved}"
 
 
 @given(target=targets, k=steps, name=mechanisms)

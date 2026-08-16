@@ -111,3 +111,29 @@ def test_discrete_samplers_are_reproducible():
     c = sample_discrete_laplace(scale=2.0, size=50, seed=99)
     d = sample_discrete_laplace(scale=2.0, size=50, seed=99)
     assert np.array_equal(c, d)
+
+
+def test_the_accountant_rejects_an_unknown_mechanism_by_name():
+    """REGRESSION: unknown mechanism names were once accounted as Gaussian, so a typo or a new
+    generator produced a plausible epsilon for a mechanism nobody had analysed.
+
+    A test for this existed at the experiment layer but not at the accountant's own, so a
+    mutation restoring the silent-Gaussian fallback survived the accounting suite.
+    """
+    from synthproof.accounting.accountant import Accountant
+    from synthproof.accounting.types import MechanismSpec
+
+    acc = Accountant(budget_eps=10.0, budget_delta=1e-5)
+    with pytest.raises(ValueError, match="Unknown mechanism"):
+        acc.charge(MechanismSpec(name="exponential", sensitivity=1.0, noise_scale=1.0, steps=1))
+
+
+def test_zero_noise_never_composes_to_a_finite_epsilon():
+    """A mechanism that adds no noise provides no protection, and must not be reported as if
+    it did. Charged as NonPrivateDpEvent so the total stays infinite."""
+    from synthproof.accounting.accountant import Accountant
+    from synthproof.accounting.types import MechanismSpec
+
+    acc = Accountant(budget_eps=float("inf"), budget_delta=1e-5)
+    acc.charge(MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=0.0, steps=1))
+    assert acc.total() == float("inf")

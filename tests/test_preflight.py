@@ -110,8 +110,18 @@ def test_two_tables_with_identical_schemas_get_identical_verdicts():
 
 
 def test_a_table_below_the_row_floor_is_refused():
-    findings = preflight(_healthy(), num_rows=MIN_ROWS - 1)
-    assert "R1" in _codes(findings)
+    """Concrete row count, deliberately NOT `MIN_ROWS - 1`.
+
+    Deriving the input from the constant under test makes the test invariant to that
+    constant: setting MIN_ROWS to 0 left this green, because the input moved with it. A
+    mutation probe caught it. The companion test below pins the constant itself.
+    """
+    assert "R1" in _codes(preflight(_healthy(), num_rows=25))
+
+
+def test_the_row_floor_is_set_somewhere_defensible():
+    """Pins the constant, so weakening or removing the floor fails here."""
+    assert 100 <= MIN_ROWS <= 5000, f"MIN_ROWS={MIN_ROWS} is outside any defensible range"
 
 
 def test_a_table_at_the_row_floor_is_allowed():
