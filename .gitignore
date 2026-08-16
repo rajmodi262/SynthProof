@@ -72,3 +72,6 @@ results/acs/h1_cells/
 results/acs/h2_cells/
 # folktables downloads ACS microdata here; ~200 MB, re-fetchable
 data/acs/
+
+# vitest output
+web/coverage/
