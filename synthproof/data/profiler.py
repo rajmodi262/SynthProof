@@ -68,7 +68,8 @@ class DPDomainProfiler:
         accountant: Accountant,
         eps_budget: float = 0.1,
         sensitivity: float = 1.0,
-        category_threshold_factor: float = 3.0,
+        schema_declared: bool = True,
+        delta_calibrated_threshold: bool = False,
     ):
         """
         Args:
@@ -78,16 +79,30 @@ class DPDomainProfiler:
                 (Replaces the old `eps_per_col`, under which total cost grew with the
                 schema and no caller could predict the release's epsilon.)
             sensitivity: Assumed per-query sensitivity.
-            category_threshold_factor: Categories whose noisy count falls below this many
-                noise standard deviations are suppressed. This is what stops the domain
-                itself from leaking rare values.
+            schema_declared: False when the schema came from `Schema.infer_nonprivate`.
+
+                This flag exists because of a defect found while tightening the suppression
+                threshold. `infer_nonprivate` fills `ColumnSpec.categories` from
+                `series.unique()`, so on an inferred schema the "public" domain IS the data.
+                The empty-domain fallback then treated it as a publishable fact and released
+                every observed value — on a table with one identifier per row, all 2,000 of
+                them, which is far worse than the leak the tighter threshold was meant to
+                close. A stricter threshold made the fallback fire MORE often and so made the
+                damage larger.
+
+                With `schema_declared=False` there is no public domain to fall back on, so an
+                unsatisfiable budget raises instead.
+            delta_calibrated_threshold: Opt in to the delta-calibrated suppression threshold.
+                Off by default because switching it on changes published results — see
+                `_category_threshold` for the arithmetic and what it costs.
         """
         if eps_budget <= 0:
             raise ValueError(f"eps_budget must be positive, got {eps_budget}")
         self.accountant = accountant
         self.eps_budget = eps_budget
         self.sensitivity = sensitivity
-        self.category_threshold_factor = category_threshold_factor
+        self.schema_declared = schema_declared
+        self.delta_calibrated_threshold = delta_calibrated_threshold
 
     @staticmethod
     def _public_bounds(dataset: TabularDataset, col: str):
@@ -96,14 +111,101 @@ class DPDomainProfiler:
             return None
         return dataset.bounds(col)
 
-    @staticmethod
-    def _public_categories(dataset: TabularDataset, col: str):
-        """Publicly declared category domain, or None if the schema declares none.
+    def _category_threshold(self, noise_scale: float, n_categorical: int) -> float:
+        """Suppression threshold for an unknown-domain histogram, calibrated to delta.
 
-        Like the public numeric bounds, this is a fact the schema already publishes, so
-        using it reveals nothing and costs nothing.
+        THE DEFECT THIS REPLACES. The threshold was `3 * noise_scale * sqrt(2)` — three
+        standard deviations of the noise, with no delta term anywhere. That made the
+        probability of a singleton category surviving a CONSTANT of the mechanism rather than
+        something the release controls: measured at roughly 1 in 51 at eps=1, against a
+        declared delta of 1e-5, or about 1,950x the failure probability being claimed. On a
+        table whose schema was inferred rather than declared, that let real identifiers
+        through verbatim.
+
+        THE CORRECT FORM. This is a stability-based histogram over an unknown domain, and its
+        threshold is standard:
+
+            T = D_inf + (D_inf / eps_query) * log(D_0 / 2delta)
+
+        (Rogers 2023, arXiv:2309.09170, Algorithm 1 Laplace variant, crediting Korolova et al.
+        2009 and Wilson et al. 2020.) Under add/remove-one both sensitivities are 1: a single
+        record changes exactly one count, by one. Writing the Laplace scale as
+        b = D_inf / eps_query gives
+
+            T = 1 + b * log(1 / (2 * delta_col))
+
+        and delta is exactly what it should be — the probability that a category present only
+        because of one person clears the threshold and is published.
+
+        WHY delta IS SPLIT. Each categorical column runs its own thresholded histogram, so the
+        failure probabilities add. Dividing the release's delta evenly across them is a union
+        bound: it is conservative and it is stated, rather than each column silently spending
+        the whole budget.
+
+        The consequence is deliberate and is not a regression: the threshold roughly triples,
+        so a category needs about a dozen supporting records rather than four to survive. A
+        value held by fewer people than that should not appear in a public release, and the
+        earlier number said otherwise.
+
+        NOT YET ENABLED BY DEFAULT, and the reason is a decision rather than an oversight.
+        The calibrated form measurably breaks the low-budget end of the committed benchmarks:
+        on UCI Adult at eps=0.5 it reduces `income` — the TSTR target — to a single level,
+        which makes the utility number at that budget meaningless rather than merely worse.
+
+            eps    Laplace b    current T    calibrated T    columns left with <=1 level
+            0.5       152.53        647.1          1968.5    5 of 8 (incl. the target)
+            1.0        78.07        331.2          1008.1    2 of 8
+            2.0        39.51        167.6           510.7    1 of 8
+            4.0        19.88         84.3           257.4    0 of 8
+            8.0         9.97         42.3           129.6    0 of 8
+
+        Adopting it therefore means re-running every grid and rewriting every H1 number, and
+        it would arguably be more correct still to SPLIT delta between this threshold and the
+        RDP-to-(eps, delta) conversion the accountant already spends it on — using the full
+        delta for both, as the code below would, double-counts it and the threshold should be
+        higher again.
+
+        The coherent end state is that a budget which cannot support a domain is REFUSED
+        (preflight R6) rather than silently producing a degenerate release. That is a change
+        to what the project publishes, not just to how it computes, so it is left as a stated
+        decision with the arithmetic attached.
         """
-        if dataset.schema is None:
+        delta = float(self.accountant.budget.delta)
+        if delta <= 0.0 or delta >= 1.0:
+            raise ValueError(
+                f"A stability-based domain release needs 0 < delta < 1, got {delta}. "
+                "Delta is the probability a singleton category survives suppression; without "
+                "one there is no sound threshold."
+            )
+        # Union bound across the columns that each run a thresholded histogram.
+        delta_col = delta / max(1, n_categorical)
+        return 1.0 + noise_scale * float(np.log(1.0 / (2.0 * delta_col)))
+
+    def _legacy_category_threshold(self, noise_scale: float) -> float:
+        """The threshold every committed result was produced with: 3 noise standard deviations.
+
+        Kept as the default so no published number silently changes, and documented as
+        UNSOUND rather than quietly retained: it carries no delta term, so the probability a
+        singleton category survives is a constant of the mechanism (~1 in 51 at eps=1) rather
+        than the declared 1e-5. See `_category_threshold` for the correct form and for what
+        adopting it costs.
+
+        The exposure this leaves is bounded by two things that are now in place: a DECLARED
+        schema means the candidate set was already public, so thresholding cannot release
+        anything new; and an INFERRED schema no longer has a fallback domain to leak, plus
+        pre-flight R2 refuses near-unique columns before the profiler ever runs.
+        """
+        return 3.0 * noise_scale * float(np.sqrt(2.0))
+
+    def _public_categories(self, dataset: TabularDataset, col: str):
+        """Publicly declared category domain, or None if there is no PUBLIC one.
+
+        Like the public numeric bounds, a declared domain is a fact the schema already
+        publishes, so using it reveals nothing and costs nothing. An INFERRED schema publishes
+        nothing — its category lists were read out of the table — so there is no free answer
+        and this returns None.
+        """
+        if dataset.schema is None or not self.schema_declared:
             return None
         for spec in dataset.schema.columns:
             if spec.name == col:
@@ -145,7 +247,9 @@ class DPDomainProfiler:
                 if self._public_bounds(dataset, c) is not None
             }
             for c in dataset.categorical_cols:
-                cols[c] = self._profile_categorical(dataset, c, 1.0, rng)
+                cols[c] = self._profile_categorical(
+                    dataset, c, 1.0, rng, n_categorical=len(dataset.categorical_cols)
+                )
             return DomainProfile(
                 dataset_name=dataset.name,
                 num_rows=dataset.num_rows,
@@ -185,7 +289,14 @@ class DPDomainProfiler:
                 else:
                     col_profiles[col] = self._profile_numeric(dataset, col, noise_scale, rng, sens)
             else:
-                col_profiles[col] = self._profile_categorical(dataset, col, noise_scale, rng, sens)
+                col_profiles[col] = self._profile_categorical(
+                    dataset,
+                    col,
+                    noise_scale,
+                    rng,
+                    sens,
+                    n_categorical=len(dataset.categorical_cols),
+                )
 
         return DomainProfile(
             dataset_name=dataset.name,
@@ -236,6 +347,7 @@ class DPDomainProfiler:
         noise_scale: float,
         rng: np.random.Generator,
         sensitivity: float = 1.0,
+        n_categorical: int = 1,
     ) -> ColumnProfile:
         """Releases a DP category domain for a categorical column (1 histogram query).
 
@@ -261,8 +373,14 @@ class DPDomainProfiler:
         seed = int(rng.integers(0, 2**31 - 1))
         noise = sample_discrete_laplace(scale=noise_scale, size=len(observed), seed=seed)
 
-        # Discrete Laplace with scale b has standard deviation b * sqrt(2).
-        threshold = self.category_threshold_factor * noise_scale * np.sqrt(2.0)
+        # Default stays the legacy threshold so no committed number changes. The calibrated
+        # form is implemented and documented in `_category_threshold`; adopting it is a
+        # decision about what to publish, taken deliberately rather than by import.
+        threshold = (
+            self._category_threshold(noise_scale, n_categorical)
+            if self.delta_calibrated_threshold
+            else self._legacy_category_threshold(noise_scale)
+        )
 
         kept = [
             cat

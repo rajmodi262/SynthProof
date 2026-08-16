@@ -149,3 +149,83 @@ def test_rare_categories_are_still_suppressed_at_a_usable_budget():
         if "VeryRareCondition" in (prof.columns["diagnosis"].categories or []):
             survived += 1
     assert survived <= 1, f"a singleton category survived in {survived}/20 seeds"
+
+
+# ------------------------------------------------------------------ threshold calibration
+
+
+def test_an_inferred_schema_has_no_public_domain_to_fall_back_on():
+    """REGRESSION (critical): `Schema.infer_nonprivate` fills `categories` from
+    `series.unique()`, so on an inferred schema the "public" domain IS the data. The
+    empty-domain fallback treated it as a publishable fact and released every observed value.
+
+    Found while tightening the suppression threshold, which made the fallback fire MORE often
+    and so made the damage larger: on a 2,000-row table with one identifier per row it went
+    from ~13 identifiers reaching the release to 747.
+    """
+    ds = _clinic(with_schema=False)
+    prof = DPDomainProfiler(
+        accountant=Accountant(budget_eps=1e4, budget_delta=1e-5),
+        eps_budget=0.001,
+        schema_declared=False,
+    )
+    with pytest.raises(InsufficientBudgetError):
+        for seed in range(40):
+            prof.profile(ds, seed=seed)
+
+
+def test_a_declared_schema_still_falls_back_to_its_public_domain():
+    """The flag must not break the sound path: a genuinely declared domain is still free."""
+    ds = _clinic(with_schema=True)
+    prof = DPDomainProfiler(
+        accountant=Accountant(budget_eps=1e4, budget_delta=1e-5),
+        eps_budget=0.001,
+        schema_declared=True,
+    ).profile(ds, seed=0)
+    assert set(prof.columns["diagnosis"].categories) == set(SENSITIVE)
+
+
+def test_the_calibrated_threshold_carries_a_delta_term_and_the_legacy_one_does_not():
+    """The defect in one assertion. The legacy threshold is a fixed multiple of the noise
+    scale, so the probability a singleton survives cannot depend on the declared delta."""
+    import numpy as np
+
+    p = DPDomainProfiler(accountant=Accountant(budget_eps=10.0, budget_delta=1e-5), eps_budget=1.0)
+    legacy = p._legacy_category_threshold(10.0)
+    assert legacy == pytest.approx(3.0 * 10.0 * np.sqrt(2.0))
+
+    tight = DPDomainProfiler(
+        accountant=Accountant(budget_eps=10.0, budget_delta=1e-9), eps_budget=1.0
+    )
+    loose = DPDomainProfiler(
+        accountant=Accountant(budget_eps=10.0, budget_delta=1e-3), eps_budget=1.0
+    )
+    # A smaller delta demands a higher bar; the legacy form cannot express that at all.
+    assert tight._category_threshold(10.0, 5) > loose._category_threshold(10.0, 5)
+    assert tight._category_threshold(10.0, 5) > legacy
+
+
+def test_the_calibrated_threshold_splits_delta_across_categorical_columns():
+    """Each column runs its own thresholded histogram, so the failure probabilities add."""
+    p = DPDomainProfiler(accountant=Accountant(budget_eps=10.0, budget_delta=1e-5), eps_budget=1.0)
+    assert p._category_threshold(10.0, 8) > p._category_threshold(10.0, 1)
+
+
+def test_the_calibrated_threshold_is_off_by_default():
+    """Committed results were produced with the legacy threshold. Switching the default would
+    silently change every published number."""
+    p = DPDomainProfiler(accountant=Accountant(budget_eps=10.0, budget_delta=1e-5), eps_budget=1.0)
+    assert p.delta_calibrated_threshold is False
+
+
+def test_a_zero_delta_is_rejected_by_the_calibrated_threshold():
+    """The Accountant permits delta=0 (pure epsilon-DP), but a stability-based domain release
+    has no sound threshold there: delta IS the probability a singleton survives, so with none
+    to spend the mechanism cannot publish an unknown domain at all. It must say so rather than
+    divide by zero.
+
+    delta=1.0 is rejected earlier, by the Accountant itself, so it cannot reach this code.
+    """
+    p = DPDomainProfiler(accountant=Accountant(budget_eps=10.0, budget_delta=0.0), eps_budget=1.0)
+    with pytest.raises(ValueError, match="0 < delta < 1"):
+        p._category_threshold(10.0, 3)
