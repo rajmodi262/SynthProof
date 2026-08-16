@@ -1,21 +1,21 @@
-"""Unit tests for synthetic tabular generators (GaussianCopula, AIM)."""
+"""Unit tests for synthetic tabular generators (per-column moments, AIM)."""
 
 import pandas as pd
 
 from synthproof.accounting.accountant import Accountant
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
-from synthproof.generators.copula import GaussianCopulaGenerator
 from synthproof.generators.independent import IndependentMarginalGenerator
+from synthproof.generators.moments import GaussianMomentGenerator
 
 
-def test_copula_generator_fit_and_generate():
+def test_moment_generator_fit_and_generate():
     ds = TabularDataset.create_synthetic_toy(num_rows=100)
     acc = Accountant(budget_eps=10.0, budget_delta=1e-5)
     profiler = DPDomainProfiler(accountant=acc, eps_budget=0.5)
     profile = profiler.profile(ds)
 
-    gen = GaussianCopulaGenerator(seed=42)
+    gen = GaussianMomentGenerator(seed=42)
     initial_spends = len(acc.spends)
     gen.fit(ds, profile, acc, target_eps=1.0)
 

@@ -22,18 +22,18 @@ from synthproof.data.profiler import DPDomainProfiler
 from synthproof.evaluate.utility import UtilityEvaluator
 from synthproof.frontier.checkpoint import run_with_checkpoints
 from synthproof.generators.aim import AIMGenerator, mbi_available
-from synthproof.generators.copula import GaussianCopulaGenerator
 from synthproof.generators.independent import IndependentMarginalGenerator
+from synthproof.generators.moments import GaussianMomentGenerator
 from synthproof.generators.pairwise import PairwiseMarginalGenerator
 
 DEFAULT_SEEDS = (0, 1, 2, 3, 4)
 DEFAULT_EPS_GRID = (0.5, 1.0, 2.0, 4.0, 8.0)
 
 # Mechanism families. "independent" and "pairwise" differ in model class, which is what H1
-# compares; "copula" is a second independent-marginal implementation kept as a control.
+# compares; "moments" is a second independent-marginal implementation kept as a control.
 MECHANISMS: Dict[str, type] = {
     "independent": IndependentMarginalGenerator,
-    "copula": GaussianCopulaGenerator,
+    "moments": GaussianMomentGenerator,
     "pairwise": PairwiseMarginalGenerator,
 }
 

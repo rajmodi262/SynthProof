@@ -128,11 +128,13 @@ MECHANISM_INFO = {
         "cross-column structure by construction — the ablation baseline.",
         "implemented": True,
     },
-    "copula": {
+    "moments": {
         "label": "Per-column Gaussian",
         "family": "baseline",
-        "blurb": "DP-noised per-column moments. Despite the class name this is NOT a "
-        "Gaussian copula: no covariance, no rank transform, no correlation.",
+        "blurb": "DP-noised per-column moments: a mean and standard deviation per numeric "
+        "column, a histogram per categorical one, every column sampled independently. No "
+        "covariance and no rank transform, so no cross-column correlation survives. Kept as "
+        "a second independent-marginal control.",
         "implemented": True,
     },
     "pairwise": {

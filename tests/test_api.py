@@ -75,7 +75,7 @@ def test_health_reports_real_ledger_state():
 def test_mechanisms_marks_availability_rather_than_hiding_it():
     data = client.get("/api/mechanisms").json()
     keys = {m["key"] for m in data["mechanisms"]}
-    assert {"independent", "copula", "pairwise", "aim"} <= keys
+    assert {"independent", "moments", "pairwise", "aim"} <= keys
 
     # Every mechanism carries an availability flag, and an unavailable one must explain why
     # instead of silently disappearing from the list.

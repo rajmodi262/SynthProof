@@ -4,7 +4,7 @@ This module is now a thin exporter over `frontier.experiment.run_cell`. It used 
 own copy of the plant/profile/fit/audit/evaluate loop, which drifted from the canonical one in
 three ways that all corrupted published numbers:
 
-  * it only ever instantiated `IndependentMarginalGenerator` and `GaussianCopulaGenerator`,
+  * it only ever instantiated `IndependentMarginalGenerator` and `GaussianMomentGenerator`,
     while labelling the former "AIM_Marginal_Generator" — so the CLI, the API and the web
     console all reported AIM for a run of independent 1-D histograms. Real AIM and the
     pairwise generator were unreachable from any user-facing entry point;

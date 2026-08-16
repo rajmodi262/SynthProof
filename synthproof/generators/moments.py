@@ -1,9 +1,17 @@
 """Per-column independent Gaussian generator with DP-noised moments.
 
-NOTE ON THE NAME: despite `GaussianCopulaGenerator`, this does NOT implement a Gaussian
-copula. It estimates no covariance matrix and applies no rank/Gaussianisation transform,
-so it preserves no cross-column correlation. Kept as a second honest baseline until a real
-copula lands. See brutal_project_audit.md, finding F6.
+Fits a mean and standard deviation per numeric column and a histogram per categorical one,
+then samples every column independently. It estimates no covariance matrix and applies no
+rank or Gaussianisation transform, so it preserves no cross-column correlation at all.
+
+THE NAME. This was `GaussianCopulaGenerator` in `copula.py`, registered as `"copula"`, and it
+is not a copula and never was — a copula is precisely the dependence structure this omits.
+The docstring had said so since audit finding F6, which made the documentation honest and
+left the identifier lying: a reader scanning the registry, the API's mechanism list or a
+figure legend saw "copula" and had no reason to open the file. Standing rule 4 is to name
+things what they are, so the class, module and registry key now say `moments`.
+
+No committed result referenced the old key, so nothing published changes.
 """
 
 import numpy as np
@@ -18,7 +26,7 @@ from synthproof.data.profiler import DomainProfile
 from synthproof.generators.base import BaseGenerator
 
 
-class GaussianCopulaGenerator(BaseGenerator):
+class GaussianMomentGenerator(BaseGenerator):
     """Estimates per-column moments and category histograms under a calibrated DP budget."""
 
     def __init__(self, seed: int = 42):
@@ -65,7 +73,7 @@ class GaussianCopulaGenerator(BaseGenerator):
     def _fit_numeric(self, dataset, profile, col, noise_scale, seed, accountant):
         accountant.charge(
             MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=noise_scale, steps=2),
-            run_id=f"copula_moments_{col}",
+            run_id=f"moments_mean_std_{col}",
         )
 
         col_min = profile.columns[col].min_val
@@ -92,7 +100,7 @@ class GaussianCopulaGenerator(BaseGenerator):
     def _fit_categorical(self, dataset, profile, col, noise_scale, seed, accountant):
         accountant.charge(
             MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=noise_scale, steps=1),
-            run_id=f"copula_hist_{col}",
+            run_id=f"moments_hist_{col}",
         )
 
         cats = profile.columns[col].categories

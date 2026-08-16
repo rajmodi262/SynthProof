@@ -33,7 +33,7 @@ AUDITED = "#C2622A"
 NEUTRAL = "#5C6472"
 GOOD = "#1D7A4C"
 BAD = "#B2382F"
-MECH_COLORS = {"independent": NEUTRAL, "pairwise": PROVED, "aim": AUDITED, "copula": "#7C8093"}
+MECH_COLORS = {"independent": NEUTRAL, "pairwise": PROVED, "aim": AUDITED, "moments": "#7C8093"}
 
 plt.rcParams.update(
     {
