@@ -17,14 +17,16 @@ from synthproof.ledger.types import LedgerEntry
 
 class LedgerVerificationError(Exception):
     """Raised when ledger tamper verification fails."""
+
     pass
 
 
 class Ledger:
     """Append-only store with SHA-256 hash chaining and Ed25519 signature checks."""
 
-    def __init__(self, db_path: str = ":memory:",
-                 private_key: Optional[ed25519.Ed25519PrivateKey] = None):
+    def __init__(
+        self, db_path: str = ":memory:", private_key: Optional[ed25519.Ed25519PrivateKey] = None
+    ):
         self.db_path = db_path
         self._private_key = private_key or ed25519.Ed25519PrivateKey.generate()
         self._public_key = self._private_key.public_key()
@@ -63,9 +65,64 @@ class Ledger:
                 signature TEXT NOT NULL
             )
         """)
+        # SIGNED HEAD — what makes this ledger actually append-only.
+        #
+        # Hash chaining alone detects modification, insertion and reordering, but NOT
+        # truncation: deleting the last k entries leaves a shorter, perfectly valid chain, so
+        # an operator who overspends can simply delete the entries that record it. Verified:
+        # before this table existed, dropping the final two entries left verify() == True.
+        #
+        # The head commits to (entry_count, tip_hash) and is signed, so shortening the chain
+        # requires forging a signature over the new length.
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS ledger_head (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                entry_count INTEGER NOT NULL,
+                tip_hash TEXT NOT NULL,
+                signature TEXT NOT NULL
+            )
+        """)
         conn.commit()
         if not self._conn:
             conn.close()
+
+    # ------------------------------------------------------------------ signed head
+
+    @staticmethod
+    def _head_bytes(entry_count: int, tip_hash: str) -> bytes:
+        """Canonical bytes committing to the chain's length and tip."""
+        return f"synthproof-ledger-head\x1f{entry_count}\x1f{tip_hash}".encode("utf-8")
+
+    def _write_head(self, conn: sqlite3.Connection, entry_count: int, tip_hash: str) -> None:
+        sig = self._private_key.sign(self._head_bytes(entry_count, tip_hash)).hex()
+        conn.execute(
+            "INSERT INTO ledger_head (id, entry_count, tip_hash, signature) VALUES (1, ?, ?, ?) "
+            "ON CONFLICT(id) DO UPDATE SET entry_count=excluded.entry_count, "
+            "tip_hash=excluded.tip_hash, signature=excluded.signature",
+            (entry_count, tip_hash, sig),
+        )
+
+    def _verify_head(self, conn: sqlite3.Connection, entry_count: int, tip_hash: str) -> str:
+        """Returns '' when the head is valid, else a human-readable reason."""
+        row = conn.execute("SELECT * FROM ledger_head WHERE id = 1").fetchone()
+        if row is None:
+            if entry_count == 0:
+                return ""  # an empty ledger has nothing to commit to
+            return "no signed head (ledger predates head signing, or the head was deleted)"
+        if row["entry_count"] != entry_count:
+            return (
+                f"entry count mismatch: head commits to {row['entry_count']}, "
+                f"found {entry_count} — entries were added or removed"
+            )
+        if row["tip_hash"] != tip_hash:
+            return "tip hash mismatch: the last entry is not the one the head commits to"
+        try:
+            self._public_key.verify(
+                bytes.fromhex(row["signature"]), self._head_bytes(entry_count, tip_hash)
+            )
+        except Exception:
+            return "head signature invalid"
+        return ""
 
     def get_latest_hash(self) -> str:
         """Returns hash of the most recent ledger entry, or genesis '0'*64 if empty."""
@@ -127,32 +184,55 @@ class Ledger:
         entry_hash = signed_entry.compute_hash()
 
         conn = self._get_conn()
-        conn.execute("""
+        conn.execute(
+            """
             INSERT INTO ledger_entries (
                 entry_id, prev_hash, hash, timestamp, dataset_id, run_id,
                 mechanism_name, sensitivity, noise_scale, eps_spent, delta, seed, actor, signature
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            signed_entry.entry_id, signed_entry.prev_hash, entry_hash,
-            signed_entry.timestamp, signed_entry.dataset_id, signed_entry.run_id,
-            signed_entry.mechanism_name, signed_entry.sensitivity, signed_entry.noise_scale,
-            signed_entry.eps_spent, signed_entry.delta, signed_entry.seed,
-            signed_entry.actor, signed_entry.signature
-        ))
+        """,
+            (
+                signed_entry.entry_id,
+                signed_entry.prev_hash,
+                entry_hash,
+                signed_entry.timestamp,
+                signed_entry.dataset_id,
+                signed_entry.run_id,
+                signed_entry.mechanism_name,
+                signed_entry.sensitivity,
+                signed_entry.noise_scale,
+                signed_entry.eps_spent,
+                signed_entry.delta,
+                signed_entry.seed,
+                signed_entry.actor,
+                signed_entry.signature,
+            ),
+        )
+        count = conn.execute("SELECT COUNT(*) AS c FROM ledger_entries").fetchone()["c"]
+        self._write_head(conn, count, entry_hash)
         conn.commit()
         if not self._conn:
             conn.close()
         return signed_entry
 
     def verify(self) -> bool:
-        """Verifies integrity of the entire ledger chain and Ed25519 signatures."""
+        """Verifies the chain, the per-entry signatures, and the signed head."""
+        return self.verify_with_reason()[0]
+
+    def verify_with_reason(self) -> "tuple[bool, str]":
+        """Same as `verify()` but returns why it failed.
+
+        The reason matters operationally: 'entry count mismatch' (truncation) and 'hash
+        mismatch' (modification) call for very different responses.
+        """
         conn = self._get_conn()
         rows = conn.execute("SELECT * FROM ledger_entries ORDER BY id ASC").fetchall()
         expected_prev = "0" * 64
         valid = True
+        reason = ""
         for row in rows:
             if row["prev_hash"] != expected_prev:
-                valid = False
+                valid, reason = False, f"broken chain link at entry {row['entry_id']!r}"
                 break
             entry = LedgerEntry(
                 entry_id=row["entry_id"],
@@ -170,16 +250,38 @@ class Ledger:
                 signature=row["signature"],
             )
             if entry.compute_hash() != row["hash"]:
-                valid = False
+                valid, reason = False, f"content modified at entry {row['entry_id']!r}"
                 break
             if not self.verify_entry_signature(entry, row["signature"]):
-                valid = False
+                valid, reason = False, f"bad signature at entry {row['entry_id']!r}"
                 break
             expected_prev = row["hash"]
 
+        # The head check is what catches TRUNCATION, which the chain walk above cannot see:
+        # a shortened chain is still internally consistent.
+        if valid:
+            head_reason = self._verify_head(conn, len(rows), expected_prev)
+            if head_reason:
+                valid, reason = False, head_reason
+
         if not self._conn:
             conn.close()
-        return valid
+        return valid, reason
+
+    def clear(self) -> None:
+        """Empties the ledger, head included.
+
+        The head and the entries are one invariant, so they must be cleared together. Deleting
+        only `ledger_entries` leaves a head committing to a chain that no longer exists, which
+        verification then correctly reports as truncation — the caller's cleanup would look
+        exactly like an attack. This exists so no caller has to know that.
+        """
+        conn = self._get_conn()
+        conn.execute("DELETE FROM ledger_entries")
+        conn.execute("DELETE FROM ledger_head")
+        conn.commit()
+        if not self._conn:
+            conn.close()
 
     def get_entries(self, dataset_id: Optional[str] = None) -> List[LedgerEntry]:
         """Retrieves list of ledger entries, optionally filtered by dataset_id."""
@@ -193,21 +295,23 @@ class Ledger:
             rows = conn.execute("SELECT * FROM ledger_entries ORDER BY id ASC").fetchall()
         entries = []
         for row in rows:
-            entries.append(LedgerEntry(
-                entry_id=row["entry_id"],
-                prev_hash=row["prev_hash"],
-                timestamp=row["timestamp"],
-                dataset_id=row["dataset_id"],
-                run_id=row["run_id"],
-                mechanism_name=row["mechanism_name"],
-                sensitivity=row["sensitivity"],
-                noise_scale=row["noise_scale"],
-                eps_spent=row["eps_spent"],
-                delta=row["delta"],
-                seed=row["seed"],
-                actor=row["actor"],
-                signature=row["signature"],
-            ))
+            entries.append(
+                LedgerEntry(
+                    entry_id=row["entry_id"],
+                    prev_hash=row["prev_hash"],
+                    timestamp=row["timestamp"],
+                    dataset_id=row["dataset_id"],
+                    run_id=row["run_id"],
+                    mechanism_name=row["mechanism_name"],
+                    sensitivity=row["sensitivity"],
+                    noise_scale=row["noise_scale"],
+                    eps_spent=row["eps_spent"],
+                    delta=row["delta"],
+                    seed=row["seed"],
+                    actor=row["actor"],
+                    signature=row["signature"],
+                )
+            )
         if not self._conn:
             conn.close()
         return entries

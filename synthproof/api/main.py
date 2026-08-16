@@ -97,6 +97,7 @@ def _require_demo_ledger() -> None:
             "destroy audit records and are only ever appropriate against ':memory:'.",
         )
 
+
 # Uploaded tables live in memory for the session. Nothing is written to disk: this service
 # receives sensitive data by definition, and persisting it silently would be exactly the
 # habit the project exists to argue against.
@@ -124,29 +125,29 @@ MECHANISM_INFO = {
         "label": "Independent marginals",
         "family": "baseline",
         "blurb": "One noisy 1-D marginal per column, sampled independently. Destroys all "
-                 "cross-column structure by construction — the ablation baseline.",
+        "cross-column structure by construction — the ablation baseline.",
         "implemented": True,
     },
     "copula": {
         "label": "Per-column Gaussian",
         "family": "baseline",
         "blurb": "DP-noised per-column moments. Despite the class name this is NOT a "
-                 "Gaussian copula: no covariance, no rank transform, no correlation.",
+        "Gaussian copula: no covariance, no rank transform, no correlation.",
         "implemented": True,
     },
     "pairwise": {
         "label": "Pairwise tree",
         "family": "structured",
         "blurb": "Measures 2-way marginals along a fixed public spanning tree and samples "
-                 "ancestrally, so pairwise dependence survives. Not MST — structure is not "
-                 "selected from the data.",
+        "ancestrally, so pairwise dependence survives. Not MST — structure is not "
+        "selected from the data.",
         "implemented": True,
     },
     "aim": {
         "label": "AIM (private-PGM)",
         "family": "structured",
         "blurb": "Adaptive marginal selection by report-noisy-max plus graphical-model "
-                 "inference. Selection is charged to the accountant. Requires private-pgm.",
+        "inference. Selection is charged to the accountant. Requires private-pgm.",
         "implemented": True,
     },
 }
@@ -158,8 +159,15 @@ MECHANISM_INFO = {
 # The ceiling matters more than the floor: eps_audited = log(TPR_lo / FPR_hi) from
 # Clopper-Pearson intervals is bounded by the canary count alone, so there is a maximum value
 # the audit can report even against a release that is 100% verbatim training data.
-AUDIT_CEILING_BY_CANARIES = {10: 0.81, 25: 1.84, 50: 2.57, 100: 3.28,
-                             200: 3.98, 400: 4.68, 800: 5.38}
+AUDIT_CEILING_BY_CANARIES = {
+    10: 0.81,
+    25: 1.84,
+    50: 2.57,
+    100: 3.28,
+    200: 3.98,
+    400: 4.68,
+    800: 5.38,
+}
 
 # Smallest canary count that reliably detected each known leak fraction.
 AUDIT_DETECTION_FLOOR = {1.0: 10, 0.25: 400, 0.05: None, 0.01: None}
@@ -200,7 +208,7 @@ def _audit_payload(audit, num_canaries: int) -> dict:
         "p_value": float(audit.p_value),
     }
 
-    if hasattr(audit, "guesses"):        # one-run (Steinke)
+    if hasattr(audit, "guesses"):  # one-run (Steinke)
         # This ceiling is exact rather than interpolated: it is a closed form in the number
         # of guesses actually made.
         return {
@@ -214,8 +222,13 @@ def _audit_payload(audit, num_canaries: int) -> dict:
             "num_canaries": int(audit.num_canaries),
             "num_included": int(audit.num_included),
             "detects_leak_above": next(
-                (f for f, m in sorted(AUDIT_DETECTION_FLOOR.items())
-                 if m is not None and m <= num_canaries), None),
+                (
+                    f
+                    for f, m in sorted(AUDIT_DETECTION_FLOOR.items())
+                    if m is not None and m <= num_canaries
+                ),
+                None,
+            ),
             "range_note": (
                 f"With {audit.guesses} guesses this audit could certify at most "
                 f"eps={audit.ceiling:.2f}, even against a release that is 100% verbatim "
@@ -229,14 +242,22 @@ def _audit_payload(audit, num_canaries: int) -> dict:
     return {
         **common,
         "auditor": "paired",
-        "tpr": float(audit.tpr), "fpr": float(audit.fpr),
-        "tpr_lower": float(audit.tpr_lower), "fpr_upper": float(audit.fpr_upper),
-        "num_members": int(audit.num_members), "num_holdout": int(audit.num_holdout),
+        "tpr": float(audit.tpr),
+        "fpr": float(audit.fpr),
+        "tpr_lower": float(audit.tpr_lower),
+        "fpr_upper": float(audit.fpr_upper),
+        "num_members": int(audit.num_members),
+        "num_holdout": int(audit.num_holdout),
         "confidence": float(audit.confidence),
         "ceiling": audit_ceiling(num_canaries),
         "detects_leak_above": next(
-            (f for f, m in sorted(AUDIT_DETECTION_FLOOR.items())
-             if m is not None and m <= num_canaries), None),
+            (
+                f
+                for f, m in sorted(AUDIT_DETECTION_FLOOR.items())
+                if m is not None and m <= num_canaries
+            ),
+            None,
+        ),
         "range_note": (
             f"At {num_canaries} canaries this auditor cannot report an epsilon above "
             f"~{audit_ceiling(num_canaries):.2f}, even against a release that is 100% "
@@ -255,6 +276,7 @@ NOT_IMPLEMENTED_ATTACKS = [
 
 # --------------------------------------------------------------------------- models
 
+
 class RunRequest(BaseModel):
     dataset: str = Field("toy", description="'toy', 'adult', or an upload id.")
     mechanism: str = Field("pairwise")
@@ -262,11 +284,13 @@ class RunRequest(BaseModel):
     delta: float = Field(1e-5, gt=0, lt=1)
     seed: int = 0
     num_canaries: int = Field(60, ge=1, le=500)
-    rows: int = Field(2000, ge=100, le=50_000,
-                      description="Subsample size, so the console stays interactive.")
+    rows: int = Field(
+        2000, ge=100, le=50_000, description="Subsample size, so the console stays interactive."
+    )
 
 
 # --------------------------------------------------------------------------- datasets
+
 
 def _load_dataset(name: str, rows: int, seed: int = 0) -> TabularDataset:
     if name in _UPLOADS:
@@ -275,10 +299,13 @@ def _load_dataset(name: str, rows: int, seed: int = 0) -> TabularDataset:
         return TabularDataset.create_synthetic_toy(num_rows=min(rows, 5000), seed=seed)
     elif name == "adult":
         from synthproof.data.datasets import load_adult
+
         ds = load_adult()
     else:
-        raise HTTPException(404, f"Unknown dataset {name!r}. "
-                                 "Use 'toy', 'adult', or an upload id from /api/upload.")
+        raise HTTPException(
+            404,
+            f"Unknown dataset {name!r}. " "Use 'toy', 'adult', or an upload id from /api/upload.",
+        )
 
     if ds.num_rows > rows:
         sub = ds.df.sample(n=rows, random_state=seed).reset_index(drop=True)
@@ -313,9 +340,18 @@ def mechanisms():
     """Mechanisms this build can actually run, plus honest notes on the ones it cannot."""
     out = []
     for key, info in MECHANISM_INFO.items():
-        out.append({**info, "key": key, "available": key in MECHANISMS,
-                    "unavailable_reason": None if key in MECHANISMS
-                    else "private-pgm (package `mbi`) is not installed in this environment."})
+        out.append(
+            {
+                **info,
+                "key": key,
+                "available": key in MECHANISMS,
+                "unavailable_reason": (
+                    None
+                    if key in MECHANISMS
+                    else "private-pgm (package `mbi`) is not installed in this environment."
+                ),
+            }
+        )
     return {"mechanisms": out, "attacks_not_implemented": NOT_IMPLEMENTED_ATTACKS}
 
 
@@ -326,15 +362,27 @@ def datasets():
     # changed, and the console has no way to notice — which is the same class of defect as a
     # fabricated metric, just in metadata.
     built_in = [
-        {"id": "toy", "label": "Toy table (3 columns)", "rows": None, "kind": "built-in",
-         "note": "Columns are drawn INDEPENDENTLY — there is no structure to preserve. "
-                 "Useful for a fast demo, meaningless for utility claims."},
-        {"id": "adult", "label": "UCI Adult", "rows": None, "kind": "built-in",
-         "note": "SHA-256 verified on load. Hand-declared public schema. Numeric "
-                 "correlations are weak, so mechanism families may not separate on it."},
+        {
+            "id": "toy",
+            "label": "Toy table (3 columns)",
+            "rows": None,
+            "kind": "built-in",
+            "note": "Columns are drawn INDEPENDENTLY — there is no structure to preserve. "
+            "Useful for a fast demo, meaningless for utility claims.",
+        },
+        {
+            "id": "adult",
+            "label": "UCI Adult",
+            "rows": None,
+            "kind": "built-in",
+            "note": "SHA-256 verified on load. Hand-declared public schema. Numeric "
+            "correlations are weak, so mechanism families may not separate on it.",
+        },
     ]
-    uploads = [{"id": k, "label": v.name, "rows": v.num_rows, "kind": "upload", "note": None}
-               for k, v in _UPLOADS.items()]
+    uploads = [
+        {"id": k, "label": v.name, "rows": v.num_rows, "kind": "upload", "note": None}
+        for k, v in _UPLOADS.items()
+    ]
     return {"datasets": built_in + uploads}
 
 
@@ -404,14 +452,19 @@ async def upload(file: UploadFile = File(...), schema_json: Optional[str] = None
         "schema": schema.to_dict(),
         "schema_inferred": inferred,
         "warning": (
-            "Bounds were READ FROM YOUR DATA, so they leak. This is fine for exploring a "
-            "table you already own; for a real release, edit the bounds to publishable "
-            "facts about the domain and re-upload with a declared schema."
-        ) if inferred else None,
+            (
+                "Bounds were READ FROM YOUR DATA, so they leak. This is fine for exploring a "
+                "table you already own; for a real release, edit the bounds to publishable "
+                "facts about the domain and re-upload with a declared schema."
+            )
+            if inferred
+            else None
+        ),
     }
 
 
 # --------------------------------------------------------------------------- run (SSE)
+
 
 def _json_default(o: Any):
     """Serialises numpy scalars as NUMBERS, and refuses anything else.
@@ -450,10 +503,13 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
     events: "queue.Queue[Optional[tuple]]" = queue.Queue()
 
     if req.mechanism not in MECHANISMS:
-        yield _sse("error", {
-            "message": f"Mechanism {req.mechanism!r} is not available in this environment.",
-            "available": sorted(MECHANISMS),
-        })
+        yield _sse(
+            "error",
+            {
+                "message": f"Mechanism {req.mechanism!r} is not available in this environment.",
+                "available": sorted(MECHANISMS),
+            },
+        )
         return
 
     try:
@@ -462,37 +518,64 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
         yield _sse("error", {"message": exc.detail})
         return
 
-    target_col = ("income" if "income" in ds.categorical_cols
-                  else (ds.categorical_cols[0] if ds.categorical_cols else None))
+    target_col = (
+        "income"
+        if "income" in ds.categorical_cols
+        else (ds.categorical_cols[0] if ds.categorical_cols else None)
+    )
     if target_col is None:
-        yield _sse("error", {"message": "This table has no categorical column to predict, "
-                                        "so downstream utility cannot be evaluated."})
+        yield _sse(
+            "error",
+            {
+                "message": "This table has no categorical column to predict, "
+                "so downstream utility cannot be evaluated."
+            },
+        )
         return
 
     corr_cols = informative_numeric_columns(ds.df, ds.numerical_cols)
 
-    yield _sse("start", {
-        "dataset": _describe(ds), "mechanism": req.mechanism,
-        "mechanism_label": MECHANISM_INFO.get(req.mechanism, {}).get("label", req.mechanism),
-        "target_eps": req.target_eps, "delta": req.delta, "seed": req.seed,
-        "target_col": target_col, "correlation_cols": corr_cols,
-    })
+    yield _sse(
+        "start",
+        {
+            "dataset": _describe(ds),
+            "mechanism": req.mechanism,
+            "mechanism_label": MECHANISM_INFO.get(req.mechanism, {}).get("label", req.mechanism),
+            "target_eps": req.target_eps,
+            "delta": req.delta,
+            "seed": req.seed,
+            "target_col": target_col,
+            "correlation_cols": corr_cols,
+        },
+    )
 
     def worker():
         try:
             res = run_cell(
-                ds, req.mechanism, req.target_eps, seed=req.seed, delta=req.delta,
-                num_canaries=req.num_canaries, target_col=target_col,
+                ds,
+                req.mechanism,
+                req.target_eps,
+                seed=req.seed,
+                delta=req.delta,
+                num_canaries=req.num_canaries,
+                target_col=target_col,
                 corr_cols=corr_cols or None,
                 on_stage=lambda name, payload: events.put(("stage", name, payload)),
                 return_artifacts=True,
             )
             events.put(("result", "done", res))
         except Exception as exc:  # surfaced to the console rather than swallowed
-            events.put(("error", "failed", {
-                "message": str(exc), "type": type(exc).__name__,
-                "trace": traceback.format_exc(limit=4),
-            }))
+            events.put(
+                (
+                    "error",
+                    "failed",
+                    {
+                        "message": str(exc),
+                        "type": type(exc).__name__,
+                        "trace": traceback.format_exc(limit=4),
+                    },
+                )
+            )
         finally:
             events.put(None)
 
@@ -525,66 +608,85 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
         mia = payload.pop("_mia")
         payload.pop("_profile", None)
 
-        cloud = projection.project(fit_df, synth, ds.numerical_cols,
-                                   canary_df=canaries.members, seed=req.seed)
+        cloud = projection.project(
+            fit_df, synth, ds.numerical_cols, canary_df=canaries.members, seed=req.seed
+        )
         hists = projection.marginal_histograms(fit_df, synth, ds.numerical_cols[:4])
 
-        entry = GLOBAL_LEDGER.append(LedgerEntry(
-            dataset_id=ds.name,
-            run_id=f"{req.mechanism}_eps{req.target_eps}_seed{req.seed}",
-            mechanism_name=req.mechanism,
-            eps_spent=float(payload["proved_eps"]),
-            delta=req.delta,
-            seed=req.seed,
-        ))
+        entry = GLOBAL_LEDGER.append(
+            LedgerEntry(
+                dataset_id=ds.name,
+                run_id=f"{req.mechanism}_eps{req.target_eps}_seed{req.seed}",
+                mechanism_name=req.mechanism,
+                eps_spent=float(payload["proved_eps"]),
+                delta=req.delta,
+                seed=req.seed,
+            )
+        )
 
         measurements = {k: v for k, v in payload.items() if not k.startswith("_")}
-        yield _sse("done", {
-            "measurements": measurements,
-            # Utility and structure are scored against the fit split, not the full table.
-            # Stated in the payload so the console cannot present `correlation_error` as a
-            # clean fidelity measurement without also showing how contaminated the fit was.
-            "evaluation": {
-                "reference": measurements.get("reference", "unknown"),
-                "canary_fraction": measurements.get("canary_fraction"),
-                "caveat": (
-                    "Scored against the fit split. The generator was fitted on that split "
-                    "plus planted canaries, so a high canary fraction biases these numbers."
-                ),
+        yield _sse(
+            "done",
+            {
+                "measurements": measurements,
+                # Utility and structure are scored against the fit split, not the full table.
+                # Stated in the payload so the console cannot present `correlation_error` as a
+                # clean fidelity measurement without also showing how contaminated the fit was.
+                "evaluation": {
+                    "reference": measurements.get("reference", "unknown"),
+                    "canary_fraction": measurements.get("canary_fraction"),
+                    "caveat": (
+                        "Scored against the fit split. The generator was fitted on that split "
+                        "plus planted canaries, so a high canary fraction biases these numbers."
+                    ),
+                },
+                "audit": _audit_payload(audit, req.num_canaries),
+                "attack": {
+                    "name": "Distance MIA baseline",
+                    "auc": mia.auc,
+                    "advantage": mia.advantage,
+                    "attack_accuracy": mia.attack_accuracy,
+                    "tpr_at_1pct_fpr": mia.tpr_at_1pct_fpr,
+                    "num_train": mia.num_train,
+                    "num_test": mia.num_test,
+                    "note": "Nearest-neighbour baseline. This is NOT LiRA.",
+                },
+                "attacks_not_implemented": NOT_IMPLEMENTED_ATTACKS,
+                "cloud": {
+                    "axes": cloud.axes,
+                    "method": cloud.method,
+                    "explained_variance": cloud.explained_variance,
+                    "real": cloud.real,
+                    "synthetic": cloud.synthetic,
+                    "canaries": cloud.canaries,
+                },
+                "histograms": hists,
+                "spends": [
+                    {
+                        "run_id": s.run_id,
+                        "mechanism": s.mechanism.name,
+                        "noise_scale": s.mechanism.noise_scale,
+                        "sensitivity": s.mechanism.sensitivity,
+                        "steps": s.mechanism.steps,
+                        "marginal_eps": s.marginal_eps,
+                        "computed_eps": s.computed_eps,
+                    }
+                    for s in spends
+                ],
+                "ledger": {
+                    "entry_id": entry.entry_id,
+                    "prev_hash": entry.prev_hash,
+                    "hash": entry.compute_hash(),
+                    "signature": entry.signature,
+                    "head": GLOBAL_LEDGER.get_latest_hash(),
+                    "verified": GLOBAL_LEDGER.verify(),
+                    "signed": False,
+                    "signature_note": "Entries are Ed25519-signed, but the key is generated in "
+                    "memory per process and never persisted, and the data "
+                    "sheet itself carries no signature yet.",
+                },
             },
-            "audit": _audit_payload(audit, req.num_canaries),
-            "attack": {
-                "name": "Distance MIA baseline", "auc": mia.auc,
-                "advantage": mia.advantage, "attack_accuracy": mia.attack_accuracy,
-                "tpr_at_1pct_fpr": mia.tpr_at_1pct_fpr,
-                "num_train": mia.num_train, "num_test": mia.num_test,
-                "note": "Nearest-neighbour baseline. This is NOT LiRA.",
-            },
-            "attacks_not_implemented": NOT_IMPLEMENTED_ATTACKS,
-            "cloud": {
-                "axes": cloud.axes, "method": cloud.method,
-                "explained_variance": cloud.explained_variance,
-                "real": cloud.real, "synthetic": cloud.synthetic, "canaries": cloud.canaries,
-            },
-            "histograms": hists,
-            "spends": [
-                {"run_id": s.run_id, "mechanism": s.mechanism.name,
-                 "noise_scale": s.mechanism.noise_scale,
-                 "sensitivity": s.mechanism.sensitivity, "steps": s.mechanism.steps,
-                 "marginal_eps": s.marginal_eps, "computed_eps": s.computed_eps}
-                for s in spends
-            ],
-            "ledger": {
-                "entry_id": entry.entry_id, "prev_hash": entry.prev_hash,
-                "hash": entry.compute_hash(), "signature": entry.signature,
-                "head": GLOBAL_LEDGER.get_latest_hash(),
-                "verified": GLOBAL_LEDGER.verify(),
-                "signed": False,
-                "signature_note": "Entries are Ed25519-signed, but the key is generated in "
-                                  "memory per process and never persisted, and the data "
-                                  "sheet itself carries no signature yet.",
-            },
-        })
+        )
 
 
 @app.post("/api/run")
@@ -593,12 +695,16 @@ def run(req: RunRequest):
     return StreamingResponse(
         _run_stream(req),
         media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no",
-                 "Connection": "keep-alive"},
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
     )
 
 
 # --------------------------------------------------------------------------- ledger
+
 
 @app.get("/api/ledger")
 def get_ledger():
@@ -609,10 +715,19 @@ def get_ledger():
         "count": len(entries),
         "total_eps_spent": round(sum(e.eps_spent for e in entries), 4),
         "entries": [
-            {"entry_id": e.entry_id, "prev_hash": e.prev_hash, "hash": e.compute_hash(),
-             "timestamp": e.timestamp, "dataset_id": e.dataset_id, "run_id": e.run_id,
-             "mechanism_name": e.mechanism_name, "eps_spent": e.eps_spent,
-             "delta": e.delta, "seed": e.seed, "signature": e.signature[:32]}
+            {
+                "entry_id": e.entry_id,
+                "prev_hash": e.prev_hash,
+                "hash": e.compute_hash(),
+                "timestamp": e.timestamp,
+                "dataset_id": e.dataset_id,
+                "run_id": e.run_id,
+                "mechanism_name": e.mechanism_name,
+                "eps_spent": e.eps_spent,
+                "delta": e.delta,
+                "seed": e.seed,
+                "signature": e.signature[:32],
+            }
             for e in entries
         ],
     }
@@ -635,8 +750,10 @@ def tamper(req: TamperRequest):
     _require_demo_ledger()
 
     with _ledger_conn() as conn:
-        cur = conn.execute("UPDATE ledger_entries SET eps_spent = ? WHERE entry_id = ?",
-                           (req.eps_spent, req.entry_id))
+        cur = conn.execute(
+            "UPDATE ledger_entries SET eps_spent = ? WHERE entry_id = ?",
+            (req.eps_spent, req.entry_id),
+        )
         conn.commit()
         rowcount = cur.rowcount
 
@@ -651,7 +768,7 @@ def tamper(req: TamperRequest):
         "broken_from_index": broken_from,
         "broken_count": len(entries) - broken_from if broken_from is not None else 0,
         "explanation": "Each entry commits to its predecessor's SHA-256, so altering one "
-                       "invalidates it and every entry after it.",
+        "invalidates it and every entry after it.",
     }
 
 
@@ -660,9 +777,11 @@ def reset_ledger():
     """Clears the in-memory chain, so the tamper demo can be run again."""
     _require_demo_ledger()
 
-    with _ledger_conn() as conn:
-        conn.execute("DELETE FROM ledger_entries")
-        conn.commit()
+    # Ledger.clear() drops the entries AND the signed head together. Deleting only the
+    # entries would leave a head committing to a chain that no longer exists, which
+    # verification correctly reports as truncation — so the demo's own reset would look
+    # like an attack.
+    GLOBAL_LEDGER.clear()
     return {"verified": GLOBAL_LEDGER.verify(), "head": GLOBAL_LEDGER.get_latest_hash()}
 
 
