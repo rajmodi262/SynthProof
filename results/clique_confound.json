@@ -1,0 +1,3767 @@
+{
+  "dataset": "adult",
+  "dataset_label": "UCI Adult",
+  "n_rows": 6000,
+  "pairs": [
+    "age|hours_per_week",
+    "age|capital_gain",
+    "age|capital_loss",
+    "hours_per_week|capital_gain",
+    "hours_per_week|capital_loss",
+    "capital_gain|capital_loss"
+  ],
+  "true_correlations": {
+    "age|hours_per_week": 0.10343557488146334,
+    "age|capital_gain": 0.07363347395923789,
+    "age|capital_loss": 0.06456050542340458,
+    "hours_per_week|capital_gain": 0.07974391590420125,
+    "hours_per_week|capital_loss": 0.04118775138892002,
+    "capital_gain|capital_loss": -0.03057893589676315
+  },
+  "mechanisms": [
+    "independent",
+    "pairwise",
+    "aim"
+  ],
+  "eps_grid": [
+    0.5,
+    1.0,
+    2.0,
+    4.0,
+    8.0
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "summary": {
+    "aim_selected": {
+      "mean": 0.019765181023099283,
+      "lo": 0.012397155676965482,
+      "hi": 0.028950570953322385,
+      "sd": 0.020275681544297663,
+      "n": 22
+    },
+    "aim_not_selected": {
+      "mean": 0.05955366150356055,
+      "lo": 0.0555863185535761,
+      "hi": 0.063494657963371,
+      "sd": 0.0228730172740831,
+      "n": 128
+    },
+    "independent_all": {
+      "mean": 0.06930504512322552,
+      "lo": 0.06479087770259379,
+      "hi": 0.07371472847145552,
+      "sd": 0.027235755854606858,
+      "n": 150
+    },
+    "pairwise_all": {
+      "mean": 0.13304601850196124,
+      "lo": 0.10453650491001013,
+      "hi": 0.1638929781561066,
+      "sd": 0.18673979043272448,
+      "n": 150
+    },
+    "n_aim_selected": 22,
+    "n_aim_not_selected": 128,
+    "within_pair": {
+      "pairs_with_both_states": 1,
+      "pairs_where_selection_helped": 1,
+      "mean_delta": -0.054516353541995854,
+      "delta_ci": null
+    },
+    "per_pair": {
+      "age|hours_per_week": {
+        "n_selected": 22,
+        "n_not_selected": 3,
+        "mean_selected": 0.019765181023099283,
+        "mean_not_selected": 0.07428153456509513,
+        "delta": -0.054516353541995854
+      },
+      "hours_per_week|capital_loss": {
+        "n_selected": 0,
+        "n_not_selected": 25,
+        "mean_selected": null,
+        "mean_not_selected": 0.04307644802560333,
+        "delta": null
+      },
+      "age|capital_loss": {
+        "n_selected": 0,
+        "n_not_selected": 25,
+        "mean_selected": null,
+        "mean_not_selected": 0.06709389624292594,
+        "delta": null
+      },
+      "capital_gain|capital_loss": {
+        "n_selected": 0,
+        "n_not_selected": 25,
+        "mean_selected": null,
+        "mean_not_selected": 0.03109265651797358,
+        "delta": null
+      },
+      "hours_per_week|capital_gain": {
+        "n_selected": 0,
+        "n_not_selected": 25,
+        "mean_selected": null,
+        "mean_not_selected": 0.08054889272571064,
+        "delta": null
+      },
+      "age|capital_gain": {
+        "n_selected": 0,
+        "n_not_selected": 25,
+        "mean_selected": null,
+        "mean_not_selected": 0.07418906923820509,
+        "delta": null
+      }
+    },
+    "conditional": {
+      "selected_pairs": [
+        "age|hours_per_week"
+      ],
+      "unselected_pairs": [
+        "age|capital_gain",
+        "age|capital_loss",
+        "capital_gain|capital_loss",
+        "hours_per_week|capital_gain",
+        "hours_per_week|capital_loss"
+      ],
+      "aim_on_selected": {
+        "mean": 0.026307143448138785,
+        "lo": 0.01607923071468931,
+        "hi": 0.03817338018402021,
+        "sd": 0.028839645573469696,
+        "n": 25
+      },
+      "independent_on_selected": {
+        "mean": 0.1115224371858704,
+        "lo": 0.10857726713636569,
+        "hi": 0.11417571651062601,
+        "sd": 0.007252526209781996,
+        "n": 25
+      },
+      "aim_on_unselected": {
+        "mean": 0.05920019255008372,
+        "lo": 0.05522623933158736,
+        "hi": 0.0631433951012944,
+        "sd": 0.022413777051112055,
+        "n": 125
+      },
+      "independent_on_unselected": {
+        "mean": 0.06086156671069653,
+        "lo": 0.057006760065211,
+        "hi": 0.06452716822645668,
+        "sd": 0.021212167099198022,
+        "n": 125
+      }
+    }
+  },
+  "confound_confirmed": true,
+  "verdict": "CONFOUND CONFIRMED. AIM beats the independent-marginal baseline on the pairs it selects as cliques, and does NOT beat it on the pairs it does not select \u2014 on those it is statistically indistinguishable from a mechanism that models no cross-column dependence at all. AIM's structure advantage therefore exists exactly where it spent a clique, and the H1 headline measured precisely such a pair. The H1 structure result must be read as a statement about clique selection.",
+  "elapsed_seconds": 0.0,
+  "observations": [
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.09746432323899565,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.0725413560689538,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.07153265097464828,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.09456031887413582,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.06915097450011062,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.021153933792777038,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11780326778746054,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07940979561747145,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.07451956593047573,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.09060632024143372,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05281876788033962,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.030299245031923588,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11080393231285184,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06981852315663287,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06941926747630846,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.06190130843480687,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.039067712266884456,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03432215355586337,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11711343942792131,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07071995002380642,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.0542951820980169,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.07529918965715218,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04189096714530376,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03147796305337101,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11557464160582885,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.08612828337174136,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06148450091265584,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.08751584932388164,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05470309671228604,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.046683935519962,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.09842843378373056,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07494616995337054,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.0714515724429995,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.0974227313454472,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05967281750628602,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.020215440487636058,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.1144372397657538,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.08004528001753515,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.08107566603994629,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.08316666773188083,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05139557026264123,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03134315571329267,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.1113232260373579,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07174652345683202,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.07344297731261139,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.06331924668355968,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04222266868445587,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.02384908704357011,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11837853594396316,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06914015554850178,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.05158028086664263,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.07002895263888756,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04129888326116961,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03524073936904212,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11589343342701308,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.08841644534929141,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06388453065824902,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.08898045710228554,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.050314859574638604,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.042706291704261976,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.09785905848337768,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07649835754000654,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.07379637273999252,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.09958195746510858,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05648023579448916,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.014731161484473655,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.1146018276851946,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.0764588316302128,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.08317975028002612,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.07979979928666829,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05228121566325043,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.02791025921484882,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.1123567672537567,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.074014328032956,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.07479349022142166,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.05985260235914393,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.044179217929949624,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.022689719701725078,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11859541652022071,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06848996214556947,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.052316028310158816,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.06516638337226521,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.038672001718542875,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.036427625774049566,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.1167008210158853,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.09042554172204842,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06642435887016959,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.08949118827089429,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.053807296255087976,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.040203035338025495,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.09741933621214638,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07388369695635,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.0746776629550209,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.0989060949373956,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05830354994962052,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.015471032755837671,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11465868820016206,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06799818910378655,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.08396217349285193,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.07850744271565899,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.052742419246905814,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.0237673364457451,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11198949310383247,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07339222798950075,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.07499076841829698,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.06160654853070467,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04360383147293486,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.023716639159191123,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11603469538773084,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06797089987181507,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.04954091959742228,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.06293189642637143,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04545919788990383,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03845410814315924,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11466908415810602,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.09004782734256839,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06940791474771336,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.09051228628662568,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05294832276818126,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.04018733493029088,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.09858077620504983,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07370132430727695,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.07359681366959162,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.10068930872990293,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.060626353365938856,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.013363102091515679,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11409250417225716,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06690879051107008,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.08438402221119867,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.07972519489824,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05426570032580212,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.023951070798615713,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11141275883970135,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07237886847346667,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.07152719111788719,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.060138725467068124,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04049260243976558,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.02471066052546815,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11752241150555537,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06936589027380469,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.05034717008331634,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.06008233441457515,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04615618633687252,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03572758629273421,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11434681757290688,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.09107365895716517,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.07111141019621155,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.08879662530034824,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05321420810497125,
+      "selected": false
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.042472014313344894,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.05951441172090684,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06212925657383664,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.0694349738237602,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.16935975960778155,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.08855526284917997,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.6671798869955394,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.060161769082744024,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07358275989091367,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06258754018898653,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.09704481814661627,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.08380139566451406,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.6295994896315942,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.0685566581723074,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.016699052623770076,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.0025743403060757702,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.18145810122135447,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.2491460329534043,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.6215208640869625,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.027294361827068472,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.052436785309426304,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.030839482374156964,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.027802751714752383,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.01829543658439193,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.5794120794626332,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11594971222833876,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.04249312554956522,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.03497483696924829,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.06486251787145005,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.09124264638820345,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.6853462077455915,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.0733027458389348,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.04058592226232955,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.05391865070415285,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.18673003329126442,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.1117133724807122,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.607232385535417,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.02916804553427857,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.052289313545932095,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.03387311542301697,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.06763278257222323,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.0592090846666846,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.6426868171917595,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.05731350203409495,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.011259744368242106,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.016729060785287367,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.27344833917571315,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.17647305556630297,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.5692690388260443,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.02717252486574108,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.02602944113432807,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.03993100671853593,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.07338008310237167,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.028116260279772314,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.5862608130542697,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.11636167486801764,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.017889866339613127,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.021126341281043973,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.06795634531265422,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.07573521039854625,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.6518523968580587,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.023304759743836514,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07664962130355263,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.073682220367398,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.08782482699457696,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.06334630521934465,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.5876600920886446,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.002806911961444003,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06365267454310908,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06918100404928498,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.07796746735529354,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04309504394128837,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.5734580024375346,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.0398294639872661,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.030215098546865805,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.02815055210910536,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.05808157709146321,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.09249873076084486,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.5509411957398331,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.01457215651347575,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07385411517077042,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06554519037661151,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.05777200114405669,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05481097114583528,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.49237201277609893,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.09627156606351252,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.012310650795317762,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.017264490158735032,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.08208425856709949,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05365696730008843,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.5036640830703589,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.006612700921771866,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.060306121329002586,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.05002667470834371,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.07002905162752025,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.06493437913881775,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.5823966554084258,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.001547424063371397,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.04518447938064764,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.0427185426787547,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.021348503754942127,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.01176938652857656,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.4771288564379401,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.002829054321357105,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.055677163127126644,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.048799882954088436,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.02053766562624191,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.004029583875017048,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.3553917437357417,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.009803483562406859,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07770300073914206,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.05488719105008284,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.025571833944354597,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.022748784004949278,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.4509378545176474,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.031086215237500145,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.03497747142274359,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.03212052007180926,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.011583684063381172,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.012622676026665926,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.5307026179013925,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.012845742800206936,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.0364256173193688,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.036475941709297646,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.026178638430351092,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.037699056288247886,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.42183743836587223,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.026857307160250102,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.0913469746769605,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.08891995470161049,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.020408042968037957,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.024287535743321816,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.32478916831465754,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.013559558982728884,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06583628163765032,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.060800386968123454,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.04606911137763489,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.036117472498431405,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.32771004171043827,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.005484627288557739,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06724747502027828,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.060303296422039875,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.04878034519730966,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.011682121049462625,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.29714190464074464,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.02603537153280923,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06741621433128817,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.07970141804174471,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.007690327243515704,
+      "selected": true
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.03189831486576933,
+      "selected": false
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.4443165829446461,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.08750297469743026,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07486581500520728,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06707562122632019,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.0762440152336497,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04660378746586239,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.022035776931529423,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.010215911182154341,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.08208811873315648,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.09592789743738053,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.10363036278253814,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.043565592092634386,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.043952937328955895,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.021478882769679075,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.09025466146077708,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06727995998657849,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.06892015357689467,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04194764987751175,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.027411680610221596,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.02657277027701216,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.09346033455373307,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.0669617242264001,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.078016030535158,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.03837856245160901,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.02391130845420488,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.016784152938137273,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.0720180389456521,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.068635729478547,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.09432361784100199,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.043860649256162135,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 0.5,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03348626105194363,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.05841537764552866,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.0440918346934407,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.07543871982483827,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.0948306580142574,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.030719422581494717,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.04321667097873375,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.008857275198934256,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.05552919195357312,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.0842599429754452,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.0926278527081164,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.02987114385091312,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.013829278097150007,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.008116874650960351,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.08231609580180364,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.05620979703552132,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.07482881612811047,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.06093546956771789,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03186625519578783,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.09231013893473375,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.08271229031980297,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.07513409282430006,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.08234931398255609,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.041762291822948924,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.01961682751601448,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.037207311839674975,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06146236889303761,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.0630869968830134,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.08282784497655515,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04202484789984348,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03055555409602258,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.03966542354416962,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07338409352635787,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06839345413305223,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.09243337736058689,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.025259913044054574,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.033721778901098294,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.010505736630316911,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.08682660646558399,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06216244014955359,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.09544475046951338,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.03549321298972406,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03264379155610034,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.030102633206299093,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.08579237337316864,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06013120196850274,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.0842818353325993,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.054642439433119916,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03365655088875155,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.1039616944835395,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.09232906581899267,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06785260104030981,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.0742855433423722,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.032218146527173065,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.01430574468631977,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.003440462769257746,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07645690316518315,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.04143526007514911,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.05108019946285377,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.06317316728715706,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 2.0,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.031259506093101116,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.01476579312405979,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.06760740013051762,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.05017714464681874,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.07674869870951481,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05628408215864611,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.01464041643305206,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.008642150887100991,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07736618222134224,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.07805941363518186,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.07166981671130157,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.05103285452991377,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.031671376181161955,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.006200304159011058,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07026048005270191,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.05092639073178531,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.08232841793168147,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.058696950681136645,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03296211809848384,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.005960126630147625,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07674144952879504,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.078872743341367,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.08047570593629966,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04059879138585023,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.04901228739646216,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.007215934212301392,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.10747020027429986,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.053575644196529576,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.08748359115708022,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.03417344837308103,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03746120916575854,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.016681817901425783,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "age|capital_gain",
+      "corr_err": 0.07481072373607234,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "age|capital_loss",
+      "corr_err": 0.059739013106312175,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.07354437847470344,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.039478089091369635,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 0,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.0321799807254673,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.009629410663705401,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "age|capital_gain",
+      "corr_err": 0.074406922142906,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06579319323927119,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.06909097184513405,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04820768517669606,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 1,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.021119135318746873,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.01454723282650032,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "age|capital_gain",
+      "corr_err": 0.056906787388458765,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "age|capital_loss",
+      "corr_err": 0.08568125823234068,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.08579303767346588,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.04462003613718773,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 2,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.056566458405910194,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.010083438112383505,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "age|capital_gain",
+      "corr_err": 0.05322458590968872,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "age|capital_loss",
+      "corr_err": 0.06454329067210725,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.0697630301167796,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.03742980464695516,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 3,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.0344910374196045,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "age|hours_per_week",
+      "corr_err": 0.008814756919005837,
+      "selected": true
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "age|capital_gain",
+      "corr_err": 0.04234420686087463,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "age|capital_loss",
+      "corr_err": 0.0699938750065229,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_gain",
+      "corr_err": 0.0707002978400418,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "hours_per_week|capital_loss",
+      "corr_err": 0.03593316231132034,
+      "selected": false
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seed": 4,
+      "pair": "capital_gain|capital_loss",
+      "corr_err": 0.03174247141875681,
+      "selected": false
+    }
+  ]
+}
