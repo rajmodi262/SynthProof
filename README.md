@@ -34,10 +34,10 @@ the formal bound (ε_proved) and an empirical lower bound (ε_audited).
 | **Generators** | ✅ 3 real families | `independent` (baseline) · `pairwise` (tree-structured 2-way) · `aim` (private-PGM) · `copula` (per-column control) |
 | **Canary auditor** | ✅ Working, and its limits are measured | Paired Clopper-Pearson *and* the one-run Steinke construction. The **detection floor is now measured** ([results/DETECTION_FLOOR.md](results/DETECTION_FLOOR.md)): at 400 canaries the auditor resolves a 25% leak; at 10 canaries it needs a 100% leak. The **audit ceiling** `log(r/ln(1/α))` is reported beside every ε_audited, so a 0 is never mistaken for evidence of no leakage. |
 | **Attack suite** | ✅ 4 attacks | `distance_mia` (nearest-neighbour) · `exact_match_risk` (singling-out) · `domias` (k-NN density ratio, Breugel et al. 2023) · `attribute_inference` (scored against a conditional baseline, not a marginal one). **LiRA is deliberately NOT implemented** — a shadow-model attack is ~21h of compute for a likely wide-CI null, and calling anything cheaper "LiRA" would misname it. |
-| **Web console** | ✅ Working | React + R3F. Live SSE pipeline, 3D record space, ledger tamper demo. |
+| **Web console** | ✅ Working, now tested | React + R3F. Live SSE pipeline, 3D record space, ledger tamper demo. **10 vitest tests** (`make console-test`) cover the hand-rolled SSE parser in `src/lib/api.ts` — including a frame split across two network chunks, which previously would have dropped a pipeline stage in silence. |
 | **H1** — mechanism families | ⚠️ **Supported on Adult, NOT reproduced on ACS** | On UCI Adult all three families separate at ε=8 with non-overlapping CIs (aim > pairwise > independent). On ACSIncome the ordering **inverts** and AIM is indistinguishable from the independent baseline. Diagnosed: the structure metric's column pair is one AIM selects at every ε on Adult and at one of three on ACS, so the Adult result is partly a metric/mechanism coincidence. Reported, not tuned away — [results/acs/H1_RESULTS.md](results/acs/H1_RESULTS.md). |
 | **H2** — subgroup disparity | ✅ **Bounded null** | 14 subgroup comparisons, 0 significant raw, 0 surviving BH-FDR or Bonferroni. 2 of 14 are statistically **equivalent** to chance within a pre-specified margin (TOST) — a bound on the effect, not merely absence of evidence. Detectability is stated: the adversary needed accuracy 0.600 and reached 0.562. See [results/H2_RESULTS.md](results/H2_RESULTS.md). |
-| **H3** — ledger-driven allocation | ❌ Not started | `Allocator` exists; nothing drives generators with it. |
+| **H3** — budget allocation | ✅ **Null, replicated** | Utility-weighted vs uniform allocation at fixed total ε, on both datasets. **Not supported**: at none of the 5 ε values on either dataset does the paired weighted-minus-uniform gap in TSTR macro F1 have a bootstrap CI excluding zero. Weights are **declared public metadata**, never measured from the table — deriving them would be an uncharged query. See [results/h3_allocation.json](results/h3_allocation.json) and ch06 §6.10. |
 
 ---
 
@@ -147,6 +147,7 @@ make test        # pytest with coverage
 make lint        # ruff + black, matching CI
 make security    # bandit SAST, pip-audit, npm audit
 make h1          # the H1 grid on UCI Adult (long)
+make console-test # the console's vitest suite
 ```
 
 Pull requests are reviewed by [CodeRabbit](.coderabbit.yaml), configured with this project's

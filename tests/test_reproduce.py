@@ -28,7 +28,7 @@ def test_manifest_has_everything_needed_to_reproduce_a_run():
 
     # Each experiment's grid is read from the runner module, so it cannot drift from what
     # actually ran.
-    assert set(m["experiments"]) == {"h1", "h2", "detection_floor"}
+    assert set(m["experiments"]) == {"h1", "h2", "h3", "detection_floor"}
     assert "seeds" in m["experiments"]["h1"]
     assert "eps_grid" in m["experiments"]["h1"]
     # One runner drives both benchmarks; each records its own target and structure pair.
@@ -170,3 +170,45 @@ def test_a_non_json_result_file_is_hashed_verbatim(tmp_path):
     first = _sha256(p)
     p.write_text("a,b\n1,3\n", encoding="utf-8")
     assert _sha256(p) != first
+
+
+def test_no_manifest_config_section_silently_records_an_error():
+    """REGRESSION: `_experiment_config` wraps each reader in a broad `except` and stores
+    `{"error": ...}` on failure. When `run_h2`'s module-level ATTRIBUTES constant was removed
+    during the --dataset parameterisation, the manifest quietly began pinning an AttributeError
+    string in place of the H2 grid — the exact drift the manifest exists to detect, occurring
+    inside the manifest itself.
+    """
+    from scripts.reproduce import _experiment_config
+
+    cfg = _experiment_config()
+    broken = {k: v["error"] for k, v in cfg.items() if isinstance(v, dict) and "error" in v}
+    assert not broken, f"manifest config sections failed to build: {broken}"
+
+
+def test_the_manifest_covers_every_hypothesis_and_the_floor():
+    """A result file missing from RESULT_FILES is a published number nothing pins."""
+    from scripts.reproduce import RESULT_FILES
+
+    joined = " ".join(RESULT_FILES)
+    for expected in ("h1_all_families", "h2_subgroups", "h3_allocation", "detection_floor"):
+        assert expected in joined, f"{expected} is not pinned by the manifest"
+    # Both datasets, for each hypothesis that has two.
+    assert sum("acs/" in p for p in RESULT_FILES) >= 4
+
+
+def test_every_manifest_result_file_has_a_producing_experiment():
+    """A file with no runner cannot be regenerated, so `reproduce --run` would leave it stale."""
+    from scripts.reproduce import EXPERIMENTS, RESULT_FILES
+
+    cmds = " ".join(" ".join(c) for _, c in EXPERIMENTS)
+    for path in RESULT_FILES:
+        stem = path.split("/")[-1].replace(".json", "")
+        key = {
+            "h1_all_families": "run_h1",
+            "h2_subgroups": "run_h2",
+            "h2_analysis": "analyse_h2",
+            "h3_allocation": "run_h3",
+            "detection_floor": "run_detection_floor",
+        }[stem]
+        assert key in cmds, f"{path} has no experiment that produces it"

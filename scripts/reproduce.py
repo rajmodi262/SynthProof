@@ -40,6 +40,10 @@ RESULT_FILES = [
     "results/acs/h1_all_families.json",
     "results/h2_subgroups.json",
     "results/h2_analysis.json",
+    "results/acs/h2_subgroups.json",
+    "results/acs/h2_analysis.json",
+    "results/h3_allocation.json",
+    "results/acs/h3_allocation.json",
     "results/detection_floor.json",
 ]
 
@@ -47,8 +51,12 @@ RESULT_FILES = [
 EXPERIMENTS = [
     ("h1_adult", [sys.executable, "-m", "scripts.run_h1"]),
     ("h1_acs", [sys.executable, "-m", "scripts.run_h1", "--dataset", "acs"]),
-    ("h2", [sys.executable, "-m", "scripts.run_h2"]),
-    ("h2_analysis", [sys.executable, "-m", "scripts.analyse_h2"]),
+    ("h2_adult", [sys.executable, "-m", "scripts.run_h2"]),
+    ("h2_acs", [sys.executable, "-m", "scripts.run_h2", "--dataset", "acs"]),
+    ("h2_analysis_adult", [sys.executable, "-m", "scripts.analyse_h2"]),
+    ("h2_analysis_acs", [sys.executable, "-m", "scripts.analyse_h2", "--dataset", "acs"]),
+    ("h3_adult", [sys.executable, "-m", "scripts.run_h3"]),
+    ("h3_acs", [sys.executable, "-m", "scripts.run_h3", "--dataset", "acs"]),
     ("detection_floor", [sys.executable, "-m", "scripts.run_detection_floor"]),
 ]
 
@@ -146,8 +154,13 @@ def _experiment_config() -> Dict[str, dict]:
             "n_rows": run_h2.N_ROWS,
             "eps_grid": list(run_h2.EPS_GRID),
             "seeds": list(run_h2.SEEDS),
-            "attributes": list(run_h2.ATTRIBUTES),
+            "mechanism": run_h2.MECHANISM,
             "total_canaries": run_h2.TOTAL_CANARIES,
+            # Per-dataset since the runner was parameterised. Reading the removed module-level
+            # ATTRIBUTES constant here raised, and the broad `except` wrote the AttributeError
+            # into the manifest in place of the grid — pinning an error message rather than a
+            # configuration. `tests/test_reproduce.py` now asserts no section carries an error.
+            "attributes": {k: list(v["attributes"]) for k, v in run_h2.DATASETS.items()},
         }
     except Exception as exc:
         cfg["h2"] = {"error": str(exc)}
@@ -162,6 +175,22 @@ def _experiment_config() -> Dict[str, dict]:
         }
     except Exception as exc:
         cfg["detection_floor"] = {"error": str(exc)}
+    try:
+        from scripts import run_h3
+
+        cfg["h3"] = {
+            "n_rows": run_h3.N_ROWS,
+            "eps_grid": list(run_h3.EPS_GRID),
+            "seeds": list(run_h3.SEEDS),
+            "priority_weight": run_h3.PRIORITY_WEIGHT,
+            "weights_source": "declared-public",
+            "datasets": {
+                k: {"target_col": v["target_col"], "priority_cols": list(v["priority_cols"])}
+                for k, v in run_h3.DATASETS.items()
+            },
+        }
+    except Exception as exc:
+        cfg["h3"] = {"error": str(exc)}
     return cfg
 
 

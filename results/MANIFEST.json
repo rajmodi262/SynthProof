@@ -1,8 +1,8 @@
 {
   "manifest_version": 1,
-  "generated_at": "2026-08-16T15:00:34.128655+00:00",
+  "generated_at": "2026-08-16T17:31:26.448557+00:00",
   "git": {
-    "commit": "5448ed68a126054dba00421a09d970ffaa6a077d",
+    "commit": "c10968c7bfe5fd07cb25cfc88ed58c86410756ce",
     "branch": "audit-fixes-and-acs",
     "dirty": true
   },
@@ -58,7 +58,28 @@
       }
     },
     "h2": {
-      "error": "module 'scripts.run_h2' has no attribute 'ATTRIBUTES'"
+      "n_rows": 6000,
+      "eps_grid": [
+        1.0,
+        8.0
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "mechanism": "pairwise",
+      "total_canaries": 400,
+      "attributes": {
+        "adult": [
+          "sex",
+          "race"
+        ],
+        "acs": [
+          "SEX",
+          "RAC1P"
+        ]
+      }
     },
     "detection_floor": {
       "n_rows": 3000,
@@ -85,6 +106,45 @@
         3,
         4
       ]
+    },
+    "h3": {
+      "n_rows": 6000,
+      "eps_grid": [
+        0.5,
+        1.0,
+        2.0,
+        4.0,
+        8.0
+      ],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "priority_weight": 4.0,
+      "weights_source": "declared-public",
+      "datasets": {
+        "adult": {
+          "target_col": "income",
+          "priority_cols": [
+            "income",
+            "education",
+            "hours_per_week",
+            "occupation"
+          ]
+        },
+        "acs": {
+          "target_col": "income",
+          "priority_cols": [
+            "income",
+            "SCHL",
+            "WKHP",
+            "OCCP"
+          ]
+        }
+      }
     }
   },
   "files": {
@@ -92,7 +152,11 @@
     "results/acs/h1_all_families.json": "4927c18a21a0c692b3f08c1899f50f00d1cf4f1f274b148d8462e43c1c53a9fd",
     "results/h2_subgroups.json": "0072495d534915b91aea57fb1e7b93ad77d9b1d0f6f85342c1a9ac1d67066842",
     "results/h2_analysis.json": "3c6df3f6ccc56f08d4f63d1b9f4500f532809442c4fcf3aa060e12b3fe630977",
+    "results/acs/h2_subgroups.json": "561c53c668554dfe361ddb4a9ce82ee76a2585c58c63ec89c60987ff690aefd0",
+    "results/acs/h2_analysis.json": "e9e7ca4d63a507619ead625bc2a3e9e6ef4da1507ab5e82f94250f0eb0518541",
+    "results/h3_allocation.json": "e763dceefde3e1ec641b61e72661b0dc9c48c8dbc3bed6197ccfa0e84118382c",
+    "results/acs/h3_allocation.json": "b0c07215a3cb526f382f0d83c727c15a571a796b60b9a9f11897db066fe604b5",
     "results/detection_floor.json": "1bb59d07222093dc5d31f09a2d2edd7cdd624da730dfa1adeedf9b79fa14c6af"
   },
-  "manifest_hash": "9349aaf2caccba0840ea2f8ffea866a5346c44e15a0f92e0836b4460a15e517f"
+  "manifest_hash": "5fe76e49c188ebefe0a2773b9d8c73dbb28d33fa728c202d5d85097530f69e65"
 }
