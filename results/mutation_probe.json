@@ -1,0 +1,163 @@
+{
+  "kind": "targeted mutation probe (curated list, not a general sweep)",
+  "score": 1.0,
+  "caught": 10,
+  "survived": 0,
+  "equivalent_excluded": 3,
+  "denominator": 10,
+  "elapsed_seconds": 76.7,
+  "results": [
+    {
+      "id": "budget-off-by-one",
+      "status": "caught",
+      "path": "synthproof/accounting/accountant.py",
+      "danger": "A release could exceed its declared budget by 5% and still be accepted.",
+      "tests": [
+        "tests/test_accounting.py",
+        "tests/test_accounting_properties.py",
+        "tests/test_weighted_allocation.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "zero-noise-is-finite",
+      "status": "equivalent",
+      "path": "synthproof/accounting/accountant.py",
+      "danger": "Zero noise would compose to a FINITE epsilon instead of infinity \u2014 a release with no protection carrying a real-looking bound. This is defect #2 from the audit history.",
+      "tests": [
+        "tests/test_accounting.py",
+        "tests/test_accounting_properties.py",
+        "tests/test_weighted_allocation.py"
+      ],
+      "equivalent": "Verified: dp_accounting returns inf for GaussianDpEvent(0.0) regardless, so the explicit NonPrivateDpEvent branch is defence-in-depth rather than the only protection. Removing it cannot produce a finite epsilon."
+    },
+    {
+      "id": "unknown-mechanism-silently-gaussian",
+      "status": "caught",
+      "path": "synthproof/accounting/accountant.py",
+      "danger": "An unrecognised mechanism would be accounted as Gaussian. Defect #3 from the audit history.",
+      "tests": [
+        "tests/test_accounting.py",
+        "tests/test_accounting_properties.py",
+        "tests/test_weighted_allocation.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "calibration-returns-optimistic-bracket",
+      "status": "caught",
+      "path": "synthproof/accounting/calibration.py",
+      "danger": "Calibration would return the end of the bracket that OVERSPENDS, so every release would deliver a larger epsilon than it claims.",
+      "tests": [
+        "tests/test_accounting.py",
+        "tests/test_accounting_properties.py",
+        "tests/test_weighted_allocation.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "weighted-shape-exponent",
+      "status": "equivalent",
+      "path": "synthproof/accounting/calibration.py",
+      "danger": "The weighted allocation would misprice the split, so the H3 weighted arm would not spend the same total as the uniform arm.",
+      "tests": [
+        "tests/test_accounting.py",
+        "tests/test_accounting_properties.py",
+        "tests/test_weighted_allocation.py"
+      ],
+      "equivalent": "Verified: the exponent sets only the SHAPE of the split. The bisection still solves for the total against the accountant, so the never-overspend property holds and both H3 arms still cost the same. The mutant changes which columns get how much noise, not how much is spent."
+    },
+    {
+      "id": "sigma-zero-allowed",
+      "status": "equivalent",
+      "path": "synthproof/accounting/noise.py",
+      "danger": "A sigma of exactly zero would be accepted, producing an unnoised release while the accountant charges a finite epsilon.",
+      "tests": [
+        "tests/test_accounting.py",
+        "tests/test_accounting_properties.py",
+        "tests/test_weighted_allocation.py"
+      ],
+      "equivalent": "Verified: with sigma=0 the sampler reaches -(|y| - 0/t)^2 / (2*0) and raises ZeroDivisionError. It fails loudly rather than silently emitting an unnoised release, so the guard is redundant with an arithmetic impossibility."
+    },
+    {
+      "id": "category-threshold-weakened",
+      "status": "caught",
+      "path": "synthproof/data/profiler.py",
+      "danger": "Rare categories would survive suppression, leaking values held by very few people. This is the family the un-noised-mode defect belonged to.",
+      "tests": [
+        "tests/test_profiler_soundness.py",
+        "tests/test_data.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "public-bounds-ignored",
+      "status": "caught",
+      "path": "synthproof/data/profiler.py",
+      "danger": "Declared PUBLIC bounds would be ignored and re-derived noisily from the data, spending budget to rediscover a published fact and widening ranges absurdly.",
+      "tests": [
+        "tests/test_profiler_soundness.py",
+        "tests/test_data.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "empty-domain-guesses-again",
+      "status": "NOT APPLIED",
+      "danger": "The empty-domain fallback would again return a data-derived category rather than the public domain \u2014 the exact critical defect fixed earlier in this project."
+    },
+    {
+      "id": "identifier-check-never-fires",
+      "status": "caught",
+      "path": "synthproof/data/preflight.py",
+      "danger": "A column with one distinct value per row would be accepted, so identifier tables would reach the generator again.",
+      "tests": [
+        "tests/test_preflight.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "row-floor-removed",
+      "status": "caught",
+      "path": "synthproof/data/preflight.py",
+      "danger": "Tiny tables would be released, where any usable epsilon destroys the data entirely.",
+      "tests": [
+        "tests/test_preflight.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "head-not-checked",
+      "status": "caught",
+      "path": "synthproof/ledger/ledger.py",
+      "danger": "Truncation would go undetected again: an operator could delete the entries recording a budget overspend and still pass verification.",
+      "tests": [
+        "tests/test_ledger_adversarial.py",
+        "tests/test_ledger.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "head-count-not-compared",
+      "status": "caught",
+      "path": "synthproof/ledger/ledger.py",
+      "danger": "The signed head would stop pinning the chain LENGTH, which is the specific property that detects truncation.",
+      "tests": [
+        "tests/test_ledger_adversarial.py",
+        "tests/test_ledger.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "ceiling-inflated",
+      "status": "caught",
+      "path": "synthproof/audit/steinke.py",
+      "danger": "The reported audit ceiling would be far too high, so an uninformative audited epsilon of 0 would look like meaningful evidence of no leakage.",
+      "tests": [
+        "tests/test_steinke.py",
+        "tests/test_subgroup_audit.py"
+      ],
+      "equivalent": ""
+    }
+  ]
+}

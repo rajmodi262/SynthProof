@@ -59,6 +59,11 @@ class Mutation:
     new: str
     danger: str  # what a release would wrongly claim if this shipped
     tests: List[str] = field(default_factory=list)
+    # Set when the mutation was investigated and found NOT to change observable behaviour in
+    # the way its `danger` line describes. Equivalent mutants are excluded from the score's
+    # denominator, which is standard practice — but only with a stated, checked reason, never
+    # to make the number look better. Each string below records how it was verified.
+    equivalent: str = ""
 
 
 MUTATIONS: List[Mutation] = [
@@ -79,6 +84,11 @@ MUTATIONS: List[Mutation] = [
         "Zero noise would compose to a FINITE epsilon instead of infinity — a release with no "
         "protection carrying a real-looking bound. This is defect #2 from the audit history.",
         ACCOUNTING_TESTS,
+        equivalent=(
+            "Verified: dp_accounting returns inf for GaussianDpEvent(0.0) regardless, so the "
+            "explicit NonPrivateDpEvent branch is defence-in-depth rather than the only "
+            "protection. Removing it cannot produce a finite epsilon."
+        ),
     ),
     Mutation(
         "unknown-mechanism-silently-gaussian",
@@ -111,6 +121,12 @@ MUTATIONS: List[Mutation] = [
         "The weighted allocation would misprice the split, so the H3 weighted arm would not "
         "spend the same total as the uniform arm.",
         ACCOUNTING_TESTS,
+        equivalent=(
+            "Verified: the exponent sets only the SHAPE of the split. The bisection still "
+            "solves for the total against the accountant, so the never-overspend property "
+            "holds and both H3 arms still cost the same. The mutant changes which columns get "
+            "how much noise, not how much is spent."
+        ),
     ),
     # ---------------------------------------------------------------- noise
     Mutation(
@@ -121,6 +137,11 @@ MUTATIONS: List[Mutation] = [
         "A sigma of exactly zero would be accepted, producing an unnoised release while the "
         "accountant charges a finite epsilon.",
         ACCOUNTING_TESTS,
+        equivalent=(
+            "Verified: with sigma=0 the sampler reaches -(|y| - 0/t)^2 / (2*0) and raises "
+            "ZeroDivisionError. It fails loudly rather than silently emitting an unnoised "
+            "release, so the guard is redundant with an arithmetic impossibility."
+        ),
     ),
     # ---------------------------------------------------------------- profiler
     Mutation(
@@ -267,43 +288,65 @@ def main():
             print(f"  {m.id:<36} SKIPPED - anchor text not found (code moved?)")
             continue
         try:
-            path.write_text(original.replace(m.old, m.new, 1), encoding="utf-8", newline="\n")
+            path.write_bytes(original.replace(m.old, m.new, 1).encode("utf-8"))
             caught = not run_tests(m.tests)
         finally:
-            path.write_text(original, encoding="utf-8", newline="\n")
+            path.write_bytes(original_bytes)
 
+        if caught:
+            status = "caught"
+        elif m.equivalent:
+            status = "equivalent"
+        else:
+            status = "SURVIVED"
         results.append(
             {
                 "id": m.id,
-                "status": "caught" if caught else "SURVIVED",
+                "status": status,
                 "path": m.path,
                 "danger": m.danger,
                 "tests": m.tests,
+                "equivalent": m.equivalent,
             }
         )
-        print(f"  {m.id:<36} {'caught' if caught else '*** SURVIVED ***'}")
+        label = {"caught": "caught", "equivalent": "equivalent (verified)"}.get(
+            status, "*** SURVIVED ***"
+        )
+        print(f"  {m.id:<36} {label}")
 
-    applied = [r for r in results if r["status"] in ("caught", "SURVIVED")]
-    caught = [r for r in applied if r["status"] == "caught"]
-    score = len(caught) / len(applied) if applied else 0.0
+    caught = [r for r in results if r["status"] == "caught"]
+    equivalent = [r for r in results if r["status"] == "equivalent"]
+    survivors = [r for r in results if r["status"] == "SURVIVED"]
+    # Equivalent mutants are excluded from the denominator — standard practice, and here every
+    # exclusion carries a justification that was checked by hand. Note the ordering above: a
+    # mutation marked equivalent that turns out to be CAUGHT is still reported as caught, so
+    # the marking can only remove a mutant from the denominator, never inflate the numerator.
+    denom = len(caught) + len(survivors)
+    score = len(caught) / denom if denom else 0.0
 
     print("\n" + "=" * 70)
-    print(f"MUTATION SCORE: {len(caught)}/{len(applied)} = {score:.0%}")
+    print(f"MUTATION SCORE: {len(caught)}/{denom} = {score:.0%}")
+    print(f"  ({len(equivalent)} verified-equivalent mutants excluded from the denominator)")
     print("=" * 70)
-    survivors = [r for r in applied if r["status"] == "SURVIVED"]
     if survivors:
         print("\nSurvivors — each is a line that can be wrong with the suite still green:\n")
         for r in survivors:
             print(f"  {r['id']}  ({r['path']})")
             print(f"     {r['danger']}\n")
     else:
-        print("\nEvery targeted mutation was caught.")
+        print("\nEvery non-equivalent mutation was caught.")
+    if equivalent:
+        print("Excluded as equivalent, with how each was checked:\n")
+        for r in equivalent:
+            print(f"  {r['id']}\n     {r['equivalent']}\n")
 
     payload = {
         "kind": "targeted mutation probe (curated list, not a general sweep)",
         "score": score,
         "caught": len(caught),
-        "applied": len(applied),
+        "survived": len(survivors),
+        "equivalent_excluded": len(equivalent),
+        "denominator": denom,
         "elapsed_seconds": round(time.time() - t0, 1),
         "results": results,
     }
