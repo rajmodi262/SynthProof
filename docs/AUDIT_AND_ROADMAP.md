@@ -155,7 +155,7 @@ regresses, every certificate the project emits becomes false, so it gets its own
 | Test suite | ✅ 500+ cases, 94% coverage |
 | Console tests | ✅ 10 vitest cases over the hand-rolled SSE parser |
 | Claim and citation checks | ✅ `make claims` — dead claims and dangling/duplicate citations |
-| **Console dependency on a CDN** | ⚠️ Minor. Google Fonts loaded remotely, so the console degrades without internet |
+| Console dependency on a CDN | ✅ **Closed 2026-08-23.** The legacy console at `api/static/index.html` loaded Inter and JetBrains Mono from Google Fonts. Replaced with system stacks; a test now fails if any console HTML references an external host |
 
 ### 4.5 The short list
 

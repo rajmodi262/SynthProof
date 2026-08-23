@@ -533,3 +533,22 @@ def test_the_console_is_told_which_attacks_ran():
 
     absent = {a["name"].lower() for a in done["attacks_not_implemented"]}
     assert not {a.lower() for a in done["attacks_run"]} & absent, "claimed both run and absent"
+
+
+def test_no_console_asset_reaches_out_to_a_third_party():
+    """A demo that needs the network is a demo that fails in the room it matters.
+
+    The legacy console loaded Inter and JetBrains Mono from Google Fonts, so it degraded
+    with no internet -- and it is a page that displays privacy measurements, which is a poor
+    place to add a third-party request. System stacks render identically without one.
+    """
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1] / "synthproof" / "api"
+    for html in root.rglob("static/*.html"):
+        text = html.read_text(encoding="utf-8")
+        # Ignore URLs inside HTML comments -- the explanation of the fix names the CDN.
+        stripped = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+        external = re.findall(r'(?:href|src)\s*=\s*["\'](https?://[^"\']+)', stripped)
+        assert not external, f"{html.name} loads external assets: {external}"
