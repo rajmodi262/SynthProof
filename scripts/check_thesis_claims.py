@@ -134,6 +134,31 @@ REQUIRED_WITH_AUDIT: list[tuple[str, str, str]] = [
 ]
 
 
+# A document that WARNS against a dead claim necessarily contains it. Four rules needed this
+# guard before it was worth generalising -- "we found no system", "NOT cross-release",
+# 'do not call this "append-only"', and "unrefuted rather than novel". Rather than bolt a
+# lookbehind onto each pattern, any match whose immediate neighbourhood carries a negation or
+# prohibition marker is dropped. False negatives here are cheap: a writer who types "not novel"
+# already knows.
+_HEDGE = re.compile(
+    r"\b(not|never|no longer|rather than|instead of|unrefuted|avoid|do not|don't|"
+    r"must not|cannot|stop claiming|dead|killed|occupied)\b",
+    re.I,
+)
+_HEDGE_WINDOW = 60
+
+
+def _is_hedged(text: str, start: int, end: int) -> bool:
+    """True if a negation sits close enough to be governing this match.
+
+    The window spans the match itself as well as its neighbourhood: a loose pattern often
+    swallows the very words that negate it, as in "the refusal gate is *unrefuted* rather
+    than novel" -- where both hedges fall inside the matched span.
+    """
+    window = text[max(0, start - _HEDGE_WINDOW) : end + _HEDGE_WINDOW]
+    return bool(_HEDGE.search(window))
+
+
 def check(path: Path) -> list[str]:
     text = path.read_text(encoding="utf-8")
     # Blockquotes are where we deliberately QUOTE dead claims in order to retract them, so
@@ -144,6 +169,8 @@ def check(path: Path) -> list[str]:
 
     for label, pattern, why, instead in DEAD_CLAIMS:
         for m in re.finditer(pattern, prose, re.I):
+            if _is_hedged(prose, m.start(), m.end()):
+                continue
             line = prose[: m.start()].count("\n") + 1
             problems.append(
                 f"{path.name}:{line}  [{label}]  {m.group(0)[:70]!r}\n"

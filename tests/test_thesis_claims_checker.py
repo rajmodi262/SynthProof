@@ -137,3 +137,29 @@ def test_a_quoted_dead_phrase_is_not_flagged(tmp_path):
 
     asserted = "The ledger is append-only and signed."
     assert "append-only" in labels(check(_write(tmp_path, asserted)))
+
+
+def test_a_hedge_inside_the_matched_span_is_respected(tmp_path):
+    """Fourth false-positive class, and the one that forced a general fix.
+
+    A loose pattern often swallows the very words that negate it. Here 'unrefuted' and
+    'rather than' both fall INSIDE the match, so a guard that only inspected the text
+    around the span still fired. The window now spans the match itself.
+    """
+    hedged = (
+        "The SDC Handbook was unreachable, so the refusal gate is *unrefuted* rather than novel."
+    )
+    assert "refusal-novel" not in labels(check(_write(tmp_path, hedged)))
+
+    asserted = "Our refusal gate is novel and no other system does this."
+    assert "refusal-novel" in labels(check(_write(tmp_path, asserted)))
+
+
+def test_the_generated_evidence_maps_are_clean(tmp_path):
+    """The maps tell writers what not to say; they must not trip the rule themselves."""
+    from scripts.check_thesis_claims import THESIS
+
+    for name in ("ch01-evidence.md", "ch05-evidence.md", "ch08-evidence.md"):
+        p = THESIS / name
+        if p.exists():
+            assert check(p) == [], f"{name} states a dead claim: {check(p)}"

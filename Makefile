@@ -139,6 +139,7 @@ claims:
 tables:
 	python scripts/build_results_tables.py
 	python scripts/build_implementation_evidence.py
+	python scripts/build_argument_maps.py
 
 demo:
 	python -m synthproof.cli demo --rows 100 --eps 1.0
