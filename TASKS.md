@@ -7,6 +7,28 @@
 
 ---
 
+> ## ⚠️ THIS BOARD IS STALE. Do not use it to decide what is left.
+>
+> **Checked 2026-08-23 and it drifts the same way `TASKBOARD.md` and `AUDIT_AND_ROADMAP.md`
+> did — inventing open work rather than hiding it.** Spot-checks against the code:
+>
+> | Item | This board | Reality |
+> |---|---|---|
+> | ACS second dataset | 6 open, 0 done | Full H1/H2/H3 grids in `results/acs/` |
+> | Attribute inference | 1 open, 0 done | Implemented, tested, running on every cell |
+> | DOMIAS | 1 open, 0 done | Implemented and running on every cell |
+>
+> It has 523 `[ ]` and 427 `[x]` across 1,810 lines. Auditing every row was not proportionate,
+> so the drift is flagged here rather than silently corrected — a half-audited board is worse
+> than one that says it is unreliable.
+>
+> **Authoritative sources, in order:**
+> 1. `docs/TASKBOARD.md` — milestone status, corrected 2026-08-23
+> 2. `docs/AUDIT_AND_ROADMAP.md` §4 — what is left, by aspect, rewritten from a verified scan
+> 3. `../SYNTHPROOF-COMPLETION-PLAN.md` — the current plan and live status
+>
+> This file is kept for its history and its section structure, not for its checkboxes.
+
 ## Table of contents
 
 | Section | What it is |

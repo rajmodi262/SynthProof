@@ -71,8 +71,8 @@ EXPERIMENTS = [
     ("h3_adult", [sys.executable, "-m", "scripts.run_h3"]),
     ("h3_acs", [sys.executable, "-m", "scripts.run_h3", "--dataset", "acs"]),
     ("detection_floor", [sys.executable, "-m", "scripts.run_detection_floor"]),
-    ("fairness_adult", [sys.executable, "scripts/run_fairness.py", "adult"]),
-    ("fairness_acs", [sys.executable, "scripts/run_fairness.py", "acs"]),
+    ("fairness_adult", [sys.executable, "-m", "scripts.run_fairness"]),
+    ("fairness_acs", [sys.executable, "-m", "scripts.run_fairness", "--dataset", "acs"]),
 ]
 
 # Only packages whose version can change a number. Formatters and linters cannot, so listing

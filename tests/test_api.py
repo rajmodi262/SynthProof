@@ -514,3 +514,22 @@ def test_audit_ceiling_is_monotone_in_canary_count():
     assert audit_ceiling(800) == pytest.approx(5.38)
     # Past the measured grid it saturates rather than extrapolating optimistically.
     assert audit_ceiling(5000) == pytest.approx(5.38)
+
+
+def test_the_console_is_told_which_attacks_ran():
+    """It received `attacks_not_implemented` but never `attacks_run`.
+
+    So the console showed one attack -- the distance-MIA block -- where five had run, and
+    could not agree with the certificate about what the pipeline did. Under-reporting a
+    capability is the same defect as over-reporting one, just in the flattering direction.
+    Derived from the run's artefacts, exactly as `frontier/certificate.py` derives it.
+    """
+    events = _run()
+    done = next(p for e, p in events if e == "done")
+
+    assert "attacks_run" in done, "console cannot report what ran"
+    assert "canary_audit" in done["attacks_run"]
+    assert "domias" in done["attacks_run"], done["attacks_run"]
+
+    absent = {a["name"].lower() for a in done["attacks_not_implemented"]}
+    assert not {a.lower() for a in done["attacks_run"]} & absent, "claimed both run and absent"

@@ -210,5 +210,6 @@ def test_every_manifest_result_file_has_a_producing_experiment():
             "h2_analysis": "analyse_h2",
             "h3_allocation": "run_h3",
             "detection_floor": "run_detection_floor",
+            "fairness": "run_fairness",
         }[stem]
         assert key in cmds, f"{path} has no experiment that produces it"

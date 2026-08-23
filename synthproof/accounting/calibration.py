@@ -123,6 +123,34 @@ def calibrate_noise_scale(
     return hi
 
 
+# ── the under-spend, diagnosed 2026-08-23 ────────────────────────────────────────────────
+#
+# Releases compose to roughly 0.92 of their target epsilon, and AIM to 0.79. The cause is NOT
+# the bisection below, which lands within 0.01% of target on a single stage:
+#
+#     single-stage  target 0.5 -> 0.499967   target 8.0 -> 7.999605     ratio 1.0000
+#     two-stage     target 1.0 -> 0.832346   target 8.0 -> 6.715220     ratio 0.83
+#
+# The loss is entirely in `BudgetPlan`, and it is structural. The plan splits the total
+# LINEARLY across stages and calibrates each stage against its own share, but RDP composition
+# is SUBLINEAR -- composing two stages calibrated to 0.2e and 0.8e yields materially less than
+# e. Every stage added widens the gap, which is why AIM, with the most charged operations,
+# leaves the most on the table.
+#
+# THE FIX, and why it is not applied here. Bisect an outer multiplier k on the stage shares
+# until the COMPOSED total meets the target, returning the conservative side exactly as the
+# inner search does. Composition is monotone in k, so this is well-posed and preserves the
+# never-overspend invariant.
+#
+# It is not applied because it would change every published epsilon -- proved 7.356 becomes
+# ~8.0 -- and therefore invalidates every committed result until the full grid is re-run
+# (~4h per dataset). That is a deliberate scope decision, not an oversight. The current
+# behaviour is conservative in the safe direction: the release is MORE private than the
+# operator asked for, never less.
+#
+# Tracked as M3.7. See ../SYNTHPROOF-COMPLETION-PLAN.md Phase 4.
+
+
 @dataclass(frozen=True)
 class BudgetPlan:
     """A split of one release's total epsilon across the pipeline stages.

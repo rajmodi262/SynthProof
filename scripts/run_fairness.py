@@ -20,8 +20,8 @@ distribution and would penalise exactly the mechanisms that model it.
 
 Run:
 
-    python scripts/run_fairness.py            # both datasets
-    python scripts/run_fairness.py adult      # one
+    python -m scripts.run_fairness                    # UCI Adult
+    python -m scripts.run_fairness --dataset acs      # ACSIncome
 """
 
 from __future__ import annotations
@@ -114,7 +114,14 @@ def run_cell_fairness(ds, attribute, target, eps, seed):
 
 
 def main() -> None:
-    names = sys.argv[1:] or list(DATASETS)
+    # `--dataset` rather than a bare positional, matching run_h1/run_h2/run_h3 so
+    # `scripts.reproduce` can invoke every experiment the same way.
+    import argparse
+
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--dataset", choices=sorted(DATASETS), action="append", dest="datasets")
+    args = ap.parse_args()
+    names = args.datasets or ["adult"]
     for name in names:
         cfg = DATASETS[name]
         ds = _load(name)

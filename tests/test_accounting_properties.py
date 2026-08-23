@@ -262,3 +262,47 @@ def test_we_never_under_report_epsilon_relative_to_autodp(sigma, k):
     assert (
         ours >= theirs * 0.999
     ), f"UNDER-REPORTING at sigma={sigma}, k={k}: ours={ours:.6f} < autodp={theirs:.6f}"
+
+
+# ── the under-spend: where it is, and where it is not ────────────────────────────────────
+
+
+@pytest.mark.parametrize("target", [0.5, 1.0, 8.0])
+def test_single_stage_calibration_is_essentially_exact(target):
+    """Pins the diagnosis: the bisection is NOT the source of the ~8% under-spend.
+
+    Releases compose to ~0.92 of target (AIM ~0.79), and the obvious suspect is the
+    calibration search. It is not: on one stage the search lands within 0.01%.
+    """
+    from synthproof.accounting.calibration import calibrate_noise_scale
+
+    scale = calibrate_noise_scale(target, 1e-5, "gaussian", 1.0, 12)
+    achieved = epsilon_for_noise_scale(scale, 1e-5, "gaussian", 1.0, 12)
+    assert achieved / target == pytest.approx(1.0, abs=1e-3), achieved
+    assert achieved <= target, "calibration must never overspend"
+
+
+def test_a_linear_stage_split_is_what_loses_the_budget():
+    """The actual cause, pinned so a future fix has a baseline to beat.
+
+    RDP composition is SUBLINEAR, so calibrating stages against a LINEAR split of the total
+    and composing them lands well short. This is conservative -- the release is more private
+    than requested, never less -- but it is real utility left unspent, and it is why AIM,
+    with the most charged operations, loses the most.
+    """
+    from synthproof.accounting.accountant import Accountant
+    from synthproof.accounting.calibration import calibrate_noise_scale
+    from synthproof.accounting.types import MechanismSpec
+
+    target = 8.0
+    profile, synthesis = 0.2 * target, 0.8 * target
+    acc = Accountant(budget_eps=float("inf"), budget_delta=1e-5)
+    for share in (profile, synthesis):
+        scale = calibrate_noise_scale(share, 1e-5, "gaussian", 1.0, 12)
+        acc.charge(MechanismSpec("gaussian", 1.0, scale, steps=12))
+
+    ratio = acc.total() / target
+    assert ratio < 0.90, f"expected a material shortfall, got {ratio:.4f}"
+    assert ratio > 0.70, f"shortfall larger than diagnosed: {ratio:.4f}"
+    # Conservative direction only. Overspending would be the F4-class failure.
+    assert acc.total() < target

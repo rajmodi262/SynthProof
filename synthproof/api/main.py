@@ -744,6 +744,23 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
                     "num_test": mia.num_test,
                     "note": "Nearest-neighbour baseline. This is NOT LiRA.",
                 },
+                # What actually RAN, derived from the artefacts this run produced -- the same
+                # rule the certificate follows. The console previously received only
+                # `attacks_not_implemented` and the single distance-MIA block, so it showed
+                # one attack where five had run. Under-reporting a capability is the same
+                # defect as over-reporting one, just in the flattering direction.
+                "attacks_run": ["canary_audit"]
+                + [
+                    label
+                    for key, label in (
+                        ("_mia", "distance_mia"),
+                        ("_domias", "domias"),
+                        ("_singling_out", "exact_match_risk"),
+                        ("_linkability", "linkability"),
+                        ("_attr_inference", "attribute_inference"),
+                    )
+                    if payload.get(key) is not None
+                ],
                 "attacks_not_implemented": NOT_IMPLEMENTED_ATTACKS,
                 "cloud": {
                     "axes": cloud.axes,
