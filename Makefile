@@ -1,4 +1,4 @@
-.PHONY: help claims tables install install-locked lock test lint format h1 h1-acs h2 h2-acs h3 h3-acs h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
+.PHONY: help claims tables thesis install install-locked lock test lint format h1 h1-acs h2 h2-acs h3 h3-acs h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
         console-install console-test security audit docker-build docker-up
 
 help:
@@ -146,6 +146,12 @@ tables:
 	python scripts/build_results_tables.py
 	python scripts/build_implementation_evidence.py
 	python scripts/build_argument_maps.py
+
+# Assembles ch01..ch08 into docs/thesis/THESIS.md and renders SynthProof-Thesis.pdf.
+# The front matter carries a draft-status page naming every unwritten section, so an
+# incomplete build cannot be mistaken for a finished one.
+thesis:
+	python scripts/build_thesis.py
 
 demo:
 	python -m synthproof.cli demo --rows 100 --eps 1.0
