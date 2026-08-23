@@ -138,6 +138,7 @@ claims:
 # a typed table drifts silently, a generated one cannot.
 tables:
 	python scripts/build_results_tables.py
+	python scripts/build_implementation_evidence.py
 
 demo:
 	python -m synthproof.cli demo --rows 100 --eps 1.0

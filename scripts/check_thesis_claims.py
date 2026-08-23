@@ -110,8 +110,12 @@ DEAD_CLAIMS: list[tuple[str, str, str, str]] = [
         "and why (~21h compute for a likely wide-CI null).",
     ),
     (
+        # Third rule to need this, so state the pattern once: a document that WARNS against a
+        # dead phrase necessarily contains it. Quoting ("append-only") or prohibiting it
+        # ("do not call this append-only") is the correct behaviour and must not be flagged.
+        # Only the bare assertion is.
         "append-only",
-        r"\bappend-only\b",
+        r"(?<![\"'`])(?<!not call this )(?<!not call the ledger )\bappend-only\b(?![\"'`])",
         "Hash chaining alone does not detect truncation -- a shortened chain is internally "
         "consistent. That is why the signed ledger_head exists.",
         "Say 'hash-chained and signed, with a head committing to (entry_count, tip_hash)'.",

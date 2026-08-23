@@ -123,3 +123,17 @@ def test_the_audit_rule_demands_a_ceiling(tmp_path):
 
     withceiling = bare + " The ceiling at m = 60 is 2.97, so the value is uninformative."
     assert "missing-ceiling" not in labels(check(_write(tmp_path, withceiling)))
+
+
+def test_a_quoted_dead_phrase_is_not_flagged(tmp_path):
+    """A document warning against a phrase necessarily contains it.
+
+    Third false-positive class of this kind: the checker flagged ch04's own retraction
+    ('do not call this "append-only"') and the ch05 evidence map's identical warning.
+    Quoting or prohibiting is correct behaviour; only the bare assertion is a claim.
+    """
+    warned = 'Do not call this ledger "append-only" — nothing prevents an append.'
+    assert "append-only" not in labels(check(_write(tmp_path, warned)))
+
+    asserted = "The ledger is append-only and signed."
+    assert "append-only" in labels(check(_write(tmp_path, asserted)))
