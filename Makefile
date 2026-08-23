@@ -46,6 +46,11 @@ install-locked:
 lock:
 	pip freeze --exclude-editable > requirements.lock
 
+# Run ONE suite at a time. `mbi` enables a persistent JAX compilation cache and warns on
+# every import that concurrent runs sharing that cache location are counterproductive;
+# on 2026-08-23 two overlapping pytest processes crashed the interpreter outright
+# (fatal error dump, no test summary). If you need the result, capture pytest's own exit
+# code -- piping to `tail` returns tail's status and turns a crash into a silent pass.
 test:
 	python -m pytest
 
@@ -133,6 +138,7 @@ figures:
 # See docs/thesis/WRITING_NOTICE.md and research/08_novelty_verdict.md.
 claims:
 	python scripts/check_thesis_claims.py
+	python scripts/check_citations.py
 
 # Regenerates docs/thesis/ch07-tables.md from results/. Re-run after any experiment;
 # a typed table drifts silently, a generated one cannot.

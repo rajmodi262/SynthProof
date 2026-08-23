@@ -66,19 +66,6 @@
   archivePrefix = {arXiv}
 }
 
-@inproceedings{ganev2022robinhood,
-  author    = {Ganev, Georgi and Oprisanu, Bristena and De Cristofaro, Emiliano},
-  title     = {Robin Hood and Matthew Effects: Differential Privacy Has Disparate Impact
-               on Synthetic Data},
-  booktitle = {International Conference on Machine Learning (ICML)},
-  series    = {PMLR},
-  volume    = {162},
-  year      = {2022},
-  eprint    = {2109.11429},
-  archivePrefix = {arXiv},
-  note      = {H2's parent paper. Disparate impact on subgroup SIZE and downstream ACCURACY --
-               H2 asks the adjacent question about LEAKAGE. State that distinction precisely.}
-}
 
 @inproceedings{ngong2024usability,
   author    = {Ngong, Ivoline and Gilbertson, Brad and Zhang, Yuanyuan and others},
@@ -161,20 +148,7 @@
                described -- abstract-level read, verify before relying on that negative.}
 }
 
-@article{dwork2019exposeepsilons,
-  author  = {Dwork, Cynthia and Kohli, Nitin and Mulligan, Deirdre},
-  title   = {Differential Privacy in Practice: Expose Your Epsilons!},
-  journal = {Journal of Privacy and Confidentiality},
-  volume  = {9},
-  number  = {2},
-  year    = {2019},
-  note    = {The Epsilon Registry proposal -- the origin of the disclosure-registry idea that
-             Dibia et al. and the NIST registry both descend from.}
-}
-
-@misc{nanayakkara2025registry,
-  title         = {Practitioners' Perspectives on a Differential Privacy Deployment Registry},
-  year          = {2025},
-  eprint        = {2509.13509},
-  archivePrefix = {arXiv}
-}
+% NOTE: ganev2022robinhood, dwork2019exposeepsilons and nanayakkara2025registry were
+% removed on 2026-08-23 -- all three already existed in docs/thesis/references-additions.bib
+% and a key defined twice lets BibTeX pick the wrong venue silently. The thesis bib is the
+% single source of truth; this file holds only what the protocol added.

@@ -254,6 +254,58 @@ def fig_audit_ceiling():
     _save(fig, "fig-audit-ceiling")
 
 
+
+def fig_discrete_gaussian():
+    """The sampler, validated rather than asserted — empirical counts against the exact PMF.
+
+    Chapter 5 asks for this figure and it did not exist. It is the visual form of the chi-square
+    goodness-of-fit test in tests/test_accounting.py: the discrete Gaussian is produced by the
+    CKS'20 rejection sampler, and rounding a continuous Gaussian would NOT give this
+    distribution. Drawn from the sampler itself at a fixed seed, so it is a measurement of the
+    code that ships, not an illustration of the idea.
+    """
+    import math
+
+    from scipy import stats
+
+    from synthproof.accounting.noise import sample_discrete_gaussian
+
+    fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.0))
+
+    for ax, sigma in zip(axes, (1.0, 3.0), strict=True):
+        draws = sample_discrete_gaussian(sigma=sigma, size=200_000, seed=20260823)
+        lo, hi = int(draws.min()), int(draws.max())
+        support = np.arange(lo, hi + 1)
+
+        # Exact discrete Gaussian PMF: exp(-k^2 / 2 sigma^2) normalised over the integers.
+        weights = np.exp(-(support.astype(float) ** 2) / (2.0 * sigma * sigma))
+        # Normalise over a window wide enough that the omitted tail is negligible.
+        wide = np.arange(lo - 40, hi + 41)
+        norm = float(np.exp(-(wide.astype(float) ** 2) / (2.0 * sigma * sigma)).sum())
+        exact = weights / norm
+
+        observed = np.array([(draws == k).sum() for k in support], dtype=float)
+        empirical = observed / observed.sum()
+
+        ax.bar(support, empirical, width=0.82, color=PROVED, alpha=0.55, label="sampled")
+        ax.plot(support, exact, "o", ms=3.2, color=AUDITED, label="exact PMF")
+
+        # The same fold-the-tails rule the test uses, so the reported p matches the suite.
+        expected = exact * observed.sum()
+        keep = expected >= 5
+        scaled = expected[keep] * (observed[keep].sum() / expected[keep].sum())
+        _, pval = stats.chisquare(observed[keep], scaled)
+
+        ax.set_title(f"σ = {sigma:g}   (χ² p = {pval:.2f})", loc="left", fontsize=10)
+        ax.set_xlabel("value")
+        ax.set_xlim(lo - 0.6, hi + 0.6)
+        if not math.isnan(pval):
+            ax.legend(fontsize=8, frameon=False)
+
+    axes[0].set_ylabel("probability")
+    _save(fig, "fig-discrete-gaussian")
+
+
 def fig_calibration():
     """Requested epsilon against what actually composes — never above the diagonal."""
     from synthproof.accounting.calibration import (
@@ -392,6 +444,7 @@ def main():
     # These depend only on the code, so they are always produced.
     fig_audit_ceiling()
     fig_calibration()
+    fig_discrete_gaussian()
 
     if h1:
         fig_structure_frontier(h1)

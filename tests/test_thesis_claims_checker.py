@@ -163,3 +163,47 @@ def test_the_generated_evidence_maps_are_clean(tmp_path):
         p = THESIS / name
         if p.exists():
             assert check(p) == [], f"{name} states a dead claim: {check(p)}"
+
+
+# ----------------------------------------------------------------- citations
+
+
+def test_every_cited_key_resolves_and_nothing_is_entered_twice():
+    """Guards three failures, all of which were live on 2026-08-23.
+
+    A dangling key renders as [?]. A key defined in two files lets BibTeX pick the wrong
+    venue silently. The same work under two keys prints twice and reads as two results --
+    which is what happened to Ganev et al.'s Robin Hood paper, entered once under its arXiv
+    year and once under its ICML year.
+    """
+    from scripts.check_citations import collect_bib, collect_cites
+
+    keys, titles = collect_bib()
+    cites = collect_cites()
+
+    dangling = sorted(k for k in cites if k not in keys)
+    assert not dangling, f"cited but undefined: {dangling}"
+
+    dup_keys = sorted(k for k, files in keys.items() if len(files) > 1)
+    assert not dup_keys, f"defined in more than one bib file: {dup_keys}"
+
+    dup_works = []
+    for title, entries in titles.items():
+        by_author = {}
+        for key, _path, first in entries:
+            by_author.setdefault(first, set()).add(key)
+        for ks in by_author.values():
+            if len(ks) > 1:
+                dup_works.append((title[:50], sorted(ks)))
+    assert not dup_works, f"same work under multiple keys: {dup_works}"
+
+
+def test_a_shared_title_by_different_authors_is_not_a_duplicate():
+    """'Verifiable Differential Privacy' is Narayan et al. (EuroSys 2015) AND Biswas &
+    Cormode (2022). Matching on title alone flagged them; the check needs the author too."""
+    from scripts.check_citations import collect_bib
+
+    _, titles = collect_bib()
+    vdp = titles.get("verifiable differential privacy", [])
+    if vdp:
+        assert len({a for _k, _p, a in vdp}) > 1, "expected distinct first authors"
