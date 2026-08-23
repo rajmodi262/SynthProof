@@ -10,6 +10,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
+from scipy import stats
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
@@ -29,6 +30,9 @@ class UtilityResult:
     tstr_macro_f1: float
     trtr_macro_f1: float
     utility_gap: float
+    # Mean per-column Wasserstein-1 distance, each standardised by the real column's SD.
+    # 0 means the marginals match; it is scale-free, so it is comparable across columns
+    # and across datasets.
     marginal_distance: float
 
 
@@ -96,14 +100,22 @@ class UtilityEvaluator:
         clf_tstr.fit(X_synth, y_synth)
         tstr_f1 = float(f1_score(y_real_te, clf_tstr.predict(X_real_te), average="macro"))
 
-        # Standardised mean shift per column, averaged. NOTE: this is not the Wasserstein
-        # distance the module docstring used to claim — it only compares first moments.
-        # Replacing it with a true Wasserstein-1 distance is Tier 2 work.
+        # Wasserstein-1 per column, standardised by the real column's spread so columns on
+        # different scales contribute comparably, then averaged.
+        #
+        # This REPLACED a standardised mean shift, which compared first moments only. That
+        # proxy scores zero on a release whose mean is right and whose entire shape is wrong
+        # -- a bimodal column collapsed to its centre, for instance -- and the module docstring
+        # had at one point called it the Wasserstein distance, which it was not. W1 is the area
+        # between the two empirical CDFs, so it moves whenever the distribution moves.
         distances = []
         for col in num_cols:
-            mean_diff = abs(real_df[col].mean() - synthetic_df[col].mean())
-            std_real = real_df[col].std() if len(real_df) > 1 else 1.0
-            distances.append(mean_diff / (std_real + 1e-5))
+            real_col = real_df[col].to_numpy(dtype=float)
+            synth_col = synthetic_df[col].to_numpy(dtype=float)
+            scale = float(np.std(real_col)) if len(real_col) > 1 else 1.0
+            distances.append(
+                float(stats.wasserstein_distance(real_col, synth_col)) / (scale + 1e-9)
+            )
         marginal_dist = float(np.mean(distances))
 
         return UtilityResult(

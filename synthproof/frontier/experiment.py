@@ -417,6 +417,9 @@ def run_cell(
         "audited_eps": float(audit.audited_eps),
         "audit_p": float(audit.p_value),
         "tstr_f1": float(util.tstr_macro_f1),
+        # Mean per-column Wasserstein-1, SD-standardised. Computed since the first version of
+        # this pipeline and never reported; a metric nothing reads cannot catch anything.
+        "marginal_w1": float(util.marginal_distance),
         "trtr_f1": float(util.trtr_macro_f1),
         "mia_auc": float(mia.auc),
         "domias_auc": float(domias.auc),
