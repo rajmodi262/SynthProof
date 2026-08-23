@@ -362,5 +362,113 @@ def demo(rows: int, eps: float, mechanism: str):
     click.echo("Demo completed.")
 
 
+@main.command("audit-power")
+@click.option(
+    "--eps",
+    type=float,
+    required=True,
+    callback=_validate_eps,
+    help="The epsilon you want the audit to certify (usually your proved epsilon).",
+)
+@click.option("--canaries", type=int, default=None, help="Canary budget you intend to spend.")
+@click.option("--alpha", type=float, default=0.05, show_default=True, help="Significance level.")
+@click.option(
+    "--subgroups",
+    type=int,
+    default=1,
+    show_default=True,
+    help="Split the canary budget equally across this many subgroups (as H2 does).",
+)
+@click.option("--json", "as_json", is_flag=True, help="Emit machine-readable JSON.")
+def audit_power(eps, canaries, alpha, subgroups, as_json):
+    """Can your audit certify the epsilon you care about? Answer BEFORE you run it.
+
+    Statistics has taught power analysis before an experiment for a century. Privacy auditing
+    has no equivalent, so audits are routinely run at canary counts that could not have
+    produced the answer being sought -- and a zero is then read as evidence of no leakage.
+
+    This project ran exactly that experiment. H1 used 60 canaries against a proved epsilon of
+    7.36, where the ceiling is 2.97: the instrument could not have reported above 2.97 even
+    against a release that was 100% verbatim training data. The gap was guaranteed before any
+    mechanism ran. This command exists so nobody repeats it.
+
+    The ceiling binds the estimator class that reduces canary evidence to binary membership
+    guesses -- Steinke et al. (2023) and both of this project's auditors. See
+    `synthproof/audit/steinke.py` for the constructions that escape it.
+    """
+    from synthproof.audit.steinke import canaries_needed_for, max_provable_epsilon
+
+    if subgroups < 1:
+        raise click.BadParameter("--subgroups must be at least 1")
+
+    required_total = canaries_needed_for(eps, alpha) * subgroups
+    report = {
+        "target_epsilon": eps,
+        "alpha": alpha,
+        "subgroups": subgroups,
+        "canaries_required_total": required_total,
+        "canaries_required_per_subgroup": canaries_needed_for(eps, alpha),
+        "assumes": "a PERFECT adversary (every canary identified correctly)",
+    }
+
+    if canaries is not None:
+        if canaries < 1:
+            raise click.BadParameter("--canaries must be at least 1")
+        per_group = canaries // subgroups
+        report["canary_budget"] = canaries
+        report["canaries_per_subgroup"] = per_group
+        report["ceiling"] = max_provable_epsilon(per_group, alpha) if per_group >= 1 else 0.0
+        report["can_certify_target"] = bool(report["ceiling"] >= eps)
+
+    if as_json:
+        click.echo(json.dumps(report, indent=2))
+        return
+
+    click.echo("")
+    click.echo(f"  target epsilon .................. {eps:g}")
+    click.echo(f"  alpha .......................... {alpha:g}")
+    if subgroups > 1:
+        click.echo(f"  subgroups ...................... {subgroups} (budget split equally)")
+    per_note = ""
+    if subgroups > 1:
+        per_note = ", {:,} per subgroup".format(report["canaries_required_per_subgroup"])
+    click.echo(
+        "  canaries required .............. {:,}   (perfect adversary{})".format(
+            required_total, per_note
+        )
+    )
+
+    if canaries is None:
+        click.echo("")
+        click.secho(
+            "  Pass --canaries to check a specific budget against this requirement.", fg="cyan"
+        )
+        return
+
+    per_group = report["canaries_per_subgroup"]
+    click.echo(f"  canary budget .................. {canaries:,}")
+    if subgroups > 1:
+        click.echo(f"  canaries per subgroup .......... {per_group:,}")
+    click.echo(f"  ceiling at that budget ......... {report['ceiling']:.2f}")
+    click.echo("")
+
+    if report["can_certify_target"]:
+        click.secho(
+            f"  VERDICT: this audit CAN certify epsilon = {eps:g}. Run it.", fg="green", bold=True
+        )
+    else:
+        click.secho(
+            f"  VERDICT: this audit CANNOT certify epsilon = {eps:g}.", fg="red", bold=True
+        )
+        click.echo(
+            f"           At {per_group:,} guesses the largest certifiable epsilon is "
+            f"{report['ceiling']:.2f}.\n"
+            f"           A reported 0 would be uninformative, not evidence of no leakage.\n"
+            f"           Either raise the budget to {required_total:,}, or report the ceiling\n"
+            f"           beside the result so the zero cannot be misread."
+        )
+    click.echo("")
+
+
 if __name__ == "__main__":
     main()

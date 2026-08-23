@@ -139,3 +139,11 @@ and it is considerably more useful than a confident null would have been.
   positive rate precisely — 1/5 and 0.05 are not distinguishable at this sample size.
 - **The floor is a property of *this* auditor**, not of canary auditing in general. M2.1 would
   change it substantially.
+- **The ceiling is a property of an estimator *class*, not of auditing.** It binds every
+  estimator that reduces canary evidence to binary membership guesses — Steinke et al. (2023)
+  and both of our auditors. Constructions that keep the score continuous (arXiv 2606.12733),
+  audit the full *f*-DP curve (Mahloujifar et al., ICML 2025) or test sequentially
+  (arXiv 2509.07055) leave the class and are not bound by `log(r/ln(1/α))`. See
+  [`AUDITOR_COMPARISON.md`](AUDITOR_COMPARISON.md) for the full qualifier. Nothing in this
+  document should be read as "auditing cannot certify large epsilon" — only that **this class
+  of estimator cannot, at these canary counts.**

@@ -21,8 +21,9 @@ class UtilityResult:
 
     Note: a `fairness_drift` field was removed. It was computed as
     ``abs(tstr_f1 - trtr_f1) * 0.1`` — i.e. utility_gap/10 — which is not a fairness
-    metric. Real subgroup fairness analysis (and hypothesis H2, which depends on it)
-    is tracked as Tier 3 work in brutal_project_audit.md.
+    metric. Real subgroup analysis lives in `audit/subgroup.py`, and H2 has been run on
+    both UCI Adult and ACSIncome — see results/H2_RESULTS.md and results/acs/H2_RESULTS.md.
+    The null replicates on both.
     """
 
     tstr_macro_f1: float

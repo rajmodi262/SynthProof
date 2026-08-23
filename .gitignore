@@ -75,3 +75,11 @@ data/acs/
 
 # vitest output
 web/coverage/
+
+# Built pitch decks. `web/pitch*/vite.config.ts` sets outDir here, so these ~5 MB of
+# assets are regenerable build output, not source. The sources live in web/pitch*/.
+synthproof/api/pitch/
+synthproof/api/pitch2/
+synthproof/api/pitch3/
+synthproof/api/pitch4/
+synthproof/api/pitch5/

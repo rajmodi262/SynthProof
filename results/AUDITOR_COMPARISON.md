@@ -58,9 +58,44 @@ The proved ε in the H1 experiments is **7.36**. Certifying it by canary auditin
 roughly 4,700 canaries *every one of which the adversary identifies correctly* — with a real
 adversary, far more.
 
-> **No canary audit at any scale this project can run will certify an ε near its proved
-> bound.** Switching to the one-run construction does not change that, and neither would a
-> better adversary. It is a property of what auditing can prove, not of this implementation.
+> **No canary audit *of this estimator class* at any scale this project can run will certify
+> an ε near its proved bound.** Switching to the one-run construction does not change that, and
+> neither would a better adversary.
+
+### First, attribution: this ceiling is not our theorem
+
+It is a one-line corollary of the paper we implement. Steinke, Nasr & Jagielski (2023),
+**Theorem 2.1 / Eq. (3)**, bound the adversary's correct-guess count by
+`P[Binomial(r, e^ε/(e^ε+1)) ≥ v] + O(δ)`. Set `v = r` — a perfect adversary — and it reduces to
+`p(ε)^r ≤ β`, which is precisely `max_provable_epsilon`. We verified the two agree
+**bit-identically** at r = 10, 60, 100, 400 and 800.
+
+**We re-derived a consequence of our own cited source.** What is ours is the *measurement* — the
+detection floor, the ceiling at the counts we actually ran, and the demonstration that a
+published proved-vs-audited gap was structurally guaranteed. The inequality is not, and it must
+not be presented as a contribution of this project.
+
+### Second, the scope qualifier
+
+The ceiling is a property of the **estimator class that reduces canary evidence to binary
+membership guesses** — the class containing Steinke, Nasr & Jagielski (2023) and both of our
+auditors. Within it, certifying ε costs `ln(1/α)·e^ε` guesses, and no adversary strength
+changes that. It is **not** a statement about auditing in general, and saying so would be
+falsifiable by citation. The 2025–2026 literature is precisely the record of leaving the class:
+
+| Escape route | Work | What it changes |
+|---|---|---|
+| Audit the whole *f*-DP curve rather than one ε | Mahloujifar, Melis & Chaudhuri, **ICML 2025** (arXiv 2410.22235) | Bounds the probability of *exactly i* correct guesses by a recursion instead of thresholding; reports the full trade-off curve |
+| Keep canary scores **continuous** | Agrawal, Wei, Singh, Magdon-Ismail & Zikas, **2026** (arXiv 2606.12733) | States the problem in our exact terms — prior one-run methods "threshold … into binary membership guesses, which discards useful information" |
+| Sequential / anytime-valid testing | González, Rubio, Ramdas & Ribero, **2025** (arXiv 2509.07055) | e-values + MMD; cuts detection sample sizes "from 50K to a few hundred" |
+| GDP trade-off auditing of AIM specifically | Ganev, Annamalai & Kulynych, **2026** (arXiv 2604.18352) | First tight audit of MST and AIM: at (ε,δ)=(1,10⁻²), empirical μ ≈ 0.43 against implied μ = 0.45 |
+
+**What survives all four, and it is the part that matters.** The sequential method degrades
+above ε ≈ 0.6 because the test statistic and its threshold both approach their maxima, and the
+tight AIM audit is achieved at **ε = 1** — where our own formula says a perfect adversary needs
+only ~10 guesses. So the *shape* of the finding holds: **certifying a large ε empirically is
+qualitatively harder than certifying a small one.** Our measurement establishes where the
+boundary of the tractable class lies. It does not claim auditing is impossible.
 
 ## Consequence, and what it means for the thesis
 

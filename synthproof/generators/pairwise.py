@@ -14,10 +14,11 @@ WHAT THIS IS NOT. It is not AIM (McKenna et al., 2022) and not MST (McKenna et a
   * There is no iterative measure-and-refine loop and no private-PGM inference; sampling is a
     direct ancestral pass over the tree.
 
-The reference implementation of AIM (`private-pgm`) requires Python >= 3.11, and this project
-currently targets 3.10, so it could not be installed. Rather than name a class after an
-algorithm it does not implement — the exact failure mode audit finding F6 recorded — this is a
-separate, honestly-named mechanism. It is nonetheless a *genuinely different model family* from
+The reference implementation of AIM (`private-pgm`) requires Python >= 3.11. That constraint
+once blocked it; the project now targets 3.11 and `generators/aim.py` runs real private-PGM.
+This module remains a separate, honestly-named mechanism rather than being renamed
+after an algorithm it does not implement — the exact failure mode audit finding F6
+recorded. It is nonetheless a *genuinely different model family* from
 the independent-marginal baselines, which is what hypothesis H1 requires.
 
 Privacy accounting: d 1-way marginals plus (d-1) 2-way marginals are measured, all under one

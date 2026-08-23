@@ -2,9 +2,11 @@
 
 Uses SHA-256 hash chaining plus Ed25519 signatures over each entry.
 
-NOTE: the signing key is generated in memory per instance and never persisted, so
-signatures on a file-backed database become unverifiable after restart. See
-brutal_project_audit.md, F10.
+KEY CUSTODY. If no key is passed, one is generated in memory for this instance -- fine for a
+demo, useless for a durable record, because signatures become unverifiable after restart. For
+any real use pass a persistent key: `ledger.signing.keygen()` writes an Ed25519 keypair and
+`load_private_key()` reads it back, which is what the CLI and `synthproof verify` use. F10 in
+brutal_project_audit.md is closed; this docstring described it as open until 2026-08-23.
 """
 
 import sqlite3

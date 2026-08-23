@@ -9,9 +9,11 @@ computed as affine functions of the singling-out score
 (``linkability = singling_out * 0.8 + 0.05``). Those were fabricated and have been
 removed rather than left in place with a disclaimer.
 
-Real singling-out, linkability, and inference evaluations require the three separate
-attack simulations implemented by the `anonymeter` package; wiring that in is tracked
-as Tier 2 work in brutal_project_audit.md.
+This measures ONE of the three risks regulators separate. The EDPB's anonymisation criteria
+— and Anonymeter (Giomi et al., PoPETs 2023), which operationalises them — treat singling
+out, linkability and inference as distinct; `anonymeter` implements all three as separate
+attack simulations. Only singling out is covered here, so a null result from this module is
+NOT evidence of anonymity under those criteria. Wiring in the other two remains open.
 """
 
 from dataclasses import dataclass

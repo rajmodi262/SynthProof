@@ -24,6 +24,12 @@ from typing import Dict, List, Optional, Sequence
 
 import pandas as pd
 
+from synthproof.accounting.differential import (
+    cross_check_spends,
+)
+from synthproof.accounting.differential import (
+    enforce as enforce_accountant_agreement,  # `enforce` is taken by preflight
+)
 from synthproof.audit.steinke import max_provable_epsilon
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.preflight import enforce
@@ -83,10 +89,27 @@ class PrivacyDataSheet:
     domain_source: str = "unknown"  # declared | codebook | charged | inferred-nonprivate
     unit_of_privacy: str = "add/remove-one-record"
     contribution_bound: int = 1
+    # `deployment_model` is the one category from the expert-elicited DP privacy label of Dibia,
+    # Lu, Bhattacharjee, Near & Feng (arXiv 2507.15997, 2025) that this sheet previously lacked.
+    # Their experts stressed that the deployment model implies a materially different threat
+    # model and is routinely underspecified: in the LOCAL model each record is perturbed before
+    # it reaches the curator, so no trusted party ever holds the raw table; in the CENTRAL model
+    # the curator does, and every epsilon here is conditional on that curator being trusted.
+    # SynthProof is central-model: we read your table.
+    deployment_model: str = "central"  # central | local | shuffle
     input_fingerprint: Optional[str] = None  # SHA-256 of the input table
     audit_ceiling: Optional[float] = None  # most this canary count could ever certify
     preflight_findings: List[Dict] = field(default_factory=list)
     residual_risk: List[str] = field(default_factory=list)
+
+    # `accountant_agreement` records what a SECOND, independent accountant said about the same
+    # release. A grey-box audit of twelve DP libraries found thirteen guarantee violations
+    # (Cebere et al., arXiv 2602.17454, 2026), so an epsilon resting on one implementation
+    # rests on one implementation's bugs. The verdict is inside the signed payload precisely so
+    # it cannot be stripped: a reader can tell a cross-checked release from an unchecked one.
+    # `unavailable`/`unsupported` are reported rather than hidden -- an absent check must never
+    # look like a passed one. See accounting/differential.py.
+    accountant_agreement: Optional[Dict] = None
 
     signature: Optional[str] = None
     public_key: Optional[str] = None
@@ -236,6 +259,10 @@ class FrontierEngine:
                 delta=delta,
                 num_canaries=num_canaries,
                 target_col=target_col,
+                # Needed for `_spends`: the differential accountant cross-checks the charges
+                # this release actually made, not a reconstruction of them. The artefacts are
+                # read once below and never retained.
+                return_artifacts=True,
             )
 
             curve.append(
@@ -256,6 +283,14 @@ class FrontierEngine:
                 "canary_fraction": res["canary_fraction"],
                 "num_canaries": num_canaries,
             }
+
+            # Ask a second, independent accountant about the release we just composed, from
+            # the charges actually recorded rather than from a reconstruction. `enforce`
+            # raises only on under-reporting; a conservative gap or an unavailable second
+            # accountant is reported on the certificate, not hidden.
+            agreement = enforce_accountant_agreement(
+                cross_check_spends(res.get("_spends", []), delta)
+            )
 
             ledger.append(
                 LedgerEntry(
@@ -284,6 +319,7 @@ class FrontierEngine:
             audit_ceiling=max_provable_epsilon(num_canaries) if num_canaries > 1 else None,
             preflight_findings=[f.to_dict() for f in findings],
             residual_risk=_RESIDUAL_RISK,
+            accountant_agreement=agreement.to_dict(),
             dataset_name=dataset.name,
             num_rows=dataset.num_rows,
             mechanism=mechanism,

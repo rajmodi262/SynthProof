@@ -166,7 +166,7 @@ Assembling the picture:
 | Empirical auditing (LiRA, Steinke) | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Risk assessment (Anonymeter) | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Datasheets / Model Cards | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| **SynthProof** | ✅ | ✅ | ✅ | ✅ | ✅ | partial |
+| **SynthProof** | ✅ | ✅ | ✅ | ❌ | ✅ | partial |
 
 > ⚠️ **Before submission:** set the SynthProof row against what is actually implemented at that
 > time. The certificate is not yet signed, so "Verifiable" is *partial*, not a tick. Overstating
@@ -175,16 +175,61 @@ Assembling the picture:
 Formal DP supplies an upper bound that nobody verifies against the implementation. Empirical
 auditing supplies a lower bound that carries no guarantee, accumulates no budget, and is not
 attached to the artefact. Datasheets are attached to the artefact but describe it rather than
-bounding what it reveals. **No existing system releases a dataset accompanied by both bounds,
-cryptographically bound to a durable record of the organisation's cumulative privacy
-expenditure.**
+bounding what it reveals. **We found no system that releases a dataset accompanied by both
+bounds, cryptographically signed and carrying the ceiling of its own empirical measurement.**
+
+> ⚠️ **This claim was narrowed on 2026-08-23. Do not widen it, and do not restate it until
+> `research/08_novelty_verdict.md` is populated** — the adversarial protocol in `research/`
+> completed only 2 of 8 query families before being interrupted, so no novelty verdict has been
+> issued and none may be asserted here. What that partial run *did* verify, and it is
+> unforgiving:
+>
+> - **Dual-sided assurance (proved + audited per release) is occupied.** Annamalai, Ganev &
+>   De Cristofaro [annamalai2024theoryalone] compute empirical leakage against the theoretical
+>   bound for DP-SDGs and flag both violations and loose audits. That is this framing.
+> - **Budget-charged domain profiling is occupied** by [annamalai2025domain].
+> - **The audit ceiling is not a contribution.** It is a one-line corollary of Steinke, Nasr &
+>   Jagielski's Theorem 2.1 / Eq. (3) — the paper this project implements — verified
+>   bit-identical to our `max_provable_epsilon`. Ganev, Annamalai & Kulynych
+>   [ganev2026tightmstaim] then obtain *tight* audits of MST and AIM with a Gaussian-DP
+>   estimator, so the ceiling we hit is a property of the single-threshold estimator we chose,
+>   not of auditing.
+> - **Finding defects by self-audit is occupied** by [cebere2026bugs]: 12 libraries, 13
+>   violations, method and package released.
+> - **Shipping a structured privacy label with a DP release is occupied** by
+>   [dibia2025privacylabel] — an expert-elicited nine-category label whose categories overlap
+>   this sheet almost field for field, including `unit_of_privacy` and empirical privacy
+>   metrics. Treat that as validation, not defeat: a panel of DP experts converged on the fields
+>   we built. **What they explicitly do not propose is any signing mechanism, or any standard
+>   for reporting the limits of an empirical privacy metric** — an omission one of their own
+>   experts called *"privacy theater"*. Those two gaps are what the Ed25519 signature and
+>   `audit_ceiling` fill, and they are the narrowest honest statement of this project's
+>   position.
+> - **Automated release gating is occupied** by the Five Safes framework and SACRO
+>   [preen2024sacro], production practice in UK Trusted Research Environments since 2022.
+>   SACRO reads output values and does not autonomously refuse; our gate reads only the schema
+>   and the row count and does. **State that difference as unrefuted, never as novel** — the
+>   primary SDC Handbook could not be retrieved and that literature predates arXiv.
+>
+> Four of those kills come from one author cluster (Ganev, Annamalai, De Cristofaro, Kulynych)
+> running this programme professionally and roughly two years ahead. **Chapter 2 must be written
+> from that position, not around it.** Candidates still unresolved because their query families
+> never ran: the signed cross-release ledger, subgroup leakage disparity, and the calibration
+> gap. `research/PHASE2_INTERIM.md` §5 lists what to check first — Laminator (verifiable ML
+> property cards via hardware attestation) is structurally the closest thing to a Privacy Data
+> Sheet and has not been read.
 
 Three narrower gaps follow, each addressed in this work:
 
 1. **Unaccounted preprocessing.** Published DP synthesis pipelines routinely read column ranges
    and category domains directly from the sensitive data before any mechanism runs. This is a
-   real leak that invalidates the headline ε, and it is rarely mentioned. Chapter 4 shows how a
-   public schema removes the need for it entirely, at zero privacy cost.
+   real leak that invalidates the headline ε. It is **not** unremarked: Annamalai, Ganev et al.
+   [annamalai2025domain] study exactly the three strategies — externally provided, extracted
+   from the input, extracted under DP — and show the second breaks end-to-end DP. Our
+   contribution is therefore not identifying the leak but making the choice a **machine-checkable
+   field (`domain_source`) inside a signed release artefact**, so a recipient can tell which
+   strategy produced the file they hold. Chapter 4 shows how a public schema removes the need
+   for extraction entirely, at zero privacy cost.
 
 2. **Budget interfaces that mislead.** A system can satisfy the DP definition while its
    interface deceives its operator. Before calibration, requesting ε = 8 from this system

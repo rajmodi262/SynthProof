@@ -17,8 +17,9 @@ Design notes (and honest limitations):
   * This is a simplified, single-run audit in the spirit of Steinke, Nasr & Jagielski
     (2023). It is NOT their full construction: there is no randomised canary inclusion
     vector and no per-example independent randomness across many models. The bound it
-    produces is therefore indicative, not a formally tight audit. Replacing this with
-    the full construction is tracked as Tier 2 work in brutal_project_audit.md.
+    produces is therefore indicative, not a formally tight audit. The full construction
+    now exists in `audit/steinke.py` and is the DEFAULT auditor; this one is retained
+    because results/AUDITOR_COMPARISON.md compares the two at equal canary budget.
 """
 
 from dataclasses import dataclass

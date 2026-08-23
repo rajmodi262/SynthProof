@@ -1,0 +1,644 @@
+/* ── SynthProof · six slides ────────────────────────────────────────────────
+   Direction: "GOLD ON OBSIDIAN".
+
+   A deep warm black ground so ~2,600 gold particles can actually glow, ivory
+   type, and molten gold for anything that is ours. One slide flips to ivory
+   for relief; the rest are lacquer.
+
+   The colour code never changes:
+     GOLD     us — our system, our work
+     IVORY    the argument
+     CRIMSON  a leak, a refusal, a real person exposed
+     JADE     safe, verified, working
+   Every hue is also carried by a word, so a washed-out projector or a
+   colour-blind viewer loses nothing.
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --obsidian: #0f0c08;
+  --obsidian-2: #171208;
+  --ivory: #f6efe1;
+  --ivory-2: #cdc0a8;
+  --ivory-3: #8c8069;
+
+  --gold: #e8ba66;
+  --gold-lit: #ffd98a;
+  --gold-deep: #a87c2c;
+
+  --crimson: #e25840;
+  --jade: #4fbf9a;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--obsidian);
+  color: var(--ivory);
+  font-family: 'Geist Sans', system-ui, sans-serif;
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ── the field ──────────────────────────────────────────────────────────── */
+
+.field {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Vignette and a warm bloom, over the particles but under the type, so the
+   field reads as lit rather than as dots on a background. */
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(58% 46% at 50% 42%, rgba(232, 186, 102, 0.12), transparent 72%),
+    radial-gradient(120% 96% at 50% 50%, transparent 44%, rgba(0, 0, 0, 0.72) 100%);
+}
+
+/* ── shell ──────────────────────────────────────────────────────────────── */
+
+.deck {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+.stage {
+  position: relative;
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  padding: clamp(1rem, 3vh, 2.2rem) clamp(1.8rem, 4vw, 4.5rem) 0.8rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* Layouts. Slides differ in shape on purpose; six identical ones would read as
+   a template no matter how good the palette is. */
+.slide[data-lay='centre'] {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: clamp(0.7rem, 2vh, 1.4rem);
+}
+
+.slide[data-lay='bottom'] {
+  justify-content: flex-end;
+  gap: clamp(0.6rem, 1.6vh, 1.1rem);
+}
+
+.slide[data-lay='split'] {
+  justify-content: center;
+  gap: clamp(0.6rem, 1.6vh, 1.1rem);
+}
+
+.slide[data-ivory='1'] {
+  background: var(--ivory);
+  color: #17130c;
+}
+
+.slide[data-ivory='1'] .sub,
+.slide[data-ivory='1'] .note {
+  color: #6a5f4a;
+}
+
+.slide[data-ivory='1'] .panel {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: #17130c;
+  box-shadow: 5px 5px 0 #17130c;
+}
+
+/* ── type ───────────────────────────────────────────────────────────────── */
+
+h1,
+h2 {
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.94;
+  text-wrap: balance;
+}
+
+.kicker {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1.5px solid var(--gold-deep);
+  border-radius: 999px;
+  padding: 0.26rem 0.8rem;
+}
+
+.kicker-crimson {
+  color: var(--crimson);
+  border-color: var(--crimson);
+}
+
+.kicker-jade {
+  color: var(--jade);
+  border-color: var(--jade);
+}
+
+.mega {
+  font-size: clamp(2.6rem, 6.6vw, 5.4rem);
+}
+
+.big {
+  font-size: clamp(1.9rem, 4vw, 3.2rem);
+}
+
+.sub {
+  font-size: clamp(1.5rem, 1.85vw, 1.8rem);
+  line-height: 1.34;
+  font-weight: 500;
+  color: var(--ivory-2);
+  max-width: 56ch;
+  margin: 0;
+}
+
+.note {
+  font-size: 0.96rem;
+  line-height: 1.4;
+  color: var(--ivory-3);
+  margin: 0;
+  max-width: 84ch;
+}
+
+.gold {
+  color: var(--gold);
+}
+.crimson {
+  color: var(--crimson);
+}
+.jade {
+  color: var(--jade);
+}
+
+/* The one emphasis device: a gold underline that looks brushed on. */
+.mark {
+  background: linear-gradient(transparent 64%, rgba(232, 186, 102, 0.42) 64%);
+  padding: 0 0.1em;
+}
+
+.mark-crimson {
+  background: linear-gradient(transparent 64%, rgba(226, 88, 64, 0.5) 64%);
+}
+
+.mono {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.huge-num {
+  font-family: 'Geist Mono', monospace;
+  font-weight: 700;
+  font-size: clamp(2.4rem, 5.4vw, 4.4rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── panels ─────────────────────────────────────────────────────────────── */
+
+.panel {
+  background: rgba(23, 18, 8, 0.72);
+  border: 1.5px solid rgba(232, 186, 102, 0.34);
+  border-radius: 14px;
+  padding: 0.8rem 1rem;
+  backdrop-filter: blur(9px);
+}
+
+.panel-gold {
+  border-color: var(--gold);
+}
+.panel-crimson {
+  border-color: var(--crimson);
+}
+.panel-jade {
+  border-color: var(--jade);
+}
+
+.cols {
+  display: grid;
+  gap: clamp(0.7rem, 1.6vw, 1.3rem);
+  align-items: stretch;
+  width: 100%;
+}
+
+.c2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.c3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.c4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1000px) {
+  .c2,
+  .c3,
+  .c4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(232, 186, 102, 0.55), transparent);
+  border: 0;
+  margin: 0;
+}
+
+/* ── controls ───────────────────────────────────────────────────────────── */
+
+.btn {
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--ivory);
+  background: rgba(232, 186, 102, 0.1);
+  border: 1.5px solid var(--gold-deep);
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.btn:hover {
+  background: rgba(232, 186, 102, 0.22);
+  border-color: var(--gold);
+  transform: translateY(-1px);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--gold-lit);
+  outline-offset: 3px;
+}
+
+.btn[data-on='1'] {
+  background: var(--gold);
+  color: #17130c;
+  border-color: var(--gold);
+}
+
+.btn-lg {
+  font-size: 15px;
+  padding: 0.6rem 1.4rem;
+}
+
+select {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ivory);
+  background: rgba(23, 18, 8, 0.9);
+  border: 1.5px solid var(--gold-deep);
+  border-radius: 9px;
+  padding: 0.38rem 0.55rem;
+  cursor: pointer;
+}
+
+select:focus-visible {
+  outline: 2px solid var(--gold-lit);
+  outline-offset: 2px;
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 26px;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--crimson), var(--gold));
+}
+
+input[type='range']::-moz-range-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--crimson), var(--gold));
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -8.5px;
+  border-radius: 50%;
+  background: var(--gold-lit);
+  border: 2px solid #17130c;
+  box-shadow: 0 0 16px rgba(255, 217, 138, 0.7);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gold-lit);
+  border: 2px solid #17130c;
+}
+
+input[type='range']:focus-visible {
+  outline: 2px solid var(--gold-lit);
+  outline-offset: 5px;
+  border-radius: 999px;
+}
+
+.ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.flag {
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1.5px solid var(--gold-deep);
+  color: var(--gold);
+  border-radius: 999px;
+  padding: 0.16rem 0.5rem;
+}
+
+/* ── the rail ───────────────────────────────────────────────────────────── */
+
+.rail {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem clamp(1.8rem, 4vw, 4.5rem) 0.7rem;
+}
+
+.rail-steps {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.tick {
+  width: 42px;
+  height: 4px;
+  border-radius: 999px;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: rgba(232, 186, 102, 0.22);
+  transition: background 200ms ease, transform 200ms ease;
+}
+
+.tick[data-state='seen'] {
+  background: rgba(232, 186, 102, 0.55);
+}
+
+.tick[data-state='here'] {
+  background: var(--gold-lit);
+  transform: scaleY(2);
+}
+
+.tick:focus-visible {
+  outline: 2px solid var(--gold-lit);
+  outline-offset: 4px;
+}
+
+.rail-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ivory-3);
+}
+
+/* ── notes ──────────────────────────────────────────────────────────────── */
+
+.notes {
+  position: absolute;
+  inset: auto 0 0 0;
+  max-height: 72%;
+  overflow-y: auto;
+  background: rgba(8, 6, 4, 0.97);
+  color: var(--ivory-2);
+  border-top: 1.5px solid var(--gold);
+  padding: 1.1rem clamp(1.8rem, 4vw, 4.5rem) 1.5rem;
+  z-index: 6;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.notes h4 {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0.9rem 0 0.3rem;
+  color: var(--gold);
+}
+
+.notes h4:first-child {
+  margin-top: 0;
+}
+
+.notes p {
+  margin: 0 0 0.45rem;
+  max-width: 98ch;
+}
+
+.notes strong {
+  color: #fff;
+}
+
+/* ── slide-specific ─────────────────────────────────────────────────────── */
+
+.pickers {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.pickers label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.tablecap {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.stagebar {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.stagebtn {
+  flex: 1 1 0;
+  min-width: 96px;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--ivory-2);
+  background: rgba(23, 18, 8, 0.72);
+  border: 1.5px solid rgba(232, 186, 102, 0.3);
+  border-radius: 999px;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+}
+
+.stagebtn[data-on='1'] {
+  background: var(--gold);
+  color: #17130c;
+  border-color: var(--gold);
+}
+
+.stagebtn:focus-visible {
+  outline: 2px solid var(--gold-lit);
+  outline-offset: 2px;
+}
+
+.facts {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: baseline;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(232, 186, 102, 0.2);
+  padding: 0.26rem 0.2rem;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.fact:hover,
+.fact[data-on='1'] {
+  background: rgba(232, 186, 102, 0.13);
+}
+
+.fact:focus-visible {
+  outline: 2px solid var(--gold-lit);
+  outline-offset: 1px;
+}
+
+.fact-k {
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.fact-v {
+  font-family: 'Geist Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.fact-strong .fact-k,
+.fact-strong .fact-v {
+  font-weight: 900;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Projector floor. The rail takes ~30px, so a slide gets ~690px at 720p. */
+@media (max-height: 820px) {
+  .slide {
+    padding-top: 0.7rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .slide[data-lay='centre'] {
+    gap: 0.7rem;
+  }
+
+  .mega {
+    font-size: clamp(2.2rem, 5.4vw, 4rem);
+  }
+
+  .big {
+    font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+  }
+
+  .sub {
+    font-size: 1.5rem;
+    line-height: 1.26;
+  }
+
+  .note {
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+
+  .panel {
+    padding: 0.6rem 0.8rem;
+  }
+
+  .huge-num {
+    font-size: clamp(2rem, 4.4vw, 3.4rem);
+  }
+}

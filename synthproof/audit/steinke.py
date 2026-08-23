@@ -32,9 +32,29 @@ THE CEILING IS INFORMATION-THEORETIC, NOT AN IMPLEMENTATION LIMIT. With a *perfe
 which for large r is approximately ``log(r / ln(1/alpha))``. Certifying a given epsilon
 therefore needs roughly ``ln(1/alpha) * e^eps`` canaries — **exponential in epsilon**. At
 alpha = 0.05, proving eps = 7.36 requires about 4,700 perfectly-detected canaries. No canary
-audit at the scales this project runs can certify epsilon anywhere near its proved bound, and
-that is a property of auditing rather than of our code. `max_provable_epsilon` computes it, and
-every result reports it alongside the estimate.
+audit at the scales this project runs can certify epsilon anywhere near its proved bound.
+
+THIS CEILING IS NOT OUR RESULT. It is a one-line corollary of the paper this module already
+implements. Steinke, Nasr & Jagielski (2023), Theorem 2.1 / Eq. (3), bound the adversary's
+correct-guess count by `P[Binomial(r, e^eps/(e^eps+1)) >= v] + O(delta)`. Setting v = r (a
+perfect adversary) reduces it to `p(eps)^r <= beta`, which is exactly `max_provable_epsilon`
+below -- verified bit-identical against that derivation at r = 10, 60, 100, 400 and 800. We
+re-derived a consequence of our own cited source. The measurement of where it bites in practice
+is ours; the inequality is not, and it must never be presented as a theorem of this project.
+
+BE PRECISE ABOUT WHAT THAT LIMIT IS A PROPERTY OF. It binds the **estimator class that reduces
+canary evidence to binary membership guesses** — the class containing Steinke et al. (2023) and
+both of our auditors — not auditing in general. Constructions that keep the canary score
+continuous (arXiv 2606.12733), audit the whole f-DP curve rather than one epsilon (Mahloujifar,
+Melis & Chaudhuri, ICML 2025, arXiv 2410.22235), or test sequentially with e-values
+(arXiv 2509.07055) leave the class and are not bound by log(r/ln(1/alpha)). Ganev, Annamalai &
+Kulynych (arXiv 2604.18352, 2026) obtain a tight audit of AIM at eps = 1 — where this formula
+says a perfect adversary needs only ~10 guesses, so that result is consistent with it rather
+than a counterexample. What survives every one of those papers is the SHAPE: certifying a large
+epsilon empirically is qualitatively harder than certifying a small one.
+
+`max_provable_epsilon` computes the ceiling, and every result reports it alongside the
+estimate.
 
 DEVIATIONS FROM THE PAPER, stated rather than glossed:
 

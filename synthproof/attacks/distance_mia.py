@@ -10,7 +10,10 @@ score distributions, and running a calibrated likelihood-ratio test. An earlier 
 of this module was named `LiRAAttack` and reported a fabricated AUC
 (``auc = accuracy + 0.05``). Both the name and the metric have been corrected.
 
-Implementing real LiRA and DOMIAS is tracked as Tier 2 work in brutal_project_audit.md.
+DOMIAS is now implemented -- see `attacks/domias.py`, a density-ratio attack after van Breugel
+et al. (2023). Real LiRA is deliberately NOT implemented: a shadow-model attack is roughly 21
+hours of compute for a likely wide-CI null, and calling anything cheaper "LiRA" would repeat
+the naming failure this module's own history records.
 """
 
 from dataclasses import dataclass

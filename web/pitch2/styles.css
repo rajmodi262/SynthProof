@@ -1,0 +1,1134 @@
+/* ── SynthProof · the cinematic deck ────────────────────────────────────────
+   Direction: "GOLD LEAF".
+
+   Warm ivory and champagne carry most of the deck; a handful of slides drop to
+   espresso so the light ones read as daylight and the dark ones land like a
+   change in the room. Gold is the through-line on both.
+
+   Colour is coded and never decorative:
+     GOLD      our system, our work, the thing being built
+     ESPRESSO  the serious moments — the cold open, the reveal
+     CRIMSON   a leak, a refusal, an attacker succeeding
+     JADE      safe, verified, working
+     INK       everything else
+   Every hue is backed by a word as well, so a washed-out projector or a
+   colour-blind viewer loses nothing.
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --cream: #fdf7ec;
+  --sand: #f5e9d2;
+  --sand-2: #ecdcbc;
+
+  --espresso: #1e1710;
+  --espresso-2: #2b2118;
+
+  --ink: #241b12;
+  --ink-2: #5c4c3a;
+  --ink-3: #927e64;
+
+  --gold: #c8912f;
+  --gold-lit: #f0c25a;
+  --gold-deep: #8a5f16;
+  --gold-wash: #faedcf;
+
+  --crimson: #b8382b;
+  --crimson-wash: #fadfda;
+  --jade: #1f7a6b;
+  --jade-wash: #d6efe9;
+
+  --line: 2.5px;
+  --pop: 5px 5px 0 var(--ink);
+  --pop-sm: 3px 3px 0 var(--ink);
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#pitch-root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Geist Sans', system-ui, sans-serif;
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* A warm gradient wash plus a faint gold grid. Enough texture that the ground
+   reads as material rather than as an empty browser window. */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 45% at 12% 8%, rgba(240, 194, 90, 0.28), transparent 70%),
+    radial-gradient(50% 40% at 88% 92%, rgba(200, 145, 47, 0.16), transparent 72%);
+}
+
+.grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    linear-gradient(rgba(138, 95, 22, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(138, 95, 22, 0.07) 1px, transparent 1px);
+  background-size: 46px 46px;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.mono {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── shell ──────────────────────────────────────────────────────────────── */
+
+.deck {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+.stage {
+  position: relative;
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  padding: clamp(1.1rem, 3vh, 2.4rem) clamp(1.8rem, 3.6vw, 3.8rem) 1.4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(0.6rem, 1.5vh, 1.2rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.slide[data-tone='dark'] {
+  background: var(--espresso);
+  color: var(--sand);
+}
+
+.slide[data-tone='dark'] .body,
+.slide[data-tone='dark'] .small {
+  color: #b8a68c;
+}
+
+.slide[data-tone='dark'] .card {
+  background: var(--espresso-2);
+  border-color: var(--gold);
+  box-shadow: 5px 5px 0 var(--gold-deep);
+  color: var(--sand);
+}
+
+/* ── the pulse rail ─────────────────────────────────────────────────────── */
+/* A heartbeat runs along the foot of every slide. It is the deck's spine: the
+   subject is medical data, and a living line at the bottom of the screen keeps
+   the stakes present without occupying any argument space. */
+
+.pulse {
+  position: relative;
+  z-index: 3;
+  height: 52px;
+  border-top: var(--line) solid var(--ink);
+  background: var(--sand);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 clamp(1rem, 2.4vw, 2rem);
+}
+
+.pulse-svg {
+  width: 100%;
+  height: 34px;
+  display: block;
+}
+
+.pulse-line {
+  fill: none;
+  stroke: var(--gold-deep);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pulse-line-hot {
+  stroke: var(--crimson);
+  stroke-width: 3;
+}
+
+.pulse-nav {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.dot {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--ink);
+  border-radius: 7px;
+  background: var(--cream);
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.dot[data-state='seen'] {
+  background: var(--gold-wash);
+}
+
+.dot[data-state='here'] {
+  background: var(--gold);
+  color: #fff;
+  transform: scale(1.2);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.dot:hover {
+  transform: scale(1.12);
+}
+
+.dot:focus-visible {
+  outline: 3px solid var(--jade);
+  outline-offset: 2px;
+}
+
+/* ── type ───────────────────────────────────────────────────────────────── */
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: var(--cream);
+  padding: 0.26rem 0.66rem;
+  border-radius: 999px;
+}
+
+.eyebrow-gold {
+  background: var(--gold);
+  color: var(--ink);
+}
+.eyebrow-crimson {
+  background: var(--crimson);
+  color: #fff;
+}
+.eyebrow-jade {
+  background: var(--jade);
+  color: #fff;
+}
+
+.title {
+  font-size: clamp(2.3rem, 5.2vw, 4.2rem);
+}
+
+.title-sm {
+  font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+}
+
+.huge {
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 900;
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+}
+
+.hi {
+  padding: 0 0.22em;
+  border-radius: 5px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.hi-gold {
+  background: var(--gold);
+  color: var(--ink);
+}
+.hi-crimson {
+  background: var(--crimson);
+  color: #fff;
+}
+.hi-jade {
+  background: var(--jade);
+  color: #fff;
+}
+.hi-line {
+  background: linear-gradient(transparent 62%, var(--gold-lit) 62%);
+}
+
+.lede {
+  font-size: clamp(1.5rem, 1.85vw, 1.8rem);
+  line-height: 1.32;
+  font-weight: 500;
+  max-width: 46ch;
+}
+
+.body {
+  font-size: clamp(1.5rem, 1.45vw, 1.5rem);
+  line-height: 1.36;
+  color: var(--ink-2);
+  max-width: 48ch;
+}
+
+.small {
+  font-size: 0.98rem;
+  line-height: 1.38;
+  color: var(--ink-3);
+  max-width: 78ch;
+}
+
+.gold {
+  color: var(--gold-deep);
+}
+.crimson {
+  color: var(--crimson);
+}
+.jade {
+  color: var(--jade);
+}
+
+/* ── cards ──────────────────────────────────────────────────────────────── */
+
+.card {
+  background: #fff;
+  border: var(--line) solid var(--ink);
+  border-radius: 14px;
+  padding: 0.85rem 1.05rem;
+  box-shadow: var(--pop);
+}
+
+.card-gold {
+  background: var(--gold-wash);
+}
+.card-sand {
+  background: var(--sand);
+}
+.card-crimson {
+  background: var(--crimson-wash);
+}
+.card-jade {
+  background: var(--jade-wash);
+}
+.card-dark {
+  background: var(--espresso);
+  color: var(--sand);
+  border-color: var(--gold);
+}
+
+.cols {
+  display: grid;
+  gap: clamp(0.7rem, 1.6vw, 1.4rem);
+  align-items: stretch;
+}
+
+.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1000px) {
+  .cols-2,
+  .cols-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── controls ───────────────────────────────────────────────────────────── */
+
+.btn {
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 12.5px;
+  color: var(--ink);
+  background: #fff;
+  border: var(--line) solid var(--ink);
+  border-radius: 999px;
+  padding: 0.42rem 0.9rem;
+  cursor: pointer;
+  box-shadow: var(--pop-sm);
+  transition: transform 130ms ease, box-shadow 130ms ease, background 130ms ease;
+}
+
+.btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--jade);
+  outline-offset: 3px;
+}
+
+.btn[data-on='1'] {
+  background: var(--gold);
+}
+
+.btn-big {
+  font-size: 15px;
+  padding: 0.6rem 1.3rem;
+}
+
+select,
+input[type='range'] {
+  font-family: inherit;
+}
+
+select {
+  font-size: 15px;
+  font-weight: 700;
+  padding: 0.4rem 0.6rem;
+  border: var(--line) solid var(--ink);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+select:focus-visible {
+  outline: 3px solid var(--jade);
+  outline-offset: 2px;
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 28px;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 9px;
+  border-radius: 999px;
+  background: var(--gold-wash);
+  border: 2.5px solid var(--ink);
+}
+
+input[type='range']::-moz-range-track {
+  height: 9px;
+  border-radius: 999px;
+  background: var(--gold-wash);
+  border: 2.5px solid var(--ink);
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 23px;
+  height: 23px;
+  margin-top: -9px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2.5px solid var(--ink);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2.5px solid var(--ink);
+}
+
+input[type='range']:focus-visible {
+  outline: 3px solid var(--jade);
+  outline-offset: 4px;
+  border-radius: 999px;
+}
+
+.flag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 0.18rem 0.5rem;
+  background: var(--gold-lit);
+  color: var(--ink);
+}
+
+/* ── notes + overview ───────────────────────────────────────────────────── */
+
+.notes {
+  position: absolute;
+  inset: auto 0 0 0;
+  max-height: 68%;
+  overflow-y: auto;
+  background: var(--espresso);
+  color: #cbbca4;
+  border-top: var(--line) solid var(--gold);
+  padding: 1.1rem clamp(1.8rem, 3.6vw, 3.8rem) 1.6rem;
+  z-index: 5;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.notes h4 {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0.9rem 0 0.3rem;
+  color: var(--gold-lit);
+}
+
+.notes h4:first-child {
+  margin-top: 0;
+}
+
+.notes p {
+  margin: 0 0 0.45rem;
+  max-width: 96ch;
+}
+
+.notes strong {
+  color: #fff;
+}
+
+.notes .mono {
+  color: var(--gold-lit);
+  font-size: 13px;
+}
+
+.overview {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  background: var(--sand);
+  padding: clamp(1rem, 2.6vh, 1.8rem);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 11px;
+  align-content: center;
+  overflow-y: auto;
+}
+
+.ov-card {
+  background: #fff;
+  border: var(--line) solid var(--ink);
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--pop-sm);
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font: inherit;
+  color: var(--ink);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.ov-card:hover,
+.ov-card:focus-visible {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 var(--gold);
+  outline: none;
+}
+
+/* ── particle title (slide 1) ───────────────────────────────────────────────
+   Ported from the sibling deck. The wordmark is built from ~2,600 particles and
+   the slider under it drives how much noise each one carries: drag left and the
+   project name becomes unreadable, drag right and it snaps sharp. The panel
+   learns the privacy/usefulness trade-off by trying to read our own name.      */
+
+.pt-slider {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  align-items: center;
+}
+
+.pt-end {
+  display: grid;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.pt-end em {
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 700;
+  opacity: 0.62;
+}
+
+.pt-end-private {
+  color: var(--crimson);
+  text-align: right;
+}
+
+.pt-end-useful {
+  color: var(--gold);
+}
+
+.pt-caption {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.7vw, 1.6rem);
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  min-height: 2.6em;
+  color: var(--sand);
+}
+
+.pt-caption[data-readable='1'] strong {
+  color: var(--crimson);
+}
+
+.pt-caption[data-readable='0'] strong {
+  color: var(--gold);
+}
+
+/* On the dark opening slide the track needs to read against espresso, not paper. */
+.slide[data-tone='dark'] .pt-slider input[type='range']::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, var(--crimson), var(--gold));
+  border-color: var(--sand);
+}
+
+.slide[data-tone='dark'] .pt-slider input[type='range']::-moz-range-track {
+  background: linear-gradient(90deg, var(--crimson), var(--gold));
+  border-color: var(--sand);
+}
+
+.slide[data-tone='dark'] .pt-slider input[type='range']::-webkit-slider-thumb {
+  background: var(--gold-lit);
+  border-color: var(--sand);
+}
+
+.slide[data-tone='dark'] .pt-slider input[type='range']::-moz-range-thumb {
+  background: var(--gold-lit);
+  border-color: var(--sand);
+}
+
+@media (max-height: 820px) {
+  .pt-caption {
+    font-size: 1.5rem;
+    min-height: 2.3em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Projector floor: 1280x720.
+   The pulse rail eats ~52px, so a slide only ever gets ~668px — sizing content against the
+   full 720 quietly pushed the densest slides past the fold by up to 138px. Everything below
+   is measured against the real figure. The frame tightens; body copy stays at 24px. */
+@media (max-height: 820px) {
+  .slide {
+    padding-top: 0.7rem;
+    padding-bottom: 0.6rem;
+    gap: 0.45rem;
+  }
+
+  .title {
+    font-size: clamp(2rem, 4.4vw, 3.2rem);
+  }
+
+  .title-sm {
+    font-size: clamp(1.55rem, 2.7vw, 2.15rem);
+  }
+
+  .huge {
+    font-size: clamp(2.6rem, 6.4vw, 5rem);
+  }
+
+  .lede {
+    font-size: 1.5rem;
+    line-height: 1.26;
+  }
+
+  .body {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  .card {
+    padding: 0.6rem 0.75rem;
+    border-radius: 12px;
+  }
+
+  .pulse {
+    height: 44px;
+  }
+  .eyebrow {
+    font-size: 11px;
+    padding: 0.18rem 0.5rem;
+  }
+
+  .step {
+    padding: 0.4rem 0.5rem;
+  }
+
+  .step-name {
+    font-size: 13px;
+  }
+
+  .step-sub {
+    font-size: 10.5px;
+  }
+
+  .stack-layer {
+    padding: 0.35rem 0.6rem;
+    grid-template-columns: 104px minmax(0, 1fr);
+  }
+
+  .chip {
+    font-size: 10px;
+    padding: 0.1rem 0.4rem;
+  }
+
+  .small {
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+
+  .th-track {
+    height: 42px;
+  }
+
+  .nl {
+    padding: 0.5rem 0.65rem 0.4rem;
+  }
+
+  .nl-title {
+    font-size: 1.35rem;
+  }
+
+  .nl-row {
+    padding: 0.2rem 0.15rem;
+  }
+
+  .nl-label,
+  .nl-value {
+    font-size: 0.92rem;
+  }
+
+  table.cm td {
+    padding: 0.16rem 0.3rem 0.16rem 0;
+    font-size: 0.85rem;
+  }
+
+  .batt {
+    height: clamp(38px, 6.5vh, 52px);
+  }
+
+  .batt-pct {
+    font-size: 1.2rem;
+  }
+}
+
+/* ── find yourself ──────────────────────────────────────────────────────── */
+
+.fy-controls {
+  display: flex;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.fy-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.fy-stage {
+  position: relative;
+  border: var(--line) solid var(--ink);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--pop);
+  overflow: hidden;
+}
+
+.fy-readout {
+  position: absolute;
+  left: 18px;
+  top: 12px;
+  display: grid;
+  gap: 1px;
+  pointer-events: none;
+}
+
+.fy-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.fy-hit {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--crimson);
+  letter-spacing: 0.02em;
+}
+
+/* ── two houses ─────────────────────────────────────────────────────────── */
+
+.th-side {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.th-track {
+  position: relative;
+  height: 54px;
+  margin-top: 0.35rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 2px solid var(--ink);
+  overflow: hidden;
+}
+
+.th-dot {
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  opacity: 0.75;
+  transition: left 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.th-dot:nth-child(3n) {
+  top: 32%;
+}
+.th-dot:nth-child(3n + 1) {
+  top: 68%;
+}
+
+.th-q {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 1.15rem;
+}
+
+.th-verdict {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 2.5px solid var(--ink);
+}
+
+.th-leak {
+  background: var(--crimson);
+  color: #fff;
+}
+
+.th-safe {
+  background: var(--jade);
+  color: #fff;
+}
+
+.th-slider-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* ── battery ────────────────────────────────────────────────────────────── */
+
+.batt-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.batt {
+  position: relative;
+  flex: 1;
+  height: clamp(46px, 8vh, 66px);
+  border: 4px solid var(--ink);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.batt-cap {
+  width: 11px;
+  height: 26px;
+  background: var(--ink);
+  border-radius: 0 5px 5px 0;
+}
+
+.batt-fill {
+  height: 100%;
+  transition: width 420ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.batt-jade {
+  background: var(--jade);
+}
+.batt-gold {
+  background: var(--gold);
+}
+.batt-crimson {
+  background: var(--crimson);
+}
+
+.batt-pct {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: clamp(1.3rem, 2.4vw, 1.9rem);
+  font-weight: 900;
+  color: var(--ink);
+  mix-blend-mode: multiply;
+}
+
+.batt[data-empty='1'] {
+  border-color: var(--crimson);
+}
+
+.batt-qs {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.batt-qs .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.batt-cost {
+  font-size: 10.5px;
+  font-weight: 900;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: var(--crimson);
+  color: #fff;
+}
+
+.batt-free {
+  background: var(--jade);
+}
+
+/* ── copy machine ───────────────────────────────────────────────────────── */
+
+.cm-title {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+table.cm {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.35rem;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+table.cm th {
+  text-align: left;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 0 0.35rem 0.25rem 0;
+  border-bottom: 2px solid var(--ink);
+}
+
+table.cm td {
+  padding: 0.24rem 0.35rem 0.24rem 0;
+  border-bottom: 1px solid rgba(36, 27, 18, 0.12);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+table.cm tr[data-hit='1'] td {
+  background: var(--crimson);
+  color: #fff;
+  font-weight: 800;
+}
+
+/* ── shared bits ────────────────────────────────────────────────────────── */
+
+.stack-layer {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  border: var(--line) solid var(--ink);
+  border-radius: 12px;
+  padding: 0.45rem 0.7rem;
+  box-shadow: var(--pop-sm);
+}
+
+.chip {
+  font-size: 10.5px;
+  font-weight: 700;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
+  background: #fff;
+  white-space: nowrap;
+}
+
+.chips {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.steps {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.step {
+  flex: 1 1 0;
+  min-width: 100px;
+  border: var(--line) solid var(--ink);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.5rem 0.6rem;
+  box-shadow: var(--pop-sm);
+  display: grid;
+  gap: 2px;
+  align-content: start;
+}
+
+.step-name {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.step-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-2);
+  line-height: 1.2;
+}
+
+.arrow {
+  flex: 0 0 26px;
+  align-self: center;
+  height: 18px;
+  position: relative;
+}
+
+.arrow::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  right: 9px;
+  top: 7px;
+  height: 3.5px;
+  background: var(--ink);
+  border-radius: 2px;
+}
+
+.arrow::after {
+  content: '';
+  position: absolute;
+  right: 1px;
+  top: 2px;
+  border-left: 9px solid var(--ink);
+  border-top: 6.5px solid transparent;
+  border-bottom: 6.5px solid transparent;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  justify-self: start;
+}
+
+.tag-free {
+  background: var(--jade-wash);
+}
+.tag-cost {
+  background: var(--gold-lit);
+}

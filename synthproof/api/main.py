@@ -754,9 +754,12 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
                     "head": GLOBAL_LEDGER.get_latest_hash(),
                     "verified": GLOBAL_LEDGER.verify(),
                     "signed": False,
-                    "signature_note": "Entries are Ed25519-signed, but the key is generated in "
-                    "memory per process and never persisted, and the data "
-                    "sheet itself carries no signature yet.",
+                    "signature_note": "Entries are Ed25519-signed, but THIS SERVICE "
+                    "generates its ledger key in memory per process and does not "
+                    "persist it, so these signatures are unverifiable after a "
+                    "restart and this endpoint is a demo surface, not a durable "
+                    "record. The CLI path does persist a key: `synthproof keygen`, "
+                    "then `run --sign`, then `verify` against the public key.",
                 },
             },
         )

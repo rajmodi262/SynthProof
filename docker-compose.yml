@@ -1,4 +1,10 @@
-version: '3.8'
+# SynthProof runs as a single service. The ledger is SQLite, held in a mounted volume so a
+# signed hash chain survives container restarts -- a ledger that resets is not a durable record.
+#
+# There is deliberately NO database service here. An earlier version declared a Postgres
+# container and a DATABASE_URL that nothing read: no psycopg dependency, no connection code, no
+# migration. It suggested a persistence tier the project does not have, which is the kind of
+# claim-without-implementation this project exists to catch.
 
 services:
   api:
@@ -7,21 +13,12 @@ services:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
-      - DATABASE_URL=postgresql://synthproof:synthproof@db:5432/synthproof_db
-    depends_on:
-      - db
-    restart: always
-
-  db:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_USER=synthproof
-      - POSTGRES_PASSWORD=synthproof
-      - POSTGRES_DB=synthproof_db
-    ports:
-      - "5432:5432"
+      # Unset by default so the local demo needs no configuration. /api/health reports
+      # auth: "disabled" loudly when it is. One shared key is NOT user authentication.
+      - SYNTHPROOF_API_KEY=${SYNTHPROOF_API_KEY:-}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ledger_data:/app/.synthproof
+    restart: unless-stopped
 
 volumes:
-  postgres_data:
+  ledger_data:

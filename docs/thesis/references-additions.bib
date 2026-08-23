@@ -1,0 +1,636 @@
+% ============================================================================
+% SynthProof — additions to docs/thesis/references.bib
+% Compiled 2026-08-22. Append to the existing 29 entries.
+% Grouped by the Ch.2 section each supports. See docs/LITERATURE_SURVEY.md.
+% ============================================================================
+
+% ---------------------------------------------------------------- 2.2 DP synthetic data
+
+@inproceedings{cormode2025synthsurvey,
+  author    = {Cormode, Graham and Maddock, Samuel and Ullah, Enayat and Gade, Shripad},
+  title     = {Synthetic Tabular Data: Methods, Attacks and Defenses},
+  booktitle = {Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)},
+  year      = {2025},
+  note      = {Tutorial-survey. Taxonomy of marginal-based vs deep methods; names the
+               diffusion/LLM-vs-marginal comparison as an open problem.}
+}
+
+@article{du2025benchmark,
+  author  = {Du, Kai and Li, Yongkang},
+  title   = {Benchmarking Differentially Private Tabular Data Synthesis},
+  journal = {arXiv preprint arXiv:2504.14061},
+  year    = {2025},
+  note    = {8 algorithms, 5 datasets. ``No single algorithm dominates''; AIM runtime
+             5.8--689.6 minutes depending on preprocessing.}
+}
+
+@article{ganev2025dpmm,
+  author  = {Ganev, Georgi and others},
+  title   = {dpmm: Differentially Private Marginal Models, a Library for Synthetic Tabular Data Generation},
+  journal = {arXiv preprint arXiv:2506.00322},
+  year    = {2025}
+}
+
+@article{angelozzi2026fairness,
+  author  = {Angelozzi, Vin{\'i}cius Gabriel and Arcolezi, H{\'e}ber H.},
+  title   = {Where to Intervene? Benchmarking Fairness-Aware Learning on Differentially Private Synthetic Tabular Data},
+  journal = {arXiv preprint arXiv:2607.07471},
+  year    = {2026},
+  note    = {July 2026. AIM and MST on Adult, COMPAS and ACSIncome. Describes AIM as
+             state-of-the-art marginal-based DP synthesiser, citing KDD and VLDB 2025 tutorials.}
+}
+
+% ---------------------------------------------------------------- 2.3 Auditing: tightness frontier
+
+@inproceedings{annamalai2024theoryalone,
+  author    = {Annamalai, Meenatchi Sundaram Muthu Selva and Ganev, Georgi and De Cristofaro, Emiliano},
+  title     = {``What do you want from theory alone?'' Experimenting with Tight Auditing of
+               Differentially Private Synthetic Data Generation},
+  booktitle = {33rd USENIX Security Symposium},
+  year      = {2024},
+  note      = {arXiv:2405.10994. Black-box MIAs ``severely limited in power''. At eps=4:
+               MST white-box eps\_emp=3.10 vs black-box ~0.00; PrivBayes 4.62. 10,000
+               synthetic datasets per experiment. States the Clopper-Pearson cap on
+               maximum auditable epsilon.}
+}
+
+@inproceedings{annamalai2024nearlytight,
+  author    = {Annamalai, Meenatchi Sundaram Muthu Selva and De Cristofaro, Emiliano},
+  title     = {Nearly Tight Black-Box Auditing of Differentially Private Machine Learning},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2024},
+  note      = {arXiv:2405.14106. At theoretical eps=10: eps\_emp=7.21 (MNIST 1k),
+               6.95 (CIFAR-10 1k), 4.96 (full CIFAR-10). Prior work: 3.41 and 0.69.}
+}
+
+@article{ganev2026tightmstaim,
+  author  = {Ganev, Georgi and Annamalai, Meenatchi Sundaram Muthu Selva and Kulynych, Bogdan},
+  title   = {Tight Auditing of Differential Privacy in {MST} and {AIM}},
+  journal = {arXiv preprint arXiv:2604.18352},
+  year    = {2026},
+  note    = {April 2026. First tight audit of AIM. GDP framing over the full FP/FN tradeoff;
+             10,000 model instances. Empirical mu~0.43 vs implied 0.45 at (eps,delta)=(1,1e-2).}
+}
+
+@inproceedings{mahloujifar2025fdponerun,
+  author    = {Mahloujifar, Saeed and Melis, Luca and Chaudhuri, Kamalika},
+  title     = {Auditing $f$-Differential Privacy in One Run},
+  booktitle = {Proceedings of the 42nd International Conference on Machine Learning (ICML)},
+  year      = {2025},
+  note      = {arXiv:2410.22235, FAIR at Meta. Recursive bound on the count distribution
+               instead of thresholding into binary guesses; outperforms Steinke et al. (2023).}
+}
+
+@article{agrawal2026gauss,
+  author  = {Agrawal, Adya and Wei, Yu and Singh, and Magdon-Ismail, Malik and Zikas, Vassilis},
+  title   = {Let's Ask Gauss: Improved One-Run Privacy Auditing},
+  journal = {arXiv preprint arXiv:2606.12733},
+  year    = {2026},
+  note    = {Names the limitation directly: prior one-run methods ``threshold training
+             examples or canaries into binary membership guesses, which discards useful
+             information''. Gaussian approximation to the normalised score sum.}
+}
+
+@article{gonzalez2025sequential,
+  author  = {Gonz{\'a}lez, Tom{\'a}s and Rubio, and Ramdas, Aaditya and Ribero, M{\'o}nica},
+  title   = {Sequentially Auditing Differential Privacy},
+  journal = {arXiv preprint arXiv:2509.07055},
+  year    = {2025},
+  note    = {e-values and MMD, anytime-valid. Detection sample sizes from 50K to a few
+             hundred. Still degrades above eps~0.6.}
+}
+
+@article{namatevs2025auditsurvey,
+  author  = {Namatevs, Ivars and others},
+  title   = {Privacy Auditing in Differentially Private Machine Learning: The Current Trends},
+  journal = {Applied Sciences},
+  volume  = {15},
+  number  = {2},
+  pages   = {647},
+  year    = {2025},
+  note    = {Survey. Existing auditing ``require[s] thousands or millions of training runs
+             to produce non-trivial statistical estimates''.}
+}
+
+@article{nasr2023tightauditing,
+  author  = {Nasr, Milad and Hayes, Jamie and Steinke, Thomas and Balle, Borja and
+             Tram{\`e}r, Florian and Jagielski, Matthew and Carlini, Nicholas and Terzis, Andreas},
+  title   = {Tight Auditing of Differentially Private Machine Learning},
+  journal = {arXiv preprint arXiv:2302.07956},
+  year    = {2023}
+}
+
+% ---------------------------------------------------------------- 2.3b Implementation bugs
+
+@article{ganev2024pategan,
+  author  = {Ganev, Georgi and Annamalai, Meenatchi Sundaram Muthu Selva and De Cristofaro, Emiliano},
+  title   = {The Elusive Pursuit of Reproducing {PATE-GAN}: Benchmarking, Auditing, Debugging},
+  journal = {arXiv preprint arXiv:2406.13985},
+  year    = {2024},
+  note    = {17 privacy violations and 5 further bugs across six implementations, three by
+             the original authors. All six leak more privacy than claimed.}
+}
+
+@article{cebere2026bugs,
+  author  = {Cebere, Tudor and Erb, David and Desfontaines, Damien and Bellet, Aur{\'e}lien and Fitzsimons, Jack},
+  title   = {Privacy in Theory, Bugs in Practice: Differential Privacy Library Auditing},
+  journal = {Proceedings on Privacy Enhancing Technologies (PoPETs)},
+  year    = {2026},
+  note    = {arXiv:2602.17454. Gray-box ``Re:cord-play'' auditing. 12 libraries, 13 privacy
+             violations: SmartNoise SDK/SQL, Synthcity, diffprivlib, private-PGM (JAM
+             sensitivity underestimation), MOSTLY AI Engine (incorrect budget composition),
+             Opacus, dpmm (domain inference in AIM and PrivBayes).}
+}
+
+% ---------------------------------------------------------------- 2.2b Domain and discretization
+
+@article{annamalai2025domain,
+  author  = {Annamalai, Meenatchi Sundaram Muthu Selva and Ganev, Georgi and others},
+  title   = {Understanding the Impact of Data Domain Extraction on Synthetic Data Privacy},
+  journal = {arXiv preprint arXiv:2504.08254},
+  year    = {2025},
+  note    = {``Extracting the data domain directly from the input data, which is the common
+             practice, breaks the end-to-end DP guarantees of generative models.''
+             GroundHog MIA reaches near-perfect accuracy without DP domain extraction and
+             no better than random with it. Recommends: public domain (free) > DP extraction
+             > raw extraction.}
+}
+
+@article{ganev2025discretization,
+  author  = {Ganev, Georgi and Annamalai, Meenatchi Sundaram Muthu Selva and Mahiou, Sofiane and De Cristofaro, Emiliano},
+  title   = {The Importance of Being Discrete: Measuring the Impact of Discretization in
+             End-to-End Differentially Private Synthetic Data},
+  journal = {arXiv preprint arXiv:2504.06923},
+  year    = {2025},
+  note    = {Utility follows an inverted-U in the number of bins. AIM ``becomes faster with
+             more bins, possibly because it exhausts its budget more quickly''. Optimising
+             the discretiser improves utility 9.28--43.54\%.}
+}
+
+@inproceedings{ganev2024graphicalvsdeep,
+  author    = {Ganev, Georgi and Xu, Kai and De Cristofaro, Emiliano},
+  title     = {Graphical vs. Deep Generative Models: Measuring the Impact of Differentially
+               Private Mechanisms and Budgets on Utility},
+  booktitle = {Proceedings of the 2024 ACM SIGSAC Conference on Computer and Communications Security (CCS)},
+  year      = {2024},
+  note      = {arXiv:2305.10994. PrivBayes splits budget ~50/50 between structure selection
+               and measurement; MST 1/3 to 2/3. ``More data can hurt performance'' --- MST
+               degrades past n~8k. Non-monotone utility documented.}
+}
+
+% ---------------------------------------------------------------- 2.x Disparate impact (H2)
+
+@article{ganev2021robinhood,
+  author  = {Ganev, Georgi and Oprisanu, Bristena and De Cristofaro, Emiliano},
+  title   = {Robin Hood and Matthew Effects: Differential Privacy Has Disparate Impact on Synthetic Data},
+  journal = {arXiv preprint arXiv:2109.11429},
+  year    = {2021},
+  note    = {Underrepresented subgroups ``suffer bigger and/or more variable drops''.
+             Measures utility and fairness only; explicitly leaves privacy-specific
+             per-subgroup analysis to future work --- which is this project's H2.}
+}
+
+% ---------------------------------------------------------------- 2.x Evaluation methodology
+
+@article{rosenblatt2023epistemic,
+  author  = {Rosenblatt, Lucas and Herman, Bernease and Holovenko, Anastasia and Lee, Wonkwon
+             and Loftus, Joshua and McKinnie, Elizabeth and Rumezhak, Taras and
+             Stadnik, Andrii and Howe, Bill and Stoyanovich, Julia},
+  title   = {Epistemic Parity: Reproducibility as an Evaluation Metric for Differential Privacy},
+  journal = {Proceedings of the VLDB Endowment},
+  volume  = {16},
+  number  = {11},
+  pages   = {3178--3191},
+  year    = {2023},
+  note    = {Later a SIGMOD Record reprint and a CACM Research Highlight (2025).
+             105 findings from 8 peer-reviewed papers. PrivBayes beat MST ``contrary to
+             findings in randomized query workload studies'' --- attributed to which
+             conditional relationships the mechanism explicitly models.}
+}
+
+% ---------------------------------------------------------------- 2.4 Accounting, registries, verifiability
+
+@article{dwork2019exposeepsilons,
+  author  = {Dwork, Cynthia and Kohli, Nitin and Mulligan, Deirdre},
+  title   = {Differential Privacy in Practice: Expose Your Epsilons!},
+  journal = {Journal of Privacy and Confidentiality},
+  volume  = {9},
+  number  = {2},
+  year    = {2019}
+}
+
+@article{nanayakkara2025registry,
+  author  = {Nanayakkara, Priyanka and Ghazi, and Vadhan, Salil},
+  title   = {Practitioners' Perspectives on a Differential Privacy Deployment Registry},
+  journal = {arXiv preprint arXiv:2509.13509},
+  year    = {2025},
+  note    = {OpenDP / Harvard. Proposes a ``deployment card'' schema: privacy unit,
+             eps/delta, deployment model and trust assumptions, mechanisms, PRE-PROCESSING,
+             composition, justification. Practitioners wanted claims to be ``auditable
+             rather than merely self-reported''.}
+}
+
+@misc{opendp2025registry,
+  author       = {{OpenDP}},
+  title        = {Differential Privacy Deployments Registry},
+  howpublished = {\url{https://registry.opendp.org/}},
+  year         = {2025},
+  note         = {Launched 25 November 2025.}
+}
+
+@techreport{nist2025sp800226,
+  author      = {Near, Joseph P. and Darais, David and Boeckl, Kaitlin and others},
+  title       = {Guidelines for Evaluating Differential Privacy Guarantees},
+  institution = {National Institute of Standards and Technology},
+  number      = {NIST Special Publication 800-226},
+  year        = {2025},
+  note        = {Finalised 6 March 2025.}
+}
+
+@inproceedings{narayan2015verdp,
+  author    = {Narayan, Arjun and Feldman, Ariel and Papadimitriou, Antonis and Haeberlen, Andreas},
+  title     = {Verifiable Differential Privacy},
+  booktitle = {Proceedings of the Tenth European Conference on Computer Systems (EuroSys)},
+  year      = {2015},
+  note      = {Zero-knowledge proofs that an untrusted curator ran the mechanism it claimed.
+               The distinction this project must draw: our signature attests integrity of a
+               CLAIM, not correctness of EXECUTION.}
+}
+
+@article{biswas2022verifiabledp,
+  author  = {Biswas, Ari and Cormode, Graham},
+  title   = {Verifiable Differential Privacy},
+  journal = {arXiv preprint arXiv:2208.09011},
+  year    = {2022}
+}
+
+@article{berns2022tumult,
+  author  = {Berghel, Skye and Bohannon, Philip and Desfontaines, Damien and others},
+  title   = {Tumult Analytics: A Robust, Easy-to-use, Scalable, and Expressive Framework for Differential Privacy},
+  journal = {arXiv preprint arXiv:2212.04133},
+  year    = {2022},
+  note    = {Joined OpenDP in October 2025.}
+}
+
+% ---------------------------------------------------------------- 2.5 Regulation and commercial gap
+
+@article{pilgram2025regulatory,
+  author  = {Pilgram, Lisa and Ko, Haksoo and Tung, Adeline and El Emam, Khaled},
+  title   = {Protecting Patient Privacy in Tabular Synthetic Health Data: A Regulatory Perspective},
+  journal = {npj Digital Medicine},
+  year    = {2025},
+  note    = {UK, Singapore, South Korea. All require demonstration of ``very low'' residual
+             disclosure risk; all acknowledge that ``precise criteria were lacking''.
+             THE audience citation for this project.}
+}
+
+@inproceedings{ganev2025inadequacy,
+  author    = {Ganev, Georgi and De Cristofaro, Emiliano},
+  title     = {The Inadequacy of Similarity-based Privacy Metrics: Privacy Attacks against
+               ``Truly Anonymous'' Synthetic Datasets},
+  booktitle = {46th IEEE Symposium on Security and Privacy (S\&P)},
+  year      = {2025},
+  note      = {arXiv:2312.05114. ReconSyn recovers 78--100\% of training-set outliers with
+               perfect precision using only the fitted model and the published privacy
+               metrics. DifferenceAttack: 100\% membership and attribute inference.}
+}
+
+@inproceedings{ganev2024regulatory,
+  author    = {Ganev, Georgi},
+  title     = {Synthetic Data, Similarity-based Privacy Metrics, and Regulatory (Non-)Compliance},
+  booktitle = {2nd Workshop on Generative AI and Law (GenLaw) at ICML},
+  year      = {2024},
+  note      = {arXiv:2407.16929. Documents that Mostly AI, Syntegra, Panfilo \& Aindo and
+               Syntho rely on similarity metrics rather than formal guarantees. Stated
+               limitation: ``identifies problems rather than providing implementable
+               regulatory solutions'' --- the gap SynthProof attempts.}
+}
+
+@misc{edpb2026anonymisation,
+  author       = {{European Data Protection Board}},
+  title        = {Draft Guidelines on Anonymisation},
+  year         = {2026},
+  note         = {Published 30 July 2026. Three technical criteria: no singling out,
+                  no linkage, no inference.}
+}
+
+@article{dpfy2025guide,
+  title   = {How to {DP-fy} Your Data: A Practical Guide to Generating Synthetic Data With Differential Privacy},
+  journal = {arXiv preprint arXiv:2512.03238},
+  year    = {2025},
+  note    = {Sec. 7.3 ``Pitfalls to avoid''; Sec. 7.5 ``Empirical privacy auditing'';
+             Sec. 2.3 composition and cumulative cost tracking.}
+}
+
+% ============================================================================
+% ROUND 2 — added 2026-08-22 after a full code read. These are the citations
+% the SOURCE CODE's design decisions imply but the bibliography never made.
+% ============================================================================
+
+@inproceedings{hay2016dpbench,
+  author    = {Hay, Michael and Machanavajjhala, Ashwin and Miklau, Gerome and Chen, Yan and Zhang, Dan},
+  title     = {Principled Evaluation of Differentially Private Algorithms using {DPBench}},
+  booktitle = {Proceedings of the 2016 International Conference on Management of Data (SIGMOD)},
+  year      = {2016},
+  note      = {arXiv:1512.04817. TEN PRINCIPLES: eps diversity; scale diversity; shape
+               diversity; DOMAIN-SIZE diversity; PRIVATE PRE- AND POST-PROCESSING ("account
+               for all computations on the input dataset"); no free parameters; consistent
+               side information; measurement of variability; measurement of bias; reasonable
+               privacy and utility. Predicts this project's headline: "a data dependent
+               algorithm may have lower error than another on one dataset, but the reverse
+               may be true on another dataset." THE methodological spine for the thesis.}
+}
+
+@inproceedings{houssiau2022tapas,
+  author    = {Houssiau, Florimond and Jordon, James and Cohen, Samuel N. and Daniel, Owen and
+               Elliott, Andrew and Geddes, James and Mole, Callum and Rangel-Smith, Camila and Szpruch, Lukasz},
+  title     = {{TAPAS}: a Toolbox for Adversarial Privacy Auditing of Synthetic Data},
+  booktitle = {NeurIPS 2022 Workshop on Synthetic Data for Empowering ML Research},
+  year      = {2022},
+  note      = {arXiv:2211.06550. Alan Turing Institute / ONS / Oxford / Glasgow / Edinburgh.
+               THE closest existing system to SynthProof's audit half, and currently absent
+               from Ch.2. Provides a threat-model framework and an attack library but
+               NO epsilon lower bound and NO privacy accounting -- it stops at attack
+               success rates. That is the differentiation.}
+}
+
+@article{cohen2020singlingout,
+  author  = {Cohen, Aloni and Nissim, Kobbi},
+  title   = {Towards Formalizing the {GDPR}'s Notion of Singling Out},
+  journal = {Proceedings of the National Academy of Sciences (PNAS)},
+  volume  = {117},
+  number  = {15},
+  pages   = {8344--8352},
+  year    = {2020},
+  note    = {arXiv:1904.06009. Predicate singling out. Underpins the Anonymeter triad and
+             the EDPB's first technical criterion. Our exact-match attack is a weak instance.}
+}
+
+@inproceedings{papernot2022hyperparameter,
+  author    = {Papernot, Nicolas and Steinke, Thomas},
+  title     = {Hyperparameter Tuning with {R\'enyi} Differential Privacy},
+  booktitle = {International Conference on Learning Representations (ICLR), Oral},
+  year      = {2022},
+  note      = {arXiv:2110.03620. Choosing anything from the data costs budget. The
+               theoretical justification for the schema-only preflight and for charging
+               AIM's clique selection.}
+}
+
+@techreport{rfc6962,
+  author      = {Laurie, Ben and Langley, Adam and Kasper, Emilia},
+  title       = {Certificate Transparency},
+  institution = {IETF},
+  number      = {RFC 6962},
+  year        = {2013},
+  note        = {Signed Tree Head over (tree_size, root_hash). Our ledger's signed head over
+                 (entry_count, tip_hash) is structurally the same construction, arrived at
+                 independently after finding the truncation attack. Honest gap: CT's strength
+                 comes from public gossiped logs and consistency proofs, which a
+                 single-holder SQLite chain does not have.}
+}
+
+@inproceedings{ding2021retiringadult,
+  author    = {Ding, Frances and Hardt, Moritz and Miller, John and Schmidt, Ludwig},
+  title     = {Retiring Adult: New Datasets for Fair Machine Learning},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2021},
+  note      = {arXiv:2108.04884. folktables / ACSIncome. The justification for the second
+               dataset, already cited in synthproof/data/acs.py but not in references.bib.}
+}
+
+@inproceedings{tran2026tabpe,
+  author    = {Tran, Toan and Backurs, Arturs and Lin, Zinan and Reis, Victor and
+               Yekhanin, Sergey and Xiong, Li},
+  title     = {Differentially Private Synthetic Data via {APIs} 4: Tabular Data},
+  booktitle = {International Conference on Machine Learning (ICML)},
+  year      = {2026},
+  note      = {arXiv:2606.08259. Emory + Microsoft Research. Tab-PE beats AIM by up to 10\%
+               accuracy at 28x the speed ON HIGH-ORDER-CORRELATION DATA, but still calls AIM
+               "the strongest marginal-based baseline" and reports that the standard
+               benchmarks (Adult, Bank, Census) are "dominated by low-order dependencies".
+               CITE THIS to qualify any "AIM is SOTA" claim -- and as independent
+               corroboration of the clique-confound critique from the other direction.}
+}
+
+@inproceedings{jayaraman2022imputation,
+  author    = {Jayaraman, Bargav and Evans, David},
+  title     = {Are Attribute Inference Attacks Just Imputation?},
+  booktitle = {Proceedings of the 2022 ACM SIGSAC Conference on Computer and Communications Security (CCS)},
+  year      = {2022},
+  note      = {A naive attacker predicting the most common value outperformed three published
+               SOTA attacks. Already cited in synthproof/attacks/attribute_inference.py;
+               belongs in the bibliography.}
+}
+
+@article{lakens2017tost,
+  author  = {Lakens, Dani{\"e}l},
+  title   = {Equivalence Tests: A Practical Primer for t Tests, Correlations, and Meta-Analyses},
+  journal = {Social Psychological and Personality Science},
+  volume  = {8},
+  number  = {4},
+  pages   = {355--362},
+  year    = {2017},
+  note    = {The TOST procedure used in synthproof/audit/equivalence.py to convert the H2
+             null into a bounded one.}
+}
+
+@inproceedings{zuo2026financial,
+  author    = {Zuo, Michael and Kang, Inwon and Patterson, Stacy and Seneviratne, Oshani},
+  title     = {Measuring Privacy Risks and Tradeoffs in Financial Synthetic Data Generation},
+  booktitle = {Companion Proceedings of the ACM Web Conference (WWW)},
+  year      = {2026},
+  note      = {arXiv:2602.09288. Six financial datasets. DP-TVAE mode collapse drops minority
+               class representation to 0.00-3.09\% from 11.6-23.9\%. Audience citation for
+               the financial-services half of the impact argument, and a second instance of
+               DP harming minority subgroups.}
+}
+
+% ============================================================================
+% ROUND 3 — added 2026-08-22. The IMPACT case, quantified, plus the
+% clinical/security disconnect. These belong in Chapter 1, not Chapter 2.
+% ============================================================================
+
+@article{kaabachi2025scopingreview,
+  author  = {Kaabachi, Bayrem and Despraz, J{\'e}r{\'e}mie and Meurers, Thierry and
+             Otte, Karen and Halilovic, Mehmed and Prasser, Fabian and Raisaro, Jean Louis},
+  title   = {A Scoping Review of Privacy and Utility Metrics in Medical Synthetic Data},
+  journal = {npj Digital Medicine},
+  year    = {2025},
+  note    = {THE headline impact statistic. 73 studies, 2018--Jul 2024. Only 11\% (8/73) used
+             a DP generator. Of works naming privacy as their PURPOSE, only 46\% (31/67)
+             evaluated privacy at all. ``Most works that use synthetic data for preserving
+             privacy do not evaluate residual privacy risks''; ``many evaluations may offer a
+             false sense of security''. No consensus on standardised evaluation.}
+}
+
+@inproceedings{yao2025dcrdelusion,
+  author    = {Yao, Zexi and Kr{\v c}o, Nata{\v s}a and Ganev, Georgi and de Montjoye, Yves-Alexandre},
+  title     = {The {DCR} Delusion: Measuring the Privacy Risk of Synthetic Data},
+  booktitle = {Computer Security -- ESORICS 2025},
+  year      = {2025},
+  note      = {arXiv:2505.01524. Imperial College London / UCL / SAS. MIAs perform EQUALLY
+               WELL against datasets passing and failing DCR tests. Records at AUC > 0.8
+               despite passing. 10\% TPR at 0\% FPR for diffusion models; 20\% of training
+               records vulnerable (AUC >= 0.6) for classical models. Recommends moving to
+               MIAs ``as the rigorous, comprehensive standard'' for legal anonymity claims.}
+}
+
+@inproceedings{shafieinejad2025midst,
+  author    = {Shafieinejad, Masoumeh and others},
+  title     = {{MIDST} Challenge: Membership Inference over Diffusion-models-based
+               Synthetic Tabular Data},
+  booktitle = {IEEE Conference on Secure and Trustworthy Machine Learning (SaTML)},
+  year      = {2025},
+  note      = {arXiv:2603.19185. Vector Institute. Winning attacks: 46\% TPR@10\%FPR
+               white-box single-table; 25\% black-box single-table -- against NON-DP
+               diffusion models. Useful calibration for why our DP results are near zero.
+               Concludes there is an ``urgent need for better assessments and audits of the
+               privacy risks in the LIFE CYCLE of synthetic tabular data''.}
+}
+
+@article{marino2025digitaltwin,
+  author  = {Marino, Simeone and Cassidy, Nina and Nanni, and others},
+  title   = {Medical Data Sharing and Synthetic Clinical Data Generation},
+  journal = {npj Digital Medicine},
+  year    = {2025},
+  note    = {THE DATED DISCONNECT. States ``DP has not been adopted in practice, and existing
+             applications are limited to specialized use cases'', and evaluates its release
+             with a similarity-style ``privacy protection (0.83)'' -- the exact class of
+             metric that ganev2025inadequacy (IEEE S\&P 2025) and yao2025dcrdelusion
+             (ESORICS 2025) broke the same year.}
+}
+
+@article{wang2025crossingborders,
+  author  = {Wang, Echo H. and Myles, Puja and Foraker, Randi and Toh, Sengwee and
+             Mosquera, Lucy and El Emam, Khaled and Burcu, Mehmet and others},
+  title   = {Crossing Borders Securely: Synthetic Data and Federated Networks for
+             Privacy-Preserving Access to Real-World Data},
+  journal = {npj Digital Medicine},
+  volume  = {8},
+  number  = {758},
+  year    = {2025},
+  note    = {``Limited guidance from privacy regulators''. Synthetic data ``may still be
+             regarded as personal data'' depending on generation method and output
+             identifiability. Calls for ``consensus standards and country-specific
+             guidance''. Notes DP and HE ``are not widely used in existing federated
+             networks''.}
+}
+
+@article{sood2025india,
+  author  = {Sood, and Mishra, and Surya, and others},
+  title   = {Challenges and Recommendations for Enhancing Digital Data Protection in
+             Indian Medical Research and Healthcare Sector},
+  journal = {npj Digital Medicine},
+  year    = {2025},
+  note    = {THE DOMESTIC HOOK. Indian medical research under the DPDP Act 2023: unresolved
+             ambiguity across clinical sharing, research reuse and AI processing.
+             References anonymisation and pseudonymisation -- and does NOT discuss synthetic
+             data or differential privacy at all. This is the gap an MIT-WPU capstone is
+             positioned to fill, and Chapter 1 should say so.}
+}
+
+@article{dong2022gdp,
+  author  = {Dong, Jinshuo and Roth, Aaron and Su, Weijie J.},
+  title   = {Gaussian Differential Privacy},
+  journal = {Journal of the Royal Statistical Society Series B},
+  volume  = {84},
+  number  = {1},
+  pages   = {3--37},
+  year    = {2022},
+  note    = {arXiv:1905.02383. The f-DP / trade-off-function framing that the 2025--26
+             escape constructions (mahloujifar2025fdponerun, ganev2026tightmstaim) build on.}
+}
+
+@article{abowd2023reconstruction,
+  author  = {Abowd, John M. and Hawes, Michael B. and others},
+  title   = {Database Reconstruction Does Compromise Confidentiality},
+  journal = {Proceedings of the National Academy of Sciences (PNAS)},
+  year    = {2023},
+  note    = {The US Census reconstruction debate. With Dinur \& Nissim (2003), the
+             ``fundamental law of information recovery'' underpinning Chapter 1's motivation.}
+}
+
+@misc{satml2027,
+  title        = {IEEE Conference on Secure and Trustworthy Machine Learning (SaTML) 2027 --
+                  Call for Papers},
+  howpublished = {\url{https://satml.org/call-for-papers/}},
+  year         = {2026},
+  note         = {SUBMISSION DEADLINE 29 SEPTEMBER 2026; conference early May 2027. Accepts
+                  research papers, systematization-of-knowledge papers, and position papers.
+                  ``Privacy in machine learning'' in scope. SaTML hosted the MIDST challenge.
+                  The most actionable venue on the calendar.}
+}
+
+
+% =====================================================================
+% Added by the 23 August 2026 supplementary sweep (REPORTS/06-SUPPLEMENT-2026-08-23.md).
+% NOT YET VERIFIED against published PDFs. Standing rule 1: do not cite what you have
+% not read. Move an entry into references.bib only after checking venue, year and claim.
+% =====================================================================
+
+@misc{opoku2026synthguard,
+  author        = {Opoku, Jeffery and Banahene, David},
+  title         = {{SynthGuard-ReleaseBench}: Locked-Audit Evidence for Synthetic Tabular Data Releases},
+  year          = {2026},
+  eprint        = {2608.14753},
+  archivePrefix = {arXiv},
+  note          = {Independent convergent work on shipping evidence with a release. Hash-checked
+                   registries, no cryptographic signing; certificate bounds utility rather than
+                   the sensitivity of the privacy measurement.}
+}
+
+@misc{kuchler2025dpolicy,
+  author        = {K{\"u}chler, Nicolas and Viand, Alexander and Lycklama, Hidde and Hithnawi, Anwar},
+  title         = {{DPolicy}: Managing Privacy Risks Across Multiple Releases with Differential Privacy},
+  year          = {2025},
+  eprint        = {2505.06747},
+  archivePrefix = {arXiv},
+  note          = {Cross-release budget management. Occupies the "Cross-release" cell our own
+                   positioning matrix currently claims.}
+}
+
+@inproceedings{golob2025mamamia,
+  author    = {Golob, Steven and Pentyala, Sikha and Maratkhan, Anuar and De Cock, Martine},
+  title     = {Privacy Vulnerabilities in Marginals-based Synthetic Data},
+  booktitle = {IEEE Conference on Secure and Trustworthy Machine Learning (SaTML)},
+  year      = {2025},
+  eprint    = {2410.05506},
+  archivePrefix = {arXiv},
+  note      = {MAMA-MIA. Algorithm-aware MIA against MST, PrivBayes and Private-GSD; winner of
+               the first SNAKE competition. The benchmark our nearest-neighbour adversary
+               should be measured against.}
+}
+
+@inproceedings{krco2025lostaverages,
+  author    = {Kr{\v c}o, Nata{\v s}a and Gu{\'e}pin, Florent and Meeus, Matthieu and
+               Kulynych, Bogdan and de Montjoye, Yves-Alexandre},
+  title     = {Lost in the Averages: Reassessing Record-Specific Privacy Risk Evaluation},
+  year      = {2025},
+  doi       = {10.1007/978-3-032-16089-8_2},
+  note      = {The standard record-specific game averages risk across datasets; 94\% of
+               high-risk records misidentified on UCI Adult with Synthpop. Gap largest below
+               10,000 rows, and H1/H2 both run at n = 6,000.}
+}
+
+@inproceedings{annamalai2026hitchhiker,
+  author    = {Annamalai, Meenatchi Sundaram Muthu Selva and Balle, Borja and Hayes, Jamie and
+               Kaissis, Georgios and De Cristofaro, Emiliano},
+  title     = {The Hitchhiker's Guide to Efficient, End-to-End, and Tight {DP} Auditing},
+  booktitle = {IEEE Conference on Secure and Trustworthy Machine Learning (SaTML)},
+  year      = {2026},
+  eprint    = {2506.16666},
+  archivePrefix = {arXiv},
+  note      = {Three desiderata for DP audits: efficiency, end-to-end-ness, tightness. Use it to
+               self-assess: we are efficient and end-to-end, and not tight, with a reason.}
+}
+
+@inproceedings{ghosh2012geometric,
+  author    = {Ghosh, Arpita and Roughgarden, Tim and Sundararajan, Mukund},
+  title     = {Universally Utility-Maximizing Privacy Mechanisms},
+  booktitle = {SIAM Journal on Computing},
+  year      = {2012},
+  note      = {The geometric mechanism. Cited in synthproof/accounting/noise.py as the basis of
+               the two-sided geometric (discrete Laplace) sampler, and absent from the thesis
+               bibliography. VERIFY the exact venue/year -- the STOC'09 and SICOMP'12 versions
+               differ.}
+}

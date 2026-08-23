@@ -137,6 +137,38 @@ def test_editing_any_field_breaks_the_signature(tmp_path):
         signing.verify_datasheet(tampered, key_path=pub)
 
 
+def test_the_accountant_verdict_is_covered_by_the_signature(tmp_path):
+    """A cross-check verdict that could be edited after signing would protect nobody.
+
+    The whole value of putting `accountant_agreement` inside the payload rather than beside it
+    is that an operator cannot turn an `under_report` into an `agree` on the way out.
+    """
+    priv, pub = signing.generate_keypair(key_dir=tmp_path / "keys")
+    sheet = _sheet()
+    sheet.accountant_agreement = {
+        "primary": "dp_accounting",
+        "primary_epsilon": 1.0,
+        "secondary": "autodp",
+        "secondary_epsilon": 1.0,
+        "relative_difference": 0.0,
+        "tolerance": 0.01,
+        "verdict": "under_report",
+        "detail": "constructed",
+    }
+    signing.sign_datasheet(sheet, key_path=priv)
+    loaded = json.loads(sheet.to_json())
+
+    # Honest sheet verifies, verdict intact.
+    signing.verify_datasheet(loaded, key_path=pub)
+    assert loaded["accountant_agreement"]["verdict"] == "under_report"
+
+    # Laundering the verdict must be detected.
+    tampered = json.loads(sheet.to_json())
+    tampered["accountant_agreement"]["verdict"] = "agree"
+    with pytest.raises(signing.SignatureError, match="does not verify"):
+        signing.verify_datasheet(tampered, key_path=pub)
+
+
 def test_a_sheet_cannot_vouch_for_itself(tmp_path):
     """Verifying against the key embedded in the sheet proves only that it signed itself.
 

@@ -1,0 +1,180 @@
+% SynthProof research bibliography.
+% Entries are added ONLY after the source has been fetched and verified.
+
+% =====================================================================
+% Phase 2 completion, 2026-08-23. Families A, C, E, F, G, H.
+% Each reached by fetch or by a search returning venue + identifier.
+% VERIFY against the published PDF before any of this enters the thesis.
+% =====================================================================
+
+@inproceedings{duddu2025laminator,
+  author    = {Duddu, Vasisht and J{\"a}rvinen, Oskari and Gunn, Lachlan J. and Asokan, N.},
+  title     = {Laminator: Verifiable {ML} Property Cards using Hardware-assisted Attestations},
+  booktitle = {ACM Conference on Data and Application Security and Privacy (CODASPY)},
+  year      = {2025},
+  eprint    = {2406.17548},
+  archivePrefix = {arXiv},
+  note      = {TEE-attested model cards, datasheets and inference cards. Attests EXECUTION --
+               the boundary our README concedes we cannot cross. Does not address DP budgets.}
+}
+
+@inproceedings{luo2021privatekube,
+  author    = {Luo, Tao and Pan, Mingen and Tholoniat, Pierre and Cidon, Asaf and
+               Geambasu, Roxana and Lecuyer, Mathias},
+  title     = {Privacy Budget Scheduling},
+  booktitle = {USENIX Symposium on Operating Systems Design and Implementation (OSDI)},
+  year      = {2021},
+  eprint    = {2106.15335},
+  archivePrefix = {arXiv},
+  note      = {PrivateKube. Privacy as a native Kubernetes resource; Dominant Privacy Fairness
+               for a non-replenishable resource. Occupies cross-workload budget management.}
+}
+
+@misc{cohere2023,
+  title        = {Cohere: Managing Differential Privacy in Large Scale Systems},
+  year         = {2023},
+  eprint       = {2301.08517},
+  archivePrefix = {arXiv},
+  note         = {Benchmarks against PrivateKube as state of the art for DP resource management.}
+}
+
+@inproceedings{dpack2025,
+  title     = {{DPack}: Efficiency-Oriented Privacy Budget Scheduling},
+  booktitle = {European Conference on Computer Systems (EuroSys)},
+  year      = {2025},
+  doi       = {10.1145/3689031.3696096}
+}
+
+@misc{preen2024sacro,
+  author        = {Preen, Richard J. and Albashir, Maha and Davy, Simon and Smith, Jim},
+  title         = {A Multi-Language Toolkit for the Semi-Automated Checking of Research Outputs},
+  year          = {2024},
+  eprint        = {2212.02935},
+  archivePrefix = {arXiv},
+  note          = {SACRO. Automated statistical disclosure control at the TRE exit point.
+                   READS OUTPUT VALUES (cell frequencies, p\%-rule, NK-rule, regression dof) and
+                   does NOT autonomously refuse -- human checkers retain final authority.
+                   SHA-256 checksums, no cryptographic signing. The prior art our schema-only,
+                   autonomously-refusing preflight gate must be positioned against.}
+}
+
+@misc{sacroml2022,
+  title         = {Safe machine learning model release from Trusted Research Environments:
+                   The {SACRO-ML} package},
+  year          = {2022},
+  eprint        = {2212.01233},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{ganev2022robinhood,
+  author    = {Ganev, Georgi and Oprisanu, Bristena and De Cristofaro, Emiliano},
+  title     = {Robin Hood and Matthew Effects: Differential Privacy Has Disparate Impact
+               on Synthetic Data},
+  booktitle = {International Conference on Machine Learning (ICML)},
+  series    = {PMLR},
+  volume    = {162},
+  year      = {2022},
+  eprint    = {2109.11429},
+  archivePrefix = {arXiv},
+  note      = {H2's parent paper. Disparate impact on subgroup SIZE and downstream ACCURACY --
+               H2 asks the adjacent question about LEAKAGE. State that distinction precisely.}
+}
+
+@inproceedings{ngong2024usability,
+  author    = {Ngong, Ivoline and Gilbertson, Brad and Zhang, Yuanyuan and others},
+  title     = {Evaluating the Usability of Differential Privacy Tools with Data Practitioners},
+  booktitle = {USENIX Symposium on Usable Privacy and Security (SOUPS)},
+  year      = {2024},
+  eprint    = {2309.13506},
+  archivePrefix = {arXiv},
+  note      = {24 practitioners, 4 tools. VERIFY the author list -- only the first author was
+               confirmed from the venue listing.}
+}
+
+@misc{sok2024dpusability,
+  title         = {{SoK}: Usability Studies in Differential Privacy},
+  year          = {2024},
+  eprint        = {2412.16825},
+  archivePrefix = {arXiv}
+}
+
+@misc{croissant2026,
+  author       = {{MLCommons}},
+  title        = {Croissant 1.1: Extensible, Agent-Ready {ML} Dataset Standard},
+  howpublished = {\url{https://mlcommons.org/2026/02/croissant-1-1-standard/}},
+  year         = {2026},
+  note         = {JSON-LD metadata standard; a NeurIPS dataset submission requirement. 1.1 adds
+                  machine-actionable provenance and structured usage policies. The ecosystem the
+                  Privacy Data Sheet currently sits beside rather than inside.}
+}
+
+@inproceedings{mrm3_2025,
+  title     = {{MRM3}: Machine Readable {ML} Model Metadata},
+  booktitle = {Annual International Conference on Mobile Systems, Applications and Services
+               (MobiSys)},
+  year      = {2025},
+  eprint    = {2505.13343},
+  archivePrefix = {arXiv},
+  doi       = {10.1145/3711875.3736685}
+}
+
+% ---- Phase 3 prerequisites, 2026-08-23. The two that decided the verdict.
+
+@misc{dibia2025privacylabel,
+  author        = {Dibia, Onyinye and Lu, Mengyi and Bhattacharjee, Prianka and
+                   Near, Joseph P. and Feng, Yuanyuan},
+  title         = {{"We Need a Standard"}: Toward an Expert-Informed Privacy Label for
+                   Differential Privacy},
+  year          = {2025},
+  eprint        = {2507.15997},
+  archivePrefix = {arXiv},
+  note          = {THE positioning citation. Nine-category expert-elicited label that overlaps
+                   the Privacy Data Sheet almost field for field -- a kill on the concept and
+                   simultaneously our strongest external validation. Proposes NO signing and NO
+                   standard for reporting the limits of an empirical privacy metric, an omission
+                   one of their own experts flagged as "privacy theater". Both gaps are what
+                   `audit_ceiling` and the Ed25519 signature fill.}
+}
+
+@inproceedings{song2024trust,
+  author    = {Song, Patrick and Sarathy, Jayshree and Shoemate, Michael and Vadhan, Salil},
+  title     = {{"I inherently just trust that it works"}: Investigating Mental Models of
+               Open-Source Libraries for Differential Privacy},
+  booktitle = {ACM Conference on Computer-Supported Cooperative Work and Social Computing (CSCW)},
+  year      = {2024},
+  eprint    = {2410.09721},
+  archivePrefix = {arXiv},
+  note      = {5 library developers, 17 data analysts. Practitioners do NOT verify DP
+               guarantees; they trust implicitly. The missing premise under this whole project,
+               and the direct justification for differential accounting.}
+}
+
+@inproceedings{han2020blockchaindp,
+  author    = {Han, Leong Mei and Zhao, Yang and Zhao, Jun},
+  title     = {Blockchain-Based Differential Privacy Cost Management System},
+  booktitle = {ACM ASIA Conference on Computer and Communications Security (AsiaCCS)},
+  year      = {2020},
+  eprint    = {2006.04693},
+  archivePrefix = {arXiv},
+  note      = {Blockchain ledger of noisy responses; purpose is REUSING responses to cut
+               accumulated cost. No cryptographic signing or external-verifier mechanism
+               described -- abstract-level read, verify before relying on that negative.}
+}
+
+@article{dwork2019exposeepsilons,
+  author  = {Dwork, Cynthia and Kohli, Nitin and Mulligan, Deirdre},
+  title   = {Differential Privacy in Practice: Expose Your Epsilons!},
+  journal = {Journal of Privacy and Confidentiality},
+  volume  = {9},
+  number  = {2},
+  year    = {2019},
+  note    = {The Epsilon Registry proposal -- the origin of the disclosure-registry idea that
+             Dibia et al. and the NIST registry both descend from.}
+}
+
+@misc{nanayakkara2025registry,
+  title         = {Practitioners' Perspectives on a Differential Privacy Deployment Registry},
+  year          = {2025},
+  eprint        = {2509.13509},
+  archivePrefix = {arXiv}
+}

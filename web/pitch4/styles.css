@@ -1,0 +1,732 @@
+/* ── SynthProof · capstone review deck ──────────────────────────────────────
+   Direction: gold on obsidian, but CONTENT FIRST.
+
+   The previous version of this deck was beautiful and said nothing. This one
+   inverts the priority: every slide carries a diagram or a table that holds the
+   information, and the styling exists to make that legible from the back of a
+   room rather than to impress on its own.
+
+   Colour code, never decorative:
+     GOLD     our system / our work
+     IVORY    the argument
+     CRIMSON  a failure, a leak, a refusal
+     JADE     safe, working, in scope
+   Every hue is also carried by a word, so a washed-out projector or a
+   colour-blind viewer loses nothing.
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --bg: #12100c;
+  --bg-2: #1b1710;
+  --panel: #211b13;
+  --edge: rgba(232, 186, 102, 0.26);
+  --edge-2: rgba(232, 186, 102, 0.5);
+
+  --ink: #f7f2e7;
+  --ink-2: #c3b79f;
+  --ink-3: #8d8270;
+
+  --gold: #e8ba66;
+  --gold-lit: #ffd98a;
+  --gold-deep: #8f6520;
+
+  --crimson: #e8604a;
+  --crimson-bg: rgba(232, 96, 74, 0.13);
+  --jade: #55c6a0;
+  --jade-bg: rgba(85, 198, 160, 0.13);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Geist Sans', system-ui, sans-serif;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* Static warm wash. Deliberately still — an animated background competes with a
+   slide that has a table on it. */
+.wash {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(52% 40% at 14% 6%, rgba(232, 186, 102, 0.1), transparent 70%),
+    radial-gradient(46% 38% at 92% 96%, rgba(232, 186, 102, 0.06), transparent 72%);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.mono {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── shell ──────────────────────────────────────────────────────────────── */
+
+.deck {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+.stage {
+  position: relative;
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  padding: clamp(0.9rem, 2.4vh, 1.7rem) clamp(1.6rem, 3.4vw, 3.4rem) 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.5rem, 1.3vh, 0.9rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.slide[data-centre='1'] {
+  justify-content: center;
+}
+
+/* ── slide header ───────────────────────────────────────────────────────── */
+
+.shead {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.snum {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gold);
+  letter-spacing: 0.14em;
+}
+
+.stitle {
+  font-size: clamp(1.5rem, 2.6vw, 2.05rem);
+}
+
+.slead {
+  font-size: clamp(1.5rem, 1.5vw, 1.5rem);
+  line-height: 1.35;
+  color: var(--ink-2);
+  margin: 0;
+  max-width: 96ch;
+  font-weight: 500;
+}
+
+.gold {
+  color: var(--gold);
+}
+.crimson {
+  color: var(--crimson);
+}
+.jade {
+  color: var(--jade);
+}
+
+.mark {
+  background: linear-gradient(transparent 62%, rgba(232, 186, 102, 0.38) 62%);
+  padding: 0 0.1em;
+}
+
+.mark-crimson {
+  background: linear-gradient(transparent 62%, rgba(232, 96, 74, 0.42) 62%);
+  padding: 0 0.1em;
+}
+
+/* ── layout ─────────────────────────────────────────────────────────────── */
+
+.cols {
+  display: grid;
+  gap: clamp(0.6rem, 1.3vw, 1.05rem);
+  align-items: stretch;
+}
+
+.c2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.c3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.c4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.c21 {
+  grid-template-columns: 1.35fr 1fr;
+}
+.c12 {
+  grid-template-columns: 1fr 1.5fr;
+}
+
+@media (max-width: 1000px) {
+  .c2,
+  .c3,
+  .c4,
+  .c21,
+  .c12 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── panels ─────────────────────────────────────────────────────────────── */
+
+.p {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+}
+
+.p-gold {
+  border-color: var(--edge-2);
+  background: rgba(232, 186, 102, 0.07);
+}
+.p-crimson {
+  border-color: rgba(232, 96, 74, 0.45);
+  background: var(--crimson-bg);
+}
+.p-jade {
+  border-color: rgba(85, 198, 160, 0.45);
+  background: var(--jade-bg);
+}
+
+.plabel {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.plabel-crimson {
+  color: var(--crimson);
+}
+.plabel-jade {
+  color: var(--jade);
+}
+.plabel-ink {
+  color: var(--ink-3);
+}
+
+.ptext {
+  font-size: 1.5rem;
+  line-height: 1.32;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+.ptext strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* ── data table: the workhorse of this deck ─────────────────────────────── */
+
+table.dtable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+table.dtable th {
+  text-align: left;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding: 0 0.55rem 0.35rem 0;
+  border-bottom: 1px solid var(--edge-2);
+  white-space: nowrap;
+}
+
+table.dtable td {
+  padding: 0.36rem 0.55rem 0.36rem 0;
+  border-bottom: 1px solid rgba(232, 186, 102, 0.13);
+  color: var(--ink-2);
+  line-height: 1.28;
+  vertical-align: top;
+}
+
+table.dtable td:first-child {
+  color: var(--ink);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+table.dtable td.c {
+  text-align: center;
+  font-weight: 800;
+}
+
+table.dtable tr:last-child td {
+  border-bottom: 0;
+}
+
+table.dtable .yes {
+  color: var(--jade);
+}
+table.dtable .no {
+  color: var(--ink-3);
+}
+table.dtable .us {
+  background: rgba(232, 186, 102, 0.08);
+}
+
+.scrollx {
+  overflow-x: auto;
+}
+
+/* ── architecture diagram ───────────────────────────────────────────────── */
+
+.arch {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.node {
+  flex: 1 1 0;
+  min-width: 88px;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 9px;
+  padding: 0.42rem 0.5rem;
+  display: grid;
+  gap: 2px;
+  align-content: start;
+}
+
+.node-gold {
+  border-color: var(--edge-2);
+  background: rgba(232, 186, 102, 0.09);
+}
+.node-crimson {
+  border-color: rgba(232, 96, 74, 0.45);
+  background: var(--crimson-bg);
+}
+.node-jade {
+  border-color: rgba(85, 198, 160, 0.45);
+  background: var(--jade-bg);
+}
+.node-io {
+  border-style: dashed;
+  background: transparent;
+}
+
+.nname {
+  font-size: 12.5px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.nsub {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--ink-3);
+}
+
+.ntag {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border-radius: 3px;
+  justify-self: start;
+  margin-top: 1px;
+}
+
+.ntag-cost {
+  background: rgba(232, 96, 74, 0.24);
+  color: #ffb4a5;
+}
+
+.ntag-free {
+  background: rgba(85, 198, 160, 0.22);
+  color: #9ce3c9;
+}
+
+.arrow {
+  flex: 0 0 18px;
+  align-self: center;
+  height: 14px;
+  position: relative;
+}
+
+.arrow::before {
+  content: '';
+  position: absolute;
+  left: 1px;
+  right: 7px;
+  top: 6px;
+  height: 2px;
+  background: var(--edge-2);
+  border-radius: 2px;
+}
+
+.arrow::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 2px;
+  border-left: 7px solid var(--edge-2);
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+}
+
+/* ── bullets ────────────────────────────────────────────────────────────── */
+
+ul.pts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.28rem;
+}
+
+ul.pts li {
+  font-size: 1.5rem;
+  line-height: 1.3;
+  color: var(--ink-2);
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+ul.pts li::before {
+  content: '\25B8';
+  color: var(--gold);
+  font-size: 0.8em;
+  flex: 0 0 auto;
+}
+
+ul.pts li strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+ul.pts-tight li {
+  font-size: 1.02rem;
+  line-height: 1.26;
+}
+
+ul.pts-yes li::before {
+  content: '\2713';
+  color: var(--jade);
+  font-weight: 900;
+}
+
+ul.pts-no li::before {
+  content: '\2715';
+  color: var(--ink-3);
+  font-weight: 900;
+}
+
+/* ── controls ───────────────────────────────────────────────────────────── */
+
+.btn {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--ink);
+  background: rgba(232, 186, 102, 0.1);
+  border: 1px solid var(--edge-2);
+  border-radius: 999px;
+  padding: 0.32rem 0.75rem;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.btn:hover {
+  background: rgba(232, 186, 102, 0.22);
+}
+
+.btn[data-on='1'] {
+  background: var(--gold);
+  color: #17130c;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--gold-lit);
+  outline-offset: 2px;
+}
+
+select {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--bg-2);
+  border: 1px solid var(--edge-2);
+  border-radius: 7px;
+  padding: 0.26rem 0.4rem;
+  cursor: pointer;
+}
+
+select:focus-visible {
+  outline: 2px solid var(--gold-lit);
+  outline-offset: 2px;
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--jade), var(--crimson));
+}
+
+input[type='range']::-moz-range-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--jade), var(--crimson));
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 17px;
+  height: 17px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--gold-lit);
+  border: 2px solid #17130c;
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--gold-lit);
+  border: 2px solid #17130c;
+}
+
+input[type='range']:focus-visible {
+  outline: 2px solid var(--gold-lit);
+  outline-offset: 4px;
+  border-radius: 999px;
+}
+
+.flag {
+  display: inline-flex;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--gold-deep);
+  color: var(--gold);
+  border-radius: 999px;
+  padding: 0.1rem 0.4rem;
+}
+
+.note {
+  font-size: 0.86rem;
+  line-height: 1.32;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+/* ── rail ───────────────────────────────────────────────────────────────── */
+
+.rail {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem clamp(1.6rem, 3.4vw, 3.4rem) 0.5rem;
+  border-top: 1px solid rgba(232, 186, 102, 0.14);
+}
+
+.rlabel {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.rsteps {
+  display: flex;
+  gap: 5px;
+}
+
+.tick {
+  width: 34px;
+  height: 3px;
+  border-radius: 999px;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: rgba(232, 186, 102, 0.2);
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.tick[data-state='seen'] {
+  background: rgba(232, 186, 102, 0.5);
+}
+
+.tick[data-state='here'] {
+  background: var(--gold-lit);
+  transform: scaleY(2.2);
+}
+
+.tick:focus-visible {
+  outline: 2px solid var(--gold-lit);
+  outline-offset: 4px;
+}
+
+/* ── notes ──────────────────────────────────────────────────────────────── */
+
+.notes {
+  position: absolute;
+  inset: auto 0 0 0;
+  max-height: 74%;
+  overflow-y: auto;
+  background: rgba(9, 7, 5, 0.98);
+  color: var(--ink-2);
+  border-top: 1px solid var(--gold);
+  padding: 1rem clamp(1.6rem, 3.4vw, 3.4rem) 1.4rem;
+  z-index: 6;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.notes h4 {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0.85rem 0 0.25rem;
+  color: var(--gold);
+}
+
+.notes h4:first-child {
+  margin-top: 0;
+}
+
+.notes p {
+  margin: 0 0 0.4rem;
+  max-width: 100ch;
+}
+
+.notes strong {
+  color: #fff;
+}
+
+.notes .mono {
+  color: var(--gold-lit);
+  font-size: 12.5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Projector floor: 1280x720. The rail takes ~22px, so a slide gets ~698px. */
+@media (max-height: 820px) {
+  .slide {
+    padding-top: 0.7rem;
+    padding-bottom: 0.45rem;
+    gap: 0.45rem;
+  }
+
+  .stitle {
+    font-size: clamp(1.35rem, 2.3vw, 1.75rem);
+  }
+
+  .slead {
+    font-size: 1.5rem;
+    line-height: 1.28;
+  }
+
+  .ptext {
+    font-size: 1.5rem;
+    line-height: 1.26;
+  }
+
+  ul.pts li {
+    font-size: 1.5rem;
+    line-height: 1.24;
+  }
+
+  ul.pts-tight li {
+    font-size: 0.96rem;
+  }
+
+  table.dtable {
+    font-size: 0.88rem;
+  }
+
+  table.dtable td {
+    padding: 0.26rem 0.45rem 0.26rem 0;
+  }
+
+  .p {
+    padding: 0.45rem 0.6rem;
+  }
+
+  .node {
+    padding: 0.34rem 0.42rem;
+  }
+
+  .nname {
+    font-size: 11.5px;
+  }
+
+  .nsub {
+    font-size: 9.5px;
+  }
+
+  .note {
+    font-size: 0.8rem;
+  }
+}

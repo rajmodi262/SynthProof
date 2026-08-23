@@ -6,8 +6,10 @@ from typing import Dict, List
 class Allocator:
     """Allocates an epsilon budget across columns using uniform or weighted splits.
 
-    NOTE: nothing in the pipeline currently calls this. Wiring it into the generators is
-    a prerequisite for hypothesis H3. See brutal_project_audit.md, Tier 3 item 20.
+    Called by `accounting.calibration` when it splits a release budget across stages, so
+    budget splitting has exactly one implementation. H3 (utility-weighted vs uniform
+    allocation) runs through `allocate_weighted`; the weights are declared PUBLIC metadata,
+    never measured from the table, because deriving them would be an uncharged query.
     """
 
     @staticmethod
