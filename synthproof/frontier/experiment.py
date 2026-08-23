@@ -13,8 +13,10 @@ import numpy as np
 
 from synthproof.accounting.accountant import Accountant
 from synthproof.accounting.calibration import BudgetPlan
+from synthproof.attacks.attribute_inference import AttributeInferenceAttack
 from synthproof.attacks.distance_mia import DistanceMIABaseline
 from synthproof.attacks.domias import DOMIAS
+from synthproof.attacks.exact_match_risk import ExactMatchRiskEvaluator
 from synthproof.audit.canary import CanaryAuditor
 from synthproof.audit.steinke import SteinkeAuditor
 from synthproof.data.dataset import TabularDataset
@@ -355,6 +357,37 @@ def run_cell(
         {"auc": float(domias.auc), "tpr_at_1pct_fpr": float(domias.tpr_at_1pct_fpr)},
     )
 
+    # Singling out: does any real record appear in the release as a unique exact match? This
+    # is the one risk of the EDPB's three that a release can fail outright rather than by
+    # degree, so it is cheap and worth running on every cell. Scored against the AUDIT release
+    # for the same reason the MIA is -- that is the release that contained the members.
+    singling = ExactMatchRiskEvaluator(seed=seed, max_records=400).evaluate(
+        audit_synth, target_df=fit_ds.df
+    )
+    emit(
+        "attack_singling_out",
+        {
+            "risk": float(singling.singling_out_risk),
+            "unique_matches": int(singling.num_unique_matches),
+        },
+    )
+
+    # Attribute inference, scored against a CONDITIONAL baseline rather than a marginal one.
+    # Jayaraman & Evans (CCS 2022) showed that reporting raw attack accuracy as "leakage"
+    # mostly measures imputability; `leakage_vs_conditional` is the number that isolates what
+    # the release itself contributed. Uses the canary-free release, because this asks what a
+    # recipient of the published table can infer.
+    attr = AttributeInferenceAttack(target_column=target_col, seed=seed, max_records=400).evaluate(
+        util_synth, target_df=fit_ds.df, reference_df=reference_df
+    )
+    emit(
+        "attack_attribute_inference",
+        {
+            "accuracy": float(attr.attack_accuracy),
+            "leakage_vs_conditional": float(attr.leakage_vs_conditional),
+        },
+    )
+
     out: Dict[str, Any] = {
         "proved_eps": float(acc.total()),
         "audited_eps": float(audit.audited_eps),
@@ -364,6 +397,9 @@ def run_cell(
         "mia_auc": float(mia.auc),
         "domias_auc": float(domias.auc),
         "domias_tpr_at_1pct": float(domias.tpr_at_1pct_fpr),
+        "singling_out_risk": float(singling.singling_out_risk),
+        "attr_inference_accuracy": float(attr.attack_accuracy),
+        "attr_leakage_vs_conditional": float(attr.leakage_vs_conditional),
         "correlation_error": _mean_abs_corr_error(
             reference_df,
             util_synth,
@@ -400,6 +436,8 @@ def run_cell(
                 "_audit": audit,
                 "_mia": mia,
                 "_domias": domias,
+                "_singling_out": singling,
+                "_attr_inference": attr,
             }
         )
     return out

@@ -146,6 +146,7 @@ tables:
 	python scripts/build_results_tables.py
 	python scripts/build_implementation_evidence.py
 	python scripts/build_argument_maps.py
+	python scripts/build_api_reference.py
 
 # Assembles ch01..ch08 into docs/thesis/THESIS.md and renders SynthProof-Thesis.pdf.
 # The front matter carries a draft-status page naming every unwritten section, so an

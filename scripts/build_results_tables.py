@@ -82,9 +82,14 @@ def table_floor(floor: dict) -> str:
             cells.append(f"{c['detection_rate']:.2f}" if c else "—")
         rows.append(f"| **{lk:.2f}** | " + " | ".join(cells) + " |")
 
-    rows += ["", "Ceiling — the largest ε this instrument could report even against a "
-             "100% verbatim release:", "",
-             "| m | " + " | ".join(str(m) for m in ms) + " |", rule]
+    rows += [
+        "",
+        "Ceiling — the largest ε this instrument could report even against a "
+        "100% verbatim release:",
+        "",
+        "| m | " + " | ".join(str(m) for m in ms) + " |",
+        rule,
+    ]
     ceil_cells = []
     for m in ms:
         c = by.get((1.0, m))
@@ -112,8 +117,11 @@ def table_h1(data: dict, label: str) -> str:
                 f"{ci(c['correlation_error'])} | {ci(c['tstr_f1'], 3)} |"
             )
     if trtr:
-        rows += ["", f"*TRTR baseline (real → held-out real): **{ci(trtr, 3)}**. "
-                 f"Every synthetic value above sits below it.*"]
+        rows += [
+            "",
+            f"*TRTR baseline (real → held-out real): **{ci(trtr, 3)}**. "
+            f"Every synthetic value above sits below it.*",
+        ]
     return "\n".join(rows)
 
 
@@ -258,8 +266,10 @@ def main() -> None:
     OUT.write_text("\n".join(parts) + "\n", encoding="utf-8")
     body = "\n".join(parts)
     print(f"wrote {OUT.relative_to(ROOT)}")
-    print(f"  {len(body.split())} words, {body.count(chr(10) + '|')} table rows, "
-          f"{body.count('[WRITE:')} paragraphs left for the author")
+    print(
+        f"  {len(body.split())} words, {body.count(chr(10) + '|')} table rows, "
+        f"{body.count('[WRITE:')} paragraphs left for the author"
+    )
 
 
 if __name__ == "__main__":

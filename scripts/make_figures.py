@@ -254,7 +254,6 @@ def fig_audit_ceiling():
     _save(fig, "fig-audit-ceiling")
 
 
-
 def fig_discrete_gaussian():
     """The sampler, validated rather than asserted — empirical counts against the exact PMF.
 

@@ -329,10 +329,17 @@ def _audit_payload(audit, num_canaries: int) -> dict:
     }
 
 
+# DOMIAS and attribute inference were listed here as unimplemented long after both shipped,
+# and `run_cell` was running DOMIAS the whole time. Only LiRA is genuinely absent, and that is
+# a decision rather than a gap.
 NOT_IMPLEMENTED_ATTACKS = [
-    {"name": "LiRA", "reason": "Needs 64+ shadow models; scheduled for milestone M2."},
-    {"name": "DOMIAS", "reason": "Density-ratio MIA for synthetic data; scheduled for M2."},
-    {"name": "Attribute inference", "reason": "No reconstruction attack exists yet (M2)."},
+    {
+        "name": "LiRA",
+        "reason": (
+            "Deliberately not implemented: ~21h of compute for a likely wide-CI null, and "
+            "naming a cheaper attack 'LiRA' would misreport what ran (audit finding F7)."
+        ),
+    },
 ]
 
 
@@ -389,9 +396,15 @@ def _describe(ds: TabularDataset) -> dict:
 
 @app.get("/api/health")
 def health():
-    # Deliberately unauthenticated: a readiness probe must not need a secret, and this is
-    # where an operator finds out whether the service is open. Reporting `auth: "disabled"`
-    # loudly is the point — an open service that does not say so is worse than one that does.
+    """Readiness, and an honest statement of whether this service is protected.
+
+    Deliberately unauthenticated: a readiness probe must not need a secret, and this is where
+    an operator finds out whether the service is open. Reporting `auth: "disabled"` loudly is
+    the point — an open service that does not say so is worse than one that does.
+
+    Returns `status`, `auth` (`required` | `disabled`), an `auth_note` spelling out the
+    consequence, `demo_mode`, `ledger_verified` and the ledger head.
+    """
     return {
         "status": "ok",
         "auth": "required" if AUTH_ENABLED else "disabled",
@@ -430,10 +443,17 @@ def mechanisms():
 
 @app.get("/api/datasets", dependencies=[Depends(require_api_key)])
 def datasets():
-    # `rows` is null for anything not yet loaded rather than a literal. A hardcoded 30162
-    # would keep being reported after the pinned artefact or the drop-missing convention
-    # changed, and the console has no way to notice — which is the same class of defect as a
-    # fabricated metric, just in metadata.
+    """Lists the datasets this service can synthesise from.
+
+    `rows` is null for anything not yet loaded rather than a literal. A hardcoded 30162 would
+    keep being reported after the pinned artefact or the drop-missing convention changed, and
+    the console has no way to notice — which is the same class of defect as a fabricated
+    metric, just in metadata.
+
+    Each entry carries `id`, `label`, `rows`, `kind` and a `note` naming what the table is
+    good for; the toy table's note says outright that its columns are independent, so utility
+    numbers measured on it mean little.
+    """
     built_in = [
         {
             "id": "toy",
@@ -784,6 +804,15 @@ def run(req: RunRequest):
 
 @app.get("/api/ledger", dependencies=[Depends(require_api_key)])
 def get_ledger():
+    """Returns the budget ledger and the result of verifying its chain.
+
+    `verified` is the live result of re-hashing every entry and checking the signed head, not
+    a cached flag. The chain detects modification, insertion, reordering, replay and
+    truncation; it does not defend against an adversary holding the signing key.
+
+    Note the service's key is generated in memory per process, so these signatures do not
+    survive a restart — see the preamble in `docs/API.md`.
+    """
     entries = GLOBAL_LEDGER.get_entries()
     return {
         "verified": GLOBAL_LEDGER.verify(),

@@ -96,48 +96,76 @@ regresses, every certificate the project emits becomes false, so it gets its own
 
 ## 4. What is left, by aspect
 
+> **Rewritten 2026-08-23 after a full scan.** The previous version of this section was ten
+> days stale and **understated the project in almost every row** — it listed real data, five
+> seeds, H1/H2/H3, property tests, `make reproduce`, the differential test and the signature
+> as outstanding when all of them had shipped. A gap list that invents gaps is as misleading
+> as one that hides them, and this is the file an examiner opens to find weaknesses. Every row
+> below was checked against the code on the date above.
+
 ### 4.1 Code
 
-| Gap | Consequence | Milestone |
-|---|---|---|
-| ~~No data ingestion path~~ | ✅ Closed — `Schema` + `from_csv` + CLI `--input` | done |
-| AIM is not AIM; copula has no copula | H1 needs ≥2 genuinely distinct mechanism families | M1 |
-| LiRA, DOMIAS, attribute inference missing | 2 of 4 claimed attacks | M2 |
-| Canary audit simplified vs Steinke et al. | Bound is indicative, not tight | M2 |
-| ~~Unbounded min/max sensitivity~~ | ✅ Closed — sensitivity derived from public schema width | done |
-| Certificate unsigned; no third-party verifier | The project's title is not yet literally true | M3 |
-| Ed25519 key never persisted | File-backed ledgers become unverifiable after restart | M3 |
-| ~8% budget under-spend | Utility left on the table | M3 |
+| Item | State |
+|---|---|
+| Data ingestion | ✅ `Schema`, `from_csv`, CLI `--input` |
+| Real AIM | ✅ private-PGM (`mbi`) behind `generators/aim.py`; two deviations from the paper stated in its docstring |
+| Sensitivity from a public schema | ✅ no unbounded min/max |
+| Attack suite | ✅ **all four run on every cell** — `distance_mia`, `domias`, `exact_match_risk`, `attribute_inference`. Wired 2026-08-23; two of them existed and were never called |
+| Canary audit | ✅ full one-run Steinke construction is the default; the paired auditor is retained for comparison |
+| Signed certificate + third-party verify | ✅ `synthproof keygen` / `run --sign` / `verify` |
+| Persistent Ed25519 key | ✅ `ledger/signing.py`. The API service still uses an in-process key and says so in its own response |
+| Differential accounting | ✅ every release cross-checked against `autodp`; verdict inside the signed payload |
+| Pre-audit power analysis | ✅ `synthproof audit-power` |
+| **Budget under-spend** | ⚠️ **Open.** proved/target ≈ 0.92 for `independent`/`pairwise` and 0.77–0.82 for `aim`, so 8–23% of the budget is never spent. Conservative, never unsafe, but it is utility left on the table |
+| `moments` is a second independent baseline | ✅ **Named correctly everywhere.** `generators/moments.py` fits per-column moments and samples independently — no covariance, no rank transform. The registry key is `moments` and the class is `GaussianMomentGenerator`; the README called it `copula` until 2026-08-23 and now does not. A real Gaussian copula remains optional future work, not a correction |
+| **One adversary** | ⚠️ **Open, and the most consequential.** Both auditors score by nearest-neighbour similarity. MAMA-MIA (Golob et al., SaTML 2025) is algorithm-aware against exactly this mechanism family. Every audited ε is a lower bound on a lower bound |
+| **LiRA** | ❌ **Deliberately absent.** ~21h compute for a likely wide-CI null; naming anything cheaper "LiRA" would repeat audit finding F7 |
 
 ### 4.2 Science
 
-| Gap | Consequence | Milestone |
-|---|---|---|
-| Toy data (100 rows, independent columns) | Nothing to preserve; utility measurement is vacuous. **Ingestion now exists, so real data is unblocked** | M1 |
-| 1 seed, no confidence intervals | No result is statistically defensible | M1 |
-| **H1 untested** | Primary hypothesis | M1 |
-| **H2 not started** — no subgroup code exists | The most publishable result in the project | M2 |
-| **H3 blocked** until the allocator drives generators | Third hypothesis | M3 |
+| Item | State |
+|---|---|
+| Real data | ✅ UCI Adult (SHA-256 verified) and ACSIncome (CA 2018), 6,000 rows each |
+| Seeds and intervals | ✅ 5 seeds per cell, bootstrapped 95% CIs (4,000 resamples) |
+| **H1** | ✅ Run on both datasets. Supported on Adult; the structure ordering **does not transfer** to ACS. Diagnosed as clique-selection confounding, and the diagnosis was tested and weakened |
+| **H2** | ✅ Run on both. A *bounded* null — BH-FDR, Bonferroni and TOST equivalence applied; detectability stated |
+| **H3** | ✅ Run on both. Null, replicated |
+| Auditor characterisation | ✅ Detection floor and ceiling both measured, with positive and negative controls |
+| **Second-dataset generality** | ⚠️ Two datasets, both US census-derived, single-table, binary target. No healthcare, no time series |
 
 ### 4.3 Documentation
 
-| Gap | Required | Have | Milestone |
+| Item | Required | Have | State |
 |---|---:|---:|---|
-| **Thesis** | 8,000–15,000 words | **161** | Continuous |
-| Threat model | ~1,500 | 177 | M1 |
-| Preregistration | ~1,200 | 218 | M1 |
-| API reference | ~1,000 | 0 | M2 |
-| Reproducibility guide | ~800 | 0 | M3 |
+| **Thesis** | 15,700 | **7,906** | ⚠️ **The binding constraint.** 50%, and four chapters are stubs. `make thesis` prints the shortfall per chapter |
+| Threat model (ch03) | ~1,500 | 1,270 | ✅ close |
+| **Preregistration** | — | 218 | ✅ **Leave it alone. Do NOT expand it.** A preregistration is a time-stamped commitment made *before* the results exist; rewriting it now, with every outcome known, would destroy the one property that gives it value and would be far worse than its being short. 218 words that were written on 2026-08-05 are worth more than 1,200 written today. What belongs in the thesis instead is ch06 §6.8, which already logs all five deviations with their direction of effect |
+| Reproducibility guide | ~800 | 1,387 | ✅ `ARTIFACT.md`, USENIX artifact-evaluation format |
+| API reference | ~1,000 | ~1,100 | ✅ `docs/API.md`, generated from the live route table by `scripts/build_api_reference.py`. All 9 routes carry handler docstrings |
 
 ### 4.4 Infrastructure
 
-| Gap | Status |
+| Item | State |
 |---|---|
-| CI | ✅ Added this session |
-| `data/` + `CHECKSUMS.txt` | ❌ M1 (next task) |
-| `make reproduce` | ❌ M3 |
-| Property tests (`hypothesis`) | ❌ M1 |
-| Differential test vs `autodp` | ❌ M2 |
+| CI | ✅ ruff, **black**, coverage ≥80% gate, CLI smoke, bandit, pip-audit, gitleaks, console typecheck + build |
+| `data/CHECKSUMS.txt` | ✅ present |
+| `make reproduce` | ✅ `scripts/reproduce.py` + `results/MANIFEST.json` |
+| Property tests | ✅ Hypothesis, `tests/test_accounting_properties.py` |
+| Differential test vs `autodp` | ✅ and **promoted from a test to a release gate** |
+| Test suite | ✅ 500+ cases, 94% coverage |
+| Console tests | ✅ 10 vitest cases over the hand-rolled SSE parser |
+| Claim and citation checks | ✅ `make claims` — dead claims and dangling/duplicate citations |
+| **Console dependency on a CDN** | ⚠️ Minor. Google Fonts loaded remotely, so the console degrades without internet |
+
+### 4.5 The short list
+
+Everything genuinely outstanding, in the order it is worth doing:
+
+1. **Thesis prose** — 7,794 words. Nothing else is close in size or risk.
+2. **A stronger adversary** — the one open item that could change a published number.
+3. ~~Preregistration and API reference~~ — API reference done (generated). **The preregistration must not be expanded**: see §4.3.
+4. **A real Gaussian copula** — optional. It would add a genuinely distinct mechanism family; nothing is currently misnamed.
+5. **Budget under-spend** — 8–23% of utility, conservative in the safe direction.
 
 ---
 

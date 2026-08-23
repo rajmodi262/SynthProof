@@ -50,98 +50,100 @@ HEADER = (
 
 
 def chapter1() -> str:
-    return "\n".join([
-        "# Chapter 1 — evidence map",
-        "",
-        HEADER,
-        "---",
-        "",
-        "## 1.1 The problem (~350 words)",
-        "",
-        "Three findings, in this order. The order is the argument: the problem is old, the",
-        "standard fix does not work, and the current fix is unverified.",
-        "",
-        "| # | Evidence | Citation |",
-        "|---|---|---|",
-        "| 1 | Three ordinary fields — ZIP, date of birth, sex — identify ~87% of Americans |"
-        " Sweeney (2000) |",
-        "| 2 | Netflix subscribers de-anonymised from public film ratings | Narayanan &"
-        " Shmatikov, S&P 2008 |",
-        "| 3 | Synthetic data provides neither the privacy nor the utility routinely claimed,"
-        " and generators without a formal guarantee reproduce outliers | Stadler, Oprisanu &"
-        " Troncoso, USENIX Security 2022 |",
-        "",
-        "[WRITE: ~350 words. The arc is de-identification failed → synthetic data was the"
-        " answer → Stadler et al. showed it recreated the same false confidence. Do NOT stop"
-        " there; that framing is nine days old and §1.2 is what makes it current.]",
-        "",
-        "---",
-        "",
-        "## 1.2 Why this is live in 2026, not 2016 (~300 words)",
-        "",
-        "**This section is the strongest thing in the chapter and it did not exist before"
-        " 2026-08-23.** Three papers compose into one argument:",
-        "",
-        "| Fact | Source |",
-        "|---|---|",
-        "| The field now agrees **what** a DP release should disclose — an expert-elicited"
-        " nine-category privacy label | Dibia, Lu, Bhattacharjee, Near & Feng, arXiv 2507.15997"
-        " (2025) |",
-        "| Practitioners do **not verify** DP guarantees; they trust libraries implicitly."
-        " 5 developers, 17 analysts | Song, Sarathy, Shoemate & Vadhan, **CSCW 2024** |",
-        "| And the libraries do lose the guarantee: **12 libraries audited, 13 violations** |"
-        " Cebere et al., arXiv 2602.17454 (Feb 2026) |",
-        "",
-        "[WRITE: ~300 words. The composition is the point: we know what to disclose, nobody"
-        " checks it, and the thing being disclosed is frequently wrong. That is a gap in"
-        " VERIFICATION, not in definition — which is what this project is about and what makes"
-        " it a 2026 problem rather than a 2016 one.]",
-        "",
-        "---",
-        "",
-        "## 1.3 Research questions (~200 words)",
-        "",
-        "Preregistered 2026-08-05, before the full grid. H1, H2, H3 as stated in"
-        " `docs/preregistration.md`. **Two of the three came back not supported and are"
-        " reported that way.**",
-        "",
-        "[WRITE: ~200 words. Say the preregistration date and that it preceded the grid. A"
-        " reader should learn in this chapter that most of the hypotheses failed — burying that"
-        " until Ch.7 reads as concealment when they get there.]",
-        "",
-        "---",
-        "",
-        "## 1.4 Contributions, marked honestly (~250 words)",
-        "",
-        "**Do not write an unqualified contribution list.** `research/08_novelty_verdict.md`"
-        " killed eight claims. What survives is narrow and must be stated narrowly:",
-        "",
-        "| Contribution | Status |",
-        "|---|---|",
-        "| A release artefact carrying **the ceiling of its own empirical privacy"
-        " measurement** | Unrefuted. Dibia et al. propose empirical metrics and explicitly"
-        " propose **no** standard for reporting their limits — one of their experts called that"
-        " gap *\"privacy theater\"* |",
-        "| A **cryptographically signed** privacy claim, checkable with only the file and a"
-        " public key | Unrefuted. Their prototype is HTML; SACRO checksums; Laminator attests"
-        " execution via TEE but does not address DP budgets |",
-        "| A refusal gate reading **only the declared schema and row count** | Unrefuted, and"
-        " the weakest of the three — SACRO gates releases but reads output values. The SDC"
-        " Handbook could not be retrieved, so say *unrefuted*, never *novel* |",
-        "| An empirical study of the proved-vs-audited gap, and its diagnosis | Reported —"
-        " including that the gap was structurally guaranteed |",
-        "",
-        "[WRITE: ~250 words. Mark each against what exists at submission. The honest framing is"
-        " that the field converged on the same field set independently, which is validation;"
-        " what is unoccupied is making those disclosures checkable.]",
-        "",
-        "---",
-        "",
-        "## 1.5 Thesis structure (~150 words)",
-        "",
-        "[WRITE: ~150 words. One sentence per chapter. Standard, and the last thing to write.]",
-        "",
-    ])
+    return "\n".join(
+        [
+            "# Chapter 1 — evidence map",
+            "",
+            HEADER,
+            "---",
+            "",
+            "## 1.1 The problem (~350 words)",
+            "",
+            "Three findings, in this order. The order is the argument: the problem is old, the",
+            "standard fix does not work, and the current fix is unverified.",
+            "",
+            "| # | Evidence | Citation |",
+            "|---|---|---|",
+            "| 1 | Three ordinary fields — ZIP, date of birth, sex — identify ~87% of Americans |"
+            " Sweeney (2000) |",
+            "| 2 | Netflix subscribers de-anonymised from public film ratings | Narayanan &"
+            " Shmatikov, S&P 2008 |",
+            "| 3 | Synthetic data provides neither the privacy nor the utility routinely claimed,"
+            " and generators without a formal guarantee reproduce outliers | Stadler, Oprisanu &"
+            " Troncoso, USENIX Security 2022 |",
+            "",
+            "[WRITE: ~350 words. The arc is de-identification failed → synthetic data was the"
+            " answer → Stadler et al. showed it recreated the same false confidence. Do NOT stop"
+            " there; that framing is nine days old and §1.2 is what makes it current.]",
+            "",
+            "---",
+            "",
+            "## 1.2 Why this is live in 2026, not 2016 (~300 words)",
+            "",
+            "**This section is the strongest thing in the chapter and it did not exist before"
+            " 2026-08-23.** Three papers compose into one argument:",
+            "",
+            "| Fact | Source |",
+            "|---|---|",
+            "| The field now agrees **what** a DP release should disclose — an expert-elicited"
+            " nine-category privacy label | Dibia, Lu, Bhattacharjee, Near & Feng, arXiv 2507.15997"
+            " (2025) |",
+            "| Practitioners do **not verify** DP guarantees; they trust libraries implicitly."
+            " 5 developers, 17 analysts | Song, Sarathy, Shoemate & Vadhan, **CSCW 2024** |",
+            "| And the libraries do lose the guarantee: **12 libraries audited, 13 violations** |"
+            " Cebere et al., arXiv 2602.17454 (Feb 2026) |",
+            "",
+            "[WRITE: ~300 words. The composition is the point: we know what to disclose, nobody"
+            " checks it, and the thing being disclosed is frequently wrong. That is a gap in"
+            " VERIFICATION, not in definition — which is what this project is about and what makes"
+            " it a 2026 problem rather than a 2016 one.]",
+            "",
+            "---",
+            "",
+            "## 1.3 Research questions (~200 words)",
+            "",
+            "Preregistered 2026-08-05, before the full grid. H1, H2, H3 as stated in"
+            " `docs/preregistration.md`. **Two of the three came back not supported and are"
+            " reported that way.**",
+            "",
+            "[WRITE: ~200 words. Say the preregistration date and that it preceded the grid. A"
+            " reader should learn in this chapter that most of the hypotheses failed — burying that"
+            " until Ch.7 reads as concealment when they get there.]",
+            "",
+            "---",
+            "",
+            "## 1.4 Contributions, marked honestly (~250 words)",
+            "",
+            "**Do not write an unqualified contribution list.** `research/08_novelty_verdict.md`"
+            " killed eight claims. What survives is narrow and must be stated narrowly:",
+            "",
+            "| Contribution | Status |",
+            "|---|---|",
+            "| A release artefact carrying **the ceiling of its own empirical privacy"
+            " measurement** | Unrefuted. Dibia et al. propose empirical metrics and explicitly"
+            " propose **no** standard for reporting their limits — one of their experts called that"
+            ' gap *"privacy theater"* |',
+            "| A **cryptographically signed** privacy claim, checkable with only the file and a"
+            " public key | Unrefuted. Their prototype is HTML; SACRO checksums; Laminator attests"
+            " execution via TEE but does not address DP budgets |",
+            "| A refusal gate reading **only the declared schema and row count** | Unrefuted, and"
+            " the weakest of the three — SACRO gates releases but reads output values. The SDC"
+            " Handbook could not be retrieved, so say *unrefuted*, never *novel* |",
+            "| An empirical study of the proved-vs-audited gap, and its diagnosis | Reported —"
+            " including that the gap was structurally guaranteed |",
+            "",
+            "[WRITE: ~250 words. Mark each against what exists at submission. The honest framing is"
+            " that the field converged on the same field set independently, which is validation;"
+            " what is unoccupied is making those disclosures checkable.]",
+            "",
+            "---",
+            "",
+            "## 1.5 Thesis structure (~150 words)",
+            "",
+            "[WRITE: ~150 words. One sentence per chapter. Standard, and the last thing to write.]",
+            "",
+        ]
+    )
 
 
 # ─────────────────────────────────────────────────────────────────── chapter 8
@@ -155,147 +157,156 @@ def chapter8() -> str:
     c8 = cell(acs, "aim", 8.0)["correlation_error"]["mean"]
     ci8 = cell(acs, "independent", 8.0)["correlation_error"]["mean"]
 
-    return "\n".join([
-        "# Chapter 8 — evidence map",
-        "",
-        HEADER,
-        "> This is the chapter an examiner will remember. Its spine is not a result — it is"
-        " **eight claims disproved about ourselves**, and what is left standing after that.",
-        "",
-        "---",
-        "",
-        "## 8.1 The three findings, as one causal chain (~500 words)",
-        "",
-        "Presented separately they look like three experiments. Presented as a chain they are a"
-        " result about measurement.",
-        "",
-        "**(1) The instrument was penalising the mechanisms it measured.** Planting 60 canaries"
-        " cut `corr(age, hours_per_week)` from **0.1014 to 0.0109** — 89% of the signal. The"
-        " generator trained on a flattened table and was scored against a structured one, so"
-        " mechanisms that model dependence were penalised *for doing so*, while the independent"
-        " baseline was unaffected. It produced two confidently-wrong published conclusions.",
-        "",
-        "**(2) The audit could not have answered its question.** H1 ran at m = 60 where the"
-        " ceiling is **2.97**, against a proved ε of **7.36**. Certifying 7.36 needs ~**4,711**"
-        " perfectly-detected canaries. The gap was guaranteed before any mechanism ran.",
-        "",
-        "**(3) The benchmark measured clique selection, not fidelity.** AIM at ε = 8 scores"
-        f" **{a8:.4f}** on Adult and **{c8:.4f}** on ACS, where the independent baseline scores"
-        f" **{ci8:.4f}** — indistinguishable. The metric is one column pair, and AIM's score on"
-        " it depends largely on whether that pair is among its ~6 selected cliques.",
-        "",
-        "[WRITE: ~500 words. The chain: a measurement can be biased against what it measures"
-        " (1), can be incapable of the reading it is asked for (2), and can measure a different"
-        " quantity than its name suggests (3). All three were invisible from inside a single"
-        " experiment. THAT is the contribution — not any individual number.]",
-        "",
-        "---",
-        "",
-        "## 8.2 What we disproved about ourselves (~450 words)",
-        "",
-        "From `research/08_novelty_verdict.md`, after all 8 query families ran:",
-        "",
-        "| Claim | Killed by |",
-        "|---|---|",
-        "| Dual-sided assurance (proved + audited per release) | Annamalai, Ganev &"
-        " De Cristofaro, USENIX Sec 2024 |",
-        "| Budget-charged domain profiling | Ganev, Annamalai, Mahiou & De Cristofaro, Apr 2025 |",
-        "| The audit ceiling as a result | A one-line corollary of Steinke et al. Thm 2.1 /"
-        " Eq. (3) — **the paper we implement**, verified bit-identical |",
-        "| Finding defects by self-audit | Cebere et al. — 12 libraries, 13 violations |",
-        "| Shipping a structured privacy label | Dibia et al. 2025 |",
-        "| An automated release gate that refuses and records | Five Safes + SACRO, in UK TREs"
-        " since 2022 |",
-        "| A machine-checkable release artefact | Croissant (a NeurIPS submission requirement),"
-        " MRM3, Laminator |",
-        "| Cross-release budget management | PrivateKube (OSDI'21), Cohere, DPack, DPolicy |",
-        "",
-        "**Four of these come from one author cluster** — Ganev, Annamalai, De Cristofaro,"
-        " Kulynych — running this programme professionally and roughly two years ahead.",
-        "",
-        "[WRITE: ~450 words. Volunteer all eight. A discussion chapter that opens by disproving"
-        " its own claims is more credible than one that defends them, and it removes the"
-        " examiner's best questions before they are asked. Then state what survives — three"
-        " narrow things — and that the position is INTEGRATION, not invention.]",
-        "",
-        "---",
-        "",
-        "## 8.3 Methodological findings (~350 words)",
-        "",
-        "| Finding | Generalises to |",
-        "|---|---|",
-        "| Charging a mechanism and not applying it is worse than not charging | Any pipeline"
-        " with a profiling stage |",
-        "| A hand-rolled bound under-reported ε by ~2× at q = 0.01 | Any system that does not"
-        " delegate composition |",
-        "| ε = 8 requested composed to **70.49** before calibration | Any tool whose interface"
-        " exposes a target it does not enforce |",
-        "| Scoring a marginal-based mechanism on a small fixed set of low-order statistics | Any"
-        " DP-synthesis benchmark |",
-        "",
-        "[WRITE: ~350 words. These are the transferable lessons and they are what a reader takes"
-        " away. The strongest is the last: it is a claim about benchmark design, not about our"
-        " mechanism.]",
-        "",
-        "---",
-        "",
-        "## 8.4 Limitations (~350 words)",
-        "",
-        "Volunteer in this order — weakest instrument first, scope last:",
-        "",
-        "1. **The adversary is a nearest-neighbour score.** MAMA-MIA-class algorithm-aware"
-        " attacks (Golob et al., SaTML 2025) are orders of magnitude stronger against exactly"
-        " this mechanism family. Our bound is a lower bound on a lower bound.",
-        "2. **The audit half of H1 is disqualified** by our own instrument's range.",
-        "3. **Two datasets, both US census-derived**, n = 6,000, single table, binary target.",
-        "4. **`LeakyGenerator` is coarse** — verbatim copying is the easiest leak to detect.",
-        "5. **δ by union bound**, conservative rather than exact.",
-        "6. **Not deployment-ready**: single-table CSV, one shared key so the ledger cannot say"
-        " *who* spent the budget, no cross-session enforcement.",
-        "7. **Verification is of the sheet, not the run.** A third party can check the signature"
-        " and the arithmetic, not that we ran the pipeline we claim.",
-        "8. **The SDC literature was sampled, not surveyed** — the Handbook returned HTTP 403,"
-        " which is why the refusal gate is *unrefuted* rather than novel.",
-        "",
-        "[WRITE: ~350 words. Item 8 is unusual and worth keeping: stating the limits of your own"
-        " literature search is rarer than stating the limits of your experiment.]",
-        "",
-        "---",
-        "",
-        "## 8.5 Future work (~250 words)",
-        "",
-        "| Direction | Why it follows |",
-        "|---|---|",
-        "| Adopt an **algorithm-aware adversary** and re-run the three-point comparison | Tests"
-        " whether the **ceiling or the adversary** is the binding constraint — currently"
-        " unknown, and the most interesting open question here |",
-        "| Emit the Privacy Data Sheet as a **Croissant extension** | Croissant has the"
-        " ecosystem and provenance model and no attestation; we have the signature and no"
-        " ecosystem |",
-        "| Read the SDC Handbook and settle the refusal-gate claim | It is the weakest of the"
-        " three survivors |",
-        "| Per-subgroup risk equalisation | *Risk-Equalized DP Synthetic Data* (arXiv"
-        " 2602.10232) assumes the effect H2 could not resolve and builds a mechanism for it |",
-        "",
-        "[WRITE: ~250 words. Future work that names the algorithm, the expected cost and the"
-        " kill criterion reads as a research programme; a wish list does not.]",
-        "",
-        "---",
-        "",
-        "## 8.6 Conclusion (~100 words)",
-        "",
-        "[WRITE: ~100 words. Do not restate the contributions. The honest close is that we did"
-        " not get the result we planned, we can show exactly why the one we got is more useful,"
-        " and every number traces to a committed experiment with a recorded seed.]",
-        "",
-    ])
+    return "\n".join(
+        [
+            "# Chapter 8 — evidence map",
+            "",
+            HEADER,
+            "> This is the chapter an examiner will remember. Its spine is not a result — it is"
+            " **eight claims disproved about ourselves**, and what is left standing after that.",
+            "",
+            "---",
+            "",
+            "## 8.1 The three findings, as one causal chain (~500 words)",
+            "",
+            "Presented separately they look like three experiments. Presented as a chain they are a"
+            " result about measurement.",
+            "",
+            "**(1) The instrument was penalising the mechanisms it measured.** Planting 60 canaries"
+            " cut `corr(age, hours_per_week)` from **0.1014 to 0.0109** — 89% of the signal. The"
+            " generator trained on a flattened table and was scored against a structured one, so"
+            " mechanisms that model dependence were penalised *for doing so*, while the independent"
+            " baseline was unaffected. It produced two confidently-wrong published conclusions.",
+            "",
+            "**(2) The audit could not have answered its question.** H1 ran at m = 60 where the"
+            " ceiling is **2.97**, against a proved ε of **7.36**. Certifying 7.36 needs ~**4,711**"
+            " perfectly-detected canaries. The gap was guaranteed before any mechanism ran.",
+            "",
+            "**(3) The benchmark measured clique selection, not fidelity.** AIM at ε = 8 scores"
+            f" **{a8:.4f}** on Adult and **{c8:.4f}** on ACS, where the independent baseline scores"
+            f" **{ci8:.4f}** — indistinguishable. The metric is one column pair, and AIM's score on"
+            " it depends largely on whether that pair is among its ~6 selected cliques.",
+            "",
+            "[WRITE: ~500 words. The chain: a measurement can be biased against what it measures"
+            " (1), can be incapable of the reading it is asked for (2), and can measure a different"
+            " quantity than its name suggests (3). All three were invisible from inside a single"
+            " experiment. THAT is the contribution — not any individual number.]",
+            "",
+            "---",
+            "",
+            "## 8.2 What we disproved about ourselves (~450 words)",
+            "",
+            "From `research/08_novelty_verdict.md`, after all 8 query families ran:",
+            "",
+            "| Claim | Killed by |",
+            "|---|---|",
+            "| Dual-sided assurance (proved + audited per release) | Annamalai, Ganev &"
+            " De Cristofaro, USENIX Sec 2024 |",
+            "| Budget-charged domain profiling | Ganev, Annamalai, Mahiou & De Cristofaro, Apr "
+            "2025 |",
+            "| The audit ceiling as a result | A one-line corollary of Steinke et al. Thm 2.1 /"
+            " Eq. (3) — **the paper we implement**, verified bit-identical |",
+            "| Finding defects by self-audit | Cebere et al. — 12 libraries, 13 violations |",
+            "| Shipping a structured privacy label | Dibia et al. 2025 |",
+            "| An automated release gate that refuses and records | Five Safes + SACRO, in UK TREs"
+            " since 2022 |",
+            "| A machine-checkable release artefact | Croissant (a NeurIPS submission requirement),"
+            " MRM3, Laminator |",
+            "| Cross-release budget management | PrivateKube (OSDI'21), Cohere, DPack, DPolicy |",
+            "",
+            "**Four of these come from one author cluster** — Ganev, Annamalai, De Cristofaro,"
+            " Kulynych — running this programme professionally and roughly two years ahead.",
+            "",
+            "[WRITE: ~450 words. Volunteer all eight. A discussion chapter that opens by disproving"
+            " its own claims is more credible than one that defends them, and it removes the"
+            " examiner's best questions before they are asked. Then state what survives — three"
+            " narrow things — and that the position is INTEGRATION, not invention.]",
+            "",
+            "---",
+            "",
+            "## 8.3 Methodological findings (~350 words)",
+            "",
+            "| Finding | Generalises to |",
+            "|---|---|",
+            "| Charging a mechanism and not applying it is worse than not charging | Any pipeline"
+            " with a profiling stage |",
+            "| A hand-rolled bound under-reported ε by ~2× at q = 0.01 | Any system that does not"
+            " delegate composition |",
+            "| ε = 8 requested composed to **70.49** before calibration | Any tool whose interface"
+            " exposes a target it does not enforce |",
+            "| Scoring a marginal-based mechanism on a small fixed set of low-order statistics | "
+            "Any"
+            " DP-synthesis benchmark |",
+            "",
+            "[WRITE: ~350 words. These are the transferable lessons and they are what a reader "
+            "takes"
+            " away. The strongest is the last: it is a claim about benchmark design, not about our"
+            " mechanism.]",
+            "",
+            "---",
+            "",
+            "## 8.4 Limitations (~350 words)",
+            "",
+            "Volunteer in this order — weakest instrument first, scope last:",
+            "",
+            "1. **The adversary is a nearest-neighbour score.** MAMA-MIA-class algorithm-aware"
+            " attacks (Golob et al., SaTML 2025) are orders of magnitude stronger against exactly"
+            " this mechanism family. Our bound is a lower bound on a lower bound.",
+            "2. **The audit half of H1 is disqualified** by our own instrument's range.",
+            "3. **Two datasets, both US census-derived**, n = 6,000, single table, binary target.",
+            "4. **`LeakyGenerator` is coarse** — verbatim copying is the easiest leak to detect.",
+            "5. **δ by union bound**, conservative rather than exact.",
+            "6. **Not deployment-ready**: single-table CSV, one shared key so the ledger cannot say"
+            " *who* spent the budget, no cross-session enforcement.",
+            "7. **Verification is of the sheet, not the run.** A third party can check the "
+            "signature"
+            " and the arithmetic, not that we ran the pipeline we claim.",
+            "8. **The SDC literature was sampled, not surveyed** — the Handbook returned HTTP 403,"
+            " which is why the refusal gate is *unrefuted* rather than novel.",
+            "",
+            "[WRITE: ~350 words. Item 8 is unusual and worth keeping: stating the limits of your "
+            "own"
+            " literature search is rarer than stating the limits of your experiment.]",
+            "",
+            "---",
+            "",
+            "## 8.5 Future work (~250 words)",
+            "",
+            "| Direction | Why it follows |",
+            "|---|---|",
+            "| Adopt an **algorithm-aware adversary** and re-run the three-point comparison | Tests"
+            " whether the **ceiling or the adversary** is the binding constraint — currently"
+            " unknown, and the most interesting open question here |",
+            "| Emit the Privacy Data Sheet as a **Croissant extension** | Croissant has the"
+            " ecosystem and provenance model and no attestation; we have the signature and no"
+            " ecosystem |",
+            "| Read the SDC Handbook and settle the refusal-gate claim | It is the weakest of the"
+            " three survivors |",
+            "| Per-subgroup risk equalisation | *Risk-Equalized DP Synthetic Data* (arXiv"
+            " 2602.10232) assumes the effect H2 could not resolve and builds a mechanism for it |",
+            "",
+            "[WRITE: ~250 words. Future work that names the algorithm, the expected cost and the"
+            " kill criterion reads as a research programme; a wish list does not.]",
+            "",
+            "---",
+            "",
+            "## 8.6 Conclusion (~100 words)",
+            "",
+            "[WRITE: ~100 words. Do not restate the contributions. The honest close is that we did"
+            " not get the result we planned, we can show exactly why the one we got is more useful,"
+            " and every number traces to a committed experiment with a recorded seed.]",
+            "",
+        ]
+    )
 
 
 def main() -> None:
     for name, body in [("ch01-evidence.md", chapter1()), ("ch08-evidence.md", chapter8())]:
         (THESIS / name).write_text(body + "\n", encoding="utf-8")
-        print(f"wrote docs/thesis/{name}  —  {len(body.split())} words, "
-              f"{body.count('[WRITE:')} sections to write")
+        print(
+            f"wrote docs/thesis/{name}  —  {len(body.split())} words, "
+            f"{body.count('[WRITE:')} sections to write"
+        )
 
 
 if __name__ == "__main__":

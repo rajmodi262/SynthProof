@@ -56,21 +56,42 @@ def module_table() -> str:
         "|---|---:|---|---|",
     ]
     spec = [
-        ("accounting/", "Composition, calibration, discrete noise, the second accountant",
-         "`accounting/differential.py`"),
-        ("data/", "Public schema, DP domain profiler, the refusal gate, dataset loaders",
-         "`data/preflight.py`"),
-        ("generators/", "independent · pairwise · aim (private-PGM) · copula · leaky (control)",
-         "`generators/aim.py`"),
-        ("audit/", "Paired and one-run auditors, subgroup audit, detection floor, TOST",
-         "`audit/steinke.py`"),
-        ("attacks/", "Distance MIA, exact-match singling out, DOMIAS, attribute inference",
-         "`attacks/attribute_inference.py`"),
+        (
+            "accounting/",
+            "Composition, calibration, discrete noise, the second accountant",
+            "`accounting/differential.py`",
+        ),
+        (
+            "data/",
+            "Public schema, DP domain profiler, the refusal gate, dataset loaders",
+            "`data/preflight.py`",
+        ),
+        (
+            "generators/",
+            "independent · pairwise · aim (private-PGM) · copula · leaky (control)",
+            "`generators/aim.py`",
+        ),
+        (
+            "audit/",
+            "Paired and one-run auditors, subgroup audit, detection floor, TOST",
+            "`audit/steinke.py`",
+        ),
+        (
+            "attacks/",
+            "Distance MIA, exact-match singling out, DOMIAS, attribute inference",
+            "`attacks/attribute_inference.py`",
+        ),
         ("evaluate/", "TSTR / TRTR on a shared held-out split", "`evaluate/utility.py`"),
-        ("ledger/", "Hash-chained Ed25519 ledger, signed head, allocator, sheet signing",
-         "`ledger/types.py`"),
-        ("frontier/", "Experiment runner, checkpointing, Privacy Data Sheet export",
-         "`frontier/experiment.py`"),
+        (
+            "ledger/",
+            "Hash-chained Ed25519 ledger, signed head, allocator, sheet signing",
+            "`ledger/types.py`",
+        ),
+        (
+            "frontier/",
+            "Experiment runner, checkpointing, Privacy Data Sheet export",
+            "`frontier/experiment.py`",
+        ),
         ("api/", "FastAPI service backing the console", "`api/main.py`"),
     ]
     for pkg, what, first in spec:
@@ -89,14 +110,23 @@ def main() -> None:
     dep_rows = "\n".join(
         f"| `{name}` | {ver} | {why} |"
         for name, ver, why in [
-            ("dp-accounting", deps["dp-accounting"],
-             "Composition. **Delegated, never re-derived** — standing rule 1. Our own RDP "
-             "subsampling bound under-reported ε by ~2× at q=0.01 (audit finding F4)."),
-            ("mbi", deps["mbi"],
-             "private-PGM. Real graphical-model inference behind AIM; requires Python ≥ 3.11."),
-            ("autodp", deps["autodp"],
-             "The **second** accountant. Cross-checks every release; verdict ships in the "
-             "signed payload (`accounting/differential.py`)."),
+            (
+                "dp-accounting",
+                deps["dp-accounting"],
+                "Composition. **Delegated, never re-derived** — standing rule 1. Our own RDP "
+                "subsampling bound under-reported ε by ~2× at q=0.01 (audit finding F4).",
+            ),
+            (
+                "mbi",
+                deps["mbi"],
+                "private-PGM. Real graphical-model inference behind AIM; requires Python ≥ 3.11.",
+            ),
+            (
+                "autodp",
+                deps["autodp"],
+                "The **second** accountant. Cross-checks every release; verdict ships in the "
+                "signed payload (`accounting/differential.py`).",
+            ),
             ("scipy", deps["scipy"], "Exact binomial intervals, χ² goodness-of-fit, bootstrap."),
             ("numpy", deps["numpy"], "Sampling and array work."),
             ("pandas", deps["pandas"], "Tabular representation."),

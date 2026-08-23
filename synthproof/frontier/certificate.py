@@ -172,6 +172,12 @@ class PrivacyDataSheet:
 # What differential privacy does NOT cover. Stated in the sheet because a reader who sees only
 # an epsilon will reasonably assume it covers more than it does, and every item here has bitten
 # a real deployment.
+# LiRA is the only attack named here that does not exist, and its absence is deliberate: a
+# shadow-model attack is roughly 21 hours of compute for a likely wide-CI null, and calling
+# anything cheaper "LiRA" would repeat the naming failure audit finding F7 recorded. Anything
+# that IS implemented must never appear in this list -- see `attacks_run` below.
+ATTACKS_NOT_IMPLEMENTED = ["LiRA"]
+
 _RESIDUAL_RISK = [
     "The guarantee is per-record. A person contributing several rows is protected proportionally "
     "less; see `contribution_bound`.",
@@ -288,6 +294,22 @@ class FrontierEngine:
             # the charges actually recorded rather than from a reconstruction. `enforce`
             # raises only on under-reporting; a conservative gap or an unavailable second
             # accountant is reported on the certificate, not hidden.
+            # Derived from the artefacts this run produced, never hardcoded. The previous
+            # version listed DOMIAS and attribute inference as NOT IMPLEMENTED while
+            # `run_cell` was running both -- a false statement inside a signed payload, and
+            # the mirror image of audit finding G1 (the console that hardcoded four PASSED
+            # verdicts). A list that does not read the run will drift from it.
+            attacks_run = ["canary_audit"] + [
+                name
+                for key, name in (
+                    ("_mia", "distance_mia"),
+                    ("_domias", "domias"),
+                    ("_singling_out", "exact_match_risk"),
+                    ("_attr_inference", "attribute_inference"),
+                )
+                if res.get(key) is not None
+            ]
+
             agreement = enforce_accountant_agreement(
                 cross_check_spends(res.get("_spends", []), delta)
             )
@@ -332,6 +354,6 @@ class FrontierEngine:
             frontier_curve=[asdict(p) for p in curve],
             ledger_hash=ledger.get_latest_hash(),
             evaluation=evaluation,
-            attacks_run=["canary_audit", "distance_mia"],
-            attacks_not_implemented=["LiRA", "DOMIAS", "attribute_inference"],
+            attacks_run=attacks_run,
+            attacks_not_implemented=ATTACKS_NOT_IMPLEMENTED,
         )

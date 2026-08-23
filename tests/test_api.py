@@ -84,9 +84,14 @@ def test_mechanisms_marks_availability_rather_than_hiding_it():
         if not m["available"]:
             assert m["unavailable_reason"]
 
-    # Attacks the project does not implement are advertised as absent.
+    # Attacks the project does not implement are advertised as absent -- and ONLY those.
+    # This previously asserted DOMIAS and attribute inference were absent while both were
+    # implemented and DOMIAS ran on every cell (fixed 2026-08-23). Under-reporting a
+    # capability is the same defect class as over-reporting one.
     names = {a["name"] for a in data["attacks_not_implemented"]}
-    assert {"LiRA", "DOMIAS", "Attribute inference"} <= names
+    assert names == {"LiRA"}, names
+    for entry in data["attacks_not_implemented"]:
+        assert entry["reason"], entry
 
 
 def test_datasets_flags_the_toy_table_as_structureless():
@@ -113,6 +118,10 @@ def test_run_streams_every_stage_in_order():
         "utility",
         "attack",
         "attack_domias",
+        # Wired 2026-08-23. Both were implemented and tested but never called by the
+        # pipeline; the console showed a shorter run than the project could actually do.
+        "attack_singling_out",
+        "attack_attribute_inference",
     ]
     # The audit stage must say which estimator produced the number.
     canaries = next(p for e, p in events if e == "stage" and p["stage"] == "canaries")

@@ -187,9 +187,7 @@ def check(path: Path) -> list[str]:
 
 def main() -> None:
     targets = (
-        [Path(a) for a in sys.argv[1:]]
-        if len(sys.argv) > 1
-        else sorted(THESIS.glob("ch0*.md"))
+        [Path(a) for a in sys.argv[1:]] if len(sys.argv) > 1 else sorted(THESIS.glob("ch0*.md"))
     )
     missing = [p for p in targets if not p.exists()]
     if missing:

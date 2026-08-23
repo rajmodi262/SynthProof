@@ -96,9 +96,18 @@ def test_data_sheet_carries_a_real_ledger_head_and_evaluation_context():
 
 
 def test_data_sheet_lists_attacks_it_did_not_run():
+    """Only LiRA is absent, and the sheet must not claim otherwise.
+
+    This test previously asserted that DOMIAS and attribute inference were NOT implemented,
+    encoding the defect fixed on 2026-08-23: both had shipped, `run_cell` was calling DOMIAS
+    on every cell, and the signed certificate said neither existed. The list is now derived
+    from the run, so the assertion is inverted -- an implemented attack appearing here is the
+    failure.
+    """
     sheet = _sheet()
     assert "distance_mia" in sheet.attacks_run
-    assert {"LiRA", "DOMIAS", "attribute_inference"} <= set(sheet.attacks_not_implemented)
+    assert set(sheet.attacks_not_implemented) == {"LiRA"}
+    assert not set(sheet.attacks_run) & set(sheet.attacks_not_implemented)
 
 
 def test_unsigned_sheet_is_reported_as_unsigned(tmp_path):

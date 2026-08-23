@@ -38,7 +38,7 @@
 | `synthproof/frontier/` | 1,041 | Experiment runner, checkpointing, Privacy Data Sheet export | `frontier/experiment.py` |
 | `synthproof/api/` | 1,078 | FastAPI service backing the console | `api/main.py` |
 
-*Package total: **8,854 lines**. Tests: **418 test functions across 34 files**.*
+*Package total: **8,852 lines**. Tests: **418 test functions across 34 files**.*
 
 > ⚠️ **Two different test counts exist and they are both correct.** This is the count of test *functions*; `pytest` reports a larger number of test *cases*, because `@parametrize` expands one function into many. Quote whichever you mean and say which it is — writing 'N tests' for the function count next to a CI badge showing the case count is the kind of small inconsistency an examiner notices.
 

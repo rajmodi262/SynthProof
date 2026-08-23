@@ -106,7 +106,10 @@ def register_fonts() -> None:
     for name, file in FACES.items():
         pdfmetrics.registerFont(TTFont(name, str(FONT_DIR / file)))
     pdfmetrics.registerFontFamily(
-        "Body", normal="Body", bold="Body-Bold", italic="Body-Italic",
+        "Body",
+        normal="Body",
+        bold="Body-Bold",
+        italic="Body-Italic",
         boldItalic="Body-BoldItalic",
     )
 
@@ -139,7 +142,7 @@ def unwritten(text: str, stem: str = "") -> list[str]:
         body = " ".join(m.group(1).split())
         budget = re.match(r"^~?[\d,]+\s*words\.\s*", body)
         if budget:
-            body = body[budget.end():]
+            body = body[budget.end() :]
         found.append(body[:150].rstrip() + ("..." if len(body) > 150 else ""))
     if found or not stem:
         return found
@@ -193,8 +196,14 @@ def status_rows() -> tuple[list[list[str]], int, int]:
         else:
             state = "STUB — not written"
         rows.append([title, f"{n:,}", f"{target:,}", state])
-    rows.append(["**Total**", f"**{total:,}**", f"**{target_total:,}**",
-                 f"**{total / target_total:.0%} of target**"])
+    rows.append(
+        [
+            "**Total**",
+            f"**{total:,}**",
+            f"**{target_total:,}**",
+            f"**{total / target_total:.0%} of target**",
+        ]
+    )
     return rows, total, target_total
 
 
@@ -227,32 +236,100 @@ def inline(s: str) -> str:
 
 def styles() -> dict[str, ParagraphStyle]:
     base = ParagraphStyle(
-        "body", fontName="Body", fontSize=10.6, leading=15.4, textColor=INK,
-        alignment=TA_LEFT, spaceAfter=7,
+        "body",
+        fontName="Body",
+        fontSize=10.6,
+        leading=15.4,
+        textColor=INK,
+        alignment=TA_LEFT,
+        spaceAfter=7,
     )
     return {
         "body": base,
-        "chapter": ParagraphStyle("chapter", parent=base, fontName="Head", fontSize=21,
-                                  leading=25, textColor=INK, spaceBefore=0, spaceAfter=10),
-        "h2": ParagraphStyle("h2", parent=base, fontName="Head", fontSize=13.5, leading=17,
-                             textColor=ACCENT, spaceBefore=13, spaceAfter=6),
-        "h3": ParagraphStyle("h3", parent=base, fontName="Head", fontSize=11, leading=14,
-                             textColor=INK, spaceBefore=10, spaceAfter=4),
-        "bullet": ParagraphStyle("bullet", parent=base, leftIndent=13, bulletIndent=3,
-                                 spaceAfter=4),
-        "quote": ParagraphStyle("quote", parent=base, fontSize=10.2, leading=14.4,
-                                leftIndent=9, rightIndent=6, spaceBefore=3, spaceAfter=3),
-        "todo": ParagraphStyle("todo", parent=base, fontName="Head-Regular", fontSize=9.4,
-                               leading=13, textColor=WARN, leftIndent=9, spaceAfter=4),
-        "cellhead": ParagraphStyle("cellhead", parent=base, fontName="Head-Regular",
-                                   fontSize=8.2, leading=10.8, textColor=SOFT, spaceAfter=0),
+        "chapter": ParagraphStyle(
+            "chapter",
+            parent=base,
+            fontName="Head",
+            fontSize=21,
+            leading=25,
+            textColor=INK,
+            spaceBefore=0,
+            spaceAfter=10,
+        ),
+        "h2": ParagraphStyle(
+            "h2",
+            parent=base,
+            fontName="Head",
+            fontSize=13.5,
+            leading=17,
+            textColor=ACCENT,
+            spaceBefore=13,
+            spaceAfter=6,
+        ),
+        "h3": ParagraphStyle(
+            "h3",
+            parent=base,
+            fontName="Head",
+            fontSize=11,
+            leading=14,
+            textColor=INK,
+            spaceBefore=10,
+            spaceAfter=4,
+        ),
+        "bullet": ParagraphStyle(
+            "bullet", parent=base, leftIndent=13, bulletIndent=3, spaceAfter=4
+        ),
+        "quote": ParagraphStyle(
+            "quote",
+            parent=base,
+            fontSize=10.2,
+            leading=14.4,
+            leftIndent=9,
+            rightIndent=6,
+            spaceBefore=3,
+            spaceAfter=3,
+        ),
+        "todo": ParagraphStyle(
+            "todo",
+            parent=base,
+            fontName="Head-Regular",
+            fontSize=9.4,
+            leading=13,
+            textColor=WARN,
+            leftIndent=9,
+            spaceAfter=4,
+        ),
+        "cellhead": ParagraphStyle(
+            "cellhead",
+            parent=base,
+            fontName="Head-Regular",
+            fontSize=8.2,
+            leading=10.8,
+            textColor=SOFT,
+            spaceAfter=0,
+        ),
         "cell": ParagraphStyle("cell", parent=base, fontSize=8.9, leading=11.8, spaceAfter=0),
-        "mono": ParagraphStyle("mono", parent=base, fontName="Mono", fontSize=8.6,
-                               leading=13, spaceAfter=0),
-        "title": ParagraphStyle("title", parent=base, fontName="Head", fontSize=25, leading=30,
-                                alignment=TA_CENTER, spaceAfter=10),
-        "sub": ParagraphStyle("sub", parent=base, fontSize=12.4, leading=17,
-                              alignment=TA_CENTER, textColor=SOFT, spaceAfter=8),
+        "mono": ParagraphStyle(
+            "mono", parent=base, fontName="Mono", fontSize=8.6, leading=13, spaceAfter=0
+        ),
+        "title": ParagraphStyle(
+            "title",
+            parent=base,
+            fontName="Head",
+            fontSize=25,
+            leading=30,
+            alignment=TA_CENTER,
+            spaceAfter=10,
+        ),
+        "sub": ParagraphStyle(
+            "sub",
+            parent=base,
+            fontSize=12.4,
+            leading=17,
+            alignment=TA_CENTER,
+            textColor=SOFT,
+            spaceAfter=8,
+        ),
         "centre": ParagraphStyle("centre", parent=base, alignment=TA_CENTER, spaceAfter=4),
     }
 
@@ -262,15 +339,19 @@ def build_table(rows: list[list[str]], st: dict) -> Table:
     data = [[Paragraph(inline(c), st["cellhead"]) for c in head]]
     data += [[Paragraph(inline(c), st["cell"]) for c in r] for r in body]
     t = Table(data, hAlign="LEFT", repeatRows=1)
-    t.setStyle(TableStyle([
-        ("LINEBELOW", (0, 0), (-1, 0), 0.7, ACCENT),
-        ("LINEBELOW", (0, 1), (-1, -2), 0.3, RULE),
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("TOPPADDING", (0, 0), (-1, -1), 3.5),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5),
-        ("LEFTPADDING", (0, 0), (0, -1), 0),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, WASH]),
-    ]))
+    t.setStyle(
+        TableStyle(
+            [
+                ("LINEBELOW", (0, 0), (-1, 0), 0.7, ACCENT),
+                ("LINEBELOW", (0, 1), (-1, -2), 0.3, RULE),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("TOPPADDING", (0, 0), (-1, -1), 3.5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5),
+                ("LEFTPADDING", (0, 0), (0, -1), 0),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, WASH]),
+            ]
+        )
+    )
     return t
 
 
@@ -301,8 +382,9 @@ def render(text: str, st: dict) -> list:
                 story.append(PageBreak())
             first_chapter = False
             story.append(Paragraph(inline(line[2:]), st["chapter"]))
-            story.append(HRFlowable(width="100%", thickness=1.6, color=ACCENT,
-                                    spaceBefore=2, spaceAfter=12))
+            story.append(
+                HRFlowable(width="100%", thickness=1.6, color=ACCENT, spaceBefore=2, spaceAfter=12)
+            )
             i += 1
             continue
 
@@ -325,8 +407,9 @@ def render(text: str, st: dict) -> list:
             while "]" not in block and i + 1 < len(lines):
                 i += 1
                 block += " " + lines[i].strip()
-            story.append(Paragraph("NOT YET WRITTEN — " + inline(block[7:].rstrip("]").strip()),
-                                   st["todo"]))
+            story.append(
+                Paragraph("NOT YET WRITTEN — " + inline(block[7:].rstrip("]").strip()), st["todo"])
+            )
             i += 1
             continue
 
@@ -340,12 +423,16 @@ def render(text: str, st: dict) -> list:
             i += 1
             rendered = "<br/>".join(inline(b).replace(" ", "\u00a0") for b in block)
             box = Table([[Paragraph(rendered, st["mono"])]], colWidths=[160 * mm], hAlign="LEFT")
-            box.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, -1), WASH),
-                ("LEFTPADDING", (0, 0), (-1, -1), 10),
-                ("TOPPADDING", (0, 0), (-1, -1), 8),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-            ]))
+            box.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, -1), WASH),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                        ("TOPPADDING", (0, 0), (-1, -1), 8),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                    ]
+                )
+            )
             story.append(box)
             story.append(Spacer(1, 7))
             continue
@@ -396,28 +483,44 @@ def render(text: str, st: dict) -> list:
 
 
 def front_matter(st: dict, total: int, target_total: int, todos: list[tuple[str, list[str]]]):
-    story = [Spacer(1, 38 * mm), Paragraph(TITLE, st["title"]),
-             Paragraph(SUBTITLE, st["sub"]),
-             HRFlowable(width="55%", thickness=1.2, color=ACCENT, spaceBefore=8, spaceAfter=16)]
+    story = [
+        Spacer(1, 38 * mm),
+        Paragraph(TITLE, st["title"]),
+        Paragraph(SUBTITLE, st["sub"]),
+        HRFlowable(width="55%", thickness=1.2, color=ACCENT, spaceBefore=8, spaceAfter=16),
+    ]
     for name in TEAM:
         story.append(Paragraph(name, st["centre"]))
-    story += [Spacer(1, 8), Paragraph(INSTITUTION, st["sub"]),
-              Paragraph(PROGRAMME, st["sub"]), PageBreak()]
+    story += [
+        Spacer(1, 8),
+        Paragraph(INSTITUTION, st["sub"]),
+        Paragraph(PROGRAMME, st["sub"]),
+        PageBreak(),
+    ]
 
     story.append(Paragraph("Draft status", st["chapter"]))
-    story.append(HRFlowable(width="100%", thickness=1.6, color=ACCENT,
-                            spaceBefore=2, spaceAfter=12))
-    story.append(Paragraph(
-        "This document is <b>incomplete</b> and this page says so before anything else. "
-        "Word counts below are prose only — generated tables and unwritten-section markers are "
-        "excluded, so the figure is what has actually been written rather than what the file "
-        "contains.", st["body"]))
+    story.append(
+        HRFlowable(width="100%", thickness=1.6, color=ACCENT, spaceBefore=2, spaceAfter=12)
+    )
+    story.append(
+        Paragraph(
+            "This document is <b>incomplete</b> and this page says so before anything else. "
+            "Word counts below are prose only — generated tables and unwritten-section markers are "
+            "excluded, so the figure is what has actually been written rather than what the file "
+            "contains.",
+            st["body"],
+        )
+    )
     rows, _t, _tt = status_rows()
     story.append(build_table(rows, st))
     story.append(Spacer(1, 10))
-    story.append(Paragraph(
-        f"<b>{target_total - total:,} words remain.</b> Every unwritten section is listed "
-        "below and appears again, in place, in the body of the document.", st["body"]))
+    story.append(
+        Paragraph(
+            f"<b>{target_total - total:,} words remain.</b> Every unwritten section is listed "
+            "below and appears again, in place, in the body of the document.",
+            st["body"],
+        )
+    )
 
     for title, items in todos:
         if not items:
@@ -447,7 +550,8 @@ def main() -> None:
     # Same discipline as the other builders: refuse to render a known-dead claim.
     check = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_thesis_claims.py")],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     if check.returncode != 0:
         blocking = [ln for ln in check.stdout.split("\n") if "missing-ceiling" not in ln]
@@ -470,9 +574,15 @@ def main() -> None:
     st = styles()
     tmp = PDF_OUT.with_suffix(".building.pdf")
     doc = BaseDocTemplate(
-        str(tmp), pagesize=A4,
-        leftMargin=24 * mm, rightMargin=24 * mm, topMargin=22 * mm, bottomMargin=20 * mm,
-        title=TITLE, author=", ".join(TEAM), subject=SUBTITLE,
+        str(tmp),
+        pagesize=A4,
+        leftMargin=24 * mm,
+        rightMargin=24 * mm,
+        topMargin=22 * mm,
+        bottomMargin=20 * mm,
+        title=TITLE,
+        author=", ".join(TEAM),
+        subject=SUBTITLE,
     )
     frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id="main")
     doc.addPageTemplates([PageTemplate(id="all", frames=[frame], onPage=decorate)])
@@ -492,8 +602,10 @@ def main() -> None:
     n_todo = sum(len(t) for _title, t in todos)
     print(f"wrote {MD_OUT.relative_to(ROOT)}")
     print(f"wrote {PDF_OUT}")
-    print(f"  {pages} pages · {total:,} of {target_total:,} words written "
-          f"({total / target_total:.0%}) · {n_todo} sections still to write")
+    print(
+        f"  {pages} pages · {total:,} of {target_total:,} words written "
+        f"({total / target_total:.0%}) · {n_todo} sections still to write"
+    )
 
 
 if __name__ == "__main__":

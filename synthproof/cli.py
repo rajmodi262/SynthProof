@@ -457,9 +457,7 @@ def audit_power(eps, canaries, alpha, subgroups, as_json):
             f"  VERDICT: this audit CAN certify epsilon = {eps:g}. Run it.", fg="green", bold=True
         )
     else:
-        click.secho(
-            f"  VERDICT: this audit CANNOT certify epsilon = {eps:g}.", fg="red", bold=True
-        )
+        click.secho(f"  VERDICT: this audit CANNOT certify epsilon = {eps:g}.", fg="red", bold=True)
         click.echo(
             f"           At {per_group:,} guesses the largest certifiable epsilon is "
             f"{report['ceiling']:.2f}.\n"
