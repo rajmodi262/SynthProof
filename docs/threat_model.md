@@ -18,6 +18,32 @@
 
 ---
 
+## 2a. Disclosure risks measured
+
+The EDPB's anonymisation criteria — operationalised by Anonymeter (Giomi et al., PoPETs 2023)
+— treat three risks as distinct. All three are now measured on every release:
+
+| Risk | Question | Implementation |
+|---|---|---|
+| **Singling out** | Can one record be isolated? | `attacks/exact_match_risk.py` |
+| **Linkability** | Can two pieces of information be shown to concern the same person? | `attacks/linkability.py` |
+| **Inference** | Can an attribute value be deduced? | `attacks/attribute_inference.py` |
+
+**These are our own approximations, not Anonymeter.** Integrating the reference toolkit was
+attempted on 2026-08-23 and is not possible here: `anonymeter` pins `numpy < 2` while
+`jax`/`jaxlib` — and therefore `mbi`, private-PGM and real AIM — require `numpy >= 2`.
+Installing it downgraded numpy and broke AIM outright. The trade is not worth making, and
+naming our approximations after Anonymeter's concepts without saying so would breach standing
+rule 4.
+
+Each carries its own control, because a raw rate is uninterpretable: linkability reports
+agreement in excess of a **row-shuffled release** (marginals preserved, row correspondence
+destroyed), and attribute inference scores against a **conditional** baseline rather than a
+marginal one. Linkability is reported **not applicable** on tables with fewer than four
+columns, which cannot be split into two disjoint halves.
+
+---
+
 ## 3. Out-of-Scope Attacks
 
 - **Hardware Side-Channels:** Physical power, electromagnetic, or CPU cache timing side-channels during execution.

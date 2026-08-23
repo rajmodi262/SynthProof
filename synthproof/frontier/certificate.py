@@ -305,6 +305,7 @@ class FrontierEngine:
                     ("_mia", "distance_mia"),
                     ("_domias", "domias"),
                     ("_singling_out", "exact_match_risk"),
+                    ("_linkability", "linkability"),
                     ("_attr_inference", "attribute_inference"),
                 )
                 if res.get(key) is not None

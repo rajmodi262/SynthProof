@@ -28,7 +28,7 @@
   ],
   "true_correlation": 0.10343557488146334,
   "utility_measured_on": "clean_fit",
-  "elapsed_seconds": 0.7,
+  "elapsed_seconds": 0.9,
   "cells": [
     {
       "dataset": "uci_adult",

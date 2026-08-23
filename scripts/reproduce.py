@@ -15,6 +15,15 @@ WHAT IT DOES NOT COVER, stated so nobody over-reads it: floating-point results c
 across BLAS builds and CPU architectures even at a fixed seed. A manifest mismatch means
 "something changed", not necessarily "someone edited a number".
 
+AND `--run` DOES NOT RECOMPUTE H1. `run_h1` is resumable by design -- `frontier/checkpoint.py`
+exists because the 75-cell grid was lost twice mid-run -- so it reloads `results/h1_cells/` and
+re-aggregates rather than re-fitting. The tell is `elapsed_seconds`: H1 reports ~0.7s where H2,
+H3 and fairness report 20-70s. Those three genuinely re-run. To force H1 to recompute, delete
+`results/h1_cells/` first, and expect roughly four hours per dataset. Verified 2026-08-23: a
+`--update` pass reproduced every committed number exactly, with only timing metadata changing --
+which is a real reproducibility result for H2/H3/fairness and a checkpoint-integrity result for
+H1, and those are different claims.
+
 Usage:
     python -m scripts.reproduce              # verify against the committed manifest
     python -m scripts.reproduce --run        # re-run every experiment first (long)
@@ -45,6 +54,10 @@ RESULT_FILES = [
     "results/h3_allocation.json",
     "results/acs/h3_allocation.json",
     "results/detection_floor.json",
+    # Added 2026-08-23 with M2.11. A result file outside this list is a published number that
+    # `make reproduce` cannot vouch for, which is the drift the manifest exists to catch.
+    "results/fairness.json",
+    "results/acs/fairness.json",
 ]
 
 # The experiments that produce them, in dependency order.
@@ -58,6 +71,8 @@ EXPERIMENTS = [
     ("h3_adult", [sys.executable, "-m", "scripts.run_h3"]),
     ("h3_acs", [sys.executable, "-m", "scripts.run_h3", "--dataset", "acs"]),
     ("detection_floor", [sys.executable, "-m", "scripts.run_detection_floor"]),
+    ("fairness_adult", [sys.executable, "scripts/run_fairness.py", "adult"]),
+    ("fairness_acs", [sys.executable, "scripts/run_fairness.py", "acs"]),
 ]
 
 # Only packages whose version can change a number. Formatters and linters cannot, so listing

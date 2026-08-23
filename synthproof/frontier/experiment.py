@@ -17,6 +17,7 @@ from synthproof.attacks.attribute_inference import AttributeInferenceAttack
 from synthproof.attacks.distance_mia import DistanceMIABaseline
 from synthproof.attacks.domias import DOMIAS
 from synthproof.attacks.exact_match_risk import ExactMatchRiskEvaluator
+from synthproof.attacks.linkability import LinkabilityEvaluator
 from synthproof.audit.canary import CanaryAuditor
 from synthproof.audit.steinke import SteinkeAuditor
 from synthproof.data.dataset import TabularDataset
@@ -372,6 +373,29 @@ def run_cell(
         },
     )
 
+    # Linkability: the third EDPB risk. Two disjoint halves of a record are matched to the
+    # release independently; agreement beyond the shuffled-release baseline is the link.
+    # With singling out and attribute inference already running, this completes 3 of 3.
+    # A table with fewer than four columns cannot be split into two disjoint halves, so the
+    # question does not arise. That is NOT APPLICABLE, not a failure, and it must not take the
+    # release down with it -- the built-in toy table has three columns and did exactly that.
+    # Reported as absent rather than skipped silently, the same rule the second accountant
+    # follows: an absent check must never look like a passed one.
+    try:
+        linkability = LinkabilityEvaluator(seed=seed, max_records=400).evaluate(
+            audit_synth, target_df=fit_ds.df
+        )
+        emit(
+            "attack_linkability",
+            {
+                "rate": float(linkability.linkability_rate),
+                "excess_over_baseline": float(linkability.excess_over_baseline),
+            },
+        )
+    except ValueError as exc:
+        linkability = None
+        emit("attack_linkability", {"not_applicable": str(exc)})
+
     # Attribute inference, scored against a CONDITIONAL baseline rather than a marginal one.
     # Jayaraman & Evans (CCS 2022) showed that reporting raw attack accuracy as "leakage"
     # mostly measures imputability; `leakage_vs_conditional` is the number that isolates what
@@ -398,6 +422,12 @@ def run_cell(
         "domias_auc": float(domias.auc),
         "domias_tpr_at_1pct": float(domias.tpr_at_1pct_fpr),
         "singling_out_risk": float(singling.singling_out_risk),
+        # NaN, not 0.0, when the risk does not apply. A zero here would read as "measured, no
+        # linkability found" -- the difference between an absent measurement and a null one.
+        "linkability_rate": (float(linkability.linkability_rate) if linkability else float("nan")),
+        "linkability_excess": (
+            float(linkability.excess_over_baseline) if linkability else float("nan")
+        ),
         "attr_inference_accuracy": float(attr.attack_accuracy),
         "attr_leakage_vs_conditional": float(attr.leakage_vs_conditional),
         "correlation_error": _mean_abs_corr_error(
@@ -437,6 +467,7 @@ def run_cell(
                 "_mia": mia,
                 "_domias": domias,
                 "_singling_out": singling,
+                "_linkability": linkability,
                 "_attr_inference": attr,
             }
         )

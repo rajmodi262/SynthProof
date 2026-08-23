@@ -121,6 +121,11 @@ def test_run_streams_every_stage_in_order():
         # Wired 2026-08-23. Both were implemented and tested but never called by the
         # pipeline; the console showed a shorter run than the project could actually do.
         "attack_singling_out",
+        # Linkability is emitted even when NOT APPLICABLE -- the console's 3-column toy table
+        # cannot be split into two disjoint halves, and the stage reports that rather than
+        # disappearing. A stage that vanishes on some inputs makes the pipeline's shape depend
+        # on the data.
+        "attack_linkability",
         "attack_attribute_inference",
     ]
     # The audit stage must say which estimator produced the number.
