@@ -1,4 +1,4 @@
-.PHONY: help install install-locked lock test lint format h1 h1-acs h2 h2-acs h3 h3-acs h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
+.PHONY: help claims install install-locked lock test lint format h1 h1-acs h2 h2-acs h3 h3-acs h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
         console-install console-test security audit docker-build docker-up
 
 help:
@@ -128,6 +128,11 @@ manifest:
 # drift from the data behind it.
 figures:
 	python -m scripts.make_figures
+
+# Fails if a chapter states one of the eight claims the novelty protocol killed.
+# See docs/thesis/WRITING_NOTICE.md and research/08_novelty_verdict.md.
+claims:
+	python scripts/check_thesis_claims.py
 
 demo:
 	python -m synthproof.cli demo --rows 100 --eps 1.0

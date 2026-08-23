@@ -31,7 +31,10 @@ Number them, and mark each honestly against what exists at submission:
 
 1. A dual-sided assurance pipeline reporting ε_proved and ε_audited for the same artefact.
 2. Budget-charged domain profiling — schema and range discovery priced rather than taken free.
-3. An append-only Ed25519-signed ledger for cross-release organisational budget accounting.
+3. A hash-chained, Ed25519-signed budget ledger whose head commits to
+   `(entry_count, tip_hash)`, so truncation is detectable as well as modification.
+   **Not** cross-release: there is no cross-session budget enforcement (see the README),
+   and DPolicy [kuchler2025dpolicy] is the system that does that properly.
 4. An empirical study of the proved-vs-audited gap across mechanism families (H1), and of its
    variation across demographic subgroups (H2).
 

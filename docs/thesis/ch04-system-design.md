@@ -123,9 +123,16 @@ Be scrupulous here.
 
 ## 4.7 The budget ledger (~250 words)
 
-- Append-only SQLite; each entry commits to its predecessor's SHA-256; Ed25519 over canonical
+- Hash-chained SQLite; each entry commits to its predecessor's SHA-256; Ed25519 over canonical
   bytes. Canonicalisation matters — fixed-precision float formatting and sorted keys, or
   signatures are not reproducible.
+- **Chaining alone is not enough, and this is the point worth making.** A hash chain detects
+  modification, insertion and reordering, but **not truncation** — a shortened chain is
+  internally consistent. Deleting the last two entries left `verify()` returning `True`, so an
+  operator could remove exactly the records of a budget overspend. A signed `ledger_head`
+  committing to `(entry_count, tip_hash)` closes it: 9 distinct attacks are now stopped where 8
+  were before (`tests/test_ledger_adversarial.py`, 14 tests). Do not call this ledger
+  "append-only" — nothing prevents an append; what is detectable is that one happened.
 - Threat addressed: **cross-release budget erosion.** Nothing in standard practice stops a
   second team re-releasing the same table at full budget.
 - Verification: chain linkage, per-entry hash, and signature, checked in order.
