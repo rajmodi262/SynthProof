@@ -11,17 +11,24 @@ Priority: 🔴 mandatory · 🟠 recommended · 🟢 stretch
 
 ---
 
+> **Corrected 2026-08-23 against the code.** Three rows claimed work was open or blocked
+> that had already shipped — M1.4 (ACS), M2.6 (attribute inference) and M3.6 (H3) — and
+> M2.3 (LiRA) was listed as an open task when it is a recorded decision not to build it.
+> A board that invents open work misleads exactly as much as one that hides it, and this
+> project fixed the identical drift in `AUDIT_AND_ROADMAP.md` the same day. Re-check rows
+> against the code before trusting a status.
+
 ## Dashboard
 
 | Milestone | Scope | Done | Hours left | Status |
 |---|---|---|---:|---|
 | **M0** Foundations | A budget you can trust | 12 / 12 | 0 | ✅ **complete** |
-| **M1** Real synthesis | Published mechanisms, real data, H1 | 12 / 14 | 8–12 | ✅ **H1 answered** |
-| **M2** Audit engine | Real attacks, Steinke audit, H2 | 7 / 12 | 34–50 | 🔨 in progress |
-| **M3** Ship the proof | Signed, verifiable, reproducible | 6 / 10 | 18–30 | 🔨 in progress |
+| **M1** Real synthesis | Published mechanisms, real data, H1 | 13 / 14 | 10 | ✅ **H1 answered on two datasets** |
+| **M2** Audit engine | Real attacks, Steinke audit, H2 | 9 / 11 | 14–18 | 🔨 **2 open: M2.5 EDPB risks, M2.11 subgroup utility** |
+| **M3** Ship the proof | Signed, verifiable, reproducible | 8 / 10 | 9 | 🔨 **2 open, both stretch** |
 | **DOC** Thesis & docs | Continuous | 3 / 9 | 70–95 | 🔴 **the critical path** |
 
-**Health right now:** 201 tests green · 86% coverage · ruff + bandit clean · CI with calibration
+**Health right now (2026-08-23):** 515 tests green · 94% coverage · ruff + black + bandit clean · CI gates lint, format, coverage, CLI smoke, CVEs, secrets and the console build.
 AND auditor gates · H1 supported on structure and utility · H2 reported as not supported ·
 data sheet signed and third-party verifiable
 
@@ -64,7 +71,7 @@ overspending. CI asserts this across 24 configurations.
 | M1.1 | `TabularDataset.from_csv()` + schema spec | 🔴 | — | 4 | [x] | Loads an arbitrary CSV with declared column types; unit-tested on a fixture |
 | M1.2 | `data/` loader + `CHECKSUMS.txt` | 🔴 | — | 3 | [x] | `make data` fetches UCI Adult and verifies SHA-256 |
 | M1.3 | UCI Adult end to end | 🔴 | — | 3 | [x] | Full sweep completes on 48,842 rows × 14 cols |
-| M1.4 | ACS PUMS via `folktables` | 🟠 | | 4 | [!] | Second real dataset, ≥50k rows, with subgroup labels for H2 |
+| M1.4 | ACS PUMS via `folktables` | 🟠 | | 0 | [x] | **Done.** ACSIncome (CA 2018) at n=6,000 under the identical protocol. Full H1/H2/H3 grids in `results/acs/`. Was marked BLOCKED for ten days after it shipped |
 | M1.5 | CLI `--input` flag | 🔴 | — | 2 | [x] | `synthproof run --input my.csv --eps 2.0` works |
 | M1.6 | API upload endpoint | 🟠 | — | 4 | [x] | `POST /api/upload` accepts a CSV; console can drive it |
 | M1.7 | Caller-declared public bounds (closes F5) | 🔴 | — | 5 | [x] | Sensitivity is derived from declared clip range, not asserted as 1.0 |
@@ -84,10 +91,10 @@ overspending. CI asserts this across 24 configurations.
 |---|---|:--:|---|--:|:--:|---|
 | M2.1 | Full Steinke one-run audit | 🟠 | — | 20 | [x] | Randomised inclusion vector; ε from confusion counts via Clopper-Pearson |
 | M2.2 | Auditor validation harness | 🟠 | — | 5 | [x] | Re-introduce the σ<0.3 bug; auditor must catch it. Becomes a CI test |
-| M2.3 | LiRA with shadow models | 🟠 | | 20 | [ ] | ≥64 shadow models, per-example Gaussian fit, calibrated LR test |
+| M2.3 | LiRA with shadow models | — | | 0 | [–] | **DECIDED AGAINST, not open.** ~21h compute for a likely wide-CI null; naming anything cheaper "LiRA" repeats audit finding F7. Declared absent on the certificate and in the API |
 | M2.4 | DOMIAS density-ratio MIA | 🟠 | — | 12 | [x] | Reproduces published behaviour on a known-leaky mechanism |
 | M2.5 | `anonymeter` integration | 🟠 | | 6 | [ ] | Real singling-out, linkability, inference — three separate simulations |
-| M2.6 | Attribute inference attack | 🟠 | | 8 | [ ] | Predicts a held-out sensitive column; reports lift over a marginal baseline |
+| M2.6 | Attribute inference attack | 🟠 | | 0 | [x] | **Done.** `attacks/attribute_inference.py`, scored against a CONDITIONAL baseline (Jayaraman & Evans, CCS 2022) rather than a marginal one. Wired into `run_cell` 2026-08-23 |
 | M2.7 | Report AUC + TPR@0.1%FPR everywhere | 🔴 | — | 3 | [x] | No attack reports accuracy at a median threshold |
 | M2.8 | **H2 subgroup disparity** | 🟠 | — | 20 | [x] | Done on UCI Adult (not ACS) by race and sex. **Not supported**; the audit ceiling is the binding constraint |
 | M2.9 | Differential test vs `autodp` | 🟠 | — | 6 | [x] | ε agrees with two independent implementations to 1e-6, in CI |
@@ -105,8 +112,8 @@ overspending. CI asserts this across 24 configurations.
 | M3.2 | Sign the Privacy Data Sheet | 🟠 | — | 4 | [x] | Signature over canonical bytes of the whole sheet |
 | M3.3 | `synthproof verify` command | 🟠 | — | 5 | [x] | A third party verifies with only the sheet and a public key |
 | M3.4 | Anchor ledger head in each certificate | 🟠 | — | 2 | [x] | Certificate commits to the chain head at issue time |
-| M3.5 | Ledger-driven allocator wired to generators | 🟢 | | 8 | [ ] | Per-column weights actually change noise allocation |
-| M3.6 | **H3 tested** | 🟢 | | 10 | [ ] | Weighted vs uniform at equal total ε, with CIs |
+| M3.5 | Ledger-driven allocator wired to generators | 🟢 | | 4 | [~] | **Partial.** `IndependentMarginalGenerator(column_weights=...)` genuinely produces different per-column noise via `calibrate_weighted_scales`, and each column is charged separately — which is what makes H3 a real experiment. `pairwise` and `aim` still ignore weights, so H3 speaks for one family |
+| M3.6 | **H3 tested** | 🟢 | | 0 | [x] | **Done.** Weighted vs uniform at equal total ε, 5 ε × 5 seeds × 2 arms, BOTH datasets. Not supported; the null replicates. `results/h3_allocation.json`, `results/acs/h3_allocation.json` |
 | M3.7 | Close the ~8% budget under-spend | 🟢 | | 4 | [ ] | proved/target ≥ 0.98 while never exceeding 1.0 |
 | M3.8 | `make reproduce` | 🟠 | — | 8 | [x] | Regenerates every published number from scratch; emits a manifest hash |
 | M3.9 | Frontend wired to live attack results | 🟢 | — | 12 | [x] | Console shows measured attack output, no static values |

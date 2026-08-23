@@ -45,7 +45,9 @@ jobs:
         continue-on-error: true   # advisory until the tree is fully black-formatted
 
       - name: Test with coverage
-        run: pytest --cov=synthproof --cov-report=term-missing --cov-fail-under=80
+        # Raised 80 -> 90 on 2026-08-23. The suite runs at 94%, and a gate 14 points
+        # below actual coverage permits silent regression without ever failing.
+        run: pytest --cov=synthproof --cov-report=term-missing --cov-fail-under=90
 
       - name: Smoke — CLI demo runs end to end
         run: python -m synthproof.cli demo --rows 60 --eps 1.0
