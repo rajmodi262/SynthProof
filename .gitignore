@@ -83,3 +83,8 @@ synthproof/api/pitch2/
 synthproof/api/pitch3/
 synthproof/api/pitch4/
 synthproof/api/pitch5/
+
+# Isolated env for the MLCommons Croissant reference validator. Built on demand by
+# scripts/validate_croissant.py --setup; kept out of the project env because mlcroissant
+# pins a numpy that breaks jax/mbi/private-PGM and therefore real AIM.
+.venv-croissant/

@@ -24,6 +24,8 @@ help:
 	@echo "    make reproduce-all   Re-run every experiment, then check (very long)"
 	@echo "    make figures         Regenerate every thesis figure from results/"
 	@echo "    make demo            CLI end-to-end synthesis and audit"
+	@echo "    make croissant       Emit a full release: CSV + signed sheet + Croissant record"
+	@echo "    make croissant-validate  Check it with the official MLCommons validator"
 	@echo ""
 	@echo "  Console (needs Node 20+)"
 	@echo "    make serve           Start the FastAPI service on :8000"
@@ -156,6 +158,24 @@ thesis:
 
 demo:
 	python -m synthproof.cli demo --rows 100 --eps 1.0
+
+# A complete release: the synthetic table, the signed claim, and a Croissant record carrying
+# it. Writes into build/release/ so it never collides with results/, which is under the
+# reproducibility manifest.
+croissant:
+	python -m synthproof.cli keygen || true
+	mkdir -p build/release
+	python -m synthproof.cli run --rows 1200 --eps 1.0 --mechanism pairwise --sign --out build/release/sheet.json --synthetic-out build/release/release.csv --croissant build/release/release.croissant.json
+	python -m synthproof.cli verify build/release/release.croissant.json --pubkey .keys/synthproof_ed25519.pub
+
+# Conformance against the OFFICIAL MLCommons validator, in an isolated venv. Separate because
+# mlcroissant pins a numpy that breaks jax/mbi/private-PGM and therefore real AIM. Exits 2 --
+# not 0 -- when the env is absent, so an unrun check never looks like a passed one.
+croissant-validate-setup:
+	python scripts/validate_croissant.py --setup
+
+croissant-validate:
+	python scripts/validate_croissant.py build/release/release.croissant.json
 
 serve:
 	uvicorn synthproof.api.main:app --reload --host 0.0.0.0 --port 8000

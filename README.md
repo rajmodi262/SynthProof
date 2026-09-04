@@ -33,8 +33,9 @@ the formal bound (ε_proved) and an empirical lower bound (ε_audited).
 | **Differential accounting** | ✅ Working | Every release is composed through **two independent accountants** — Google's `dp_accounting` and `autodp` — and the verdict travels **inside the signed payload** (`accountant_agreement`). Under-reporting relative to the second accountant **refuses the release**; a conservative gap ships with the gap stated. `unavailable`/`unsupported` are reported rather than hidden, so an absent check never looks like a passed one. Motivated by Cebere et al. (arXiv 2602.17454, 2026): 12 DP libraries audited, 13 guarantee violations found. |
 | **Pre-audit power analysis** | ✅ Working | `synthproof audit-power --eps 7.36 --canaries 60` answers *before* you run an audit whether it could certify the epsilon you want. This project ran the experiment that motivates it: H1 used 60 canaries against a proved ε of 7.36, where the ceiling is 2.97. The ceiling is **not our theorem** — it is a one-line corollary of Steinke et al. (2023) Thm 2.1, pinned bit-identical by a test. |
 | **Signed Privacy Data Sheet** | ✅ Working | Persistent key; `synthproof verify sheet.json --pubkey org.pub` is runnable by a third party. Carries `domain_source` (was the schema declared, or read from your data?), `unit_of_privacy`, `contribution_bound`, `audit_ceiling`, and a plain-language odds statement — all inside the signed payload, so none can be stripped. |
+| **Croissant 1.1 export** | ✅ Working | `synthproof run ... --croissant release.json` emits the signed sheet as a [Croissant](https://docs.mlcommons.org/croissant/) record with a `dp:` vocabulary extension, so a DP release loads in ordinary ML dataset tooling **and** stays third-party checkable. **Validated by the official MLCommons validator, 0 warnings** — run out-of-band via [scripts/validate_croissant.py](scripts/validate_croissant.py), because `mlcroissant` pins a numpy that breaks private-PGM and therefore AIM. The signature is **not** recomputed over the JSON-LD: it still covers the embedded sheet's canonical bytes, and `verify` cross-checks every field mirrored into the visible layer, refusing with `SIGNATURE VALID, RECORD UNTRUSTWORTHY` when they diverge. This is the [integration position](research/08_novelty_verdict.md) §3.3 made runnable: Croissant carries provenance and no attestation; Dibia et al. (2025) elicited the field set and propose no signing and no way to report an empirical metric's limits. We ship both. |
 | **Pre-flight refusal** | ✅ Working | Refuses inputs that cannot be released honestly — too few rows, a near-unique identifier column, free text, no categorical target, a 2-way domain blow-up — using **only the declared schema and row count**, never the data. See [docs/design/USER_FACING_SYSTEM.md](docs/design/USER_FACING_SYSTEM.md) §2.5. |
-| **Generators** | ✅ 3 real families | `independent` (baseline) · `pairwise` (tree-structured 2-way) · `aim` (private-PGM) · `moments` (per-column mean/sd, a **second** independent-marginals control — it is **not** a copula: no covariance is estimated and no rank transform is applied) |
+| **Generators** | ✅ 6 mechanisms, 3 model classes | **Marginal-based:** `independent` (baseline) · `pairwise` (tree-structured 2-way) · `aim` (private-PGM) · `moments` (per-column mean/sd, a **second** independent-marginals control — it is **not** a copula: no covariance is estimated and no rank transform is applied). **Deep generative:** `dpvae` (DP-SGD variational autoencoder in JAX; per-example gradients via `vmap`, Poisson subsampling declared to the accountant). **Control arm:** `fixed_workload` — AIM's engine with the exponential-mechanism selection deleted and a public, data-independent workload substituted at identical ε, so selection can be isolated. See [results/SELECTION_ABLATION.md](results/SELECTION_ABLATION.md) |
 | **Canary auditor** | ✅ Working, and its limits are measured | Paired Clopper-Pearson *and* the one-run Steinke construction. The **detection floor is now measured** ([results/DETECTION_FLOOR.md](results/DETECTION_FLOOR.md)): at 400 canaries the auditor resolves a 25% leak; at 10 canaries it needs a 100% leak. The **audit ceiling** `log(r/ln(1/α))` is reported beside every ε_audited, so a 0 is never mistaken for evidence of no leakage. |
 | **Attack suite** | ✅ 5 attacks, **all three EDPB risks** | `distance_mia` (nearest-neighbour) · `exact_match_risk` (singling-out) · `domias` (k-NN density ratio, Breugel et al. 2023) · `linkability` (two disjoint halves of a record matched independently, scored against a row-shuffled release) · `attribute_inference` (scored against a conditional baseline, not a marginal one). **LiRA is deliberately NOT implemented** — a shadow-model attack is ~21h of compute for a likely wide-CI null, and calling anything cheaper "LiRA" would misname it. |
 | **API authentication** | ⚠️ Shared key only | Set `SYNTHPROOF_API_KEY` and every endpoint that reads uploaded data, spends budget or exposes the ledger requires `Authorization: Bearer <key>` or `X-API-Key`. Unset by default so the local demo needs no configuration, and `/api/health` reports `auth: "disabled"` loudly when it is. **Not user authentication**: one key means one principal, so the ledger's `actor` cannot distinguish callers and rotation invalidates everyone at once. |
@@ -81,6 +82,45 @@ python -m synthproof.cli verify sheet.json --pubkey .keys/synthproof_ed25519.pub
 > Without `--schema`, column bounds are inferred **from your data**, which leaks. Generate a
 > starter schema with `synthproof infer-schema`, then replace each range with a publishable
 > fact about the domain before using it for a real release.
+
+### Shipping the release as a Croissant record
+
+To emit the synthetic table, the signed claim and a standards-conformant metadata record in
+one step:
+
+```bash
+python -m synthproof.cli run --input mydata.csv --schema myschema.json --eps 2.0 --mechanism aim --sign --out sheet.json --synthetic-out release.csv --croissant release.croissant.json
+```
+
+`verify` takes either format and tells you which it got:
+
+```bash
+python -m synthproof.cli verify release.croissant.json --pubkey .keys/synthproof_ed25519.pub
+```
+
+The record mirrors ε, δ, the mechanism and the **audit ceiling** into fields a Croissant
+consumer can read without knowing anything about DP, and carries the signed sheet verbatim
+underneath. Editing a mirrored field leaves the signature valid but the record inconsistent,
+and `verify` fails on exactly that:
+
+```
+FAILED
+SIGNATURE VALID, RECORD UNTRUSTWORTHY.
+The embedded Privacy Data Sheet is correctly signed, but the human-visible fields above it
+have been altered and no longer match it.
+  dp:epsilonProved: record says 0.01, signed sheet says 0.9615567837005196
+```
+
+To check conformance against the reference implementation (one-time setup builds an isolated
+venv; it is kept separate because `mlcroissant` pins a numpy that breaks AIM):
+
+```bash
+python scripts/validate_croissant.py --setup
+```
+
+```bash
+python scripts/validate_croissant.py release.croissant.json
+```
 
 ## The console
 
