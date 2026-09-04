@@ -1,8 +1,8 @@
 {
   "manifest_version": 1,
-  "generated_at": "2026-08-23T14:24:50.070574+00:00",
+  "generated_at": "2026-09-02T18:29:53.441136+00:00",
   "git": {
-    "commit": "a08ef43003540c6b064c4f919456d4895970cf8a",
+    "commit": "256c67f609437759a1a066d5a398f08d9c5e0f11",
     "branch": "audit-fixes-and-acs",
     "dirty": true
   },
@@ -158,7 +158,8 @@
     "results/acs/h3_allocation.json": "b0c07215a3cb526f382f0d83c727c15a571a796b60b9a9f11897db066fe604b5",
     "results/detection_floor.json": "1bb59d07222093dc5d31f09a2d2edd7cdd624da730dfa1adeedf9b79fa14c6af",
     "results/fairness.json": "2f631e4ec27a36ca421222b3ac5d29d315e6bbc3c2f13a8d22adebc8d0edcc8d",
-    "results/acs/fairness.json": "5e7cd30b364067e39fa5bf82a018a1dff84cd625d34f0e508cb4ec5783018843"
+    "results/acs/fairness.json": "5e7cd30b364067e39fa5bf82a018a1dff84cd625d34f0e508cb4ec5783018843",
+    "results/gdp_audit.json": "d59ffeb71eb13fb2e566966556a3b68d4a484c822dd5f90ebf475ff3754e3343"
   },
-  "manifest_hash": "a8ec319e8300d14f621bd41d78e82eb543b4ff8de68ff973b8ee6186571f110e"
+  "manifest_hash": "27093e17edfa5d15339c7ff9a6793a4a3bcf7ac4bad115216373954a1c79846a"
 }

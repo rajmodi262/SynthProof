@@ -204,12 +204,21 @@ def test_every_manifest_result_file_has_a_producing_experiment():
     cmds = " ".join(" ".join(c) for _, c in EXPERIMENTS)
     for path in RESULT_FILES:
         stem = path.split("/")[-1].replace(".json", "")
-        key = {
+        runners = {
             "h1_all_families": "run_h1",
             "h2_subgroups": "run_h2",
             "h2_analysis": "analyse_h2",
             "h3_allocation": "run_h3",
             "detection_floor": "run_detection_floor",
             "fairness": "run_fairness",
-        }[stem]
-        assert key in cmds, f"{path} has no experiment that produces it"
+            "gdp_audit": "run_gdp_audit",
+        }
+        # A KeyError here means someone pinned a result file without teaching this test which
+        # runner produces it -- which is the same omission the assertion below guards against,
+        # so report it as that rather than as an opaque KeyError. (Hit on 2026-08-25 when
+        # gdp_audit.json was pinned.)
+        assert stem in runners, (
+            f"{path} is pinned in RESULT_FILES but this test has no runner mapped for "
+            f"{stem!r}. Add it here and to EXPERIMENTS, or the file cannot be regenerated."
+        )
+        assert runners[stem] in cmds, f"{path} has no experiment that produces it"

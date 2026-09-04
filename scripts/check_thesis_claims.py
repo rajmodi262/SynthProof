@@ -120,6 +120,44 @@ DEAD_CLAIMS: list[tuple[str, str, str, str]] = [
         "consistent. That is why the signed ledger_head exists.",
         "Say 'hash-chained and signed, with a head committing to (entry_count, tip_hash)'.",
     ),
+    # ---- added 2026-08-25, after three more claims died in one day -----------------------
+    # NOTE ON THE GAPS. These use `[^\n]` rather than `[^.]`. A dot-excluding gap cannot cross
+    # "et al." or a decimal, and these sentences are full of both -- written with `[^.]` all
+    # three rules matched nothing and gave false confidence. Verified against known-bad text.
+    (
+        "clique-confound-as-finding",
+        r"(?:we|our|this (?:work|project|thesis))[^\n]{0,100}"
+        r"(?:find|found|show|showed|demonstrat\w*|discover\w*|reveal\w*|establish\w*)"
+        r"[^\n]{0,100}(?:clique[- ]selection|selection[- ]confound)",
+        "RETRACTED 2026-08-25. Published three times -- AIM's own paper (arXiv:2201.12677 S5) "
+        "partitions supported/unsupported marginals with separate bounds and Fig 2c; Ganev, Xu "
+        "& De Cristofaro CCS 2024 S5.3; Chen, Gong & Wang arXiv:2511.13893 S6.3. And our own "
+        "ablation refuted the reading: measuring helps in proportion to TRUE DEPENDENCE "
+        "(r = -0.898), so AIM's advantage is the mechanism working as designed.",
+        "Cite the three papers and present the fixed-workload ablation as a REPLICATION with a "
+        "selection-deleted control arm. See results/SELECTION_ABLATION.md.",
+    ),
+    (
+        "measuring-hurts-as-finding",
+        r"(?:we|our|this (?:work|project|thesis))[^\n]{0,100}"
+        r"(?:find|found|show|showed|demonstrat\w*|discover\w*|new result)"
+        r"[^\n]{0,140}measur\w+[^\n]{0,80}(?:worse|harm\w*|degrad\w*|hurts?)",
+        "RETRACTED 2026-08-25. PrivSyn (arXiv:2012.15128) S3.2 states it verbatim: 'When some "
+        "attributes are independent, capturing the relationship among them actually increases "
+        "the amount of noise.' S4.2 formalises the select-or-omit tradeoff with "
+        "InDif = |M_ab - M_a x M_b|_1. AIM Eq. (1) encodes the same rule and lets it go negative.",
+        "Cite PrivSyn and AIM Eq. (1). Ours is a CALIBRATION of where the crossover falls, for "
+        "a validation-methodology chapter -- never a discovery.",
+    ),
+    (
+        "ganev-as-one-run-full-aim",
+        r"(?:2604\.18352|Ganev)[^\n]{0,140}\bone[- ]run\b",
+        "Their audit is NOT one-run: 10,000 independent models, 5,000 per world, one target "
+        "record on an 11-record worst-case dataset. It also audits a RESTRICTED configuration "
+        "(fixed dependency graph, one-way marginals only), so AIM reduces to independent "
+        "marginals -- it is not a tight audit of AIM as deployed.",
+        "Describe it as a many-run worst-case GDP audit of a restricted configuration.",
+    ),
 ]
 
 # Phrases that must appear somewhere if the chapter discusses the audit at all.
@@ -186,9 +224,31 @@ def check(path: Path) -> list[str]:
 
 
 def main() -> None:
-    targets = (
-        [Path(a) for a in sys.argv[1:]] if len(sys.argv) > 1 else sorted(THESIS.glob("ch0*.md"))
-    )
+    # The matched text can contain characters (eps, mu, en-dashes) that a Windows console's
+    # cp1252 codepage cannot encode, and a checker that crashes while reporting a problem is
+    # worse than no checker. Reconfigure rather than strip: the writer needs to see the actual
+    # phrase in order to find it.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):  # pragma: no cover - non-reconfigurable stream
+            pass
+
+    args = [a for a in sys.argv[1:] if a != "--all"]
+    if "--all" in sys.argv[1:]:
+        # Repo-wide sweep. The retracted claims are asserted well outside docs/thesis --
+        # ARCHITECTURE.md, the defence pack, the REPORTS folder and results/ all carry them,
+        # and a chapter-only check would pass while the submitted PDF still made the claim.
+        seen, targets = set(), []
+        for pat in ("docs/**/*.md", "results/**/*.md", "research/**/*.md", "../REPORTS/*.md"):
+            for f in sorted(ROOT.glob(pat)):
+                if f.is_file() and f not in seen:
+                    seen.add(f)
+                    targets.append(f)
+    elif args:
+        targets = [Path(a) for a in args]
+    else:
+        targets = sorted(THESIS.glob("ch0*.md"))
     missing = [p for p in targets if not p.exists()]
     if missing:
         sys.exit(f"no such file: {', '.join(str(m) for m in missing)}")
@@ -198,9 +258,10 @@ def main() -> None:
         problems.extend(check(p))
 
     if not problems:
-        print(f"OK - {len(targets)} chapter(s) checked, no known-dead claim found.")
+        print(f"OK - {len(targets)} file(s) checked, no known-dead claim found.")
         print("     This does not mean the argument is sound. It means you did not write one")
-        print("     of the eight claims research/08_novelty_verdict.md already killed.")
+        print("     of the ELEVEN claims killed by research/08_novelty_verdict.md and")
+        print("     research/10_deep_survey_2026-08-25.md.")
         return
 
     print(f"FOUND {len(problems)} claim(s) the evidence no longer supports:\n")

@@ -58,6 +58,33 @@ RESULT_FILES = [
     # `make reproduce` cannot vouch for, which is the drift the manifest exists to catch.
     "results/fairness.json",
     "results/acs/fairness.json",
+    # Added 2026-08-25. Verified bit-reproducible by running it twice and diffing every field
+    # except `elapsed_seconds`.
+    "results/gdp_audit.json",
+]
+
+# DELIBERATELY NOT PINNED, and this is a limitation rather than an oversight.
+#
+#   results/clique_confound.json          uses `aim`
+#   results/acs/clique_confound.json      uses `aim`
+#   results/selection_ablation.json       uses `fixed_workload` (an AIM subclass)
+#   results/acs/selection_ablation.json   uses `fixed_workload`
+#
+# `mbi`'s `synthetic_data` draws from unseeded randomness, so calling `generate` twice on the
+# SAME fitted model returns different tables -- confirmed directly, and pinned as a test in
+# `tests/test_fixed_workload.py::test_sampling_is_NOT_reproducible_and_that_is_recorded`.
+# Any AIM-family result is therefore reproducible in DISTRIBUTION but not BIT-IDENTICAL, and
+# adding these files would make `make reproduce` fail on every clean re-run -- which would
+# train everyone to ignore it.
+#
+# The honest consequence, which ch06 s6.6 must state: the reproducibility claim covers the
+# marginal-based and DP-SGD results in RESULT_FILES, and does NOT extend to the AIM-family
+# numbers. Fixing it needs a seeded sampler in `mbi`, not a change here.
+UNPINNED_AIM_FAMILY = [
+    "results/clique_confound.json",
+    "results/acs/clique_confound.json",
+    "results/selection_ablation.json",
+    "results/acs/selection_ablation.json",
 ]
 
 # The experiments that produce them, in dependency order.
@@ -73,6 +100,8 @@ EXPERIMENTS = [
     ("detection_floor", [sys.executable, "-m", "scripts.run_detection_floor"]),
     ("fairness_adult", [sys.executable, "-m", "scripts.run_fairness"]),
     ("fairness_acs", [sys.executable, "-m", "scripts.run_fairness", "--dataset", "acs"]),
+    # 5,000 fits on an 11-record worst-case instance; ~5 minutes.
+    ("gdp_audit", [sys.executable, "-m", "scripts.run_gdp_audit", "--runs", "2500"]),
 ]
 
 # Only packages whose version can change a number. Formatters and linters cannot, so listing
@@ -294,6 +323,15 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--run", action="store_true", help="Re-run every experiment first (long)")
     ap.add_argument("--update", action="store_true", help="Re-run and rewrite the manifest")
+    ap.add_argument(
+        "--rehash",
+        action="store_true",
+        help=(
+            "Rewrite the manifest from the results ALREADY on disk, without re-running "
+            "anything. Refuses unless every currently-pinned file still matches, so it can "
+            "only ever ADD a file, never paper over a changed number."
+        ),
+    )
     args = ap.parse_args()
 
     if args.run or args.update:
@@ -305,6 +343,33 @@ def main():
             )
 
     manifest = build_manifest()
+
+    if args.rehash:
+        # --rehash exists to pin a NEWLY ADDED result file after a clean verify pass. It must
+        # never be usable to silence a real divergence, so every file that was already pinned
+        # has to still match before anything is written.
+        committed = (
+            json.loads(MANIFEST_PATH.read_text(encoding="utf-8")) if MANIFEST_PATH.exists() else {}
+        )
+        old_files = committed.get("files", {})
+        new_files = manifest.get("files", {})
+        changed = [f for f, h in old_files.items() if f in new_files and new_files[f] != h]
+        if changed:
+            raise SystemExit(
+                "\n  REFUSING to rehash: these already-pinned results have CHANGED:\n    "
+                + "\n    ".join(changed)
+                + "\n\n  --rehash may only ADD files after a clean verify. A changed number "
+                "needs\n  `--update`, and a human deciding the new value is correct."
+            )
+        added = sorted(set(new_files) - set(old_files))
+        MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
+        MANIFEST_PATH.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        print(f"\n  rehashed {MANIFEST_PATH}")
+        for f in added:
+            print(f"    + pinned {f}")
+        if not added:
+            print("    (no new files; only the manifest hash was refreshed)")
+        return
 
     print(f"\n{'=' * 70}\n  MANIFEST\n{'=' * 70}")
     print(
