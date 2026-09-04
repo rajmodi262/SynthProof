@@ -1,0 +1,84 @@
+{
+  "delta": 1e-05,
+  "alpha": 0.05,
+  "canaries_spent": 60,
+  "gdp_runs_spent": 2500,
+  "units_warning": "A canary budget of m is m records planted inside ONE model fit. A GDP budget of r is r runs PER WORLD, i.e. 2r separate model fits. The comparison is of statistical reach at equal numeric budget, never of cost or speed.",
+  "rows": [
+    {
+      "target_eps": 0.5,
+      "equivalent_mu": 0.14221055866664953,
+      "canaries_needed": 7,
+      "canary_ceiling_at_spent": 2.9720875578943553,
+      "canary_can_certify": true,
+      "gdp_runs_needed": 8,
+      "gdp_ceiling_at_spent": 5.946024382729501,
+      "gdp_can_certify": true,
+      "gdp_ceiling_at_canary_budget": 3.1157828812977986,
+      "gdp_can_certify_at_canary_budget": true
+    },
+    {
+      "target_eps": 1.0,
+      "equivalent_mu": 0.26805112321118446,
+      "canaries_needed": 10,
+      "canary_ceiling_at_spent": 2.9720875578943553,
+      "canary_can_certify": true,
+      "gdp_runs_needed": 8,
+      "gdp_ceiling_at_spent": 5.946024382729501,
+      "gdp_can_certify": true,
+      "gdp_ceiling_at_canary_budget": 3.1157828812977986,
+      "gdp_can_certify_at_canary_budget": true
+    },
+    {
+      "target_eps": 2.0,
+      "equivalent_mu": 0.5015516891682302,
+      "canaries_needed": 24,
+      "canary_ceiling_at_spent": 2.9720875578943553,
+      "canary_can_certify": true,
+      "gdp_runs_needed": 8,
+      "gdp_ceiling_at_spent": 5.946024382729501,
+      "gdp_can_certify": true,
+      "gdp_ceiling_at_canary_budget": 3.1157828812977986,
+      "gdp_can_certify_at_canary_budget": true
+    },
+    {
+      "target_eps": 4.0,
+      "equivalent_mu": 0.9249308976672957,
+      "canaries_needed": 166,
+      "canary_ceiling_at_spent": 2.9720875578943553,
+      "canary_can_certify": false,
+      "gdp_runs_needed": 13,
+      "gdp_ceiling_at_spent": 5.946024382729501,
+      "gdp_can_certify": true,
+      "gdp_ceiling_at_canary_budget": 3.1157828812977986,
+      "gdp_can_certify_at_canary_budget": true
+    },
+    {
+      "target_eps": 7.36,
+      "equivalent_mu": 1.5545855897036447,
+      "canaries_needed": 4711,
+      "canary_ceiling_at_spent": 2.9720875578943553,
+      "canary_can_certify": false,
+      "gdp_runs_needed": 20,
+      "gdp_ceiling_at_spent": 5.946024382729501,
+      "gdp_can_certify": true,
+      "gdp_ceiling_at_canary_budget": 3.1157828812977986,
+      "gdp_can_certify_at_canary_budget": true
+    },
+    {
+      "target_eps": 8.0,
+      "equivalent_mu": 1.6660305978347827,
+      "canaries_needed": 8932,
+      "canary_ceiling_at_spent": 2.9720875578943553,
+      "canary_can_certify": false,
+      "gdp_runs_needed": 20,
+      "gdp_ceiling_at_spent": 5.946024382729501,
+      "gdp_can_certify": true,
+      "gdp_ceiling_at_canary_budget": 3.1157828812977986,
+      "gdp_can_certify_at_canary_budget": true
+    }
+  ],
+  "canary_targets_certifiable_at_spent_budget": 3,
+  "gdp_targets_certifiable_at_same_numeric_budget": 6,
+  "elapsed_seconds": 0.025
+}
