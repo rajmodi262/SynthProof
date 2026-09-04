@@ -143,10 +143,28 @@ def verify_numbers(text: str) -> list[str]:
         ("confound indep unselected", "independent_on_unselected", "0.061"),
     ]:
         want(label, conf[key]["mean"], shown, 3)
-    if not load("results/clique_confound.json")["confound_confirmed"]:
-        problems.append("confound: prose says confirmed on Adult")
-    if load("results/acs/clique_confound.json")["confound_confirmed"]:
-        problems.append("confound: prose says INCONCLUSIVE on ACS")
+    # RETRACTION GATE, added 2026-08-25. `confound_confirmed` was renamed to
+    # `confound_confirmed_RETRACTED` when a controlled ablation
+    # (scripts/run_selection_ablation.py, 175 fits) showed the benefit of measuring a pair
+    # scales with that pair's true dependence (corr = -0.898), so AIM's advantage on the pairs
+    # it selects is the mechanism working as designed rather than an artefact of selection.
+    # This gate now fails until the prose stops asserting the retracted claim -- which is the
+    # whole point of having a gate that checks prose against committed JSON.
+    adult_conf = load("results/clique_confound.json")
+    if "confound_confirmed" in adult_conf:
+        problems.append(
+            "confound: results/clique_confound.json has been un-retracted; see "
+            "results/SELECTION_ABLATION.md before restoring the claim"
+        )
+    if "superseded_by" not in adult_conf:
+        problems.append("confound: expected a supersession note in clique_confound.json")
+    explainer_text = (ROOT / "docs" / "explainer" / "EXPLAINER.md").read_text(encoding="utf-8")
+    if "SELECTION_ABLATION" not in explainer_text:
+        problems.append(
+            "confound: EXPLAINER.md still presents the clique-selection confound without the "
+            "2026-08-25 retraction. Cite results/SELECTION_ABLATION.md and state that the "
+            "strong reading was withdrawn, or remove the claim."
+        )
 
     floor = load("results/detection_floor.json")
     for c in floor["cells"]:

@@ -116,8 +116,6 @@
       }
     }
   },
-  "confound_confirmed": false,
-  "verdict": "INCONCLUSIVE: AIM does not separate from the baseline even on the pairs it selects, so this design cannot speak to the confound either way.",
   "elapsed_seconds": 9886.7,
   "observations": [
     {
@@ -1920,5 +1918,9 @@
       "corr_err": 0.05400008467542794,
       "selected": false
     }
-  ]
+  ],
+  "superseded_by": "results/SELECTION_ABLATION.md (2026-08-25)",
+  "confound_confirmed_RETRACTED": false,
+  "verdict_RETRACTED": "INCONCLUSIVE: AIM does not separate from the baseline even on the pairs it selects, so this design cannot speak to the confound either way.",
+  "verdict": "SUPERSEDED 2026-08-25. The earlier verdict (retained above as verdict_RETRACTED) read AIM's lower error on selected pairs as evidence that its structure advantage is an artefact of clique selection. That reading is NOT supported by this data: AIM selects almost exactly the most-dependent numeric pair and nothing else (corr(|true corr|, selection rate) = +0.700 Adult, +0.809 ACS), so 'selected' and 'strongly dependent' are confounded here, and the within-pair analysis that would break the confound has only one pair in both states with no confidence interval. A controlled ablation (scripts/run_selection_ablation.py, 175 fits) holds the evaluated pair fixed and finds the benefit of measuring a pair scales with that pair's true dependence (corr = -0.898; -0.960 excluding one outlier). AIM's advantage is therefore the mechanism working as designed, matching Chen, Gong & Wang (arXiv:2511.13893). What survives is an EVALUATION-DESIGN claim: measuring the scored pair cuts its error by 53% on average and 80% on the headline pair, so a benchmark scoring one fixed low-order statistic substantially reports whether the mechanism chose to measure it."
 }

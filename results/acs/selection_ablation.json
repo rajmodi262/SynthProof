@@ -1,0 +1,2464 @@
+{
+  "dataset": "acs",
+  "dataset_label": "ACSIncome (CA 2018)",
+  "n_rows": 6000,
+  "eps_grid": [
+    0.5,
+    1.0,
+    2.0,
+    4.0,
+    8.0
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "true_correlations": {
+    "AGEP|WKHP": 0.07207986920920266,
+    "AGEP|SCHL": 0.0076542185176550585,
+    "WKHP|SCHL": 0.045700205534620786
+  },
+  "effects": {
+    "AGEP|WKHP": {
+      "true_corr": 0.07207986920920266,
+      "abs_true_corr": 0.07207986920920266,
+      "err_when_measured": 0.02550684985321984,
+      "err_when_not_measured": 0.06947363413798748,
+      "effect": -0.043966784284767635,
+      "relative_effect": -0.6328556844664478,
+      "n_measured": 25,
+      "n_not_measured": 50
+    },
+    "AGEP|SCHL": {
+      "true_corr": 0.0076542185176550585,
+      "abs_true_corr": 0.0076542185176550585,
+      "err_when_measured": 0.015486896668716691,
+      "err_when_not_measured": 0.011056077553706096,
+      "effect": 0.004430819115010596,
+      "relative_effect": 0.40075868620561056,
+      "n_measured": 25,
+      "n_not_measured": 50
+    },
+    "WKHP|SCHL": {
+      "true_corr": 0.045700205534620786,
+      "abs_true_corr": 0.045700205534620786,
+      "err_when_measured": 0.02054114126188087,
+      "err_when_not_measured": 0.04377220711312744,
+      "effect": -0.02323106585124657,
+      "relative_effect": -0.5307263988586833,
+      "n_measured": 25,
+      "n_not_measured": 50
+    }
+  },
+  "corr_abs_true_vs_effect": -0.9997638668042982,
+  "corr_abs_true_vs_relative_effect": -0.9461543836764809,
+  "pairs_where_measuring_helped": 2,
+  "pairs_compared": 3,
+  "verdict": "DEPENDENCE EXPLAINS IT. Measuring helps markedly more on strongly dependent pairs (corr = -1.000). AIM selects the dependent pairs, so its advantage on them is the mechanism working as designed, NOT an artefact of selection. The rival explanation of Chen, Gong & Wang (arXiv:2511.13893) stands and the project's confound reading must be withdrawn.",
+  "elapsed_seconds": 64.0,
+  "observations": [
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 0,
+      "corr_err": 0.07366798037026297,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 0,
+      "corr_err": 0.0024689427737892167,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 0,
+      "corr_err": 0.05484829950144426,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 1,
+      "corr_err": 0.05710345442476481,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 1,
+      "corr_err": 0.004404679868935385,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 1,
+      "corr_err": 0.06409838839851004,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 2,
+      "corr_err": 0.06915963081966174,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 2,
+      "corr_err": 0.0037136799608198543,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 2,
+      "corr_err": 0.05886327920728213,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 3,
+      "corr_err": 0.0941528801669107,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 3,
+      "corr_err": 0.02362620233995105,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 3,
+      "corr_err": 0.039583167003700265,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 4,
+      "corr_err": 0.06464701554986678,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 4,
+      "corr_err": 0.0061880719233200245,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 4,
+      "corr_err": 0.05173373240470078,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 0,
+      "corr_err": 0.0756633348131258,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 0,
+      "corr_err": 0.01615808806267452,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 0,
+      "corr_err": 0.039931957375697755,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 1,
+      "corr_err": 0.06190611670332811,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 1,
+      "corr_err": 0.018581925369929753,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 1,
+      "corr_err": 0.02903084726635762,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 2,
+      "corr_err": 0.059336909259147363,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 2,
+      "corr_err": 0.013868623643828928,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 2,
+      "corr_err": 0.05929476412087786,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 3,
+      "corr_err": 0.08292979922686596,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 3,
+      "corr_err": 0.012328050394922484,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 3,
+      "corr_err": 0.020613587189434155,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 4,
+      "corr_err": 0.07490328497772364,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 4,
+      "corr_err": 0.00979874292038417,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 4,
+      "corr_err": 0.03487384498999847,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 0,
+      "corr_err": 0.0925979348647773,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 0,
+      "corr_err": 0.0076504332025039605,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 0,
+      "corr_err": 0.03914008627294705,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 1,
+      "corr_err": 0.09062369335950618,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 1,
+      "corr_err": 0.01954770706068655,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 1,
+      "corr_err": 0.057479385590577546,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 2,
+      "corr_err": 0.07224279449719385,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 2,
+      "corr_err": 0.006461605088211237,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 2,
+      "corr_err": 0.05028927632127014,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 3,
+      "corr_err": 0.047417990707864704,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 3,
+      "corr_err": 0.0021226990877036547,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 3,
+      "corr_err": 0.0737495101815622,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 4,
+      "corr_err": 0.06421251836799115,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 4,
+      "corr_err": 0.015638918768140758,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 4,
+      "corr_err": 0.03309105931051472,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 0,
+      "corr_err": 0.08728061951072692,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 0,
+      "corr_err": 0.0007819502626330074,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 0,
+      "corr_err": 0.043416026515782684,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 1,
+      "corr_err": 0.07175664615140874,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 1,
+      "corr_err": 0.006187111245897169,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 1,
+      "corr_err": 0.0486358859276904,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 2,
+      "corr_err": 0.053790347217145484,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 2,
+      "corr_err": 0.02832813908244853,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 2,
+      "corr_err": 0.027151018972704534,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 3,
+      "corr_err": 0.06927626051688221,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 3,
+      "corr_err": 0.012205025696616665,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 3,
+      "corr_err": 0.05867804791612409,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 4,
+      "corr_err": 0.06582786768492462,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 4,
+      "corr_err": 0.0388889196851209,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 4,
+      "corr_err": 0.03028089994217476,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 0,
+      "corr_err": 0.0735207919575425,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 0,
+      "corr_err": 0.016309349053005295,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 0,
+      "corr_err": 0.04809268696796051,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 1,
+      "corr_err": 0.08305087571755497,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 1,
+      "corr_err": 0.007078719850489218,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 1,
+      "corr_err": 0.03579089143400743,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 2,
+      "corr_err": 0.05640316272832793,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 2,
+      "corr_err": 0.0010236726245060933,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 2,
+      "corr_err": 0.04780993670624843,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 3,
+      "corr_err": 0.08009081909919422,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 3,
+      "corr_err": 0.002103199120179016,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 3,
+      "corr_err": 0.07249958196432017,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 4,
+      "corr_err": 0.07511605265210207,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 4,
+      "corr_err": 0.002664314763699452,
+      "was_measured": false
+    },
+    {
+      "measured": "none",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 4,
+      "corr_err": 0.03305750436734537,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 0,
+      "corr_err": 0.06672545226022054,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 0,
+      "corr_err": 0.02284806781181722,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 0,
+      "corr_err": 0.029976165075750412,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 1,
+      "corr_err": 0.04999726405888205,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 1,
+      "corr_err": 0.0067685235530575115,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 1,
+      "corr_err": 0.05139127470119946,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 2,
+      "corr_err": 0.04757814662688531,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 2,
+      "corr_err": 0.008740825912338034,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 2,
+      "corr_err": 0.02549118152080538,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 3,
+      "corr_err": 0.023069299450590684,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 3,
+      "corr_err": 0.001798705250990712,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 3,
+      "corr_err": 0.04896112388791355,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 4,
+      "corr_err": 0.02991291103463213,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 4,
+      "corr_err": 0.007855862097489421,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 4,
+      "corr_err": 0.04271287912892061,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 0,
+      "corr_err": 0.009561691837062666,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 0,
+      "corr_err": 0.02144613649679942,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 0,
+      "corr_err": 0.03895591060141163,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 1,
+      "corr_err": 0.03848912496297839,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 1,
+      "corr_err": 0.003021691787802935,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 1,
+      "corr_err": 0.04523616639860941,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 2,
+      "corr_err": 0.04508471957246883,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 2,
+      "corr_err": 0.008352454504351795,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 2,
+      "corr_err": 0.049603883440499,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 3,
+      "corr_err": 0.007569413677112766,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 3,
+      "corr_err": 0.03229417315730781,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 3,
+      "corr_err": 0.03494578027193641,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 4,
+      "corr_err": 0.024181003284077518,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 4,
+      "corr_err": 0.001580302839690951,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 4,
+      "corr_err": 0.037034689272984866,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 0,
+      "corr_err": 0.022114278408234475,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 0,
+      "corr_err": 0.010395013179500472,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 0,
+      "corr_err": 0.058614886331154414,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 1,
+      "corr_err": 0.033218494641605034,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 1,
+      "corr_err": 0.013160605676407694,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 1,
+      "corr_err": 0.036899494340058805,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 2,
+      "corr_err": 0.0027213671719137633,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 2,
+      "corr_err": 0.021648147791647775,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 2,
+      "corr_err": 0.046928962261316355,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 3,
+      "corr_err": 0.028848398751082818,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 3,
+      "corr_err": 0.022152239127905864,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 3,
+      "corr_err": 0.049954708673442386,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 4,
+      "corr_err": 0.0030142120501623487,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 4,
+      "corr_err": 0.005324254323182566,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 4,
+      "corr_err": 0.045971705896552834,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 0,
+      "corr_err": 0.008334411706457434,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 0,
+      "corr_err": 0.006172757751219357,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 0,
+      "corr_err": 0.0466598434421624,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 1,
+      "corr_err": 0.024111958359529118,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 1,
+      "corr_err": 0.027145165273649716,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 1,
+      "corr_err": 0.04317088850837516,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 2,
+      "corr_err": 0.015732348185353864,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 2,
+      "corr_err": 0.010333149645596161,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 2,
+      "corr_err": 0.041572757018367726,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 3,
+      "corr_err": 0.017477104413000114,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 3,
+      "corr_err": 0.023049521935736686,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 3,
+      "corr_err": 0.04890736992836561,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 4,
+      "corr_err": 0.016762798108022628,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 4,
+      "corr_err": 0.0009218701761664633,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 4,
+      "corr_err": 0.0537836562128477,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 0,
+      "corr_err": 0.030683511747310488,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 0,
+      "corr_err": 0.008565338546275749,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 0,
+      "corr_err": 0.03133688422777393,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 1,
+      "corr_err": 0.027307572814202166,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 1,
+      "corr_err": 0.009041356326818014,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 1,
+      "corr_err": 0.0434757131461798,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 2,
+      "corr_err": 0.028975841680722758,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 2,
+      "corr_err": 0.0017691904690729909,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 2,
+      "corr_err": 0.04788584286467135,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 3,
+      "corr_err": 0.02421170014178403,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 3,
+      "corr_err": 0.013669839210007449,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 3,
+      "corr_err": 0.041225973147450606,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 4,
+      "corr_err": 0.011988221386204048,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 4,
+      "corr_err": 0.0002746940550212209,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|WKHP",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 4,
+      "corr_err": 0.03910325781399317,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 0,
+      "corr_err": 0.061377608719789555,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 0,
+      "corr_err": 0.029295892930802436,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 0,
+      "corr_err": 0.03786051169510885,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 1,
+      "corr_err": 0.038573977949455884,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 1,
+      "corr_err": 0.008491445189762817,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 1,
+      "corr_err": 0.02698480853870527,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 2,
+      "corr_err": 0.08593693266697865,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 2,
+      "corr_err": 0.04638739361679324,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 2,
+      "corr_err": 0.04292104534372948,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 3,
+      "corr_err": 0.05974145865750782,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 3,
+      "corr_err": 0.07183865611492822,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 3,
+      "corr_err": 0.03674091620568189,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 4,
+      "corr_err": 0.06770177535049407,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 4,
+      "corr_err": 0.03423943847359884,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 4,
+      "corr_err": 0.028125635398469587,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 0,
+      "corr_err": 0.07168064206641599,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 0,
+      "corr_err": 0.021359457502947893,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 0,
+      "corr_err": 0.04178062887498867,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 1,
+      "corr_err": 0.07370208003021098,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 1,
+      "corr_err": 0.0023595280488552537,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 1,
+      "corr_err": 0.044151777954807694,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 2,
+      "corr_err": 0.06854395275980374,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 2,
+      "corr_err": 0.021335558553179798,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 2,
+      "corr_err": 0.04731269744420792,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 3,
+      "corr_err": 0.06509750512625752,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 3,
+      "corr_err": 0.005338892909885739,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 3,
+      "corr_err": 0.045294024056294846,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 4,
+      "corr_err": 0.06323433887310297,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 4,
+      "corr_err": 0.01662002788216299,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 4,
+      "corr_err": 0.05407542519267902,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 0,
+      "corr_err": 0.061819048359821896,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 0,
+      "corr_err": 0.008667443615062179,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 0,
+      "corr_err": 0.03315619351118387,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 1,
+      "corr_err": 0.05737665103602346,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 1,
+      "corr_err": 0.0015313678255435715,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 1,
+      "corr_err": 0.05125882639107384,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 2,
+      "corr_err": 0.08133274352202562,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 2,
+      "corr_err": 0.01855975385959789,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 2,
+      "corr_err": 0.047699213716318176,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 3,
+      "corr_err": 0.07320414228850233,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 3,
+      "corr_err": 0.009425998224811154,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 3,
+      "corr_err": 0.06143491174629839,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 4,
+      "corr_err": 0.07038382478846752,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 4,
+      "corr_err": 0.01437501372619391,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 4,
+      "corr_err": 0.05596055421273708,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 0,
+      "corr_err": 0.05533810908225968,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 0,
+      "corr_err": 0.0019573914515382436,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 0,
+      "corr_err": 0.04547031064694013,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 1,
+      "corr_err": 0.0558099874993226,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 1,
+      "corr_err": 0.004868356825904395,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 1,
+      "corr_err": 0.024323185915164365,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 2,
+      "corr_err": 0.06889358520193462,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 2,
+      "corr_err": 0.012489082710673286,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 2,
+      "corr_err": 0.036728604666117076,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 3,
+      "corr_err": 0.06653594674355975,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 3,
+      "corr_err": 0.011193119102169318,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 3,
+      "corr_err": 0.06018734753244319,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 4,
+      "corr_err": 0.06847115604922722,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 4,
+      "corr_err": 0.010667395099901238,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 4,
+      "corr_err": 0.03647034263069183,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 0,
+      "corr_err": 0.06950515527566846,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 0,
+      "corr_err": 0.0019260213227690736,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 0,
+      "corr_err": 0.05135210130267155,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 1,
+      "corr_err": 0.08674345157500156,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 1,
+      "corr_err": 0.0073656422826949616,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 1,
+      "corr_err": 0.06705551597300405,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 2,
+      "corr_err": 0.07062170740444461,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 2,
+      "corr_err": 0.0040775295241282684,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 2,
+      "corr_err": 0.04148004563596969,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 3,
+      "corr_err": 0.09917199030983653,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 3,
+      "corr_err": 0.008483060355551925,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 3,
+      "corr_err": 0.036974707186872346,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 4,
+      "corr_err": 0.07022605996769049,
+      "was_measured": false
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 4,
+      "corr_err": 0.014318949568460696,
+      "was_measured": true
+    },
+    {
+      "measured": "AGEP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 4,
+      "corr_err": 0.05401002577147039,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 0,
+      "corr_err": 0.07608107903658946,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 0,
+      "corr_err": 0.009224778765462658,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 0,
+      "corr_err": 0.050426000963284874,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 1,
+      "corr_err": 0.07056541693762883,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 1,
+      "corr_err": 0.0013700529713550147,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 1,
+      "corr_err": 0.048497942111865075,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 2,
+      "corr_err": 0.07701228737971906,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 2,
+      "corr_err": 0.015834587908417172,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 2,
+      "corr_err": 0.07264547428159283,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 3,
+      "corr_err": 0.08915687324256454,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 3,
+      "corr_err": 0.006067355390851725,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 3,
+      "corr_err": 0.06685381924287997,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 0.5,
+      "seed": 4,
+      "corr_err": 0.05840241371130862,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 0.5,
+      "seed": 4,
+      "corr_err": 0.008125536494711011,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 0.5,
+      "seed": 4,
+      "corr_err": 0.036577280043327554,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 0,
+      "corr_err": 0.0645925883199683,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 0,
+      "corr_err": 0.007417295622905802,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 0,
+      "corr_err": 0.020267750722964203,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 1,
+      "corr_err": 0.06935342599417726,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 1,
+      "corr_err": 0.00403518333861815,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 1,
+      "corr_err": 0.018740161904214098,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 2,
+      "corr_err": 0.060722667241338416,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 2,
+      "corr_err": 0.012106194530266344,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 2,
+      "corr_err": 0.03706694441283212,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 3,
+      "corr_err": 0.059016555763119996,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 3,
+      "corr_err": 0.0011107196825846603,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 3,
+      "corr_err": 0.010534067713743517,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 1.0,
+      "seed": 4,
+      "corr_err": 0.0809292317109569,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 1.0,
+      "seed": 4,
+      "corr_err": 0.016888769149805354,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 1.0,
+      "seed": 4,
+      "corr_err": 0.022426634989824556,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 0,
+      "corr_err": 0.045019652970459983,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 0,
+      "corr_err": 0.011041309588610389,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 0,
+      "corr_err": 0.01932400392128923,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 1,
+      "corr_err": 0.06325225382096102,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 1,
+      "corr_err": 0.02629722786588828,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 1,
+      "corr_err": 0.015633448886251608,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 2,
+      "corr_err": 0.0846525734989921,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 2,
+      "corr_err": 0.0019130421771271682,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 2,
+      "corr_err": 0.016822647062793603,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 3,
+      "corr_err": 0.06941900247844848,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 3,
+      "corr_err": 0.0060377672588508595,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 3,
+      "corr_err": 0.004701921062938728,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 2.0,
+      "seed": 4,
+      "corr_err": 0.07672665058058793,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 2.0,
+      "seed": 4,
+      "corr_err": 0.011481820097919551,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 2.0,
+      "seed": 4,
+      "corr_err": 0.008275089206754599,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 0,
+      "corr_err": 0.07622274897692344,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 0,
+      "corr_err": 0.012300984701047287,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 0,
+      "corr_err": 0.0058027292450470724,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 1,
+      "corr_err": 0.07921476545334498,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 1,
+      "corr_err": 0.002250334973565777,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 1,
+      "corr_err": 0.013648468116756775,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 2,
+      "corr_err": 0.08350154825767672,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 2,
+      "corr_err": 0.006942066655080714,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 2,
+      "corr_err": 0.012268217862042914,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 3,
+      "corr_err": 0.08418718519613928,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 3,
+      "corr_err": 0.017693932436535525,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 3,
+      "corr_err": 0.0003407736666475314,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 4.0,
+      "seed": 4,
+      "corr_err": 0.08287916718701525,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 4.0,
+      "seed": 4,
+      "corr_err": 0.008336998144087171,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 4.0,
+      "seed": 4,
+      "corr_err": 0.0036033669331438506,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 0,
+      "corr_err": 0.05347495962825031,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 0,
+      "corr_err": 0.016988194993379863,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 0,
+      "corr_err": 0.0024249712987195193,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 1,
+      "corr_err": 0.05663704080184266,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 1,
+      "corr_err": 0.027478339411608352,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 1,
+      "corr_err": 0.012047958326283949,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 2,
+      "corr_err": 0.059412615731892875,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 2,
+      "corr_err": 0.01806091545753291,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 2,
+      "corr_err": 0.009250988844463452,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 3,
+      "corr_err": 0.05706791187362374,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 3,
+      "corr_err": 0.00750950017951057,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 3,
+      "corr_err": 0.0014287028450611708,
+      "was_measured": true
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|WKHP",
+      "target_eps": 8.0,
+      "seed": 4,
+      "corr_err": 0.08515725980203981,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "AGEP|SCHL",
+      "target_eps": 8.0,
+      "seed": 4,
+      "corr_err": 0.007961082989728488,
+      "was_measured": false
+    },
+    {
+      "measured": "WKHP|SCHL",
+      "evaluated": "WKHP|SCHL",
+      "target_eps": 8.0,
+      "seed": 4,
+      "corr_err": 0.0039191678822989365,
+      "was_measured": true
+    }
+  ]
+}

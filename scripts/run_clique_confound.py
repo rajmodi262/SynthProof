@@ -45,7 +45,21 @@ from synthproof.frontier.experiment import MECHANISMS, bootstrap_ci
 N_ROWS = 6000
 EPS_GRID = (0.5, 1.0, 2.0, 4.0, 8.0)
 SEEDS = (0, 1, 2, 3, 4)
-MECHS = ("independent", "pairwise", "aim")
+# `dpvae` is the CONTROL ARM, added 2026-08-25. Everything else here is marginal-based, so
+# until now the experiment could show that AIM does better on pairs it selected without being
+# able to separate "selection causes it" from "some mechanisms are just better on some pairs".
+# A DP-SGD VAE models cross-column dependence and selects NOTHING, so if selection is the
+# cause, AIM's selected-vs-unselected gap should be large and the VAE's should be ~0 on the
+# same pairs. `independent` is a floor (no dependence at all), not a control -- it cannot
+# distinguish those two explanations because it models nothing to begin with.
+MECHS = ("independent", "pairwise", "aim", "dpvae", "fixed_workload")
+
+# Mechanisms that cannot select statistics. Their errors are split by AIM's selection labels
+# purely as a control; a gap here would mean the pairs AIM selects are simply easier, which
+# would refute the confound reading rather than support it.
+# `fixed_workload` is the PRIMARY control: AIM's own engine with selection deleted, so a gap
+# here cannot be blamed on model class. `dpvae` is a second, structurally different control.
+NON_SELECTING = ("fixed_workload", "dpvae", "independent", "pairwise")
 
 DATASETS = {
     "adult": {"out": "results/clique_confound.json", "label": "UCI Adult"},
@@ -190,24 +204,75 @@ def main():
         ),
     }
 
+    # ---- THE CONTROL ARM -------------------------------------------------------------
+    # Label every observation by whether AIM selected that pair in the SAME (eps, seed) cell,
+    # then run the identical within-pair comparison on mechanisms that cannot select. If the
+    # confound reading is right, AIM's delta is negative (selection helps) and these are ~0.
+    # If a non-selecting mechanism shows the same gap, the pairs AIM selects are simply easier
+    # and our reading is wrong -- which is the outcome this arm exists to be able to find.
+    aim_label = {(o["target_eps"], o["seed"], o["pair"]): o["selected"] for o in aim}
+
+    def within_pair_delta(rows):
+        """Mean within-pair (selected - unselected) error, using AIM's labels."""
+        by_pair = {}
+        for o in rows:
+            lab = aim_label.get((o["target_eps"], o["seed"], o["pair"]))
+            if lab is None or not np.isfinite(o["corr_err"]):
+                continue
+            by_pair.setdefault(o["pair"], {True: [], False: []})[lab].append(o["corr_err"])
+        deltas = [
+            float(np.mean(v[True]) - np.mean(v[False]))
+            for v in by_pair.values()
+            if v[True] and v[False]
+        ]
+        return {
+            "pairs_compared": len(deltas),
+            "mean_delta": float(np.mean(deltas)) if deltas else None,
+            "delta_ci": asdict(bootstrap_ci(deltas)) if len(deltas) > 1 else None,
+        }
+
+    control_arm = {"aim": within_pair_delta(aim)}
+    for mech in NON_SELECTING:
+        rows = [o for o in obs if o["mechanism"] == mech]
+        if rows:
+            control_arm[mech] = within_pair_delta(rows)
+
     summary = {
         "aim_selected": ci(aim_sel),
         "aim_not_selected": ci(aim_unsel),
         "independent_all": ci(indep),
         "pairwise_all": ci(pw),
+        "dpvae_all": ci([o for o in obs if o["mechanism"] == "dpvae"]),
         "n_aim_selected": len(aim_sel),
         "n_aim_not_selected": len(aim_unsel),
         "within_pair": within,
         "per_pair": per_pair,
+        "control_arm": control_arm,
     }
 
     print("\n" + "=" * 74)
     print("CORRELATION ERROR, conditioned on whether AIM selected the pair")
     print("=" * 74)
-    for k in ("aim_selected", "aim_not_selected", "independent_all", "pairwise_all"):
-        s = summary[k]
+    for k in ("aim_selected", "aim_not_selected", "independent_all", "pairwise_all", "dpvae_all"):
+        s = summary.get(k)
         if s:
             print(f"  {k:<20} {s['mean']:.4f}  [{s['lo']:.4f}, {s['hi']:.4f}]  (n={s['n']})")
+
+    print("\n" + "=" * 74)
+    print("CONTROL ARM: within-pair (selected - unselected) delta, by mechanism")
+    print("A negative delta means selection HELPED. Only AIM can select; the rest are")
+    print("labelled with AIM's choices and should sit at ~0 if selection is the cause.")
+    print("=" * 74)
+    for mech, d in control_arm.items():
+        if d["mean_delta"] is None:
+            print(f"  {mech:<12} no pair appeared in both states")
+            continue
+        c = d["delta_ci"]
+        band = f"[{c['lo']:+.4f}, {c['hi']:+.4f}]" if c else "(single pair, no CI)"
+        flag = "  <-- can select" if mech == "aim" else ""
+        print(
+            f"  {mech:<12} {d['mean_delta']:+.4f}  {band}  over {d['pairs_compared']} pairs{flag}"
+        )
 
     # The two questions the experiment was built to answer.
     sel, unsel, ind = (
