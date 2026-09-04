@@ -8,18 +8,83 @@ was true last week and is not true now.
 
 ---
 
+## UPDATE 2026-08-24 — the four stubs were rewritten as specifications
+
+**Re-read `ch01`, `ch05`, `ch07` and `ch08` before drafting.** They were written before the
+audit-ceiling finding, before ACSIncome, and before fairness/linkability/Croissant landed, and
+they instructed the writer toward claims that are now false:
+
+- **ch01 §1.4** listed *"dual-sided assurance"* and *"budget-charged domain profiling"* as
+  contributions. **Both are dead.** The contributions table is rewritten around the five that
+  survive, led by the clique-selection confound.
+- **ch07 §7.3** made the proved-vs-audited gap *"the primary result"* — the comparison the
+  ceiling finding disqualifies. It is now §7.4 and it is a **retraction section**. §7.5 (the
+  confound) is the new lead. §7.5-old told the writer to report **LiRA and anonymeter**, neither
+  of which exists.
+- **ch08 §8.1** was built on *"ε_proved = 8, ε_audited = 0.6"*, a number never measured. §8.2's
+  *"self-audit is genuinely distinctive"* is dead (Cebere et al.).
+- **ch05** predated six modules and under-counted the suite by ~100 tests.
+
+Each rewritten file states at the top what changed and why. They remain **specifications** —
+section list, word budget, the committed number that supports each claim, and the trap to avoid.
+Not one sentence of them is thesis prose.
+
+Also corrected: `results/RESULTS.md` listed **H3 as "not started"** when it ran on both datasets,
+and deferred the ratio claim to a one-run construction that has since landed.
+
+**Current suite: 607 passed, 93% coverage, `make reproduce` passes.**
+
+---
+
+## UPDATE 2026-08-24 (second pass) — ch02 and ch06 reviewed
+
+**ch02 — the survey does not cover the literature that killed us.** §2.1–2.5 cite **none** of
+the eight killing sources; all of Annamalai, Ganev, Cebere, Dibia, SACRO and Laminator appear
+only inside the §2.6 working-note callout. Whole-file counts: `Croissant 0 · Song 0 ·
+DPolicy 0 · PrivateKube 0 · SynthGuard 0 · MRM3 0`. **§2.4 and §2.5 now each carry a
+specification block** listing exactly what to add and why. The §2.6 callout has been replaced —
+it still claimed the protocol was interrupted at 2 of 8 families and that no verdict existed.
+The matrix note has been corrected in **both** directions: `Verifiable: partial` understates a
+signed, validator-accepted artefact, and `Lower bound ✅` overstates an ε_audited that was
+0.000 in every cell.
+
+**One ch02 item left for you, deliberately:** whether `Lower bound` stays a tick in the
+positioning matrix.
+
+**CORRECTION 2026-08-25 — ε = 70.49 IS traceable; an earlier note here said it was not.**
+That was wrong, and acting on it would have deleted a sound, well-documented number. It is
+recorded in `accounting/calibration.py:6`, `generators/independent.py:74`,
+`docs/ARCHITECTURE.md` (§101, §432), `docs/defence/DEFENCE.md` (three places), and
+`docs/AUDIT_AND_ROADMAP.md:86`, which carries the full before/after row
+`| 8.0 | 70.49 | 8.81x | 7.437 | 0.93x |` and ties it to named audit finding **F2**. It is
+safe to cite. The lesson worth keeping: `git log -S` over thesis files answers "when did this
+text enter the prose", not "does this number have a source" — grep the code and docs.
+
+**ch06 — no dead claims**, and §6.7–6.10 are the strongest prose in the thesis. Six accuracy
+defects are listed in a review block at the top of the file; the two that matter are **§6.4
+naming TPR@0.1%FPR when the code computes TPR@1%FPR**, and **§6.6 needing to declare that
+`make reproduce` re-aggregates H1 checkpoints rather than re-fitting**.
+
+**The ceiling overstatement was mine and is fixed.** ch07 §7.4 and ch08 §8.1 said canary
+auditing cannot confirm tight bounds. Ganev, Annamalai & Kulynych (arXiv 2604.18352, Apr 2026)
+get tight audits of MST and AIM with a Gaussian-DP/f-DP estimator. The ceiling is a property of
+**our single-threshold binomial estimator**, not of auditing. Both specs now say so, and §8.4
+carries replacing the estimator as the highest-value future work with a kill criterion.
+
+---
+
 ## Where the thesis actually is
 
 | Chapter | Words | State |
 |---|---:|---|
-| ch01 Introduction | 344 | **stub** |
+| ch01 Introduction | — | **stub; spec rewritten 08-24** |
 | ch02 Literature review | 2,442 | drafted; corrected today |
 | ch03 Threat model | 1,270 | drafted |
 | ch04 System design | 1,135 | drafted |
-| ch05 Implementation | 288 | **stub** |
+| ch05 Implementation | — | **stub; spec rewritten 08-24** |
 | ch06 Methodology | 2,418 | drafted |
-| ch07 Results | 354 | **stub** |
-| ch08 Discussion | 393 | **stub** |
+| ch07 Results | — | **stub; spec rewritten 08-24** |
+| ch08 Discussion | — | **stub; spec rewritten 08-24** |
 | **Total** | **8,644** | against a 15,700 target |
 
 **~7,000 words remain, and 82% of them are in the four stubs.** Nothing else in this repository

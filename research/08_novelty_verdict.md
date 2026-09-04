@@ -167,8 +167,50 @@ one.
 | Cite Dibia et al. (2507.15997) as the label proposal we align with, and state the two gaps we fill | ch02, ch04, defence pack | **highest** — it is the best positioning available |
 | Cite Song et al. (CSCW 2024) as the premise: practitioners do not verify | ch01 motivation, differential-accounting rationale | high |
 | Add the **deployment model** field to the sheet — the one Dibia category we lack | `frontier/certificate.py` | medium, cheap |
-| Emit the sheet as a **Croissant record** with a DP vocabulary extension | new work | medium — this is the integration MVP |
+| ~~Emit the sheet as a **Croissant record** with a DP vocabulary extension~~ | `synthproof/frontier/croissant.py` | ✅ **BUILT 2026-08-23** — see below |
 | State S3 as *unrefuted*, never *novel*, until the SDC Handbook is read | everywhere the gate is described | **highest** — this is the claim most likely to be wrong |
+
+---
+
+### 4.1 The integration MVP, as built (2026-08-23)
+
+`synthproof/frontier/croissant.py` · `scripts/validate_croissant.py` · 43 tests in
+`tests/test_croissant.py`. `synthproof run --croissant` emits it; `synthproof verify` checks
+it; **the official MLCommons validator accepts it with 0 warnings.**
+
+This is S1 + S2 made runnable rather than asserted, and it is the only claim in this document
+that a reader can now execute:
+
+| Gap named in §2.1 / §3.3 | What the record does |
+|---|---|
+| Croissant carries provenance, **no attestation** | Ed25519 signature travels inside the record; `verify` runs against a public key alone |
+| Dibia et al. propose **no signing** | ditto — and the record states what the signature does *not* prove |
+| Dibia et al. propose **no way to report an empirical metric's limits** ("privacy theater") | `dp:auditCeiling` + `dp:auditInterpretation`, which says in words when the audited ε could not have been anything else |
+
+**Three findings from building it**, each of which is a better viva answer than the feature:
+
+1. **A signature over an embedded node does not protect the record.** Fields mirrored into the
+   human-visible layer — the ones a reader and every general-purpose Croissant consumer
+   actually read — are outside the signed bytes. A record can therefore be *correctly signed
+   and still show a false epsilon*. `verify_croissant` cross-checks all 11 mirrored fields and
+   fails with `SIGNATURE VALID, RECORD UNTRUSTWORTHY`. Pinned by a parametrised negative
+   control over every field, verified by disabling the check and watching 12 tests fail.
+2. **Croissant requires a checksum on every FileObject**, so a release record that names its
+   data file cannot omit one. The emitter refuses rather than emitting an invalid record — a
+   file with no checksum can be swapped while the signed claim still verifies.
+3. **The reference validator recurses infinitely on an empty JSON object inside the sheet.**
+   `evaluation: {}` — an ordinary sheet — hit Python's recursion limit in
+   `mlcroissant._src.core.json_ld.recursively_populate_jsonld`. Fixed correctly rather than by
+   dropping empty containers: the sheet is declared a JSON literal (`@type: @json`), which is
+   what it is, since the signature covers an ordered canonical serialisation and RDF triples
+   are unordered. Our first validated record happened to have a populated `evaluation`, which
+   is exactly how this class of defect survives.
+
+**Dependency note, and it is the reason the design has no runtime dependency:** `mlcroissant`
+pins a numpy that conflicts with `jax`/`mbi`/private-PGM and therefore **real AIM** — the same
+conflict that ruled out `anonymeter`. A Croissant record is a dict, so the emitter builds one
+directly and the reference validator runs out-of-band in an isolated venv, reporting **exit
+code 2 for "not checked"** distinctly from 0, so an unrun check cannot look like a passed one.
 
 ---
 

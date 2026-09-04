@@ -12,6 +12,15 @@ Families A, C, E, F, G, H: `research/PHASE2_COMPLETE.md`. **The verdict is issue
 **Verdict in one line: eight claims dead, three narrow survivors, and the position is
 INTEGRATION not invention.**
 
+**The integration MVP is BUILT as of 2026-08-23** — `synthproof/frontier/croissant.py`, 43
+tests, and the **official MLCommons validator accepts our record with 0 warnings**. See
+`research/08_novelty_verdict.md` §4.1. This is the one thing that turns "integration" from a
+paragraph into something an examiner can run, and the three defects found while building it
+(a correctly-signed record that can still show a false epsilon · Croissant's mandatory
+FileObject checksum · the validator recursing on an empty JSON object) are better viva
+material than the feature itself. **Do not describe Croissant as future work anywhere** —
+`docs/thesis/ch08-evidence.md` line 81 still does, and is now stale.
+
 **The single most important citation is Dibia, Lu, Bhattacharjee, Near & Feng, arXiv 2507.15997
 (2025)** — an expert-elicited nine-category privacy label for DP that overlaps the Privacy Data
 Sheet almost field for field. It kills "we invented the concept" AND is the strongest external

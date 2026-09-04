@@ -1,8 +1,15 @@
 # Chapter 2 — Literature Review
 
-> **Status: FIRST DRAFT — 1,888 words against a 2,500 target (~75%).** Prose is written; citations are marked `[Author Year]`
-> and need converting to the project's BibTeX style. Section 2.6 must be re-checked against
-> `results/H1_RESULTS.md` before submission, since it states what this work adds.
+> **Status: FIRST DRAFT — 2,442 words against a 2,500 target (~98%).** Prose is written;
+> citations are marked `[Author Year]` and need converting to BibTeX.
+>
+> ⚠️ **REVIEWED 2026-08-24. The word count is nearly met but the SURVEY IS NOT.** §2.1–2.5 do
+> not cite a single one of the eight sources that killed this project's claims — every one of
+> Annamalai, Ganev, Cebere, Dibia, SACRO and Laminator appears only inside the working-note
+> callout in §2.6. A reader of the survey proper sees literature stopping around 2023.
+> `Croissant 0 · Song 0 · DPolicy 0 · PrivateKube 0 · SynthGuard 0 · MRM3 0` mentions in the
+> whole file. **§2.4 and §2.5 each carry a specification block below listing what must be
+> added.** Closing those is worth more than the remaining 58 words.
 
 ---
 
@@ -134,6 +141,28 @@ PrivateSQL [Kotsogiannis et al. 2019] allocates budget across a workload to maxi
 Both address allocation within a system boundary; neither makes the resulting record
 tamper-evident or transferable to an external auditor.
 
+
+> ⚠️ **SPECIFICATION — added 2026-08-24. This section is missing the literature that kills
+> claim 8.** Sage and PrivateSQL allocate budget *within* a system boundary. The line of work
+> that manages budget **across releases** is absent, and it is the line that occupies ground
+> ch01 §1.4 must therefore concede.
+>
+> | Add | What it establishes | Why this chapter needs it |
+> |---|---|---|
+> | **PrivateKube**, OSDI '21 | Privacy budget as a first-class schedulable Kubernetes resource | Earliest of the cluster |
+> | **Cohere** | Cross-release budget management | — |
+> | **DPack**, EuroSys '25 | Budget allocation across competing pipelines | — |
+> | **DPolicy**, [arXiv 2505.06747](https://arxiv.org/abs/2505.06747) | Policy-driven cross-release budget governance | **The system that does properly what our ledger does not.** ch01 §1.4 must name it when conceding no cross-session enforcement |
+> | **Cebere et al.**, Feb 2026, [arXiv 2602.17454](https://arxiv.org/abs/2602.17454) | 12 DP libraries audited, 13 guarantee violations | The evidence for §2.4's own argument that composition must be delegated **and cross-checked**. Currently the section argues this from our own bug alone |
+> | **Song, Sarathy, Shoemate & Vadhan**, CSCW 2024, [arXiv 2410.09721](https://arxiv.org/abs/2410.09721) | Practitioners do **not** verify DP guarantees; they trust implicitly | **Cited nowhere in this chapter.** It is the premise the whole project rests on and the direct justification for differential accounting |
+>
+> **Trap.** §2.4 currently forward-references Ch.8 for the hand-rolled-bound story "as a
+> methodological finding". Ch.8 §8.2 no longer frames the self-audit as a distinction — Cebere
+> et al. showed a defect count is typical of code that was actually audited. Keep the ε
+> under-reporting fact; repoint the reference.
+>
+> `[WRITE: ~200 words added to §2.4.]`
+
 ---
 
 ## 2.5 Transparency artefacts
@@ -154,6 +183,30 @@ documentation obligations for training data in high-risk systems, and India's DP
 constrains processing of personal data. Both make training-data provenance a compliance artefact
 rather than a matter of good practice.
 
+
+> ⚠️ **SPECIFICATION — added 2026-08-24. This section stops at prose datasheets and misses the
+> machine-readable generation entirely.** Its closing claim — that these artefacts have "no
+> mechanism for a reader to verify any of it" — is **true of Datasheets, Model Cards and Data
+> Statements, and false of the standards below.** As written, the section sets up a gap that
+> the 2024–2026 literature has partly filled, which is the weakest possible position to be
+> caught in.
+>
+> | Add | What it establishes | Why this chapter needs it |
+> |---|---|---|
+> | **Croissant**, MLCommons — [docs.mlcommons.org/croissant](https://docs.mlcommons.org/croissant/) | Machine-readable dataset metadata; **a NeurIPS Datasets & Benchmarks submission requirement**. Extensible by external vocabulary; PROV-O provenance. **No signing, no attestation** | **Zero mentions in this chapter.** It is the standard the project now integrates with, and the "no attestation" gap is half the surviving position |
+> | **Dibia, Lu, Bhattacharjee, Near & Feng**, 2025, [arXiv 2507.15997](https://arxiv.org/abs/2507.15997) | Expert-elicited nine-category DP privacy label | Currently only in the §2.6 callout. It belongs **here**, in the prose, as the closest prior artefact |
+> | **Laminator**, CODASPY '25 | TEE-attested ML property cards | Attests *execution* — the thing our README concedes we cannot. Read beyond abstract level before citing |
+> | **MRM3**, MobiSys '25 | Machine-readable model cards | — |
+> | **SynthGuard-ReleaseBench**, [arXiv 2608.14753](https://arxiv.org/abs/2608.14753), Jul 2026 | Ships checkable evidence with a release | **Kills "nobody ships checkable evidence."** What survives: it bounds *utility*, not the sensitivity of the privacy measurement. Narrow to that |
+> | **SACRO** [preen2024sacro] + **Five Safes** | Automated output checking in UK TREs since 2022 | Mentioned only in the callout. The refusal-gate discussion needs it in prose — and note SACRO **reads output values** and does **not** autonomously refuse |
+>
+> **The sentence that must survive the rewrite**, because it is what is left after all of the
+> above: none of these carries a **signature binding a privacy claim to an issuer**, and none
+> proposes a **standard for reporting the operating range of an empirical privacy metric**.
+> A SHA-256 checksum binds a file to itself; it does not bind a claim to who made it.
+>
+> `[WRITE: ~350 words added to §2.5. This is the largest single gap in the chapter.]`
+
 ---
 
 ## 2.6 The gap this work addresses
@@ -169,8 +222,22 @@ Assembling the picture:
 | **SynthProof** | ✅ | ✅ | ✅ | ❌ | ✅ | partial |
 
 > ⚠️ **Before submission:** set the SynthProof row against what is actually implemented at that
-> time. The certificate is not yet signed, so "Verifiable" is *partial*, not a tick. Overstating
-> this row would be the same failure this project's own audit was written to catch.
+> time. Overstating this row would be the same failure this project's own audit was written to
+> catch — **and so would understating it**, which is the error this note itself made.
+>
+> **Two cells are now wrong, in opposite directions:**
+>
+> - **`Verifiable: partial` is STALE.** The note used to read "the certificate is not yet
+>   signed". It is: Ed25519 over canonical bytes, `synthproof verify` runs against a public key
+>   alone, and the sheet now also emits as a Croissant 1.1 record the **official MLCommons
+>   validator accepts with 0 warnings**. Decide between ✅ and a footnoted ✅; `partial` no
+>   longer describes it.
+> - **`Lower bound ✅` is GENEROUS.** `ε_audited = 0.000` in every cell of every experiment, and
+>   §7.4 retracts the comparison. The system *emits* a lower bound; it never produced an
+>   informative one. Qualify the tick or footnote it to the ceiling.
+>
+> `Cross-release ❌` is correct and matches the README — the contradiction flagged in
+> `REPORTS/06-SUPPLEMENT-2026-08-23.md` §1 is resolved. Leave it.
 
 Formal DP supplies an upper bound that nobody verifies against the implementation. Empirical
 auditing supplies a lower bound that carries no guarantee, accumulates no budget, and is not
@@ -178,46 +245,55 @@ attached to the artefact. Datasheets are attached to the artefact but describe i
 bounding what it reveals. **We found no system that releases a dataset accompanied by both
 bounds, cryptographically signed and carrying the ceiling of its own empirical measurement.**
 
-> ⚠️ **This claim was narrowed on 2026-08-23. Do not widen it, and do not restate it until
-> `research/08_novelty_verdict.md` is populated** — the adversarial protocol in `research/`
-> completed only 2 of 8 query families before being interrupted, so no novelty verdict has been
-> issued and none may be asserted here. What that partial run *did* verify, and it is
-> unforgiving:
+> ⚠️ **UPDATED 2026-08-24. The novelty verdict HAS been issued** — all 8 adversarial query
+> families ran on 2026-08-23 and `research/08_novelty_verdict.md` is populated. The previous
+> version of this note said the protocol "completed only 2 of 8 query families before being
+> interrupted, so no novelty verdict has been issued and none may be asserted here"; it also
+> listed the cross-release ledger, subgroup leakage and the calibration gap as families that
+> never ran, and said Laminator had not been read. **All four statements are now false.**
+> Read `research/08_novelty_verdict.md` — §3.1 for the kills, §3.3 for the position, §4.1 for
+> the artefact — before writing a word of §2.6.
 >
-> - **Dual-sided assurance (proved + audited per release) is occupied.** Annamalai, Ganev &
->   De Cristofaro [annamalai2024theoryalone] compute empirical leakage against the theoretical
->   bound for DP-SDGs and flag both violations and loose audits. That is this framing.
-> - **Budget-charged domain profiling is occupied** by [annamalai2025domain].
-> - **The audit ceiling is not a contribution.** It is a one-line corollary of Steinke, Nasr &
->   Jagielski's Theorem 2.1 / Eq. (3) — the paper this project implements — verified
->   bit-identical to our `max_provable_epsilon`. Ganev, Annamalai & Kulynych
->   [ganev2026tightmstaim] then obtain *tight* audits of MST and AIM with a Gaussian-DP
->   estimator, so the ceiling we hit is a property of the single-threshold estimator we chose,
->   not of auditing.
-> - **Finding defects by self-audit is occupied** by [cebere2026bugs]: 12 libraries, 13
->   violations, method and package released.
-> - **Shipping a structured privacy label with a DP release is occupied** by
->   [dibia2025privacylabel] — an expert-elicited nine-category label whose categories overlap
->   this sheet almost field for field, including `unit_of_privacy` and empirical privacy
->   metrics. Treat that as validation, not defeat: a panel of DP experts converged on the fields
->   we built. **What they explicitly do not propose is any signing mechanism, or any standard
->   for reporting the limits of an empirical privacy metric** — an omission one of their own
->   experts called *"privacy theater"*. Those two gaps are what the Ed25519 signature and
->   `audit_ceiling` fill, and they are the narrowest honest statement of this project's
->   position.
-> - **Automated release gating is occupied** by the Five Safes framework and SACRO
->   [preen2024sacro], production practice in UK Trusted Research Environments since 2022.
->   SACRO reads output values and does not autonomously refuse; our gate reads only the schema
->   and the row count and does. **State that difference as unrefuted, never as novel** — the
->   primary SDC Handbook could not be retrieved and that literature predates arXiv.
+> **Eight claims are dead. That is the honest count.**
 >
-> Four of those kills come from one author cluster (Ganev, Annamalai, De Cristofaro, Kulynych)
+> | Claim | Killed by |
+> |---|---|
+> | Dual-sided assurance (proved + audited per release) | Annamalai, Ganev & De Cristofaro, USENIX Sec 2024 [annamalai2024theoryalone] |
+> | Budget-charged domain profiling | Ganev, Annamalai, Mahiou & De Cristofaro, Apr 2025 [annamalai2025domain] |
+> | The audit ceiling as a result | Corollary of Steinke, Nasr & Jagielski Thm 2.1 / Eq. (3) — the paper we implement — verified bit-identical to `max_provable_epsilon` |
+> | Finding defects by self-audit | Cebere et al., Feb 2026 [cebere2026bugs] — 12 libraries, 13 violations, package released |
+> | Shipping a structured privacy label | Dibia, Lu, Bhattacharjee, Near & Feng, 2025 [dibia2025privacylabel] |
+> | An automated release gate that refuses and records | Five Safes + SACRO [preen2024sacro], UK TREs since 2022 |
+> | A machine-checkable release artefact | Croissant, MRM3, Laminator |
+> | Cross-release budget management | PrivateKube (OSDI'21), Cohere, DPack (EuroSys'25), DPolicy |
+>
+> **Four of eight come from one author cluster** (Ganev, Annamalai, De Cristofaro, Kulynych)
 > running this programme professionally and roughly two years ahead. **Chapter 2 must be written
-> from that position, not around it.** Candidates still unresolved because their query families
-> never ran: the signed cross-release ledger, subgroup leakage disparity, and the calibration
-> gap. `research/PHASE2_INTERIM.md` §5 lists what to check first — Laminator (verifiable ML
-> property cards via hardware attestation) is structurally the closest thing to a Privacy Data
-> Sheet and has not been read.
+> from that position, not around it.**
+>
+> **The nuance on the ceiling that must not be lost.** It is dead *as maths* (Steinke's own
+> corollary) and severely wounded *as practice*: Ganev, Annamalai & Kulynych, Apr 2026
+> [ganev2026tightmstaim] obtain **tight** audits of MST and AIM using a Gaussian-DP / f-DP
+> estimator, where our single-threshold estimator returned 0.000. So the ceiling we hit is a
+> property of **the estimator we chose**, not of auditing as such. Do not write "auditing
+> cannot confirm tight bounds" — write that *this* estimator cannot, and cite the one that can.
+>
+> **Dibia et al. is simultaneously the strongest kill and the strongest validation.** A panel of
+> DP experts converged on almost exactly the fields we built, including `unit_of_privacy` and
+> empirical privacy metrics. What they explicitly do **not** propose is any signing mechanism,
+> or any standard for reporting the limits of an empirical privacy metric — an omission one of
+> their own experts called *"privacy theater"*. Those two gaps are what the Ed25519 signature
+> and `audit_ceiling` fill, and **that is the narrowest honest statement of this project's
+> position.** As of 2026-08-24 it is also runnable: `synthproof/frontier/croissant.py` emits the
+> sheet as a Croissant record the official MLCommons validator accepts with 0 warnings.
+>
+> **Three survivors, all narrow, none to be called novel without the caveat:**
+> S1 reporting the measurement's operating range inside the artefact (`CONFIDENCE: med-high`) ·
+> S2 signing the privacy claim (`med` — **engineering novelty, not science**) ·
+> S3 data-blind refusal (`med` — **state as UNREFUTED, never novel**; the primary SDC Handbook
+> returned HTTP 403 and that literature predates arXiv).
+>
+> **The position the evidence supports is INTEGRATION, NOT INVENTION.**
 
 Three narrower gaps follow, each addressed in this work:
 
@@ -242,6 +318,10 @@ Three narrower gaps follow, each addressed in this work:
 ---
 
 ## Sources to obtain
+
+> ⚠️ **DELETE THIS SECTION BEFORE SUBMISSION.** It is a working note to the author, not
+> chapter content. Its advice ("maintain `references.bib` from the first day") has been
+> followed — `references.bib` + `references-additions.bib` carry the entries.
 
 Search terms covering most of the above: `differential privacy synthetic data survey`,
 `privacy auditing one training run`, `AIM adaptive iterative mechanism marginals`,

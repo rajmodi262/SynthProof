@@ -1,7 +1,24 @@
 # Chapter 6 — Experimental Methodology
 
-**Target: 1,200 words.** Depends on M1.11.
+**2,418 words.** §6.7–6.10 are finished prose; **§6.1–6.6 are still stubs** (~1,200 words
+outstanding). The old header read "Target: 1,200 words. Depends on M1.11" — both stale.
 **This chapter must honour [`../preregistration.md`](../preregistration.md) exactly.**
+
+> ⚠️ **REVIEWED 2026-08-24. No dead claims — §6.7–6.10 are the strongest prose in the thesis**
+> and the clique-confound section correctly argues against its own stronger reading. But six
+> accuracy defects, three of them serious:
+>
+> | # | Defect | Where |
+> |---|---|---|
+> | 1 | **§6.4 names "TPR at 0.1% FPR". The code computes `tpr_at_1pct_fpr` — TPR at 1% FPR.** A 10× different operating point, and a metric the pipeline does not produce. Standing rule 2. Either fix the prose or change `attacks/distance_mia.py:95` and `attacks/domias.py:49` and re-run | §6.4 |
+> | 2 | **§6.4 contradicts §6.8 D3 inside the same chapter.** §6.4 defines ε_audited as a "Clopper-Pearson lower bound"; D3 records the auditor changed to the one-run construction | §6.4 / §6.8 |
+> | 3 | **The reproducibility claim is overstated as written.** `scripts/reproduce.py:19–22`: `--run` reloads `results/h1_cells/` and **re-aggregates rather than re-fitting** — the tell is H1 reporting ~0.7s where a real run is ~4 h/dataset. That is checkpoint integrity, not reproducibility. The caveat is in the script and must reach §6.6 | §6.6 |
+> | 4 | **No methodology for the fairness / subgroup-utility study** (2 attributes × 2 ε × 3 seeds, `scripts/run_fairness.py`) or for **linkability**. Both are new experiments reported in Ch.7 with no methods section | new §6.11 |
+> | 5 | §6.2 states Adult n = 48,842, but every experiment runs **n = 6,000**. State the subsample and the reason | §6.2 |
+> | 6 | §6.5 says "multiple-comparison handling" generically. The work actually used **BH-FDR, Bonferroni and TOST equivalence**. Write what was done | §6.5 |
+>
+> Items 1 and 3 are the two an examiner is most likely to catch, because both are checkable
+> against the repository in under a minute.
 
 ## 6.1 Preregistration (~200 words)
 
