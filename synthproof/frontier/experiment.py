@@ -25,6 +25,7 @@ from synthproof.data.profiler import DPDomainProfiler
 from synthproof.evaluate.utility import UtilityEvaluator
 from synthproof.frontier.checkpoint import run_with_checkpoints
 from synthproof.generators.aim import AIMGenerator, mbi_available
+from synthproof.generators.dpvae import DPVAEGenerator
 from synthproof.generators.independent import IndependentMarginalGenerator
 from synthproof.generators.moments import GaussianMomentGenerator
 from synthproof.generators.pairwise import PairwiseMarginalGenerator
@@ -38,12 +39,23 @@ MECHANISMS: Dict[str, type] = {
     "independent": IndependentMarginalGenerator,
     "moments": GaussianMomentGenerator,
     "pairwise": PairwiseMarginalGenerator,
+    # `dpvae` is the first NON-marginal-based mechanism here, and it is registered as a
+    # control rather than a competitor. Every other entry selects a set of low-order
+    # marginals; a VAE trained with DP-SGD selects nothing, which is what makes it the
+    # control for the clique-selection confound. See generators/dpvae.py.
+    "dpvae": DPVAEGenerator,
 }
 
 # Real AIM needs private-PGM, which needs Python >= 3.11. Registered only when importable so
 # the rest of the grid still runs on an environment without it.
 if mbi_available():
     MECHANISMS["aim"] = AIMGenerator
+    # AIM's engine with the selection step deleted and a data-independent workload in its
+    # place. It exists to isolate selection: same model class, same inference, same clique
+    # count, same budget, no exponential mechanism. See generators/fixed_workload.py.
+    from synthproof.generators.fixed_workload import FixedWorkloadGenerator
+
+    MECHANISMS["fixed_workload"] = FixedWorkloadGenerator
 
 
 @dataclass
@@ -539,9 +551,7 @@ def run_grid(
         flat = []
         for cfg in cells:
             if progress:
-                progress(
-                    f"  {cfg['mechanism']:<12} eps={cfg['target_eps']:<5} " f"seed={cfg['seed']}"
-                )
+                progress(f"  {cfg['mechanism']:<12} eps={cfg['target_eps']:<5} seed={cfg['seed']}")
             flat.append(compute(cfg))
 
     # Re-group into (mechanism, eps) cells, aggregating across seeds.

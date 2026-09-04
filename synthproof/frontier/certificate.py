@@ -197,6 +197,9 @@ class FrontierEngine:
 
     def __init__(self, seed: int = 42):
         self.seed = seed
+        # Populated only when `run_sweep(retain_release=True)`. None means "not retained",
+        # which is not the same as "the release was empty" -- callers must check.
+        self.last_release: Optional[pd.DataFrame] = None
 
     def run_sweep(
         self,
@@ -210,6 +213,7 @@ class FrontierEngine:
         domain_source: str = "declared",
         contribution_bound: int = 1,
         skip_preflight: bool = False,
+        retain_release: bool = False,
     ) -> PrivacyDataSheet:
         """Runs one release per epsilon and returns the resulting data sheet.
 
@@ -220,6 +224,12 @@ class FrontierEngine:
             skip_preflight: Bypasses the refusal checks. Exists for the research grids, which
                 run known benchmarks under declared schemas, and for tests. It is never the
                 right setting for a release someone else will rely on.
+            retain_release: Keeps the synthetic table from the LAST epsilon on
+                `self.last_release`, so a caller can write out the data the sheet describes.
+                Off by default: the grids sweep many epsilons and holding each release would
+                retain memory they have no use for, which is why the artefacts are otherwise
+                read once and dropped. `last_release` is the canary-free utility release --
+                the audit release is trained on planted canaries and must never be shipped.
         """
         if mechanism not in MECHANISMS:
             raise KeyError(
@@ -255,6 +265,7 @@ class FrontierEngine:
 
         curve: List[FrontierPoint] = []
         evaluation: Dict = {}
+        self.last_release = None
 
         for eps in eps_grid:
             res = run_cell(
@@ -270,6 +281,11 @@ class FrontierEngine:
                 # read once below and never retained.
                 return_artifacts=True,
             )
+
+            if retain_release:
+                # `_synth`, never `_audit_synth`. The audit release is fitted on a split with
+                # canaries planted in it; shipping it would release the canaries themselves.
+                self.last_release = res["_synth"]
 
             curve.append(
                 FrontierPoint(
