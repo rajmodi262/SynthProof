@@ -351,7 +351,7 @@ Three further problems specific to *stranger* data:
   inside the declared public bounds, falling back to the raw min/max when no schema exists. On an
   unknown-domain upload, canary construction inherits the §2.1 problem entirely.
 - **Canaries change the release.** This repo already measured the cost: 60 canaries cut
-  corr(age, hours) from 0.1014 to 0.0109 — an 89% loss of the signal being measured. The fix was
+  corr(age, hours) from 0.1014 to 0.0109 — an 89% loss of the signal being measured. The fix was **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
   a second, canary-free fit, which means the audited artefact is *not the artefact the user
   receives*. Defensible in an experiment; hard to explain on a compliance document.
 - **Cost.** A meaningful ceiling needs hundreds of canaries, and each is a row the generator must

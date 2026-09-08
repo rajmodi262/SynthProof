@@ -49,7 +49,7 @@
 Two properties this diagram encodes that are easy to miss:
 
 1. **Utility is measured on a second, canary-free fit.** Canaries contaminate the joint
-   distribution — 60 of them once destroyed 89% of the correlation being measured — so the
+   distribution — 60 of them once destroyed 89% of the correlation being measured — so the **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
    audited fit and the evaluated fit are separate runs.
 2. **The profiler and the generator draw from one `BudgetPlan`.** The composed ε of a complete
    release approximates the number the operator typed, rather than exceeding it by whatever the

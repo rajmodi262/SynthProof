@@ -10,9 +10,12 @@ fixed it. But the NUMBER was not defensible as stated, for three reasons found o
     at a single canary design cannot separate a property of auditing from a property of ours.
   * Ganev, Annamalai & Kulynych (arXiv:2604.18352) S3 design their canary to maximise influence on
     all marginals. For such a canary, perturbing the joint is designed in, not discovered.
-  * And -- found by running this script -- **the count is the wrong axis.** At n = 6,000 the real
-    `CanaryAuditor` at m = 60 destroys about 13%, not 89%. What drives the damage is the canary
-    FRACTION m/(n+m), and 89% is only reached at a fraction around 9-10%.
+  * And -- found by running this script -- **the count is the wrong axis, and the number does
+    not replicate at all.** Over 40 seeds the real `CanaryAuditor` at n = 6,000, m = 60
+    destroys about 4.5%, not 89%, and even at a 9.1% canary fraction it reaches only ~23%.
+    What drives the damage is the FRACTION m/(n+m). We could not reconstruct how 0.0109 was
+    obtained: the fit split is 70% of n, so size does not explain it, and the pre-fix
+    fixed-top design inflates rather than destroys, so that does not explain it either.
 
 So this sweeps both axes and reports against fraction. No model is fitted: the contamination is a
 property of the TABLE the generator is given, which is why it is cheap and why it is prior to any

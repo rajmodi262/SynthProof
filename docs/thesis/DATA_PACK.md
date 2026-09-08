@@ -148,7 +148,7 @@ No figure; a table and three paragraphs. Source: `results/H1_RESULTS.md` §4.
 | | |
 |---|---|
 | corr(age, hours) on the fit split | 0.1014 |
-| after planting 60 canaries | **0.0109** — 89% of the signal destroyed |
+| after planting 60 canaries | **0.0109** — 89% of the signal destroyed | **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
 | pairwise corr error, contaminated vs decoupled (ε=8) | 0.1098 → **0.0459** |
 | independent, same comparison | 0.9804 → 0.9778 (unchanged — the control working) |
 

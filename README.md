@@ -178,7 +178,7 @@ finding about how DP-synthesis benchmarks are scored, and it is the most useful 
 second dataset bought.
 
 Both results required fixing our own measurement harness first — utility had been scored on a
-model trained with 60 planted canaries, destroying 89% of the correlation signal and
+model trained with 60 planted canaries, destroying 89% of the correlation signal and **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
 systematically penalising the mechanisms that model dependence best. Two earlier versions of
 the H1 document reported the opposite conclusion in good faith. §4 explains it.
 

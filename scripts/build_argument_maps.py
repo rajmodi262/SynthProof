@@ -172,11 +172,15 @@ def chapter8() -> str:
             "Presented separately they look like three experiments. Presented as a chain they are a"
             " result about measurement.",
             "",
-            "**(1) The instrument was penalising the mechanisms it measured.** Planting 60 canaries"
-            " cut `corr(age, hours_per_week)` from **0.1014 to 0.0109** — 89% of the signal. The"
-            " generator trained on a flattened table and was scored against a structured one, so"
-            " mechanisms that model dependence were penalised *for doing so*, while the independent"
-            " baseline was unaffected. It produced two confidently-wrong published conclusions.",
+            "**(1) The instrument was penalising the mechanisms it measured.** Planting canaries"
+            " contaminates the joint structure the fidelity metric scores: the generator trains on"
+            " a flattened table and is scored against a structured one, so mechanisms that model"
+            " dependence are penalised *for doing so* while the independent baseline is unaffected."
+            " It produced two confidently-wrong published conclusions."
+            " **The size of the effect was originally overstated and does NOT replicate** — see"
+            " `results/CANARY_DOSE_RESPONSE.md`, which finds ~4.5% at the H1 configuration over 40"
+            " seeds, not significant there (t = 1.85), significant only above ~3% canary fraction."
+            " Report the shape, never a single percentage.",
             "",
             "**(2) The audit could not have answered its question.** H1 ran at m = 60 where the"
             " ceiling is **2.97**, against a proved ε of **7.36**. Certifying 7.36 needs ~**4,711**"

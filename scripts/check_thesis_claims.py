@@ -248,6 +248,18 @@ DEAD_CLAIMS: list[tuple[str, str, str, str]] = [
         "DPBench attributes the direction to a real signal-to-noise regime. Any claim here must "
         "distinguish CONTAMINATION OF THE APPARATUS from that, with a matched-regime control.",
     ),
+    (
+        "canary-89-percent",
+        r"\b89\s?%|\b0\.0109\b",
+        "The 89% canary-contamination figure DOES NOT REPLICATE. Over 40 seeds the real "
+        "CanaryAuditor at the configuration it was recorded for (Adult, n=6,000, m=60) destroys "
+        "about 4.5%, and the effect is not significant there (t=1.85). At 8 seeds the same cells "
+        "read roughly twice what they read at 40 -- it was never a stable measurement. See "
+        "results/CANARY_DOSE_RESPONSE.md.",
+        "Report the SHAPE, not a number: contamination scales with canary FRACTION m/(n+m), is "
+        "significant only above ~3%, and depends strongly on canary design. The two-fit decision "
+        "still stands on its own, and Mitchell et al. arXiv:2606.10481 S3 recommend it anyway.",
+    ),
 ]
 
 # Phrases that must appear somewhere if the chapter discusses the audit at all.

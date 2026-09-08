@@ -115,7 +115,7 @@ cd web && npm install && npm run dev
 | C3 | The auditor detects a verbatim release and does not fire on a shuffled one (§7.2) | `pytest tests/test_detection_floor.py -q` | 12 passed | 1 min |
 | C4 | Detection floor and **audit ceiling** (§7.2) | `make floor` | Reproduces `results/detection_floor.json`; floor at leak=1.0 is m=10, leak≤0.05 undetected at m=800 | ~25 min |
 | C5 | H1: structured mechanisms preserve structure better, non-overlapping CIs (§7.3) | `make h1` | Reproduces `results/h1_all_families.json`, 75 cells | **~4 h** |
-| C6 | Canary contamination destroys 89% of the correlation signal (§7.4) | See `results/H1_RESULTS.md` §4; reproduce with `run_cell(..., separate_utility_fit=False)` vs `True` | corr 0.1014 → 0.0109 at 60 canaries | 5 min |
+| C6 | Canary contamination destroys 89% of the correlation signal (§7.4) | See `results/H1_RESULTS.md` §4; reproduce with `run_cell(..., separate_utility_fit=False)` vs `True` | corr 0.1014 → 0.0109 at 60 canaries | 5 min | **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
 | C7 | H2 is a bounded null; adversary needed accuracy 0.600 and reached 0.562 (§7.6) | `make h2` then `make h2-analyse` | Reproduces `results/h2_analysis.json` | ~5 min |
 | C8 | Every published number matches its manifest | `make reproduce` | `REPRODUCED` | seconds |
 | C9 | All figures derive from committed results | `make figures` | 8 figures in `docs/thesis/figures/` | 1 min |

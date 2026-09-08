@@ -159,6 +159,33 @@ roughly 4,700 perfectly-detected canaries.
 
 ---
 
+> ### SUPERSEDED 2026-09-06 — THIS NUMBER DOES NOT REPLICATE
+>
+> A dose-response sweep over canary budget, canary type and dataset size
+> (`results/CANARY_DOSE_RESPONSE.md`, `scripts/run_canary_dose_response.py`) **could not
+> reproduce the 89%.** Running the real `CanaryAuditor` over **40 seeds** at this
+> configuration destroys about **4.5%** of `corr(age, hours_per_week)`, not 89%.
+>
+> Three things the sweep established, none of which rescue the original figure:
+> * **The canary COUNT is the wrong axis.** What drives the damage is the canary FRACTION
+>   `m/(n+m)`. Sixty canaries is 1.0% of the table at n = 6,000 and 9.1% at n = 600.
+> * **The effect is not significant at this configuration.** One-sample t against the clean
+>   value is **1.85** — below 2σ. It becomes significant above roughly 3% canary fraction
+>   (n = 6,000, m = 200: 9.7% destroyed, t = 2.93).
+> * **The original was not a stable measurement.** At 8 seeds the same cells read
+>   9.5 / 17.4 / 35.7 / 54.9%; at 40 seeds, roughly half that. A number that halves when you
+>   add seeds was never a measurement.
+>
+> **We could not reconstruct how 0.0109 was obtained.** The fit split is 70% of n
+> (`holdout_frac = 0.3`), so split size does not explain it; and the pre-fix fixed-top canary
+> design *inflates* the correlation rather than destroying it, so that does not explain it
+> either. State the shape — contamination scales with canary fraction and depends strongly on
+> canary design — and do not quote a single percentage.
+>
+> **The underlying decision still stands:** fitting twice (`separate_utility_fit=True`) is
+> correct regardless of the effect size, and Mitchell et al. ([arXiv:2606.10481](https://arxiv.org/abs/2606.10481))
+> §3 recommend exactly that separation independently.
+
 ## 4. Why the first two versions were wrong
 
 `run_cell` originally fitted **one** model on the canary-augmented split and used it for

@@ -49,7 +49,7 @@ attempts to make it go away:
    generalises: any DP-synthesis benchmark scoring a marginal-based mechanism on a small fixed
    set of low-order statistics risks **measuring the mechanism's internal clique selection
    rather than its fidelity**.
-3. **Measurement contamination.** Planting audit canaries destroyed 89% of the correlation
+3. **Measurement contamination.** Planting audit canaries destroyed 89% of the correlation **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
    signal the utility metric was measuring, producing two confidently-wrong published
    conclusions. The instrument was penalising exactly the mechanisms it was built to reward.
 
@@ -481,7 +481,7 @@ threats.
 
 | Threat | Status |
 |---|---|
-| **Measurement contamination** — the audit's canaries altering the thing the utility metric measures | **Found and fixed.** 60 canaries cut corr(age, hours) from 0.1014 to 0.0109. `run_cell` now fits **twice**: once on the augmented split for the audit, once on the clean split for utility and structure (`separate_utility_fit=True`) |
+| **Measurement contamination** — the audit's canaries altering the thing the utility metric measures | **Found and fixed.** 60 canaries cut corr(age, hours) from 0.1014 to 0.0109. `run_cell` now fits **twice**: once on the augmented split for the audit, once on the clean split for utility and structure (`separate_utility_fit=True`) | **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
 | **Seed artefacts** | 5 seeds per cell; bootstrapped CIs over 4,000 resamples; a detection-floor cell counts only on a **majority** of seeds |
 | **Engineering confound in AIM** — the model-size cap suppressing cliques | **Ruled out before the finding was written.** `skipped_cliques_` is empty at both ε = 0.5 and ε = 8, with 17 cliques measured at each |
 | **Instrument not working at all** | Positive control (verbatim release, detected at m = 10, TPR 1.00, FPR 0.00, p < 0.001) and negative control (perfect marginals, no real records — never detected) both hold, and CI enforces them |
@@ -1089,7 +1089,7 @@ A deliberately extreme record we insert so we can ask afterwards whether the rel
 it was there — the audit's test subject.
 
 **37. Doesn't inserting canaries change the data you are measuring?**
-Yes, and that is finding 3. Sixty canaries cut the measured correlation from 0.1014 to 0.0109 —
+Yes, and that is finding 3. Sixty canaries cut the measured correlation from 0.1014 to 0.0109 — **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
 89% of the signal. We now fit twice: once on the augmented split for the audit, once on the clean
 split for utility and structure.
 
