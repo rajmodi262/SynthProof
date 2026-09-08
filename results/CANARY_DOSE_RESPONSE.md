@@ -15,7 +15,8 @@ must make itself before an examiner makes them for it:
 1. **The canary COUNT is the wrong axis; the FRACTION m/(n+m) is the right one.** The
    effect rises monotonically with fraction across four independent sizes, and 60
    canaries means something completely different at n = 600 than at n = 6,000.
-2. **No individual cell is significant, even at 40 seeds.** The seed-to-seed spread
+2. **No individual cell resolves at 40 seeds — which is a statement about our power,
+   not about safety.** The seed-to-seed spread
    swamps the shift: `effect / seed-sd` sits near 0.25 everywhere, and the one-sample
    t against the clean value does not reach 2 at any size. At 8 seeds the same cells
    read 9.5%/17.4%/35.7%/54.9%; at 40 they read roughly half that. **A number that
@@ -82,9 +83,16 @@ contamination in both directions. `marginal_resampled` is the **floor**.
 ## What this settles, and what it does not
 
 **Settled, and it is a negative result:** the 89% does not replicate against the current
-auditor at the configuration it was recorded for, and no cell in this sweep is significant
-at 2σ. What survives is a monotone dependence on canary fraction and a strong dependence
-on canary design — a shape, not a number. Report it that way or not at all.
+auditor at the configuration it was recorded for. What survives is a monotone dependence
+on canary fraction and a strong dependence on canary design — a shape, not a number.
+
+**DO NOT READ THE 2σ COLUMN AS A SAFETY THRESHOLD.** t = 1.85 at 0.99% and t = 2.93 at
+3.23% is a boundary of THIS DESIGN'S POWER at 40 seeds, not a property of canary
+contamination. The point estimate at 0.99% is still 4.5% of the correlation destroyed —
+an UNDERPOWERED effect, not an absent one. Declaring the n = 6,000 / m = 60 configuration
+*safe* because p > 0.05 would be accepting the null, which is the error standing rule 5
+exists to prevent. This sweep never showed that configuration to be safe; it showed only
+that it could not resolve the effect at 40 seeds. Raising seeds would move the boundary.
 
 **Not claimed:** that canary insertion costs utility (Panda et al. arXiv:2503.06808;
 Mitchell et al. arXiv:2606.10481). Nor the two-fit remedy — Mitchell et al. S3 recommends
