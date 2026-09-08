@@ -1,0 +1,90 @@
+{
+  "alpha_sensitivity_k": {
+    "0.01": 0,
+    "0.05": 0,
+    "0.1": 0
+  },
+  "headline": "K = 0 of 1. **No included paper was underpowered without saying so.** The honest conclusion is that this literature reports its own limits; the contribution reduces to the NOT-REPORTED count (0) and the artefact work. Declared acceptable in advance by protocol S10.",
+  "rows": [
+    {
+      "acknowledged_limit": "yes",
+      "alpha": 0.05,
+      "budget": 60,
+      "ceiling": 2.9720875578943553,
+      "ceiling_unit": "epsilon",
+      "class": "UNDERPOWERED",
+      "config_label": "H1 grid, canary audit, m=60",
+      "counts_toward_k": false,
+      "emp_unit": "epsilon",
+      "eps_emp": 0.0,
+      "eps_proved": 7.36,
+      "estimator_family": "one_run",
+      "extractor": "self",
+      "locators": {
+        "alpha": "results/DETECTION_FLOOR.md S1",
+        "budget": "results/AUDITOR_COMPARISON.md",
+        "eps_emp": "results/h1_all_families.json",
+        "eps_proved": "results/RESULTS.md"
+      },
+      "notes": "The worked example the whole survey generalises. Ceiling 2.972 < proved 7.36, so the reported zero could never have been anything else. Acknowledged in results/DETECTION_FLOOR.md S3, which is why it contributes 0 to K.",
+      "paper_id": "SynthProof (this project)",
+      "proved_unit": "epsilon",
+      "reason": "ceiling 2.9721 < proved 7.3600: even a perfect adversary against a fully verbatim release could not have confirmed the bound at this budget, so a null here is the instrument's floor.",
+      "source_depth": "full text"
+    },
+    {
+      "acknowledged_limit": "yes",
+      "alpha": 0.05,
+      "budget": 2500,
+      "ceiling": 5.946024382729501,
+      "ceiling_unit": "mu",
+      "class": "INTERPRETABLE",
+      "config_label": "GDP audit, independent mechanism, 2500 runs per world",
+      "counts_toward_k": false,
+      "emp_unit": "mu",
+      "eps_emp": 0.4014,
+      "eps_proved": 0.4547,
+      "estimator_family": "gdp",
+      "extractor": "self",
+      "locators": {
+        "alpha": "results/GDP_AUDIT.md, headline table",
+        "budget": "results/GDP_AUDIT.md, Setup",
+        "eps_emp": "results/gdp_audit.json",
+        "eps_proved": "results/GDP_AUDIT.md, headline table"
+      },
+      "notes": "The contrast case: ceiling 5.5073 at this run count, well above the mechanism's own mu of 0.4547, so mu_emp = 0.4014 is a measurement rather than a floor. Reported in mu, never converted to epsilon.",
+      "paper_id": "SynthProof (this project)",
+      "proved_unit": "mu",
+      "reason": "ceiling 5.9460 >= proved 0.4547: the instrument could have detected the bound, so the reported value carries evidential weight.",
+      "source_depth": "full text"
+    }
+  ],
+  "summary": {
+    "by_class": {
+      "EXCLUDED": 0,
+      "INTERPRETABLE": 1,
+      "NOT REPORTED": 0,
+      "SATURATED": 0,
+      "UNDERPOWERED": 0
+    },
+    "k": 0,
+    "k_ci_wilson_95": [
+      0.0,
+      0.7934506856227626
+    ],
+    "k_rate": 0.0,
+    "n_excluded_undeterminable_estimator": 0,
+    "n_not_reported": 0,
+    "n_papers_included": 1,
+    "n_underpowered_but_acknowledged": 0,
+    "per_estimator": {
+      "gdp": {
+        "EXCLUDED": 0,
+        "INTERPRETABLE": 1,
+        "NOT REPORTED": 0,
+        "SATURATED": 0,
+        "UNDERPOWERED": 0
+      }
+    }
+  }
+}

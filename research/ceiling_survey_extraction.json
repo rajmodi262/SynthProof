@@ -1,0 +1,63 @@
+{
+  "_README": [
+    "Hand-extraction table for the ceiling survey. Rules: docs/CEILING_SURVEY_PROTOCOL.md,",
+    "frozen and committed before any paper was read.",
+    "",
+    "SEEDED WITH THIS PROJECT'S OWN CONFIGURATIONS ONLY. They are here as an unambiguous format",
+    "example and because a survey that does not classify its own author's work first has no",
+    "standing to classify anyone else's. Both are marked acknowledged_limit=yes, because this",
+    "project does state its own limits in the cited files -- so they correctly contribute 0 to K.",
+    "",
+    "EVERY OTHER ROW MUST BE ADDED BY HAND, DOUBLE-CODED, per protocol S6. Rules that the",
+    "classifier enforces and will refuse on:",
+    "  * every non-null number needs a locator (protocol S4)",
+    "  * estimator_family must be READ, not inferred; otherwise the row is EXCLUDED (protocol S5)",
+    "  * a mu estimate is compared only against a mu bound (protocol S7)",
+    "  * acknowledged_limit is 'yes' | 'no' | 'NOT REPORTED' and decides K (protocol S8)"
+  ],
+  "frame_frozen_at_commit": "9677936",
+  "rows": [
+    {
+      "paper_id": "SynthProof (this project)",
+      "config_label": "H1 grid, canary audit, m=60",
+      "estimator_family": "one_run",
+      "budget": 60,
+      "alpha": 0.05,
+      "eps_emp": 0.0,
+      "emp_unit": "epsilon",
+      "eps_proved": 7.36,
+      "proved_unit": "epsilon",
+      "acknowledged_limit": "yes",
+      "extractor": "self",
+      "source_depth": "full text",
+      "locators": {
+        "budget": "results/AUDITOR_COMPARISON.md",
+        "alpha": "results/DETECTION_FLOOR.md S1",
+        "eps_emp": "results/h1_all_families.json",
+        "eps_proved": "results/RESULTS.md"
+      },
+      "notes": "The worked example the whole survey generalises. Ceiling 2.972 < proved 7.36, so the reported zero could never have been anything else. Acknowledged in results/DETECTION_FLOOR.md S3, which is why it contributes 0 to K."
+    },
+    {
+      "paper_id": "SynthProof (this project)",
+      "config_label": "GDP audit, independent mechanism, 2500 runs per world",
+      "estimator_family": "gdp",
+      "budget": 2500,
+      "alpha": 0.05,
+      "eps_emp": 0.4014,
+      "emp_unit": "mu",
+      "eps_proved": 0.4547,
+      "proved_unit": "mu",
+      "acknowledged_limit": "yes",
+      "extractor": "self",
+      "source_depth": "full text",
+      "locators": {
+        "budget": "results/GDP_AUDIT.md, Setup",
+        "alpha": "results/GDP_AUDIT.md, headline table",
+        "eps_emp": "results/gdp_audit.json",
+        "eps_proved": "results/GDP_AUDIT.md, headline table"
+      },
+      "notes": "The contrast case: ceiling 5.5073 at this run count, well above the mechanism's own mu of 0.4547, so mu_emp = 0.4014 is a measurement rather than a floor. Reported in mu, never converted to epsilon."
+    }
+  ]
+}
