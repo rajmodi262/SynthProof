@@ -5,7 +5,7 @@
 
 ## The configuration
 
-The H1 grid: **AIM on UCI Adult**, proved ε = **7.356** (`results/RESULTS.md`),
+The H1 grid: **AIM on UCI Adult**, proved ε = **6.543** (`results/h1_all_families.json`, mechanism `aim`),
 audited ε = **0.000** (`results/h1_all_families.json`), from a canary audit at
 **m = 60**, α = 0.05 (`results/AUDITOR_COMPARISON.md`).
 
@@ -19,14 +19,14 @@ The reader sees two numbers:
 
 | field | value |
 |---|---|
-| `dp:epsilonProved` | 7.356 |
+| `dp:epsilonProved` | 6.543 |
 | `dp:epsilonAudited` | 0.000 |
 
 **The only inference available is "the mechanism leaks nothing measurable."**
 
 That inference is wrong, and this project drew it. The auditor at m = 60 could not
 have reported above **2.972** *even against a release that was 100% verbatim training
-data*. Everything in **[2.972, 7.356]** — a span of **4.384** — was
+data*. Everything in **[2.972, 6.543]** — a span of **3.571** — was
 unreachable before the mechanism ran. The zero was the instrument's floor.
 
 ### The emitter now refuses to produce this artefact
@@ -45,7 +45,7 @@ removed.
 
 | field | value |
 |---|---|
-| `dp:epsilonProved` | 7.356 |
+| `dp:epsilonProved` | 6.5426925748221745 |
 | `dp:epsilonAudited` | 0.0 |
 | `dp:auditCeiling` | 2.9721 |
 | `dp:auditEstimator` | one_run |
@@ -54,7 +54,7 @@ removed.
 
 Machine-readable interpretation carried in the same record:
 
-> UNINFORMATIVE. The auditor's ceiling is 2.972 — the largest epsilon this canary count could certify even against a release that was 100% verbatim training data — while the proved epsilon is 7.356. The audited value of 0.000 is therefore the instrument reading its own floor, NOT evidence that the mechanism leaks less than it is permitted to. Certifying an epsilon costs canaries exponential in that epsilon (Steinke, Nasr & Jagielski, NeurIPS 2023, Thm 2.1). Auditing catches broken implementations; it does not confirm tight ones.
+> UNINFORMATIVE. The auditor's ceiling is 2.972 — the largest epsilon this canary count could certify even against a release that was 100% verbatim training data — while the proved epsilon is 6.543. The audited value of 0.000 is therefore the instrument reading its own floor, NOT evidence that the mechanism leaks less than it is permitted to. Certifying an epsilon costs canaries exponential in that epsilon (Steinke, Nasr & Jagielski, NeurIPS 2023, Thm 2.1). Auditing catches broken implementations; it does not confirm tight ones.
 
 `dp:auditIsInformative` = **False**.
 

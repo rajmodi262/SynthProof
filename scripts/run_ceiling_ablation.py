@@ -29,14 +29,35 @@ from synthproof.ledger import signing
 
 OUT_MD = Path("results/CEILING_ABLATION.md")
 
-# The H1 configuration, from committed results. Sources named so each is checkable:
-#   proved 7.356           results/RESULTS.md
-#   audited 0.000          results/h1_all_families.json
+# The H1 configuration. proved/audited are READ FROM the committed grid rather than
+# transcribed, because a literal here is exactly how a number outlives the data that
+# supported it -- the failure mode this project already had to retract once.
 #   m = 60, alpha = 0.05   results/AUDITOR_COMPARISON.md
-#   one-run ceiling 2.972  results/AUDITOR_COMPARISON.md, and recomputed below
+#   one-run ceiling 2.972  recomputed below by ceiling_for()
+H1_MECHANISM = "aim"
+H1_TARGET_EPS = 8.0
+H1_GRID = Path("results/h1_all_families.json")
+
+
+def _h1_cell(mechanism: str, target_eps: float) -> dict:
+    """Return the committed H1 cell, so proved epsilon cannot drift from the grid.
+
+    Revisions before 2026-09-08 hardcoded ``proved = 7.356`` next to ``mechanism="aim"``.
+    7.356 is the value ``independent``/``pairwise`` compose to at target eps 8.0; AIM
+    composes to 6.5427. The rendered ablation therefore attributed another mechanism's
+    bound to AIM and overstated the unreachable span by ~0.81 epsilon.
+    """
+    grid = json.loads(H1_GRID.read_text(encoding="utf-8"))
+    for cell in grid["cells"]:
+        if cell["mechanism"] == mechanism and cell["target_eps"] == target_eps:
+            return cell
+    raise SystemExit(f"{H1_GRID}: no cell for mechanism={mechanism!r} eps={target_eps}")
+
+
+_CELL = _h1_cell(H1_MECHANISM, H1_TARGET_EPS)
 H1 = {
-    "proved": 7.356,
-    "audited": 0.0,
+    "proved": _CELL["proved_eps"]["mean"],
+    "audited": _CELL["audited_eps"]["mean"],
     "budget": 60,
     "alpha": 0.05,
     "estimator": "one_run",
@@ -101,7 +122,7 @@ def main() -> int:
 
 ## The configuration
 
-The H1 grid: **AIM on UCI Adult**, proved ε = **{H1['proved']}** (`results/RESULTS.md`),
+The H1 grid: **AIM on UCI Adult**, proved ε = **{H1['proved']:.3f}** (`{H1_GRID}`, mechanism `{H1_MECHANISM}`),
 audited ε = **{H1['audited']:.3f}** (`results/h1_all_families.json`), from a canary audit at
 **m = {H1['budget']}**, α = {H1['alpha']} (`results/AUDITOR_COMPARISON.md`).
 
@@ -115,14 +136,14 @@ The reader sees two numbers:
 
 | field | value |
 |---|---|
-| `dp:epsilonProved` | {H1['proved']} |
+| `dp:epsilonProved` | {H1['proved']:.3f} |
 | `dp:epsilonAudited` | {H1['audited']:.3f} |
 
 **The only inference available is "the mechanism leaks nothing measurable."**
 
 That inference is wrong, and this project drew it. The auditor at m = {H1['budget']} could not
 have reported above **{reachable:.3f}** *even against a release that was 100% verbatim training
-data*. Everything in **[{reachable:.3f}, {H1['proved']}]** — a span of **{dead_zone:.3f}** — was
+data*. Everything in **[{reachable:.3f}, {H1['proved']:.3f}]** — a span of **{dead_zone:.3f}** — was
 unreachable before the mechanism ran. The zero was the instrument's floor.
 
 ### The emitter now refuses to produce this artefact
@@ -191,8 +212,8 @@ estimator, and inside the metadata object ML tooling actually reads.
     OUT_MD.parent.mkdir(parents=True, exist_ok=True)
     OUT_MD.write_text(md, encoding="utf-8")
 
-    print(f"ceiling at m={H1['budget']}: {c.value:.4f}   proved: {H1['proved']}")
-    print(f"unreachable span: [{reachable:.3f}, {H1['proved']}] = {dead_zone:.3f}")
+    print(f"ceiling at m={H1['budget']}: {c.value:.4f}   proved: {H1['proved']:.4f}")
+    print(f"unreachable span: [{reachable:.3f}, {H1['proved']:.3f}] = {dead_zone:.3f}")
     print("arm A refused by the emitter: " + ("YES" if refusal else "NO -- REGRESSION"))
     print(f"wrote {OUT_MD}")
     return 0 if refusal else 1
