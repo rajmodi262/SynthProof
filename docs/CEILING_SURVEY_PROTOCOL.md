@@ -172,4 +172,32 @@ does not apply must be stated in the paper rather than left for the viva.
 ---
 
 ## Amendments
-*(none — append dated entries below, never edit above this line)*
+*(append dated entries below, never edit above this line)*
+
+### A1 — 2026-09-06 — Machine first pass. THIS IS A DEVIATION FROM §6.
+
+§6 requires every paper to be extracted independently by **two people**. It is being extracted
+**first by an LLM agent**, one pass, and the resulting rows are marked `extractor:
+"machine-pass-1"` and `verified_by_human: false`.
+
+**This does not satisfy §6 and the resulting table cannot carry the claim on its own.** It is a
+labour-saving first pass: it converts "read 45 papers from scratch" into "check 45 pre-filled
+rows against the source", which is the same verification work a second human coder would do
+anyway, done against a draft instead of a blank sheet.
+
+**What must still happen before any number from this table is published:**
+1. A human second-codes **every** row against the source, independently of the machine's values.
+2. The disagreement rate between the machine pass and the human pass is computed and reported,
+   exactly as §6 requires between two human coders.
+3. `verified_by_human` is flipped to `true` per row, by the person who checked it.
+4. Any row still `false` at write-up time is **excluded from K** and counted separately.
+
+**Why this is recorded rather than quietly done:** an LLM extracting numbers from papers is
+precisely the failure mode that produced a fabricated quote in this project's own research notes
+on 2026-09-05 (retracted in commit `2da35ea`). The mitigation is not trust, it is that the value
+is worthless until a human has looked at the source. Rows the agent could not verify must say
+`NOT REPORTED` or `could not obtain`, never a plausible guess.
+
+**Frame coverage:** the machine pass covers a named subset, not the full frozen frame. The
+subset and the count are recorded in the extraction file. **A partial frame yields a partial
+result and must be reported as one** — K over a subset is not K over the frame.

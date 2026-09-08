@@ -158,16 +158,131 @@ DEAD_CLAIMS: list[tuple[str, str, str, str]] = [
         "marginals -- it is not a tight audit of AIM as deployed.",
         "Describe it as a many-run worst-case GDP audit of a restricted configuration.",
     ),
+    # ---------------------------------------------------------------- added 2026-09-06
+    # Nine more died during the novelty protocol's second pass. Each has a fetched citation.
+    (
+        "complete-case-as-ours",
+        r"(we|our|this (work|thesis))[^.]{0,90}\b(first|show|demonstrat|measur|discover)\w*"
+        r"[^.]{0,90}\b(complete[- ]case|listwise|incomplete rows|dropna)\b",
+        "FairPrep (Schelter, He, Khilnani & Stoyanovich, arXiv:1911.12587, 2019) S5.3 already "
+        "reports 24% vs 14% high-income between complete and incomplete records ON UCI ADULT -- "
+        "the same quantities we measured -- and S2.4 already names silent deletion as an "
+        "evaluation-instrument shortcoming. Mohapatra et al. (PVLDB 17(8) 2024) already evaluate "
+        "against the UN-deleted ground truth and measure the damage for five DP synthesizers.",
+        "Do not claim it. If the topic is discussed at all, cite FairPrep and Mohapatra as prior "
+        "statements of the defect.",
+    ),
+    (
+        "folktables-defect-as-ours",
+        r"(we|our)[^.]{0,80}\b(found|discover|identif|report)\w*[^.]{0,80}"
+        r"\b(folktables|nan_to_num|sentinel)\b",
+        "The folktables np.nan_to_num argument-position defect is GitHub issue #39 on "
+        "socialfoundations/folktables, open since 2024-01-04.",
+        "Cite the issue. It is prior art, not a finding.",
+    ),
+    (
+        "selection-deleted-as-ours",
+        r"(we|our)[^.]{0,80}\b(contribut|introduc|propose|first)\w*[^.]{0,90}"
+        r"\b(selection[- ]deleted|fixed[- ]workload|deleting the selection)\b",
+        "Asiaee & Aryan (arXiv:2607.08122, Jul 2026) run exactly this design -- fixed arm "
+        "measures all m coordinates once, same epsilon, same Private-PGM reconstruction, as a "
+        "named Algorithm 2. AND OpenDP SmartNoise's MWEM ships a documented `measure_only` "
+        "parameter that deletes the selection spend, with the comparison already in its docs.",
+        "Present the fixed_workload arm as experimental hygiene and a replication, never as a "
+        "contribution.",
+    ),
+    (
+        "signature-attack-as-ours",
+        r"(we|our)[^.]{0,80}\b(first|discover|identif|new)\w*[^.]{0,110}"
+        r"\b(signed (but|and still)|signature valid|mirrored field)\b",
+        "This is XML Signature Wrapping ported to JSON-LD -- a known attack class since "
+        "McIntosh & Austel 2005 -- and has a 2026 CVE in this exact shape (CVE-2026-42462, "
+        "Fedify, 2026-05-20).",
+        "Cite XSW and the CVE. What we did is implement the mirrored-field cross-check for DP "
+        "privacy metadata; that is engineering, not discovery.",
+    ),
+    (
+        "gdp-auditing-as-ours",
+        r"(we|our)[^.]{0,80}\b(propose|introduc|contribut|first|develop)\w*[^.]{0,90}"
+        r"\b(GDP|f-DP|Gaussian[- ]DP)\b[^.]{0,60}\baudit",
+        "Ganev, Annamalai & Kulynych (arXiv:2604.18352, TPDP 2026) published GDP/f-DP tradeoff "
+        "auditing of MST and AIM -- our headline mechanism -- with public code.",
+        "results/GDP_AUDIT.md already frames our run as a replication. Keep it that way.",
+    ),
+    (
+        "amplification-audit-as-first",
+        r"(we|our)[^.]{0,60}\bfirst\b[^.]{0,110}\baudit\w*[^.]{0,60}\bamplification\b",
+        "Annamalai, Balle, Hayes & De Cristofaro (arXiv:2411.10614, NDSS 2026) already audit an "
+        "amplification credit applied under an assumption that does not hold, and report the "
+        "audited bound violating the amplified one (up to 4x, 10x for variants).",
+        "If this line is pursued at all it is a TRANSFER to a new amplification source, stated "
+        "as such.",
+    ),
+    (
+        "canary-contamination-as-first",
+        r"(we|our)[^.]{0,70}\bfirst\b[^.]{0,110}\bcanar\w+[^.]{0,80}"
+        r"\b(destroy|degrad|contaminat|damag)\w*",
+        "Panda et al. (arXiv:2503.06808) measure canary-induced perplexity cost; Mitchell et al. "
+        "(arXiv:2606.10481) measure held-out-loss and MAUVE damage, describe diffuse "
+        "contamination in S4, AND already recommend the two-fit split in S3.",
+        "The residue is narrow: WHICH statistic it lands on in tabular DP synthesis, and that "
+        "the damage is mechanism-DIFFERENTIAL. Never the phenomenon, never the remedy.",
+    ),
+    (
+        "two-fit-split-as-ours",
+        r"(we|our)[^.]{0,80}\b(propose|introduc|devis|contribut)\w*[^.]{0,90}"
+        r"\b(two[- ]fit|separate fit|second fit|fit twice)\b",
+        "Mitchell et al. (arXiv:2606.10481) S3, verbatim: 'In some applications it may not be "
+        "prohibitive to train two models with identical hyper parameters, one with canaries "
+        "inserted just for auditing.'",
+        "Say we QUANTIFY a separation Mitchell et al. recommend. They assert it qualitatively; "
+        "we measured 58% at eps=8.",
+    ),
+    (
+        "evaluation-bias-direction-as-ours",
+        r"(we|our)[^.]{0,90}\b(show|first|discover|find)\w*[^.]{0,110}"
+        r"\b(simpler|less dependence|independence)\b[^.]{0,70}\b(favou?r|bias)",
+        "DPBench (Hay et al., SIGMOD 2016, arXiv:1512.04817) S8 already states that complex "
+        "data-dependent algorithms lose to simple data-independent ones in a describable regime, "
+        "and already resolves an inverted published ranking via an unreported evaluation choice.",
+        "DPBench attributes the direction to a real signal-to-noise regime. Any claim here must "
+        "distinguish CONTAMINATION OF THE APPARATUS from that, with a matched-regime control.",
+    ),
 ]
 
 # Phrases that must appear somewhere if the chapter discusses the audit at all.
-REQUIRED_WITH_AUDIT: list[tuple[str, str, str]] = [
+# (label, trigger, required, why). The label matters: three rules reporting under one name
+# leaves a writer unable to tell which fix is being asked for.
+REQUIRED_WITH_AUDIT: list[tuple[str, str, str, str]] = [
     (
+        "missing-ceiling",
         r"\b(eps|epsilon|ε)[_ ]?audited\b",
         r"\bceiling\b",
         "This chapter reports an audited epsilon without ever mentioning the ceiling. A zero "
         "with no ceiling beside it is the 'privacy theater' failure Dibia et al.'s experts "
         "warned about.",
+    ),
+    # Added 2026-09-06. The ceiling-as-a-reported-field claim is a TRANSFER of limit-of-detection
+    # reporting. An examiner with any lab-science background will say "this is just LoD" -- and
+    # if we have not said it first, the claim reads as an undone literature search and dies on
+    # the spot. So the attribution is required wherever the claim is made.
+    (
+        "missing-lod-transfer",
+        r"\b(audit[_ ]?ceiling|operating range|maximum auditable)\b",
+        r"\b(MIQE|limit of detection|LoD|LLOQ)\b",
+        "This chapter claims the ceiling as a reported field without citing the convention it "
+        "transfers. MIQE 2.0 (Bustin et al., Clinical Chemistry 2025;71(6):634-651) mandates "
+        "LoD/LLOQ reporting; analytical labs report 'Not Detected, < LOD'. Cite it OURSELVES.",
+    ),
+    (
+        "missing-ceiling-attribution",
+        r"\b(audit[_ ]?ceiling|operating range)\b",
+        r"\b(Steinke|maximum auditable|Annamalai)\b",
+        "This chapter discusses the ceiling without attributing it. It is a corollary of Steinke "
+        "et al. Thm 2.1, and the concept is already NAMED 'maximum auditable epsilon' by "
+        "Annamalai, Ganev & De Cristofaro (arXiv:2405.10994) S2.2. Citing only Steinke is "
+        "insufficient -- that paper is one we already cite, and an examiner who opens it will "
+        "find our framing there under a different name.",
     ),
 ]
 
@@ -216,9 +331,15 @@ def check(path: Path) -> list[str]:
                 f"    write instead: {instead}"
             )
 
-    for trigger, required, why in REQUIRED_WITH_AUDIT:
-        if re.search(trigger, prose, re.I) and not re.search(required, prose, re.I):
-            problems.append(f"{path.name}  [missing-ceiling]\n    {why}")
+    # The pairing rules say "if you make this claim, you must cite X". An evidence map makes no
+    # claims -- it is a generated index of which result file backs which section -- so requiring
+    # it to carry an attribution is a false positive a writer cannot fix by writing. The
+    # DEAD_CLAIMS regexes above still apply to it, because a generated file can still repeat a
+    # dead phrase. A checker that reports unfixable problems is a checker that gets ignored.
+    if not path.name.endswith("-evidence.md"):
+        for label, trigger, required, why in REQUIRED_WITH_AUDIT:
+            if re.search(trigger, prose, re.I) and not re.search(required, prose, re.I):
+                problems.append(f"{path.name}  [{label}]\n    {why}")
 
     return problems
 
@@ -260,8 +381,9 @@ def main() -> None:
     if not problems:
         print(f"OK - {len(targets)} file(s) checked, no known-dead claim found.")
         print("     This does not mean the argument is sound. It means you did not write one")
-        print("     of the ELEVEN claims killed by research/08_novelty_verdict.md and")
-        print("     research/10_deep_survey_2026-08-25.md.")
+        print("     of the TWENTY claims killed by research/08_novelty_verdict.md,")
+        print("     research/10_deep_survey_2026-08-25.md, and the 2026-09-06 kill pass")
+        print("     recorded in .novelty/05_kill_report.md.")
         return
 
     print(f"FOUND {len(problems)} claim(s) the evidence no longer supports:\n")

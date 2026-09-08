@@ -207,3 +207,88 @@ def test_a_shared_title_by_different_authors_is_not_a_duplicate():
     vdp = titles.get("verifiable differential privacy", [])
     if vdp:
         assert len({a for _k, _p, a in vdp}) > 1, "expected distinct first authors"
+
+
+# ------------------------------------------------- the nine claims that died on 2026-09-06
+
+
+@pytest.mark.parametrize(
+    "label,asserted,hedged",
+    [
+        (
+            "complete-case-as-ours",
+            "We are the first to show that complete-case deletion biases the reference.",
+            "FairPrep reported this in 2019, so we do not claim complete-case deletion as ours.",
+        ),
+        (
+            "folktables-defect-as-ours",
+            "We found the folktables nan_to_num defect.",
+            "The folktables nan_to_num defect is not ours -- it is GitHub issue #39.",
+        ),
+        (
+            "selection-deleted-as-ours",
+            "We contribute a selection-deleted control arm for workload-adaptive mechanisms.",
+            "The selection-deleted arm is not a contribution; SmartNoise ships measure_only.",
+        ),
+        (
+            "gdp-auditing-as-ours",
+            "We propose a GDP tradeoff-curve audit of marginal mechanisms.",
+            "GDP auditing is occupied by Ganev et al., so we do not propose it.",
+        ),
+        (
+            "amplification-audit-as-first",
+            "We are the first to audit an amplification bound empirically.",
+            "We are not the first to audit an amplification bound -- Annamalai et al. were.",
+        ),
+        (
+            "two-fit-split-as-ours",
+            "We propose a two-fit split separating the audit from the utility measurement.",
+            "The two-fit split is not ours; Mitchell et al. recommend it. We only quantify it.",
+        ),
+    ],
+)
+def test_each_new_dead_claim_fires_when_asserted_and_not_when_hedged(
+    tmp_path, label, asserted, hedged
+):
+    """Both halves matter. A checker that cries wolf on a retraction gets switched off."""
+    assert label in labels(check(_write(tmp_path, asserted))), f"{label} did not fire"
+    assert label not in labels(check(_write(tmp_path, hedged))), f"{label} fired on a hedge"
+
+
+def test_the_ceiling_claim_must_carry_its_limit_of_detection_attribution(tmp_path):
+    """An examiner with lab-science background says 'this is just LoD'. We must say it first."""
+    bare = "The artefact reports the audit_ceiling beside the audited epsilon."
+    assert "missing-lod-transfer" in labels(check(_write(tmp_path, bare)))
+
+    cited = (
+        "The artefact reports the audit_ceiling beside the audited epsilon. This transfers the "
+        "limit of detection convention that MIQE 2.0 mandates for qPCR, and we cite it as such. "
+        "The quantity is a corollary of Steinke et al."
+    )
+    assert "missing-lod-transfer" not in labels(check(_write(tmp_path, cited)))
+
+
+def test_the_ceiling_must_be_attributed_not_only_to_steinke(tmp_path):
+    """The concept already has a published NAME in this exact sub-domain."""
+    bare = "We report the operating range of the empirical metric."
+    assert "missing-ceiling-attribution" in labels(check(_write(tmp_path, bare)))
+
+    named = (
+        "We report the operating range of the empirical metric, which Annamalai, Ganev & "
+        "De Cristofaro call the maximum auditable epsilon, following MIQE 2.0's limit of "
+        "detection convention."
+    )
+    assert "missing-ceiling-attribution" not in labels(check(_write(tmp_path, named)))
+
+
+def test_generated_evidence_maps_are_exempt_from_pairing_rules_but_not_dead_claims(tmp_path):
+    """A generated index makes no claims, so it cannot be asked to carry an attribution.
+
+    It can still repeat a dead phrase, so the DEAD_CLAIMS half must still apply to it.
+    """
+    p = tmp_path / "ch99-evidence.md"
+    p.write_text("Section 7.2 reports the audit_ceiling. See results/RESULTS.md.", encoding="utf-8")
+    assert "missing-lod-transfer" not in labels(check(p))
+
+    p.write_text("We found the folktables nan_to_num defect.", encoding="utf-8")
+    assert "folktables-defect-as-ours" in labels(check(p))
