@@ -83,6 +83,12 @@ MIRRORED_FIELDS: Dict[str, str] = {
     "dp:epsilonAudited": "total_audited_eps",
     "dp:delta": "delta",
     "dp:auditCeiling": "audit_ceiling",
+    # The ceiling is meaningless without the series it came from: at m=800 the paired
+    # Clopper-Pearson ceiling is 5.377 and the one-run one is 5.586, and the GDP ceiling is in
+    # mu rather than epsilon. Mirroring these three makes a reader able to check which.
+    "dp:auditEstimator": "audit_estimator",
+    "dp:auditBudget": "audit_budget",
+    "dp:auditAlpha": "audit_alpha",
     "dp:mechanism": "mechanism",
     "dp:unitOfPrivacy": "unit_of_privacy",
     "dp:contributionBound": "contribution_bound",
@@ -280,6 +286,29 @@ def to_croissant(
             "Fix: run `synthproof run ... --sign`, or sign the sheet with "
             "`synthproof.ledger.signing.sign_datasheet`."
         )
+
+    # An empirical epsilon with no operating range is not a weaker result, it is an unreadable
+    # one -- and this record is the point at which it would leave the project. `audit_ceiling`
+    # alone will not do: three ceiling series live in this repo, in two units, and a reader who
+    # cannot tell which one produced the number cannot check it. Refuse rather than emit.
+    if d.get("total_audited_eps") is not None:
+        missing = [
+            k
+            for k in ("audit_ceiling", "audit_estimator", "audit_budget", "audit_alpha")
+            if d.get(k) is None
+        ]
+        if missing:
+            raise CroissantError(
+                f"Refusing to emit: this sheet reports dp:epsilonAudited = "
+                f"{d['total_audited_eps']} but is missing {', '.join(missing)}.\n"
+                "A reader cannot tell an audited 0.0 that means 'nothing leaked' from an "
+                "audited 0.0 that means 'the instrument could not have seen anything'. This "
+                "project published exactly that confusion once: eps_audited 0.000 against "
+                "eps_proved 7.36, where 60 canaries capped the auditor at 2.97.\n"
+                "Fix: derive the ceiling with "
+                "`synthproof.audit.ceiling.ceiling_for(estimator, budget, alpha)` and set "
+                "audit_estimator / audit_budget / audit_alpha on the sheet before signing."
+            )
 
     name = _slug(d.get("dataset_name") or "synthproof-release")
     mechanism = d.get("mechanism", "unknown")

@@ -39,6 +39,11 @@ def _sheet(**overrides) -> PrivacyDataSheet:
         frontier_curve=[],
         ledger_hash="a" * 64,
         audit_ceiling=2.972,
+        # The ceiling travels with the series that produced it: 2.972 is the ONE-RUN value at
+        # m=60, not the paired Clopper-Pearson one. See synthproof/audit/ceiling.py.
+        audit_estimator="one_run",
+        audit_budget=60,
+        audit_alpha=0.05,
         input_fingerprint="b" * 64,
         domain_source="declared",
         attacks_run=["singling_out", "linkability", "attribute_inference", "domias", "mia"],
@@ -210,14 +215,40 @@ def test_absent_ceiling_is_named_not_omitted(keys):
     Standing rule: where a capability does not exist, name it as absent rather than omitting
     it. An absent ceiling silently dropped would leave an audited epsilon looking like a
     measurement.
+
+    NOTE: this covers a sheet that reports NO audited epsilon. A sheet that DOES report one
+    and omits the ceiling is refused outright -- see the test below. The two rules do not
+    conflict: name what is absent, but never publish a number whose reach is unknown.
     """
-    sheet = _sheet(audit_ceiling=None)
+    sheet = _sheet(audit_ceiling=None, total_audited_eps=None)
     signing.sign_datasheet(sheet)
     record = croissant_mod.to_croissant(sheet)
 
     assert record["dp:auditIsInformative"] is False
     assert record["dp:auditInterpretation"].startswith("NOT REPORTED")
     assert "dp:auditCeiling" in " ".join(croissant_mod.validate_structure(record))
+
+
+@pytest.mark.parametrize(
+    "dropped", ["audit_ceiling", "audit_estimator", "audit_budget", "audit_alpha"]
+)
+def test_an_audited_epsilon_without_its_reach_is_refused(keys, dropped):
+    """The enforceable half of the project's central claim.
+
+    An audited 0.0 that means "nothing leaked" and an audited 0.0 that means "the instrument
+    could not have seen anything" are indistinguishable to a reader. This project published
+    exactly that confusion: eps_audited 0.000 against eps_proved 7.36, where 60 canaries capped
+    the auditor at 2.97. The record is where the number would leave the project, so it is
+    refused here rather than annotated.
+
+    Parametrised over all four fields because the ceiling alone is not enough: three ceiling
+    series live in this repo, in two units, and a reader who cannot tell which one produced the
+    number cannot check it.
+    """
+    sheet = _sheet(**{dropped: None})
+    signing.sign_datasheet(sheet)
+    with pytest.raises(croissant_mod.CroissantError, match=dropped):
+        croissant_mod.to_croissant(sheet)
 
 
 # --------------------------------------------------------------------------- honesty of framing

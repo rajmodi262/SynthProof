@@ -30,7 +30,8 @@ from synthproof.accounting.differential import (
 from synthproof.accounting.differential import (
     enforce as enforce_accountant_agreement,  # `enforce` is taken by preflight
 )
-from synthproof.audit.steinke import max_provable_epsilon
+from synthproof.audit.ceiling import ceiling_for
+from synthproof.audit.steinke import DEFAULT_ALPHA
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.preflight import enforce
 from synthproof.frontier.experiment import MECHANISMS, run_cell
@@ -98,7 +99,15 @@ class PrivacyDataSheet:
     # SynthProof is central-model: we read your table.
     deployment_model: str = "central"  # central | local | shuffle
     input_fingerprint: Optional[str] = None  # SHA-256 of the input table
-    audit_ceiling: Optional[float] = None  # most this canary count could ever certify
+    # THE OPERATING RANGE OF THE EMPIRICAL MEASUREMENT. `audit_ceiling` alone is not enough:
+    # this repo carries three ceiling series in two units, and quoting one where another belongs
+    # is a checkable error (see audit/ceiling.py). So the estimator, the budget and the
+    # confidence level travel WITH the number, and `validate_audit_reporting` refuses a release
+    # that reports an audited epsilon without them.
+    audit_ceiling: Optional[float] = None  # most this budget could ever certify
+    audit_estimator: Optional[str] = None  # one_run | paired_cp | gdp
+    audit_budget: Optional[int] = None  # canaries (m), or runs per world for gdp
+    audit_alpha: Optional[float] = None  # confidence level of the reported lower bound
     preflight_findings: List[Dict] = field(default_factory=list)
     residual_risk: List[str] = field(default_factory=list)
 
@@ -150,6 +159,39 @@ class PrivacyDataSheet:
         if self.audit_ceiling is None:
             return False
         return self.audit_ceiling >= self.total_proved_eps
+
+    def validate_audit_reporting(self) -> None:
+        """Refuses a sheet that reports an audited epsilon without the instrument's reach.
+
+        This is the enforceable half of the project's central claim. An empirical privacy
+        number with no operating range is not a weaker result, it is an unreadable one: this
+        project published `eps_audited = 0.000` against `eps_proved = 7.36` and read it as a
+        fact about the mechanism, when 60 canaries could not have exceeded 2.97 against a
+        release that was 100% verbatim training data.
+
+        Raises:
+            ValueError: naming exactly which fields are missing, and how to supply them.
+        """
+        if self.total_audited_eps is None:
+            return
+        missing = [
+            name
+            for name, value in (
+                ("audit_ceiling", self.audit_ceiling),
+                ("audit_estimator", self.audit_estimator),
+                ("audit_budget", self.audit_budget),
+                ("audit_alpha", self.audit_alpha),
+            )
+            if value is None
+        ]
+        if missing:
+            raise ValueError(
+                "this sheet reports total_audited_eps="
+                f"{self.total_audited_eps} but is missing {', '.join(missing)}. An empirical "
+                "privacy number cannot be interpreted without the reach of the instrument that "
+                "produced it. Supply the estimator family, the budget and alpha, and derive the "
+                "ceiling with synthproof.audit.ceiling.ceiling_for(estimator, budget, alpha)."
+            )
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -355,7 +397,12 @@ class FrontierEngine:
             domain_source=domain_source,
             contribution_bound=contribution_bound,
             input_fingerprint=fingerprint,
-            audit_ceiling=max_provable_epsilon(num_canaries) if num_canaries > 1 else None,
+            audit_ceiling=(
+                ceiling_for("one_run", num_canaries).value if num_canaries > 1 else None
+            ),
+            audit_estimator="one_run" if num_canaries > 1 else None,
+            audit_budget=num_canaries if num_canaries > 1 else None,
+            audit_alpha=DEFAULT_ALPHA if num_canaries > 1 else None,
             preflight_findings=[f.to_dict() for f in findings],
             residual_risk=_RESIDUAL_RISK,
             accountant_agreement=agreement.to_dict(),
