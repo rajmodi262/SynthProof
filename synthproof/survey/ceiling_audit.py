@@ -76,6 +76,10 @@ class Row:
     source_depth: str  # full text | abstract only | could not obtain
     locators: Dict[str, str] = field(default_factory=dict)
     notes: str = ""
+    # Protocol amendment A1. The first extraction pass is by machine, which does NOT satisfy S6's
+    # two-human requirement. A row is worthless until someone has read the source themselves, so
+    # this gates K in code rather than in a reviewer's memory.
+    verified_by_human: bool = False
 
     def validate(self) -> None:
         """Enforce the protocol rules that are cheap to break and expensive to discover."""
@@ -87,14 +91,27 @@ class Row:
                 f"got {self.acknowledged_limit!r}. Whether the paper disclosed its own limit "
                 f"decides whether it counts toward K (protocol S8)."
             )
-        for unit_name, unit in (("emp_unit", self.emp_unit), ("proved_unit", self.proved_unit)):
-            if unit not in ("epsilon", "mu"):
+        # A unit is only meaningful when there is a value to carry it. Papers in the frame that
+        # report no empirical privacy quantity at all are a real and expected case -- they land
+        # in NOT REPORTED, which is one of the results this survey exists to produce -- and
+        # demanding "epsilon" or "mu" from them would force an extractor to invent one.
+        for unit_name, unit, value in (
+            ("emp_unit", self.emp_unit, self.eps_emp),
+            ("proved_unit", self.proved_unit, self.eps_proved),
+        ):
+            if value is not None and unit not in ("epsilon", "mu"):
                 raise ProtocolViolation(
-                    f"{self.paper_id}: {unit_name} must be 'epsilon' or 'mu'; got {unit!r}"
+                    f"{self.paper_id}: {unit_name} must be 'epsilon' or 'mu' when "
+                    f"{unit_name.replace('_unit', '')} has a value; got {unit!r}"
                 )
         # Protocol S4: a number without a locator is not admissible.
+        # A locator key may cover more than one field -- "eps_emp and eps_proved: Section 6,
+        # Figure 7" is a perfectly good citation for both, and refusing it would push extractors
+        # toward duplicating the same reference rather than toward citing more carefully. So the
+        # test is that SOME key names this field, not that a key equals it exactly.
+        located = {k.lower() for k in self.locators}
         for name in ("budget", "alpha", "eps_emp", "eps_proved"):
-            if getattr(self, name) is not None and name not in self.locators:
+            if getattr(self, name) is not None and not any(name in k for k in located):
                 raise ProtocolViolation(
                     f"{self.paper_id}: {name} has a value but no locator. Protocol S4: a number "
                     f"without a section/table/figure/page reference is not admissible. Add "
@@ -112,11 +129,17 @@ class Classified:
 
     @property
     def counts_toward_k(self) -> bool:
-        """Protocol S8: K counts underpowered papers that did NOT acknowledge the limitation.
+        """Protocol S8 + amendment A1.
 
-        A paper that disclosed its own run-count limit is a restatement, not a finding.
+        K counts underpowered papers that did NOT acknowledge the limitation -- a paper that
+        disclosed its own run-count limit is a restatement, not a finding -- AND whose row a
+        human has checked against the source. An unverified machine row is a draft, not evidence.
         """
-        return self.klass == "UNDERPOWERED" and self.row.acknowledged_limit == "no"
+        return (
+            self.klass == "UNDERPOWERED"
+            and self.row.acknowledged_limit == "no"
+            and self.row.verified_by_human
+        )
 
 
 def classify(row: Row) -> Classified:
@@ -222,7 +245,30 @@ def classify(row: Row) -> Classified:
 
 
 def classify_all(rows: Sequence[Row]) -> List[Classified]:
-    return [classify(r) for r in rows]
+    """Classify a table. A row that breaks the protocol is EXCLUDED and says why.
+
+    `classify` raises on a protocol violation, which is right for a single row: the caller has
+    made an error and should hear about it. But over a table, one bad row must not abort the
+    survey and must not vanish either. Protocol S5 already prescribes the answer for a row whose
+    ceiling cannot be determined -- exclude it, count it, report it -- and a units mismatch is
+    exactly that case. So the violation becomes the exclusion reason and travels into the table
+    where a human will see it.
+    """
+    out: List[Classified] = []
+    for r in rows:
+        try:
+            out.append(classify(r))
+        except ProtocolViolation as exc:
+            out.append(
+                Classified(
+                    row=r,
+                    klass="EXCLUDED",
+                    ceiling=None,
+                    ceiling_unit=None,
+                    reason=f"protocol violation, excluded rather than guessed: {exc}",
+                )
+            )
+    return out
 
 
 def wilson_interval(successes: int, trials: int, z: float = 1.959963984540054) -> Tuple[float, float]:
@@ -249,12 +295,21 @@ class Summary:
     n_excluded_undeterminable_estimator: int
     n_not_reported: int
     n_underpowered_but_acknowledged: int
+    n_awaiting_human_verification: int
     per_estimator: Dict[str, Dict[str, int]]
 
     def headline(self) -> str:
         lo, hi = self.k_ci
         if self.n_papers_included == 0:
             return "NO PAPERS INCLUDED. Nothing can be concluded."
+        if self.n_awaiting_human_verification:
+            return (
+                f"PRELIMINARY -- K IS NOT YET COMPUTABLE. "
+                f"{self.n_awaiting_human_verification} of {self.n_papers_included} included "
+                f"papers are machine-extracted and NOT yet verified against the source by a "
+                f"human, so they are excluded from K by protocol amendment A1. The classes below "
+                f"are a draft for a human to check, not a result. Do not quote K from this run."
+            )
         if self.k == 0:
             return (
                 f"K = 0 of {self.n_papers_included}. **No included paper was underpowered "
@@ -308,6 +363,7 @@ def summarise(classified: Sequence[Classified]) -> Summary:
         n_underpowered_but_acknowledged=sum(
             1 for c in included if c.klass == "UNDERPOWERED" and c.row.acknowledged_limit == "yes"
         ),
+        n_awaiting_human_verification=sum(1 for c in included if not c.row.verified_by_human),
         per_estimator=per_estimator,
     )
 

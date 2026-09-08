@@ -201,3 +201,18 @@ is worthless until a human has looked at the source. Rows the agent could not ve
 **Frame coverage:** the machine pass covers a named subset, not the full frozen frame. The
 subset and the count are recorded in the extraction file. **A partial frame yields a partial
 result and must be reported as one** — K over a subset is not K over the frame.
+
+**A structural caveat the extracting agents raised themselves, and it is the strongest argument
+for §6:** the fetch tool available to them does not return raw page text — it runs a small
+summarising model over the page and returns *that model's reading*. So every "verbatim" quote in
+the machine rows is **a quote as relayed by a summariser, not a string anyone read in the
+source.** The agents mitigated it (two-to-four independent passes per paper with differently
+worded prompts, keeping only values that survived, cross-checking against a second renderer) and
+they flagged the residual risk without being asked. It cannot be eliminated by more passes. It is
+eliminated by a human opening the PDF.
+
+**Enforced in code, not in a reviewer's memory:** `Row.verified_by_human` defaults to `False`,
+`Classified.counts_toward_k` requires it, and `Summary.headline()` refuses to report K at all
+while any included row is unverified — it returns *"PRELIMINARY — K IS NOT YET COMPUTABLE … Do
+not quote K from this run."* A K of 0 must never be readable as "we looked and found nothing"
+when it actually means "nobody has checked yet."

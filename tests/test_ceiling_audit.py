@@ -33,6 +33,9 @@ def _row(**over):
         extractor="rm",
         source_depth="full text",
         locators={"budget": "S5.2", "alpha": "S5.2", "eps_emp": "Tab.3", "eps_proved": "Tab.3"},
+        # These tests are about the classification logic, not the amendment-A1 verification gate,
+        # which has its own tests below. Default them verified so the two concerns stay separate.
+        verified_by_human=True,
     )
     kw.update(over)
     return Row(**kw)
@@ -150,3 +153,59 @@ class TestWilson:
 
     def test_no_trials_is_not_a_crash(self):
         assert wilson_interval(0, 0) == (0.0, 0.0)
+
+
+class TestAmendmentA1VerificationGate:
+    """A machine-extracted row is a draft. It must not reach K until a human reads the source.
+
+    The first extraction pass is by LLM agent, which does NOT satisfy protocol S6's two-human
+    requirement. An LLM reading numbers out of papers is precisely the failure mode that put a
+    fabricated quote into this project's own research notes (retracted, commit 2da35ea). The
+    mitigation is not trust; it is that the value cannot count until someone has checked it.
+    """
+
+    def test_an_unverified_row_is_classified_but_does_not_count_toward_k(self):
+        c = classify(_row(verified_by_human=False))
+        assert c.klass == "UNDERPOWERED"       # still classified, so a human can see the draft
+        assert c.counts_toward_k is False      # but it earns nothing
+
+    def test_verifying_the_same_row_lets_it_count(self):
+        assert classify(_row(verified_by_human=True)).counts_toward_k is True
+
+    def test_the_headline_refuses_to_report_k_while_rows_are_unverified(self):
+        """K = 0 must never be readable as 'we looked and found nothing'."""
+        s = summarise(classify_all([_row(paper_id="a", verified_by_human=False)]))
+        assert s.k == 0
+        assert s.n_awaiting_human_verification == 1
+        assert "NOT YET COMPUTABLE" in s.headline()
+        assert "Do not quote K" in s.headline()
+
+    def test_a_fully_verified_table_reports_k_normally(self):
+        s = summarise(classify_all([_row(paper_id="a", verified_by_human=True)]))
+        assert s.n_awaiting_human_verification == 0
+        assert "NOT YET COMPUTABLE" not in s.headline()
+        assert "Wilson CI" in s.headline()
+
+
+class TestTableLevelRobustness:
+    def test_a_protocol_violation_excludes_one_row_without_aborting_the_table(self):
+        """One bad row must neither abort the survey nor vanish from it."""
+        good = _row(paper_id="good")
+        bad = _row(paper_id="bad", estimator_family="gdp", budget=2500, proved_unit="epsilon")
+        out = classify_all([good, bad])
+        assert len(out) == 2
+        bad_c = next(c for c in out if c.row.paper_id == "bad")
+        assert bad_c.klass == "EXCLUDED"
+        assert "protocol violation" in bad_c.reason
+
+    def test_a_compound_locator_key_satisfies_both_fields(self):
+        """'eps_emp and eps_proved: S6, Fig 7' is a good citation for both."""
+        c = classify(_row(locators={"budget": "S5", "alpha": "S5",
+                                    "eps_emp and eps_proved": "S6, Fig 7"}))
+        assert c.klass in ("UNDERPOWERED", "INTERPRETABLE", "SATURATED")
+
+    def test_a_paper_reporting_no_empirical_quantity_needs_no_unit(self):
+        """Papers in the frame that estimate nothing are expected, not malformed."""
+        c = classify(_row(eps_emp=None, emp_unit="NOT REPORTED",
+                          locators={"budget": "S5", "alpha": "S5", "eps_proved": "T1"}))
+        assert c.klass in ("UNDERPOWERED", "INTERPRETABLE", "NOT REPORTED")
