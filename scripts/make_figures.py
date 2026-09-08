@@ -254,6 +254,57 @@ def fig_audit_ceiling():
     _save(fig, "fig-audit-ceiling")
 
 
+def fig_ceiling_ablation():
+    """The Claim 1 ablation: what a reader can conclude, with and without the ceiling field.
+
+    Both panels show the SAME release. The only difference is whether the artefact declares the
+    reach of the instrument that produced the audited number. Without it, the reader has two
+    points and one available inference -- "nothing leaked" -- which is the inference this
+    project drew and published. With it, the unreachable band is visible and the zero reads as
+    a floor.
+
+    Derived from the audit configuration (m = 60, alpha = 0.05) and the committed H1 numbers,
+    not from a separate experiment: the point is that nothing new had to be measured.
+    """
+    from synthproof.audit.ceiling import ceiling_for
+
+    proved, audited, m, alpha = 7.356, 0.0, 60, 0.05
+    ceiling = ceiling_for("one_run", m, alpha).value
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.8, 2.9), sharex=True, sharey=True)
+
+    for ax in (ax1, ax2):
+        ax.set_xlim(-0.35, 8.2)
+        ax.set_ylim(0, 1)
+        ax.set_yticks([])
+        ax.set_xlabel("ε")
+        ax.grid(axis="x", alpha=0.25)
+        ax.axvline(proved, color=PROVED, lw=2.0)
+        ax.text(proved, 0.90, f" proved {proved}", color=PROVED, fontsize=8, va="top")
+        ax.plot([audited], [0.42], marker="o", ms=8, color=AUDITED, zorder=5)
+        ax.text(audited, 0.30, f"audited {audited:.3f}", color=AUDITED, fontsize=8,
+                ha="left", va="top")
+
+    ax1.set_title("Without the field — what was published", loc="left", fontsize=10)
+    ax1.text(4.1, 0.62, "only inference available:\n“the mechanism leaks nothing”",
+             fontsize=8.5, color=BAD, ha="center", style="italic")
+
+    ax2.set_title("With the field", loc="left", fontsize=10)
+    # The band the instrument could actually reach, and the band it never could.
+    ax2.axvspan(0, ceiling, color=GOOD, alpha=0.13, lw=0)
+    ax2.axvspan(ceiling, proved, color=BAD, alpha=0.13, lw=0)
+    ax2.axvline(ceiling, color=NEUTRAL, ls="--", lw=1.4)
+    ax2.text(ceiling, 0.90, f" ceiling {ceiling:.2f}", color=NEUTRAL, fontsize=8, va="top")
+    ax2.text(ceiling / 2, 0.62, "reachable", fontsize=8, color=GOOD, ha="center")
+    ax2.text((ceiling + proved) / 2, 0.68,
+             f"unreachable\nspan {proved - ceiling:.2f}",
+             fontsize=8, color=BAD, ha="center")
+    ax2.text(5.65, 0.09, f"m = {m}, α = {alpha}, one-run estimator",
+             fontsize=7.5, color=NEUTRAL, ha="center")
+
+    _save(fig, "fig-ceiling-ablation")
+
+
 def fig_discrete_gaussian():
     """The sampler, validated rather than asserted — empirical counts against the exact PMF.
 
@@ -442,6 +493,7 @@ def main():
 
     # These depend only on the code, so they are always produced.
     fig_audit_ceiling()
+    fig_ceiling_ablation()
     fig_calibration()
     fig_discrete_gaussian()
 
