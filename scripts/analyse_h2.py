@@ -102,7 +102,9 @@ def main():
     print(analysis.verdict())
 
     payload = analysis.to_dict()
-    payload["source"] = str(SRC)
+    payload["source"] = SRC.as_posix()  # POSIX form: a Windows separator here would
+    # change the manifest hash on any other platform, failing `make reproduce` for a
+    # path separator rather than for a result.
     payload["source_n_rows"] = data.get("n_rows")
     payload["source_seeds"] = data.get("seeds")
     OUT.write_text(json.dumps(payload, indent=2, default=str) + "\n", encoding="utf-8")

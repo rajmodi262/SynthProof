@@ -1,15 +1,15 @@
 {
   "manifest_version": 1,
-  "generated_at": "2026-09-02T18:29:53.441136+00:00",
+  "generated_at": "2026-09-09T00:03:38.529819+00:00",
   "git": {
-    "commit": "256c67f609437759a1a066d5a398f08d9c5e0f11",
+    "commit": "e68a2e42a2e6c4d3f621ddfae48a410b11bd1daa",
     "branch": "audit-fixes-and-acs",
     "dirty": true
   },
   "environment": {
-    "python": "3.11.4",
-    "platform": "Windows-10-10.0.26200-SP0",
-    "machine": "AMD64"
+    "python": "3.11.15",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.35",
+    "machine": "x86_64"
   },
   "dependencies": {
     "numpy": "2.4.6",
@@ -148,8 +148,6 @@
     }
   },
   "files": {
-    "results/h1_all_families.json": "7107ba2d57e73f6573ca82b6b828986aa94b48ddd4d52b2833b99ef5f3df70f7",
-    "results/acs/h1_all_families.json": "4927c18a21a0c692b3f08c1899f50f00d1cf4f1f274b148d8462e43c1c53a9fd",
     "results/h2_subgroups.json": "0072495d534915b91aea57fb1e7b93ad77d9b1d0f6f85342c1a9ac1d67066842",
     "results/h2_analysis.json": "3c6df3f6ccc56f08d4f63d1b9f4500f532809442c4fcf3aa060e12b3fe630977",
     "results/acs/h2_subgroups.json": "561c53c668554dfe361ddb4a9ce82ee76a2585c58c63ec89c60987ff690aefd0",
@@ -161,5 +159,5 @@
     "results/acs/fairness.json": "5e7cd30b364067e39fa5bf82a018a1dff84cd625d34f0e508cb4ec5783018843",
     "results/gdp_audit.json": "d59ffeb71eb13fb2e566966556a3b68d4a484c822dd5f90ebf475ff3754e3343"
   },
-  "manifest_hash": "27093e17edfa5d15339c7ff9a6793a4a3bcf7ac4bad115216373954a1c79846a"
+  "manifest_hash": "88442cc4a08daa0e07c1e39ae496fe197657479a2eb444f6efb67cb6650f3789"
 }

@@ -139,7 +139,7 @@ figures:
 # Fails if a chapter states one of the eight claims the novelty protocol killed.
 # See docs/thesis/WRITING_NOTICE.md and research/08_novelty_verdict.md.
 claims:
-	python scripts/check_thesis_claims.py
+	python scripts/check_thesis_claims.py --all
 	python scripts/check_citations.py
 
 # Regenerates docs/thesis/ch07-tables.md from results/. Re-run after any experiment;

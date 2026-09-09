@@ -45,8 +45,6 @@ MANIFEST_PATH = Path("results/MANIFEST.json")
 
 # Every file whose contents a published claim depends on.
 RESULT_FILES = [
-    "results/h1_all_families.json",
-    "results/acs/h1_all_families.json",
     "results/h2_subgroups.json",
     "results/h2_analysis.json",
     "results/acs/h2_subgroups.json",
@@ -81,6 +79,13 @@ RESULT_FILES = [
 # marginal-based and DP-SGD results in RESULT_FILES, and does NOT extend to the AIM-family
 # numbers. Fixing it needs a seeded sampler in `mbi`, not a change here.
 UNPINNED_AIM_FAMILY = [
+    # Moved here 2026-09-09 after a full 150-cell re-run on foreign hardware. These two carry
+    # 25 `aim` cells each, so the same unseeded-sampler argument that excludes the files below
+    # applies to them; pinning them meant `make reproduce --run` could never pass for anyone who
+    # actually re-ran H1 -- which is exactly what ARTIFACT.md invites an evaluator to do. Their
+    # deterministic rows (independent, pairwise) were verified bit-identical in that re-run.
+    "results/h1_all_families.json",
+    "results/acs/h1_all_families.json",
     "results/clique_confound.json",
     "results/acs/clique_confound.json",
     "results/selection_ablation.json",
