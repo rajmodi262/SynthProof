@@ -47,6 +47,28 @@ not noise:
 
 (TRTR baseline on ACS: 0.725 [0.707, 0.742].)
 
+> ### ⚠️ Replication note — 2026-09-09
+>
+> The full 150-cell grid was re-fitted from raw data on different hardware and a different OS
+> (Linux, Python 3.11.15, same `requirements.lock` pins). **All 15 ACS aggregate means landed
+> inside the committed 95% CIs, and every `independent`/`pairwise` cell was bit-identical.**
+> Two statements on this page did *not* survive that re-run, and both should be weakened
+> before they are defended:
+>
+> 1. **The eps-monotonicity result loses its separation.** Committed: TSTR 0.7039
+>    [0.6946, 0.7126] at eps=0.5 falling to 0.5812 [0.5386, 0.6289] at eps=8 — endpoints
+>    disjoint. Re-run: 0.6624 [0.6019, 0.7224] falling to 0.6110 [0.5913, 0.6307] — **the
+>    endpoint CIs overlap.** The *direction* replicates; the *significance* does not. Report
+>    it as a direction, or raise the seed count until the separation is stable.
+> 2. **The eps=8 mechanism ordering is not stable.** Committed has AIM worst on correlation
+>    error (0.0626 vs independent 0.0535); the re-run puts AIM *better* (0.0521 vs 0.0535).
+>    The robust claim — true in both runs — is that **AIM and the independent baseline are
+>    statistically indistinguishable on ACS**, which is this file's actual point. Do not rank
+>    them.
+>
+> Verified separately: AIM-family results are reproducible in distribution but not
+> bit-identically, because `mbi`'s sampler is unseeded (see `scripts/reproduce.py`).
+
 More privacy budget, worse downstream utility. That is backwards, so it was diagnosed
 before anything was written down.
 
