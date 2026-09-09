@@ -127,8 +127,11 @@ reviews:
 
         Watch for evaluation contamination: the generator is fitted on a canary-augmented
         table, so scoring its output against the un-canaried original compares against a
-        reference the mechanism never saw. Sixty canaries destroy roughly 89% of UCI
-        Adult's age/hours correlation.
+        reference the mechanism never saw. The size of that effect is NOT the retracted
+        89% figure -- over 40 seeds at n=6,000/m=60 it is about 4.5% and does not reach
+        significance; contamination scales with canary FRACTION, not count, and is
+        significant only above roughly 3%. See results/CANARY_DOSE_RESPONSE.md. Flag any
+        code or comment that reintroduces 89% or 0.0109.
 
     - path: "synthproof/api/**"
       instructions: >-
