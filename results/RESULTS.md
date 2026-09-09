@@ -24,14 +24,22 @@ Regenerate everything in this directory with `make h1`.
 
 ## The one number that is not interpretable, and why
 
-`ε_audited = 0.000` in every cell of every experiment this project has run. The auditor is a
+`ε_audited` is **0.000 in all but two of the 150 H1 cells**. The exceptions are
+`pairwise` at ε = 1.0 on Adult (mean 0.0152 over 5 seeds) and `pairwise` at ε = 4.0 on ACS
+(mean 0.0427) — both roughly two orders of magnitude below the instrument's 2.97 ceiling, so
+neither changes the reading. *Which* cells come out non-zero is not stable either: an
+independent re-run of the full grid on different hardware (2026-09-08) produced a non-zero
+value at `aim`, ε = 4.0 instead. Do not state the zero categorically; the honest claim is that
+every audited value sits far below the ceiling, not that every one is exactly zero.
+
+The auditor is a
 real instrument — the positive and negative controls both hold, and CI enforces them — but
 [the floor study](DETECTION_FLOOR.md) shows its working range does not cover the regime we
 need.
 
 At the 60 canaries these experiments use, the auditor cannot detect leakage below ~25%
 verbatim copying, and **cannot report an epsilon above ~2.7 even against a release that is
-100% training data**. The proved epsilon is 7.36. The gap was guaranteed by the measurement
+100% training data**. The largest proved epsilon in the grid is 7.36 (`independent`/`pairwise`; AIM composes to 6.54). The gap was guaranteed by the measurement
 before any mechanism ran.
 
 No claim about the ratio ε_audited / ε_proved appears anywhere in this repository, and none
