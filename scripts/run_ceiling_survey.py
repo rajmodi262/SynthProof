@@ -24,7 +24,6 @@ from synthproof.survey.ceiling_audit import (
     classify_all,
     summarise,
     to_dict,
-    wilson_interval,
 )
 
 DEFAULT_EXTRACTION = Path("research/ceiling_survey_extraction.json")
@@ -44,8 +43,10 @@ def _table(classified) -> str:
         "| paper | config | estimator | budget | alpha | eps_emp | eps_proved | ceiling | class | ack? |\n"
         "|---|---|---|---:|---:|---:|---:|---:|---|---|\n"
     )
+
     def f(x):
         return "—" if x is None else (f"{x:g}" if isinstance(x, (int, float)) else str(x))
+
     rows = "".join(
         f"| {c.row.paper_id} | {c.row.config_label} | {c.row.estimator_family} | "
         f"{f(c.row.budget)} | {f(c.row.alpha)} | {f(c.row.eps_emp)} | {f(c.row.eps_proved)} | "
@@ -118,8 +119,8 @@ def main() -> int:
         "",
         "**This is not our mathematics.** The ceiling is a corollary of Steinke, Nasr & Jagielski",
         "(2023) Thm 2.1; Keinan, Shenfeld & Ligett ([arXiv:2503.07199](https://arxiv.org/abs/2503.07199))",
-        "Thm 5.2 formalise the one-run case; and the concept is already named **\"maximum auditable",
-        "epsilon\"** by Annamalai, Ganev & De Cristofaro ([arXiv:2405.10994](https://arxiv.org/abs/2405.10994))",
+        'Thm 5.2 formalise the one-run case; and the concept is already named **"maximum auditable',
+        'epsilon"** by Annamalai, Ganev & De Cristofaro ([arXiv:2405.10994](https://arxiv.org/abs/2405.10994))',
         "§2.2, who compute it **for their own configuration only**. Applying it per-paper across the",
         "literature is what is new here.",
         "",
@@ -160,7 +161,7 @@ def main() -> int:
         "",
         "## The objection this must survive",
         "",
-        "**\"Post-hoc power is uninformative.\"** Correct, and standard — observed power is a",
+        '**"Post-hoc power is uninformative."** Correct, and standard — observed power is a',
         "one-to-one function of the p-value. **This is not observed power.**",
         "`eps_max(r) ~= log(r / ln(1/alpha))` depends only on the design parameters *r* and",
         "*alpha*, never on the observed outcome. It is a minimum-detectable-effect bound,",

@@ -282,12 +282,20 @@ def fig_ceiling_ablation():
         ax.axvline(proved, color=PROVED, lw=2.0)
         ax.text(proved, 0.90, f" proved {proved}", color=PROVED, fontsize=8, va="top")
         ax.plot([audited], [0.42], marker="o", ms=8, color=AUDITED, zorder=5)
-        ax.text(audited, 0.30, f"audited {audited:.3f}", color=AUDITED, fontsize=8,
-                ha="left", va="top")
+        ax.text(
+            audited, 0.30, f"audited {audited:.3f}", color=AUDITED, fontsize=8, ha="left", va="top"
+        )
 
     ax1.set_title("Without the field — what was published", loc="left", fontsize=10)
-    ax1.text(4.1, 0.62, "only inference available:\n“the mechanism leaks nothing”",
-             fontsize=8.5, color=BAD, ha="center", style="italic")
+    ax1.text(
+        4.1,
+        0.62,
+        "only inference available:\n“the mechanism leaks nothing”",
+        fontsize=8.5,
+        color=BAD,
+        ha="center",
+        style="italic",
+    )
 
     ax2.set_title("With the field", loc="left", fontsize=10)
     # The band the instrument could actually reach, and the band it never could.
@@ -296,11 +304,22 @@ def fig_ceiling_ablation():
     ax2.axvline(ceiling, color=NEUTRAL, ls="--", lw=1.4)
     ax2.text(ceiling, 0.90, f" ceiling {ceiling:.2f}", color=NEUTRAL, fontsize=8, va="top")
     ax2.text(ceiling / 2, 0.62, "reachable", fontsize=8, color=GOOD, ha="center")
-    ax2.text((ceiling + proved) / 2, 0.68,
-             f"unreachable\nspan {proved - ceiling:.2f}",
-             fontsize=8, color=BAD, ha="center")
-    ax2.text(5.65, 0.09, f"m = {m}, α = {alpha}, one-run estimator",
-             fontsize=7.5, color=NEUTRAL, ha="center")
+    ax2.text(
+        (ceiling + proved) / 2,
+        0.68,
+        f"unreachable\nspan {proved - ceiling:.2f}",
+        fontsize=8,
+        color=BAD,
+        ha="center",
+    )
+    ax2.text(
+        5.65,
+        0.09,
+        f"m = {m}, α = {alpha}, one-run estimator",
+        fontsize=7.5,
+        color=NEUTRAL,
+        ha="center",
+    )
 
     _save(fig, "fig-ceiling-ablation")
 

@@ -50,7 +50,7 @@ OUT_MD = Path("results/CANARY_DOSE_RESPONSE.md")
 SEEDS = list(range(40))  # 8 was not enough: at 8 the effect sat inside one seed-sd at every n
 SIZES = [600, 1200, 3000, 6000]
 BUDGETS = [10, 60, 200, 400]
-PAIR = ("age", "hours_per_week")          # the statistic H1 scores
+PAIR = ("age", "hours_per_week")  # the statistic H1 scores
 CONTROL_PAIR = ("capital_gain", "capital_loss")  # a pair H1 does not score
 
 
@@ -84,8 +84,10 @@ def _augment_resampled(df, cols, m, rng):
     The least-contaminating design that is still a valid distinguishing target -- the floor.
     """
     return pd.DataFrame(
-        {c: df[c].sample(n=m, replace=True,
-                         random_state=int(rng.integers(0, 2**31 - 1))).values for c in cols}
+        {
+            c: df[c].sample(n=m, replace=True, random_state=int(rng.integers(0, 2**31 - 1))).values
+            for c in cols
+        }
     )
 
 
@@ -155,7 +157,8 @@ def main() -> int:
                         "effect_over_sd": round(abs(clean_pair - pm) / ps, 2) if ps > 0 else None,
                         "t_vs_clean": (
                             round(abs(clean_pair - pm) / (ps / np.sqrt(len(SEEDS))), 2)
-                            if ps > 0 else None
+                            if ps > 0
+                            else None
                         ),
                         "significant_2sigma": bool(
                             ps > 0 and abs(clean_pair - pm) / (ps / np.sqrt(len(SEEDS))) >= 2.0
@@ -252,7 +255,8 @@ def main() -> int:
             row = [f"| {n} | {m} "]
             for kind in payload["canary_types"]:
                 c = next(
-                    x for x in cells
+                    x
+                    for x in cells
                     if x["canary_type"] == kind and x["n_rows"] == n and x["num_canaries"] == m
                 )
                 row.append(f"| {c['pct_destroyed']:+.1f}% ")
@@ -296,8 +300,10 @@ def main() -> int:
     print("CanaryAuditor, corr(age, hours_per_week):")
     for c in act_sorted:
         if c["num_canaries"] == 60:
-            print(f"  n={c['n_rows']:5d} frac={100 * c['canary_fraction']:5.2f}%  "
-                  f"destroyed={c['pct_destroyed']:+6.1f}%  effect/sd={c['effect_over_sd']}")
+            print(
+                f"  n={c['n_rows']:5d} frac={100 * c['canary_fraction']:5.2f}%  "
+                f"destroyed={c['pct_destroyed']:+6.1f}%  effect/sd={c['effect_over_sd']}"
+            )
     print(f"wrote {OUT_MD} and {OUT_JSON}")
     return 0
 

@@ -59,7 +59,9 @@ class TestClassification:
         assert "pinned at the top" in c.reason
 
     def test_a_missing_budget_is_not_reported_not_a_guess(self):
-        c = classify(_row(budget=None, locators={"alpha": "S5", "eps_emp": "T3", "eps_proved": "T3"}))
+        c = classify(
+            _row(budget=None, locators={"alpha": "S5", "eps_emp": "T3", "eps_proved": "T3"})
+        )
         assert c.klass == "NOT REPORTED"
         assert c.ceiling is None
 
@@ -83,8 +85,16 @@ class TestRefusals:
             classify(_row(estimator_family="gdp", budget=2500, proved_unit="epsilon"))
 
     def test_gdp_compares_fine_within_mu(self):
-        c = classify(_row(estimator_family="gdp", budget=2500, emp_unit="mu",
-                          proved_unit="mu", eps_proved=0.4547, eps_emp=0.4014))
+        c = classify(
+            _row(
+                estimator_family="gdp",
+                budget=2500,
+                emp_unit="mu",
+                proved_unit="mu",
+                eps_proved=0.4547,
+                eps_emp=0.4014,
+            )
+        )
         assert c.klass in ("INTERPRETABLE", "UNDERPOWERED", "SATURATED")
         assert c.ceiling_unit == "mu"
 
@@ -166,8 +176,8 @@ class TestAmendmentA1VerificationGate:
 
     def test_an_unverified_row_is_classified_but_does_not_count_toward_k(self):
         c = classify(_row(verified_by_human=False))
-        assert c.klass == "UNDERPOWERED"       # still classified, so a human can see the draft
-        assert c.counts_toward_k is False      # but it earns nothing
+        assert c.klass == "UNDERPOWERED"  # still classified, so a human can see the draft
+        assert c.counts_toward_k is False  # but it earns nothing
 
     def test_verifying_the_same_row_lets_it_count(self):
         assert classify(_row(verified_by_human=True)).counts_toward_k is True
@@ -200,12 +210,18 @@ class TestTableLevelRobustness:
 
     def test_a_compound_locator_key_satisfies_both_fields(self):
         """'eps_emp and eps_proved: S6, Fig 7' is a good citation for both."""
-        c = classify(_row(locators={"budget": "S5", "alpha": "S5",
-                                    "eps_emp and eps_proved": "S6, Fig 7"}))
+        c = classify(
+            _row(locators={"budget": "S5", "alpha": "S5", "eps_emp and eps_proved": "S6, Fig 7"})
+        )
         assert c.klass in ("UNDERPOWERED", "INTERPRETABLE", "SATURATED")
 
     def test_a_paper_reporting_no_empirical_quantity_needs_no_unit(self):
         """Papers in the frame that estimate nothing are expected, not malformed."""
-        c = classify(_row(eps_emp=None, emp_unit="NOT REPORTED",
-                          locators={"budget": "S5", "alpha": "S5", "eps_proved": "T1"}))
+        c = classify(
+            _row(
+                eps_emp=None,
+                emp_unit="NOT REPORTED",
+                locators={"budget": "S5", "alpha": "S5", "eps_proved": "T1"},
+            )
+        )
         assert c.klass in ("UNDERPOWERED", "INTERPRETABLE", "NOT REPORTED")

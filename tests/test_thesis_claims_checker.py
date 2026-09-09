@@ -295,7 +295,7 @@ def test_generated_evidence_maps_are_exempt_from_pairing_rules_but_not_dead_clai
 
 
 def test_the_refuted_canary_percentage_cannot_come_back(tmp_path):
-    """It does not replicate (results/CANARY_DOSE_RESPONSE.md), so the number is now a dead claim."""
+    """It does not replicate (results/CANARY_DOSE_RESPONSE.md), so the number is a dead claim."""
     assert "canary-89-percent" in labels(
         check(_write(tmp_path, "Planting canaries destroyed 89% of the correlation signal."))
     )

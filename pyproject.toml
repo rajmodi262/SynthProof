@@ -47,7 +47,8 @@ dev = [
     # test: agreement between dp_accounting and autodp is evidence our composed epsilon is
     # right; agreement of our code with itself is not. The test skips if it is absent.
     "autodp>=0.2.3",
-    "matplotlib>=3.7"   # thesis figures (scripts/make_figures.py)
+    "matplotlib>=3.7",  # thesis figures (scripts/make_figures.py)
+    "reportlab>=4.0"    # thesis/defence/explainer PDF builds (scripts/build_thesis.py)
 ]
 
 [project.scripts]
@@ -71,6 +72,13 @@ select = ["E", "F", "B", "I"]
 # *expressed* that way — `file: UploadFile = File(...)` is the documented idiom, not an
 # accident — so the rule does not apply to route handlers.
 "synthproof/api/main.py" = ["B008"]
+# These scripts EMIT markdown: their long lines are table rows and prose inside the generated
+# document, not code. Wrapping them would change the artefact the script writes, and a `# noqa`
+# cannot go inside a string literal without appearing in the output. The line-length rule does
+# not apply to embedded document content.
+"scripts/run_ceiling_ablation.py" = ["E501"]
+"scripts/run_ceiling_survey.py" = ["E501"]
+"scripts/run_canary_dose_response.py" = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

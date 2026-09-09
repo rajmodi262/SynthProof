@@ -271,7 +271,9 @@ def classify_all(rows: Sequence[Row]) -> List[Classified]:
     return out
 
 
-def wilson_interval(successes: int, trials: int, z: float = 1.959963984540054) -> Tuple[float, float]:
+def wilson_interval(
+    successes: int, trials: int, z: float = 1.959963984540054
+) -> Tuple[float, float]:
     """Wilson score interval. Chosen over the normal approximation because K may be small.
 
     The default `z` is the two-sided 95% normal quantile.
@@ -328,7 +330,13 @@ class Summary:
 
 def summarise(classified: Sequence[Classified]) -> Summary:
     """Paper-level summary. Protocol S3: a paper's class is its MOST FAVOURABLE configuration."""
-    order = {"INTERPRETABLE": 0, "SATURATED": 1, "NOT REPORTED": 2, "UNDERPOWERED": 3, "EXCLUDED": 4}
+    order = {
+        "INTERPRETABLE": 0,
+        "SATURATED": 1,
+        "NOT REPORTED": 2,
+        "UNDERPOWERED": 3,
+        "EXCLUDED": 4,
+    }
 
     best: Dict[str, Classified] = {}
     for c in classified:
@@ -370,8 +378,13 @@ def summarise(classified: Sequence[Classified]) -> Summary:
 
 def to_dict(classified: Sequence[Classified]) -> List[dict]:
     return [
-        {**asdict(c.row), "class": c.klass, "ceiling": c.ceiling,
-         "ceiling_unit": c.ceiling_unit, "reason": c.reason,
-         "counts_toward_k": c.counts_toward_k}
+        {
+            **asdict(c.row),
+            "class": c.klass,
+            "ceiling": c.ceiling,
+            "ceiling_unit": c.ceiling_unit,
+            "reason": c.reason,
+            "counts_toward_k": c.counts_toward_k,
+        }
         for c in classified
     ]
