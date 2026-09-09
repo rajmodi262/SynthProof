@@ -45,6 +45,10 @@ MANIFEST_PATH = Path("results/MANIFEST.json")
 
 # Every file whose contents a published claim depends on.
 RESULT_FILES = [
+    # Partially pinned -- see PARTIALLY_PINNED below. The deterministic rows are hashed; the
+    # `aim` rows are not, because mbi's sampler is unseeded.
+    "results/h1_all_families.json",
+    "results/acs/h1_all_families.json",
     "results/h2_subgroups.json",
     "results/h2_analysis.json",
     "results/acs/h2_subgroups.json",
@@ -79,13 +83,6 @@ RESULT_FILES = [
 # marginal-based and DP-SGD results in RESULT_FILES, and does NOT extend to the AIM-family
 # numbers. Fixing it needs a seeded sampler in `mbi`, not a change here.
 UNPINNED_AIM_FAMILY = [
-    # Moved here 2026-09-09 after a full 150-cell re-run on foreign hardware. These two carry
-    # 25 `aim` cells each, so the same unseeded-sampler argument that excludes the files below
-    # applies to them; pinning them meant `make reproduce --run` could never pass for anyone who
-    # actually re-ran H1 -- which is exactly what ARTIFACT.md invites an evaluator to do. Their
-    # deterministic rows (independent, pairwise) were verified bit-identical in that re-run.
-    "results/h1_all_families.json",
-    "results/acs/h1_all_families.json",
     "results/clique_confound.json",
     "results/acs/clique_confound.json",
     "results/selection_ablation.json",
@@ -132,6 +129,25 @@ NUMERIC_DEPENDENCIES = [
 # field to silence a mismatch that reflects a real change in a result.
 NON_DETERMINISTIC_KEYS = frozenset({"elapsed_seconds"})
 
+# Mechanisms whose synthetic draw is NOT seeded: `mbi.synthetic_data` samples from unseeded
+# randomness, so calling generate twice on the same fitted model returns different tables
+# (pinned by tests/test_fixed_workload.py). Their cells are reproducible in DISTRIBUTION, not
+# bit-identically, and hashing them would make `make reproduce --run` fail on every clean
+# re-run -- which trains everyone to ignore the check.
+NON_DETERMINISTIC_MECHANISMS = frozenset({"aim", "fixed_workload"})
+
+# Files hashed over their deterministic rows ONLY. Verified 2026-09-08 by re-fitting all 150
+# H1 cells from raw data on a different OS and CPU: every `independent` and `pairwise` cell
+# came back bit-identical on proved eps, audited eps, correlation error, TSTR, TRTR and MIA
+# AUC, while the `aim` cells moved as expected. Pinning the whole file would therefore pin
+# noise; pinning nothing would leave H1 uncovered. This pins exactly what is reproducible.
+PARTIALLY_PINNED = frozenset(
+    {
+        "results/h1_all_families.json",
+        "results/acs/h1_all_families.json",
+    }
+)
+
 
 def _canonical_bytes(path: Path) -> bytes:
     """Bytes to hash for a result file, with timing metadata stripped.
@@ -149,6 +165,12 @@ def _canonical_bytes(path: Path) -> bytes:
         return raw
     if isinstance(payload, dict):
         payload = {k: v for k, v in payload.items() if k not in NON_DETERMINISTIC_KEYS}
+        if path.as_posix() in PARTIALLY_PINNED and isinstance(payload.get("cells"), list):
+            payload["cells"] = [
+                cell
+                for cell in payload["cells"]
+                if cell.get("mechanism") not in NON_DETERMINISTIC_MECHANISMS
+            ]
     return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 
