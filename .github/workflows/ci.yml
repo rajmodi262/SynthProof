@@ -41,13 +41,35 @@ jobs:
         run: ruff check synthproof/ tests/ scripts/
 
       - name: Format check (black)
+        # Was advisory "until the tree is fully black-formatted". It now is, so this
+        # blocks. An advisory formatter is one nobody runs.
         run: black --check synthproof/ tests/ scripts/
-        continue-on-error: true   # advisory until the tree is fully black-formatted
 
       - name: Test with coverage
-        # Raised 80 -> 90 on 2026-08-23. The suite runs at 94%, and a gate 14 points
-        # below actual coverage permits silent regression without ever failing.
+        # Raised 80 -> 90 on 2026-08-23. Measured 92% on 2026-09-12 (738 passed, 1
+        # skipped) -- the comment here previously said 94%, which was never re-checked
+        # after the suite grew. The gate rises to 94 in task 3.2 of docs/ROAD_TO_TEN.md,
+        # once the CLI and API modules are brought up from 78% and 80%.
         run: pytest --cov=synthproof --cov-report=term-missing --cov-fail-under=90
+
+      # The two gates below are specific to this project's discipline, and until now both
+      # were manual. On 2026-09-12 both were failing in the committed tree -- which is the
+      # outcome you would predict from a gate that nothing runs. They are steps now.
+
+      - name: Dead claims (thesis chapters)
+        # Thesis-only for the moment. The repo-wide sweep still reports 73 hits in the
+        # surrounding documents; task 2.6 flips this to --all once P2 clears them, and a
+        # gate that is red on arrival is a gate people learn to ignore.
+        run: python scripts/check_thesis_claims.py
+
+      - name: Citations resolve
+        run: python scripts/check_citations.py
+
+      - name: Published numbers match the committed manifest
+        # Verify-only: hashes the committed result files and compares them to
+        # results/MANIFEST.json. It re-runs no experiment, so it is fast and it is
+        # deterministic across machines -- it compares file bytes, not recomputed floats.
+        run: python -m scripts.reproduce
 
       - name: Smoke — CLI demo runs end to end
         run: python -m synthproof.cli demo --rows 60 --eps 1.0
