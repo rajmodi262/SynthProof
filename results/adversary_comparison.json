@@ -1,0 +1,163 @@
+{
+  "cells": [
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "seeds": 5,
+      "aware_auc_mean": 0.5273422222222222,
+      "aware_auc_sd": 0.038978923079588064,
+      "distance_auc_mean": 0.5381866666666667,
+      "distance_auc_sd": 0.025020853524832246,
+      "delta_auc": -0.010844444444444545,
+      "n_focal_points": 4,
+      "focal_source": "one-way marginals"
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 4.0,
+      "seeds": 5,
+      "aware_auc_mean": 0.5285866666666666,
+      "aware_auc_sd": 0.04071517932123711,
+      "distance_auc_mean": 0.533831111111111,
+      "distance_auc_sd": 0.03869453210487,
+      "delta_auc": -0.005244444444444385,
+      "n_focal_points": 4,
+      "focal_source": "one-way marginals"
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "seeds": 5,
+      "aware_auc_mean": 0.5308533333333333,
+      "aware_auc_sd": 0.040865589980378904,
+      "distance_auc_mean": 0.5349066666666666,
+      "distance_auc_sd": 0.04305074066267546,
+      "delta_auc": -0.004053333333333353,
+      "n_focal_points": 4,
+      "focal_source": "one-way marginals"
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "seeds": 5,
+      "aware_auc_mean": 0.5552888888888889,
+      "aware_auc_sd": 0.039289705873858584,
+      "distance_auc_mean": 0.5161333333333333,
+      "distance_auc_sd": 0.03625926871713267,
+      "delta_auc": 0.03915555555555561,
+      "n_focal_points": 4,
+      "focal_source": "public spanning tree"
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 4.0,
+      "seeds": 5,
+      "aware_auc_mean": 0.5865955555555555,
+      "aware_auc_sd": 0.050806951016617176,
+      "distance_auc_mean": 0.5296711111111112,
+      "distance_auc_sd": 0.03618855081205302,
+      "delta_auc": 0.05692444444444433,
+      "n_focal_points": 4,
+      "focal_source": "public spanning tree"
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "seeds": 5,
+      "aware_auc_mean": 0.5894844444444445,
+      "aware_auc_sd": 0.0315256524981181,
+      "distance_auc_mean": 0.5315555555555556,
+      "distance_auc_sd": 0.03259738306545558,
+      "delta_auc": 0.05792888888888892,
+      "n_focal_points": 4,
+      "focal_source": "public spanning tree"
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 1.0,
+      "seeds": 5,
+      "aware_auc_mean": 0.5763377777777777,
+      "aware_auc_sd": 0.05382942515340176,
+      "distance_auc_mean": 0.538168888888889,
+      "distance_auc_sd": 0.039418221643433705,
+      "delta_auc": 0.0381688888888887,
+      "n_focal_points": 10,
+      "focal_source": "adaptive selection (read from generator)"
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 4.0,
+      "seeds": 5,
+      "aware_auc_mean": 0.5867377777777778,
+      "aware_auc_sd": 0.048373052390053545,
+      "distance_auc_mean": 0.50048,
+      "distance_auc_sd": 0.03685811500843892,
+      "delta_auc": 0.08625777777777777,
+      "n_focal_points": 10,
+      "focal_source": "adaptive selection (read from generator)"
+    },
+    {
+      "mechanism": "aim",
+      "target_eps": 8.0,
+      "seeds": 5,
+      "aware_auc_mean": 0.5897511111111111,
+      "aware_auc_sd": 0.04055155048717099,
+      "distance_auc_mean": 0.4975644444444445,
+      "distance_auc_sd": 0.035541339519140465,
+      "delta_auc": 0.09218666666666664,
+      "n_focal_points": 10,
+      "focal_source": "adaptive selection (read from generator)"
+    },
+    {
+      "mechanism": "fixed_workload",
+      "target_eps": 1.0,
+      "seeds": 5,
+      "aware_auc_mean": 0.5725422222222223,
+      "aware_auc_sd": 0.048929381210873805,
+      "distance_auc_mean": 0.5146311111111112,
+      "distance_auc_sd": 0.027335738828207126,
+      "delta_auc": 0.057911111111111135,
+      "n_focal_points": 10,
+      "focal_source": "adaptive selection (read from generator)"
+    },
+    {
+      "mechanism": "fixed_workload",
+      "target_eps": 4.0,
+      "seeds": 5,
+      "aware_auc_mean": 0.6075200000000001,
+      "aware_auc_sd": 0.05153020832842003,
+      "distance_auc_mean": 0.5163111111111112,
+      "distance_auc_sd": 0.025685712029631092,
+      "delta_auc": 0.0912088888888889,
+      "n_focal_points": 10,
+      "focal_source": "adaptive selection (read from generator)"
+    },
+    {
+      "mechanism": "fixed_workload",
+      "target_eps": 8.0,
+      "seeds": 5,
+      "aware_auc_mean": 0.5869244444444444,
+      "aware_auc_sd": 0.03945977041850957,
+      "distance_auc_mean": 0.5119466666666667,
+      "distance_auc_sd": 0.01732792365725351,
+      "delta_auc": 0.0749777777777777,
+      "n_focal_points": 10,
+      "focal_source": "adaptive selection (read from generator)"
+    }
+  ],
+  "n_rows": 2000,
+  "n_targets": 150,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "eps_grid": [
+    1.0,
+    4.0,
+    8.0
+  ],
+  "elapsed_seconds": 116.6
+}
