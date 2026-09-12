@@ -58,6 +58,19 @@ DATASETS = {
     },
 }
 
+# Datasets that carry an H1 grid and deliberately NO H2 study, each with the reason. H2 measures
+# whether membership leakage differs across protected subgroups, so it needs protected
+# attributes to split on. Declaring the exception here, next to the dataset, is what stops a
+# dataset being added to one runner and silently forgotten in the other:
+# tests/test_experiment_scripts.py requires every H1 dataset to be in H2 OR in this map.
+H1_ONLY = {
+    "bank": (
+        "Bank Marketing has no sex or race column -- it was chosen precisely because it is not "
+        "census-derived -- so there are no protected subgroups for H2 to compare. Splitting on "
+        "`marital` or `job` would be a different hypothesis, not a replication of H2."
+    ),
+}
+
 
 def _load(name: str):
     if name == "adult":

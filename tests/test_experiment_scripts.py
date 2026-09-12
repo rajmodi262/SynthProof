@@ -56,8 +56,30 @@ def test_h1_checkpoint_directories_are_also_per_dataset():
 
 
 def test_both_runners_cover_the_same_datasets():
-    """A dataset with an H1 grid but no H2 study would leave the comparison half-done."""
-    assert set(run_h1.DATASETS) == set(run_h2.DATASETS)
+    """A dataset with an H1 grid but no H2 study would leave the comparison half-done --
+    unless the omission is DECLARED, with its reason, in `run_h1.H1_ONLY`.
+
+    This originally asserted the two sets were equal, which was right for two census datasets
+    and wrong the moment a third arrived without protected attributes: H2 cannot run on a table
+    with no sex or race column. Rather than weaken the check to a subset, the exception must be
+    named next to the dataset, so the guard still catches a dataset added to one runner and
+    forgotten in the other.
+    """
+    h1, h2, exempt = set(run_h1.DATASETS), set(run_h2.DATASETS), set(run_h1.H1_ONLY)
+    assert h2 <= h1, f"H2 studies with no H1 grid: {sorted(h2 - h1)}"
+    assert h1 - h2 == exempt, (
+        f"H1 datasets missing from H2 {sorted(h1 - h2)} must match the declared "
+        f"exemptions {sorted(exempt)} exactly"
+    )
+    for name, reason in run_h1.H1_ONLY.items():
+        assert len(reason) > 40, f"{name}: an exemption needs a stated reason, not a placeholder"
+
+
+def test_an_undeclared_h1_only_dataset_is_still_caught(monkeypatch):
+    """The positive control: the exemption map must not have disarmed the guard."""
+    monkeypatch.setitem(run_h1.DATASETS, "surprise", {})
+    h1, h2, exempt = set(run_h1.DATASETS), set(run_h2.DATASETS), set(run_h1.H1_ONLY)
+    assert h1 - h2 != exempt
 
 
 def test_the_two_datasets_share_the_protocol_that_makes_them_comparable():
