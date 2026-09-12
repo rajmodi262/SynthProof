@@ -137,17 +137,19 @@ def calibrate_noise_scale(
 # e. Every stage added widens the gap, which is why AIM, with the most charged operations,
 # leaves the most on the table.
 #
-# THE FIX, and why it is not applied here. Bisect an outer multiplier k on the stage shares
-# until the COMPOSED total meets the target, returning the conservative side exactly as the
-# inner search does. Composition is monotone in k, so this is well-posed and preserves the
-# never-overspend invariant.
+# THE FIX IS NOW IMPLEMENTED, and it is OFF BY DEFAULT. `BudgetPlan.split(tighten=True)`
+# bisects an outer multiplier k on the stage shares until the COMPOSED total meets the target,
+# returning the conservative side exactly as the inner search does. Composition is monotone in
+# k, so the search is well-posed and the never-overspend invariant is preserved -- which is
+# asserted directly in tests/test_budget_tightening.py rather than argued here.
 #
-# It is not applied because it would change every published epsilon -- proved 7.356 becomes
-# ~8.0 -- and therefore invalidates every committed result until the full grid is re-run
-# (~4h per dataset). That is a deliberate scope decision, not an oversight. The current
-# behaviour is conservative in the safe direction: the release is MORE private than the
-# operator asked for, never less.
+# It stays off because turning it on changes EVERY PUBLISHED EPSILON -- proved 7.356 becomes
+# ~8.0 -- and every committed result would be invalid until the full grid is re-run (~4h per
+# dataset). That is a costed decision rather than an oversight, and the cost belongs to
+# whoever decides to pay it. The current default remains conservative in the safe direction:
+# the release is MORE private than the operator asked for, never less.
 #
+# To adopt it: flip the default, run `make reproduce-all`, read the diff, then `make manifest`.
 # Tracked as M3.7. See ../SYNTHPROOF-COMPLETION-PLAN.md Phase 4.
 
 
@@ -164,10 +166,35 @@ class BudgetPlan:
     delta: float
     profile_eps: float
     synthesis_eps: float
+    # 1.0 when the shares are a plain linear split; >1 when they were scaled up so the
+    # COMPOSED total meets the target. Recorded rather than inferred, so a reader of a plan
+    # can tell which calibration produced it without re-deriving anything.
+    tightening: float = 1.0
+
+    @property
+    def composed_eps(self) -> float:
+        """What the two stages actually compose to, asked of the accountant.
+
+        This is the number that matters and the one nothing used to report: `total_eps` is
+        what was REQUESTED, and under a linear split the composition of the stages lands
+        below it. Computing it here means the gap can be inspected instead of discovered.
+        """
+        from synthproof.accounting.accountant import Accountant
+        from synthproof.accounting.types import MechanismSpec
+
+        acct = Accountant(budget_eps=float("inf"), budget_delta=self.delta)
+        for stage_eps in (self.profile_eps, self.synthesis_eps):
+            scale = calibrate_noise_scale(stage_eps, self.delta, "gaussian", 1.0, 1)
+            acct.charge(MechanismSpec(name="gaussian", noise_scale=scale, sensitivity=1.0))
+        return float(acct.total(self.delta))
 
     @classmethod
     def split(
-        cls, total_eps: float, delta: float = 1e-5, profile_frac: float = 0.1
+        cls,
+        total_eps: float,
+        delta: float = 1e-5,
+        profile_frac: float = 0.1,
+        tighten: bool = False,
     ) -> "BudgetPlan":
         """Splits `total_eps` between domain profiling and synthesis.
 
@@ -176,6 +203,12 @@ class BudgetPlan:
             delta: Target delta.
             profile_frac: Fraction reserved for DP domain profiling. Profiling only
                 needs coarse range estimates, so it gets the smaller share.
+            tighten: When True, scale both shares by a common multiplier so that their
+                COMPOSED epsilon meets `total_eps` instead of falling short of it. See the
+                under-spend note above for why this is off by default: it changes every
+                published epsilon in this repository. It never overspends -- the search
+                returns the conservative side of the bracket, exactly as the inner
+                calibration does.
         """
         if total_eps <= 0:
             raise ValueError(f"total_eps must be positive, got {total_eps}")
@@ -188,11 +221,48 @@ class BudgetPlan:
         shares: Dict[str, float] = Allocator.allocate_weighted(
             total_eps, {"profile": profile_frac, "synthesis": 1.0 - profile_frac}
         )
-        return cls(
+        plan = cls(
             total_eps=total_eps,
             delta=delta,
             profile_eps=shares["profile"],
             synthesis_eps=shares["synthesis"],
+        )
+        if not tighten:
+            return plan
+
+        # Bisect the outer multiplier k. `composed(k)` is monotone increasing in k, so the
+        # bracket [1, hi] with composed(1) <= target <= composed(hi) is well-posed. `hi`
+        # returns the conservative side: the last k whose composition is still within budget.
+        def composed(k: float) -> float:
+            return cls(
+                total_eps=total_eps,
+                delta=delta,
+                profile_eps=shares["profile"] * k,
+                synthesis_eps=shares["synthesis"] * k,
+                tightening=k,
+            ).composed_eps
+
+        lo, hi = 1.0, 1.0
+        while composed(hi) < total_eps:
+            hi *= 1.5
+            if hi > 64.0:  # far past any plausible sublinearity; something else is wrong
+                break
+        for _ in range(60):
+            if hi - lo <= 1e-4 * hi:
+                break
+            mid = 0.5 * (lo + hi)
+            if composed(mid) <= total_eps:
+                lo = mid  # still within budget, push further
+            else:
+                hi = mid
+        k = lo  # the largest multiplier that does NOT overspend
+
+        return cls(
+            total_eps=total_eps,
+            delta=delta,
+            profile_eps=shares["profile"] * k,
+            synthesis_eps=shares["synthesis"] * k,
+            tightening=k,
         )
 
 
