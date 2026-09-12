@@ -21,7 +21,15 @@ export function BoundsGauge({
 }) {
   const proved = measurements?.proved_eps ?? 0
   const audited = measurements?.audited_eps ?? 0
-  const scale = Math.max(proved, targetEps, 1) * 1.12
+  // The ceiling is part of the axis, not an annotation on it.
+  //
+  // It used to be excluded, and the marker below is drawn only when `ceiling < scale` -- so
+  // at the default target of eps=1 the scale came out at 1.12 while the ceiling for 60
+  // canaries is about 2.97, and the marker silently vanished. That hid the ceiling in
+  // exactly the case where it carries the most meaning: when it sits far ABOVE the proved
+  // bound, which is what makes an audited 0 uninterpretable. Found by the end-to-end test on
+  // 2026-09-13, which is the seam a component test could not see.
+  const scale = Math.max(proved, targetEps, audit?.ceiling ?? 0, 1) * 1.12
   const pct = (v: number) => `${Math.min(100, (v / scale) * 100)}%`
   const undetected = audited === 0 && !!measurements
 
