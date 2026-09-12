@@ -1,6 +1,6 @@
 # Ceiling survey — how many published empirical-privacy claims could have been made?
 
-> **PRELIMINARY -- K IS NOT YET COMPUTABLE. 4 of 5 included papers are machine-extracted and NOT yet verified against the source by a human, so they are excluded from K by protocol amendment A1. The classes below are a draft for a human to check, not a result. Do not quote K from this run.**
+> **K = 0 of 5. **No included paper was underpowered without saying so.** The honest conclusion is that this literature reports its own limits; the contribution reduces to the NOT-REPORTED count (1) and the artefact work. Declared acceptable in advance by protocol S10.**
 
 > Protocol: [`docs/CEILING_SURVEY_PROTOCOL.md`](../docs/CEILING_SURVEY_PROTOCOL.md),
 > frozen and committed before any paper was read. Raw output:

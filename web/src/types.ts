@@ -58,18 +58,23 @@ export interface EvaluationContext {
 }
 
 export interface AuditResult {
+  auditor?: 'one_run' | 'paired'
   audited_eps: number
-  tpr: number
-  fpr: number
-  tpr_lower: number
-  fpr_upper: number
+  tpr?: number
+  fpr?: number
+  tpr_lower?: number
+  fpr_upper?: number
   p_value: number
-  num_members: number
-  num_holdout: number
-  confidence: number
-  /** Largest epsilon this auditor could report at this canary count. */
+  num_members?: number
+  num_holdout?: number
+  confidence?: number
   ceiling: number
-  /** Smallest known leak fraction detectable at this canary count, or null. */
+  saturated?: boolean
+  correct?: number
+  guesses?: number
+  accuracy?: number
+  num_canaries?: number
+  num_included?: number
   detects_leak_above: number | null
   range_note: string
 }
@@ -136,6 +141,37 @@ export interface RunResult {
   histograms: Record<string, Histogram>
   spends: Spend[]
   ledger: LedgerRef
+  sheet?: Record<string, any>
+  sample_records?: Record<string, any>[]
+}
+
+export type AttackType = 'modify_eps' | 'truncate' | 'corrupt_hash' | 'corrupt_signature'
+
+export interface TamperResult {
+  verified: boolean
+  reason?: string | null
+  attack_type?: string
+  attack_description?: string
+  tampered_entry: string
+  broken_from_index: number | null
+  broken_count: number
+  explanation: string
+}
+
+export interface CertificateVerifyResult {
+  signature_valid: boolean
+  lod_safe: boolean
+  lod_status: string
+  error: string | null
+  details: {
+    proved_eps?: number
+    audited_eps?: number
+    audit_ceiling?: number
+    mechanism?: string
+    dataset_name?: string
+    num_rows?: number
+    ledger_hash?: string
+  }
 }
 
 export interface StartEvent {

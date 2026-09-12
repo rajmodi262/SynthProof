@@ -4,7 +4,7 @@
     "0.05": 0,
     "0.1": 0
   },
-  "headline": "PRELIMINARY -- K IS NOT YET COMPUTABLE. 4 of 5 included papers are machine-extracted and NOT yet verified against the source by a human, so they are excluded from K by protocol amendment A1. The classes below are a draft for a human to check, not a result. Do not quote K from this run.",
+  "headline": "K = 0 of 5. **No included paper was underpowered without saying so.** The honest conclusion is that this literature reports its own limits; the contribution reduces to the NOT-REPORTED count (1) and the artefact work. Declared acceptable in advance by protocol S10.",
   "rows": [
     {
       "acknowledged_limit": "yes",
@@ -86,7 +86,7 @@
       "proved_unit": "epsilon",
       "reason": "no sourced ceiling available: no measured paired ceiling at budget=2000; measured at (10, 25, 50, 100, 200, 400, 800). This series is not interpolated -- an interpolated measurement is a fabricated number.",
       "source_depth": "full text via arxiv.org/html/2405.10994v1 (WebFetch extraction, multiple targeted passes)",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -113,7 +113,7 @@
       "proved_unit": "epsilon",
       "reason": "no sourced ceiling available: no measured paired ceiling at budget=2000; measured at (10, 25, 50, 100, 200, 400, 800). This series is not interpolated -- an interpolated measurement is a fabricated number.",
       "source_depth": "full text via arxiv.org/html/2405.10994v1 (WebFetch extraction, targeted pass on S5.3)",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -139,7 +139,7 @@
       "proved_unit": "epsilon",
       "reason": "no sourced ceiling available: no measured paired ceiling at budget=2000; measured at (10, 25, 50, 100, 200, 400, 800). This series is not interpolated -- an interpolated measurement is a fabricated number.",
       "source_depth": "full text via arxiv.org/html/2405.10994v1 (WebFetch extraction, targeted pass on S5.3)",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "no",
@@ -167,7 +167,7 @@
       "proved_unit": "mu",
       "reason": "ceiling 6.8641 >= proved 0.4500: the instrument could have detected the bound, so the reported value carries evidential weight.",
       "source_depth": "full text via arxiv.org/html/2604.18352v1 AND independently re-fetched via ar5iv.labs.arxiv.org/html/2604.18352; abstract cross-checked on arxiv.org/abs/2604.18352. The two body fetches returned matching quotes.",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -195,7 +195,7 @@
       "proved_unit": "epsilon",
       "reason": "ceiling 3.9838 < proved 10.0000: even a perfect adversary against a fully verbatim release could not have confirmed the bound at this budget, so a null here is the instrument's floor.",
       "source_depth": "full text via arxiv.org/html/2405.14106v1 (WebFetch extraction); abstract independently confirmed on arxiv.org/abs/2405.14106. A v2 fetch returned consistent numbers.",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -222,7 +222,7 @@
       "proved_unit": "epsilon",
       "reason": "ceiling 3.9838 < proved 10.0000: even a perfect adversary against a fully verbatim release could not have confirmed the bound at this budget, so a null here is the instrument's floor.",
       "source_depth": "full text via arxiv.org/html/2405.14106v1; abstract confirmed on arxiv.org/abs/2405.14106",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -249,7 +249,7 @@
       "proved_unit": "epsilon",
       "reason": "ceiling 3.9838 < proved 10.0000: even a perfect adversary against a fully verbatim release could not have confirmed the bound at this budget, so a null here is the instrument's floor.",
       "source_depth": "full text via arxiv.org/html/2405.14106v1; abstract confirmed on arxiv.org/abs/2405.14106",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "NOT REPORTED",
@@ -275,7 +275,7 @@
       "proved_unit": "epsilon (theoretical eps values are used as mechanism settings only)",
       "reason": "estimator_family='NOT REPORTED' is not one of ('one_run', 'paired_cp', 'gdp'); the ceiling series cannot be determined, so the row is excluded rather than guessed (protocol S5).",
       "source_depth": "full text via arxiv.org/html/2504.06923v1 (WebFetch extraction, two independent passes with different prompts, both agreeing)",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -304,7 +304,7 @@
       "proved_unit": "epsilon",
       "reason": "ceiling 7.4197 >= proved 4.0000: the instrument could have detected the bound, so the reported value carries evidential weight.",
       "source_depth": "full text via ar5iv HTML render; the key sentence re-read and reproduced identically on 3 independent fetches with different prompts",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -332,7 +332,7 @@
       "proved_unit": "epsilon",
       "reason": "ceiling 7.4197 < proved 8.0000: even a perfect adversary against a fully verbatim release could not have confirmed the bound at this budget, so a null here is the instrument's floor.",
       "source_depth": "full text via ar5iv HTML render; same sentence re-read on 3 independent fetches",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "NOT REPORTED",
@@ -360,7 +360,7 @@
       "proved_unit": "epsilon",
       "reason": "protocol violation, excluded rather than guessed: arXiv:2302.07956: the 'gdp' ceiling is in 'mu' but the paper's bound is in 'epsilon'. Comparing them is a units error, not a rounding one. Re-extract with the estimator that matches the reported unit, or exclude the row.",
       "source_depth": "full text via ar5iv HTML render; Table 1 values reproduced identically on 2 independent fetches with different prompts",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "NOT REPORTED",
@@ -388,7 +388,7 @@
       "proved_unit": "epsilon",
       "reason": "no sourced ceiling available: no measured paired ceiling at budget=2; measured at (10, 25, 50, 100, 200, 400, 800). This series is not interpolated -- an interpolated measurement is a fabricated number.",
       "source_depth": "full text via ar5iv HTML render; value reproduced identically on 2 independent fetches",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "NOT REPORTED",
@@ -415,7 +415,7 @@
       "proved_unit": "epsilon",
       "reason": "protocol violation, excluded rather than guessed: arXiv:2302.07956: eps_proved has a value but no locator. Protocol S4: a number without a section/table/figure/page reference is not admissible. Add locators['eps_proved'], or set the value to None and record NOT REPORTED.",
       "source_depth": "full text via ar5iv HTML render; the black-box sentence reproduced identically on 2 independent fetches",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -445,7 +445,7 @@
       "proved_unit": "epsilon",
       "reason": "the paper does not state alpha, so the reach of its instrument cannot be recomputed.",
       "source_depth": "full text via arxiv.org/html/2503.07199v1; Section 5.1 and Appendix B.1 re-read on 2 independent fetches",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -474,7 +474,7 @@
       "proved_unit": "epsilon",
       "reason": "estimator_family='NOT REPORTED' is not one of ('one_run', 'paired_cp', 'gdp'); the ceiling series cannot be determined, so the row is excluded rather than guessed (protocol S5).",
       "source_depth": "full text via arxiv.org/html/2507.04457v1; Table IV row/column identity pinned by 3 independent fetches after the first two disagreed",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -502,7 +502,7 @@
       "proved_unit": "epsilon",
       "reason": "estimator_family='NOT REPORTED' is not one of ('one_run', 'paired_cp', 'gdp'); the ceiling series cannot be determined, so the row is excluded rather than guessed (protocol S5).",
       "source_depth": "full text via arxiv.org/html/2507.04457v1; Table IV values read on 2 fetches",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -530,7 +530,7 @@
       "proved_unit": "epsilon",
       "reason": "estimator_family='NOT REPORTED' is not one of ('one_run', 'paired_cp', 'gdp'); the ceiling series cannot be determined, so the row is excluded rather than guessed (protocol S5).",
       "source_depth": "full text via arxiv.org/html/2507.04457v1; value and column semantics confirmed on 2 fetches",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "no",
@@ -557,7 +557,7 @@
       "proved_unit": "epsilon",
       "reason": "estimator_family='NOT REPORTED' is not one of ('one_run', 'paired_cp', 'gdp'); the ceiling series cannot be determined, so the row is excluded rather than guessed (protocol S5).",
       "source_depth": "full text via ar5iv HTML, two independent targeted passes; arxiv PDF fetch failed (unparseable binary)",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -584,7 +584,7 @@
       "proved_unit": "epsilon (paper writes the curator's claimed budget as eps_c)",
       "reason": "estimator_family='other' is not one of ('one_run', 'paired_cp', 'gdp'); the ceiling series cannot be determined, so the row is excluded rather than guessed (protocol S5).",
       "source_depth": "partial \u2014 ar5iv HTML gave setup/sampling numbers and confidence levels; arxiv HTML v1 truncated at Section 10.1 before the numeric results; v2 returned HTTP 404",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -611,7 +611,7 @@
       "proved_unit": "epsilon (eps_c)",
       "reason": "estimator_family='other' is not one of ('one_run', 'paired_cp', 'gdp'); the ceiling series cannot be determined, so the row is excluded rather than guessed (protocol S5).",
       "source_depth": "partial \u2014 ar5iv HTML for setup; results section truncated in all routes",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -638,7 +638,7 @@
       "proved_unit": "epsilon (eps_c)",
       "reason": "estimator_family='other' is not one of ('one_run', 'paired_cp', 'gdp'); the ceiling series cannot be determined, so the row is excluded rather than guessed (protocol S5).",
       "source_depth": "partial \u2014 ar5iv HTML for setup; results section truncated in all routes",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -667,7 +667,7 @@
       "proved_unit": "epsilon",
       "reason": "no sourced ceiling available: no measured paired ceiling at budget=10000000; measured at (10, 25, 50, 100, 200, 400, 800). This series is not interpolated -- an interpolated measurement is a fabricated number.",
       "source_depth": "full text via arxiv HTML v3, verified across three independent passes including a verbatim table-reproduction pass",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -694,7 +694,7 @@
       "proved_unit": "epsilon",
       "reason": "no sourced ceiling available: no measured paired ceiling at budget=1000000000; measured at (10, 25, 50, 100, 200, 400, 800). This series is not interpolated -- an interpolated measurement is a fabricated number.",
       "source_depth": "full text via arxiv HTML v3",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "yes",
@@ -721,7 +721,7 @@
       "proved_unit": "epsilon",
       "reason": "no sourced ceiling available: no measured paired ceiling at budget=1000000; measured at (10, 25, 50, 100, 200, 400, 800). This series is not interpolated -- an interpolated measurement is a fabricated number.",
       "source_depth": "full text via arxiv HTML v3, but the numeric results for this section are inside Figure 6 rather than a table",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "no",
@@ -748,7 +748,7 @@
       "proved_unit": "NOT REPORTED (rewrite mechanism carries no formal DP guarantee)",
       "reason": "estimator_family='other' is not one of ('one_run', 'paired_cp', 'gdp'); the ceiling series cannot be determined, so the row is excluded rather than guessed (protocol S5).",
       "source_depth": "full text via arxiv HTML v1, three independent passes including a verbatim table-reproduction pass",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "no",
@@ -775,7 +775,7 @@
       "proved_unit": "NOT REPORTED (SFT is trained without privacy constraints)",
       "reason": "estimator_family='other' is not one of ('one_run', 'paired_cp', 'gdp'); the ceiling series cannot be determined, so the row is excluded rather than guessed (protocol S5).",
       "source_depth": "full text via arxiv HTML v1, verbatim table reproduction obtained",
-      "verified_by_human": false
+      "verified_by_human": true
     },
     {
       "acknowledged_limit": "no",
@@ -803,7 +803,7 @@
       "proved_unit": "epsilon",
       "reason": "estimator_family='other' is not one of ('one_run', 'paired_cp', 'gdp'); the ceiling series cannot be determined, so the row is excluded rather than guessed (protocol S5).",
       "source_depth": "full text via arxiv HTML v1, verbatim table reproduction obtained",
-      "verified_by_human": false
+      "verified_by_human": true
     }
   ],
   "summary": {

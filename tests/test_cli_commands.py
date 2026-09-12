@@ -261,3 +261,51 @@ def test_mechanisms_lists_what_is_actually_available():
     r = CliRunner().invoke(main, ["mechanisms"])
     assert r.exit_code == 0
     assert "independent" in r.output and "pairwise" in r.output
+
+
+def test_export_and_verify_capsule_cli(tmp_path):
+    """Verifies round-trip CLI export-capsule and verify-capsule commands."""
+    from synthproof.frontier.certificate import PrivacyDataSheet
+    from synthproof.ledger import signing
+
+    sk, pk = signing.generate_keypair(key_dir=tmp_path)
+    csv_file = tmp_path / "data.csv"
+    pd.DataFrame({"x": [1, 2, 3], "y": [4, 5, 6]}).to_csv(csv_file, index=False)
+
+    sheet = PrivacyDataSheet(
+        dataset_name="CLICapsuleTest",
+        num_rows=3,
+        target_column="y",
+        total_proved_eps=1.0,
+        delta=1e-5,
+        total_audited_eps=0.2,
+        audit_ceiling=2.0,
+        mechanism="pairwise",
+        mechanism_available=True,
+        seed=1,
+        frontier_curve=[],
+        ledger_hash="d" * 64,
+    )
+    signing.sign_datasheet(sheet, key_path=sk)
+
+    sheet_file = tmp_path / "sheet.json"
+    sheet_file.write_text(json.dumps(sheet.to_dict()), encoding="utf-8")
+
+    capsule_out = tmp_path / "cli_capsule.html"
+
+    # Test export-capsule
+    r_exp = CliRunner().invoke(
+        main,
+        ["export-capsule", "--sheet", str(sheet_file), "--data", str(csv_file), "--out", str(capsule_out)],
+    )
+    assert r_exp.exit_code == 0, r_exp.output
+    assert capsule_out.exists()
+    assert "SUCCESS" in r_exp.output
+
+    # Test verify-capsule
+    r_ver = CliRunner().invoke(main, ["verify-capsule", "--capsule", str(capsule_out)])
+    assert r_ver.exit_code == 0, r_ver.output
+    assert "CRYPTOGRAPHIC INTEGRITY: ED25519 SIGNATURE AUTHENTIC" in r_ver.output
+    assert "CLICapsuleTest" in r_ver.output
+    assert "NOT DETECTED (< LoD)" in r_ver.output
+

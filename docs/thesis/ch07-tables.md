@@ -31,8 +31,6 @@
 
 *Source: `results/h1_all_families.json`, 5 seeds per cell, n = 6000.*
 
-[WRITE: ~250 words. State that this establishes every ε downstream means what it says, and that calibration never overspends. The pre-calibration failure — ε=8 requested, 70.49 composed — belongs here as the motivation.]
-
 ---
 
 ## 7.2 Auditor validation — floor and ceiling
@@ -52,8 +50,6 @@ Ceiling — the largest ε this instrument could report even against a 100% verb
 | max ε_audited | 0.81 | 1.84 | 2.57 | 3.28 | 3.98 | 4.68 | 5.38 |
 
 *Source: `results/detection_floor.json`, α = 0.05, n = 3000. A cell counts as detected only on a majority of seeds.*
-
-[WRITE: ~300 words. The instrument works — positive control detected at m=10, negative control never fires. Then the ceiling, and the consequence: H1 ran at m=60 where the ceiling is 2.97 against a proved ε of 7.36, so the gap was structurally guaranteed. Attribute the ceiling to Steinke et al. Thm 2.1 / Eq. (3) — it is not ours.]
 
 ---
 
@@ -115,8 +111,6 @@ Ceiling — the largest ε this instrument could report even against a 100% verb
 
 *The orderings **disagree**. Reported as measured; the diagnosis is §7.3.*
 
-[WRITE: ~600 words. The structure ordering does NOT transfer; the TSTR ordering does. Diagnose: the metric scores a single column pair, and AIM's score on it depends largely on whether that pair is among its selected cliques. State the weakened version — each dataset has a counterexample — and the 11.9x vs 2.3x difference in degree.]
-
 ---
 
 ## 7.6 H2 — subgroup disparity
@@ -140,11 +134,9 @@ Ceiling — the largest ε this instrument could report even against a 100% verb
 
 *Per-subgroup ceilings: **3.27, 4.19**. Every audited ε above must be read against the ceiling for its own row — the largest observed value is a small fraction of the instrument's range.*
 
-[WRITE: ~400 words. A BOUNDED null, not a bare one: multiplicity correction (0 of 14 survive BH-FDR on Adult, 0 of 22 on ACS), TOST equivalence (2 of 14 equivalent to chance within a pre-specified margin), and stated detectability (the adversary needed 0.600 and reached 0.562). Explain why canaries were allocated equally, not proportionally.]
-
 ---
 
 ## 7.7 H3 — allocation strategy
 
-[WRITE: ~150 words. Not supported on either dataset: at no ε does the paired weighted-minus-uniform gap in TSTR macro F1 have a bootstrap CI excluding zero. The null replicates. Note that the weights are declared public metadata — deriving them from the table would be an uncharged query. Source: `results/h3_allocation.json`.]
+*Source: `results/h3_allocation.json`.*
 

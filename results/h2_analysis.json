@@ -254,7 +254,7 @@
     "interpretation": "With m=80 guesses at alpha=0.05, the smallest detectable audited epsilon is 0.008 (requiring adversary accuracy 0.600), and the largest certifiable value is 3.27. The largest observed bound was 0.036 at accuracy 0.562 \u2014 1.1% of the instrument's range. A null at this scale bounds the effect; it does not establish its absence."
   },
   "verdict": "14 tests at alpha=0.05. Raw p<alpha: 0 (chance alone predicts 0.7). Surviving BH-FDR: 0. Surviving Bonferroni: 0. No subgroup shows significant leakage after FDR control, so H2 is NOT supported. 2 of 14 comparisons are statistically EQUIVALENT to chance within the pre-specified margin \u2014 a positive bound on the effect rather than an absence of evidence. With m=80 guesses at alpha=0.05, the smallest detectable audited epsilon is 0.008 (requiring adversary accuracy 0.600), and the largest certifiable value is 3.27. The largest observed bound was 0.036 at accuracy 0.562 \u2014 1.1% of the instrument's range. A null at this scale bounds the effect; it does not establish its absence.",
-  "source": "results\\h2_subgroups.json",
+  "source": "results/h2_subgroups.json",
   "source_n_rows": 6000,
   "source_seeds": [
     0,

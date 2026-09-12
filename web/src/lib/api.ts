@@ -1,4 +1,6 @@
 import type {
+  AttackType,
+  CertificateVerifyResult,
   DatasetOption,
   LedgerState,
   Mechanism,
@@ -7,6 +9,7 @@ import type {
   RunResult,
   StageEvent,
   StartEvent,
+  TamperResult,
   UploadResult,
 } from '@/types'
 
@@ -68,7 +71,66 @@ export const api = {
     }>('/ledger/tamper', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ entry_id: entryId, eps_spent: 0.01 }),
+      body: JSON.stringify({ entry_id: entryId, eps_spent: 0.01, attack_type: 'modify_eps' }),
+    }),
+
+  tamperAdvanced: (attackType: AttackType, entryId?: string, epsSpent = 0.01) =>
+    json<TamperResult>('/ledger/tamper', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ attack_type: attackType, entry_id: entryId, eps_spent: epsSpent }),
+    }),
+
+  exportCapsule: async (
+    sheet: Record<string, any>,
+    records?: Record<string, any>[],
+    curatorName = 'SynthProof Autonomous Curator',
+  ): Promise<string> => {
+    const res = await fetch(
+      `${BASE}/capsule/export`,
+      authHeaders({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sheet, records, curator_name: curatorName }),
+      }),
+    )
+    if (!res.ok) throw new Error((await res.text()) || 'Failed to export capsule')
+    return res.text()
+  },
+
+  verifyCertificate: (sheet: Record<string, any>, publicKey?: string) =>
+    json<CertificateVerifyResult>('/certificate/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sheet, public_key: publicKey }),
+    }),
+
+  verifyCapsule: (htmlContent: string) =>
+    json<{
+      verified: boolean
+      lod_safe: boolean
+      lod_status: string
+      proved_eps?: number
+      audited_eps?: number
+      audit_ceiling?: number
+      dataset_name?: string
+      num_rows?: number
+      total_records_in_capsule?: number
+      mechanism?: string
+      ledger_hash?: string
+      public_key?: string
+      error?: string
+    }>('/capsule/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ html_content: htmlContent }),
+    }),
+
+  exportCroissant: (sheet: Record<string, any>) =>
+    json<Record<string, any>>('/croissant/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sheet }),
     }),
 
   resetLedger: () => json<{ verified: boolean; head: string }>('/ledger/reset', { method: 'POST' }),

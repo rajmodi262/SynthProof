@@ -5,7 +5,7 @@
 
 ## The configuration
 
-The H1 grid: **AIM on UCI Adult**, proved ε = **6.543** (`results/h1_all_families.json`, mechanism `aim`),
+The H1 grid: **AIM on UCI Adult**, proved ε = **6.543** (`results\h1_all_families.json`, mechanism `aim`),
 audited ε = **0.000** (`results/h1_all_families.json`), from a canary audit at
 **m = 60**, α = 0.05 (`results/AUDITOR_COMPARISON.md`).
 

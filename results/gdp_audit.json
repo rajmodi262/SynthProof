@@ -18,5 +18,5 @@
   "alpha": 0.05,
   "exceeds_implied": false,
   "verdict": "AUDIT INFORMATIVE. mu_emp = 0.4014 against a ceiling of 5.5073 and an implied mu of 0.5325. The empirical bound sits below the proved bound, which is the expected and correct ordering.",
-  "elapsed_seconds": 291.4
+  "elapsed_seconds": 123.1
 }

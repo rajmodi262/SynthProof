@@ -162,7 +162,10 @@ def main() -> None:
         "confound": {"adult": confound_block("results/clique_confound.json"),
                      "acs": confound_block("results/acs/clique_confound.json")},
         "floor": floor_block("results/detection_floor.json"),
-        "mutation": {**load("results/mutation_probe.json"), "source": "results/mutation_probe.json"},
+        "mutation": {
+            **load("results/mutation_probe.json"),
+            "source": "results/mutation_probe.json",
+        },
         "ceilingCurve": [
             {"r": r, "epsMax": max_provable_epsilon(r)}
             for r in [5, 10, 15, 20, 25, 30, 40, 44, 50, 60, 80, 100, 120, 160, 200, 300,

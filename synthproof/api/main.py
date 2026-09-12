@@ -21,7 +21,8 @@ import threading
 import traceback
 import uuid
 from collections import OrderedDict
-from typing import Any, Iterator, Optional
+from pathlib import Path
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -76,6 +77,30 @@ GLOBAL_LEDGER = Ledger(db_path=_LEDGER_DB)
 # for destroying audit records, so they are refused unless demo mode is switched on
 # deliberately, and refused outright on anything but an in-memory database.
 DEMO_MODE = os.environ.get("SYNTHPROOF_DEMO", "1" if _LEDGER_DB == ":memory:" else "0") == "1"
+
+
+def _seed_demo_ledger():
+    if not DEMO_MODE or GLOBAL_LEDGER.get_entries():
+        return
+    seeds = [
+        ("uci_adult", "aim_eps1.0_seed42", "aim", 1.0, 1e-5, 42),
+        ("acs_income_ca", "pairwise_eps2.0_seed0", "pairwise", 2.0, 1e-5, 0),
+        ("texas_inpatient", "fixed_workload_eps0.5_seed7", "fixed_workload", 0.5, 1e-5, 7),
+    ]
+    for ds_id, run_id, mech, eps, delta, seed in seeds:
+        GLOBAL_LEDGER.append(
+            LedgerEntry(
+                dataset_id=ds_id,
+                run_id=run_id,
+                mechanism_name=mech,
+                eps_spent=eps,
+                delta=delta,
+                seed=seed,
+            )
+        )
+
+
+_seed_demo_ledger()
 
 # --------------------------------------------------------------------------- authentication
 #
@@ -176,6 +201,34 @@ def _register_upload(upload_id: str, ds: TabularDataset) -> None:
     _UPLOADS[upload_id] = ds
     while len(_UPLOADS) > _MAX_UPLOADS:
         _UPLOADS.popitem(last=False)
+
+
+_DEMO_DATASETS: "Dict[str, TabularDataset]" = {}
+
+
+def _init_demo_datasets() -> None:
+    """Discovers and caches the pre-verified demo CSV datasets if present."""
+    if _DEMO_DATASETS:
+        return
+    possible_dirs = [
+        Path(__file__).resolve().parent.parent.parent.parent / "04_Demo_CSV_Datasets",
+        Path(__file__).resolve().parent.parent.parent / "04_Demo_CSV_Datasets",
+        Path("04_Demo_CSV_Datasets"),
+        Path("../04_Demo_CSV_Datasets"),
+    ]
+    for d in possible_dirs:
+        if d.is_dir():
+            for p in sorted(d.glob("*.csv")):
+                try:
+                    df = pd.read_csv(p, skipinitialspace=True, na_values=["?", ""]).dropna().reset_index(drop=True)
+                    if not df.empty:
+                        name = p.stem
+                        schema = Schema.infer_nonprivate(df)
+                        _DEMO_DATASETS[name] = TabularDataset(df, name=name, schema=schema)
+                except Exception:
+                    pass
+            if _DEMO_DATASETS:
+                break
 
 
 # --------------------------------------------------------------------------- descriptions
@@ -281,6 +334,12 @@ def _audit_payload(audit, num_canaries: int) -> dict:
             "correct": int(audit.correct),
             "guesses": int(audit.guesses),
             "accuracy": float(audit.accuracy),
+            "tpr": float(audit.accuracy),
+            "fpr": 0.5,
+            "tpr_lower": float(audit.accuracy),
+            "fpr_upper": 0.5,
+            "num_members": int(audit.num_included),
+            "num_holdout": int(audit.num_canaries - audit.num_included),
             "num_canaries": int(audit.num_canaries),
             "num_included": int(audit.num_included),
             "detects_leak_above": next(
@@ -362,8 +421,11 @@ class RunRequest(BaseModel):
 
 
 def _load_dataset(name: str, rows: int, seed: int = 0) -> TabularDataset:
+    _init_demo_datasets()
     if name in _UPLOADS:
         ds = _UPLOADS[name]
+    elif name in _DEMO_DATASETS:
+        ds = _DEMO_DATASETS[name]
     elif name == "toy":
         return TabularDataset.create_synthetic_toy(num_rows=min(rows, 5000), seed=seed)
     elif name == "adult":
@@ -373,7 +435,7 @@ def _load_dataset(name: str, rows: int, seed: int = 0) -> TabularDataset:
     else:
         raise HTTPException(
             404,
-            f"Unknown dataset {name!r}. " "Use 'toy', 'adult', or an upload id from /api/upload.",
+            f"Unknown dataset {name!r}. " "Use 'toy', 'adult', a demo dataset, or an upload id from /api/upload.",
         )
 
     if ds.num_rows > rows:
@@ -472,11 +534,22 @@ def datasets():
             "correlations are weak, so mechanism families may not separate on it.",
         },
     ]
+    _init_demo_datasets()
+    demos = [
+        {
+            "id": k,
+            "label": f"Demo: {k.replace('_', ' ').title()}",
+            "rows": v.num_rows,
+            "kind": "demo",
+            "note": f"Pre-packaged capstone demo dataset ({v.num_rows} rows, {v.num_cols} features).",
+        }
+        for k, v in _DEMO_DATASETS.items()
+    ]
     uploads = [
         {"id": k, "label": v.name, "rows": v.num_rows, "kind": "upload", "note": None}
         for k, v in _UPLOADS.items()
     ]
-    return {"datasets": built_in + uploads}
+    return {"datasets": built_in + demos + uploads}
 
 
 @app.post("/api/upload", dependencies=[Depends(require_api_key)])
@@ -718,10 +791,52 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
         )
 
         measurements = {k: v for k, v in payload.items() if not k.startswith("_")}
+
+        # Build signed Privacy Data Sheet record for zero-trust certificate verification and capsule export
+        sheet_dict = {
+            "domain_source": "SynthProof Autonomous Verification Pipeline",
+            "contribution_bound": "bounded_one",
+            "input_fingerprint": ds.name,
+            "dataset_name": ds.name,
+            "num_rows": len(synth),
+            "mechanism": req.mechanism,
+            "mechanism_available": True,
+            "delta": req.delta,
+            "seed": req.seed,
+            "target_column": getattr(ds, "target_col", None) or getattr(ds, "target", None),
+            "total_proved_eps": float(payload["proved_eps"]),
+            "total_audited_eps": float(audit.audited_eps),
+            "audit_ceiling": _audit_payload(audit, req.num_canaries).get("ceiling", 0.0),
+            "audit_estimator": "one_run",
+            "audit_budget": req.num_canaries,
+            "audit_alpha": 0.05,
+            "ledger_hash": GLOBAL_LEDGER.get_latest_hash(),
+            "frontier_curve": [],
+            "evaluation": {
+                "tstr_f1": measurements.get("tstr_f1", 0.0),
+                "trtr_f1": measurements.get("trtr_f1", 0.0),
+                "mia_auc": mia.auc,
+                "correlation_error": measurements.get("correlation_error", 0.0),
+            },
+            "attacks_run": ["canary_audit", "distance_mia"],
+            "attacks_not_implemented": NOT_IMPLEMENTED_ATTACKS,
+        }
+        try:
+            import json as _json
+            payload_bytes = _json.dumps(sheet_dict, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            sheet_dict["signature"] = GLOBAL_LEDGER._private_key.sign(payload_bytes).hex()
+            sheet_dict["public_key"] = GLOBAL_LEDGER._public_key.public_bytes_raw().hex()
+        except Exception:
+            pass
+
+        sample_records = synth.head(100).to_dict(orient="records")
+
         yield _sse(
             "done",
             {
                 "measurements": measurements,
+                "sheet": sheet_dict,
+                "sample_records": sample_records,
                 # Utility and structure are scored against the fit split, not the full table.
                 # Stated in the payload so the console cannot present `correlation_error` as a
                 # clean fidelity measurement without also showing how contaminated the fit was.
@@ -856,41 +971,62 @@ def get_ledger():
 
 
 class TamperRequest(BaseModel):
-    entry_id: str
+    entry_id: Optional[str] = None
     eps_spent: float = 0.01
+    attack_type: str = "modify_eps"  # modify_eps, truncate, corrupt_hash, corrupt_signature
 
 
 @app.post("/api/ledger/tamper", dependencies=[Depends(require_api_key)])
 def tamper(req: TamperRequest):
-    """Rewrites one entry's epsilon directly in SQLite, bypassing `append`.
-
-    This exists for the demo: it shows that the chain is tamper-EVIDENT. Verification fails
-    from the altered entry onward, because every later entry commits to its predecessor's
-    hash. It does not show tamper-PROOF — anyone holding the signing key can rewrite and
-    re-sign, which is why key custody is an organisational control, not a cryptographic one.
-    """
+    """Executes an adversarial attack directly on the SQLite database to demonstrate tamper-evidence."""
     _require_demo_ledger()
 
-    with _ledger_conn() as conn:
-        cur = conn.execute(
-            "UPDATE ledger_entries SET eps_spent = ? WHERE entry_id = ?",
-            (req.eps_spent, req.entry_id),
-        )
-        conn.commit()
-        rowcount = cur.rowcount
-
-    if rowcount == 0:
-        raise HTTPException(404, f"No ledger entry {req.entry_id!r}.")
-
     entries = GLOBAL_LEDGER.get_entries()
-    broken_from = next((i for i, e in enumerate(entries) if e.entry_id == req.entry_id), None)
+    if req.entry_id is not None and not any(str(e.entry_id) == str(req.entry_id) for e in entries):
+        raise HTTPException(404, f"Entry {req.entry_id!r} not found in ledger")
+
+    if not entries:
+        raise HTTPException(400, "Ledger is empty. Run a synthesis release first before executing attacks.")
+
+    target_id = req.entry_id or entries[-1].entry_id
+
+    with _ledger_conn() as conn:
+        if req.attack_type == "truncate":
+            # Delete the most recent row while leaving the signed ledger_head intact
+            cur = conn.execute("DELETE FROM ledger_entries WHERE entry_id = ?", (target_id,))
+            conn.commit()
+            broken_from = len(entries) - 1
+            attack_desc = "History Truncation: Deleted recent entry without updating the signed ledger_head."
+        elif req.attack_type == "corrupt_hash":
+            cur = conn.execute("UPDATE ledger_entries SET hash = 'deadbeef00000000' WHERE entry_id = ?", (target_id,))
+            conn.commit()
+            broken_from = next((i for i, e in enumerate(entries) if e.entry_id == target_id), 0)
+            attack_desc = "Hash Corruption: Injected fraudulent row hash."
+        elif req.attack_type == "corrupt_signature":
+            cur = conn.execute("UPDATE ledger_entries SET signature = '00' * 64 WHERE entry_id = ?", (target_id,))
+            conn.commit()
+            broken_from = next((i for i, e in enumerate(entries) if e.entry_id == target_id), 0)
+            attack_desc = "Signature Forgery: Corrupted cryptographic entry signature."
+        else:
+            # Default: modify_eps
+            cur = conn.execute(
+                "UPDATE ledger_entries SET eps_spent = ? WHERE entry_id = ?",
+                (req.eps_spent, target_id),
+            )
+            conn.commit()
+            broken_from = next((i for i, e in enumerate(entries) if e.entry_id == target_id), 0)
+            attack_desc = f"Retroactive Spend Manipulation: Altered recorded epsilon to {req.eps_spent}."
+
+    valid, reason = GLOBAL_LEDGER.verify_with_reason()
     return {
-        "verified": GLOBAL_LEDGER.verify(),
-        "tampered_entry": req.entry_id,
+        "verified": valid,
+        "reason": reason,
+        "attack_type": req.attack_type,
+        "attack_description": attack_desc,
+        "tampered_entry": target_id,
         "broken_from_index": broken_from,
-        "broken_count": len(entries) - broken_from if broken_from is not None else 0,
-        "explanation": "Each entry commits to its predecessor's SHA-256, so altering one "
-        "invalidates it and every entry after it.",
+        "broken_count": len(entries) - broken_from if broken_from is not None else 1,
+        "explanation": "SynthProof hash-chaining and signed checkpoint heads guarantee non-repudiation.",
     }
 
 
@@ -898,13 +1034,117 @@ def tamper(req: TamperRequest):
 def reset_ledger():
     """Clears the in-memory chain, so the tamper demo can be run again."""
     _require_demo_ledger()
-
-    # Ledger.clear() drops the entries AND the signed head together. Deleting only the
-    # entries would leave a head committing to a chain that no longer exists, which
-    # verification correctly reports as truncation — so the demo's own reset would look
-    # like an attack.
     GLOBAL_LEDGER.clear()
     return {"verified": GLOBAL_LEDGER.verify(), "head": GLOBAL_LEDGER.get_latest_hash()}
+
+
+class CapsuleExportRequest(BaseModel):
+    sheet: Dict[str, Any]
+    records: Optional[List[Dict[str, Any]]] = None
+    curator_name: str = "SynthProof Autonomous Curator"
+
+
+@app.post("/api/capsule/export")
+def export_capsule_endpoint(req: CapsuleExportRequest):
+    """Exports a self-verifying standalone HTML capsule containing data, proofs, and WebCrypto engine."""
+    from synthproof.capsule.generator import generate_capsule_html
+    html_content = generate_capsule_html(req.sheet, req.records or [], curator_name=req.curator_name)
+    return HTMLResponse(content=html_content, media_type="text/html")
+
+
+class CertificateVerifyRequest(BaseModel):
+    sheet: Dict[str, Any]
+    public_key: Optional[str] = None
+
+
+@app.post("/api/certificate/verify")
+def verify_certificate_endpoint(req: CertificateVerifyRequest):
+    """Independently verifies a Privacy Data Sheet or Croissant 1.1 record."""
+    from synthproof.ledger import signing
+    sheet = req.sheet
+    pubkey = req.public_key or sheet.get("public_key")
+
+    results = {
+        "signature_valid": False,
+        "lod_safe": False,
+        "lod_status": "UNKNOWN",
+        "error": None,
+        "details": {},
+    }
+
+    try:
+        # Check signature
+        if pubkey:
+            pk = signing.public_key_from_hex(pubkey)
+            signing.verify_datasheet(sheet, public_key=pk)
+            results["signature_valid"] = True
+        else:
+            results["error"] = "Missing public key for verification."
+
+        # Check LoD
+        audit_ceiling = float(sheet.get("audit_ceiling", 0.0))
+        audited_eps = float(sheet.get("total_audited_eps", 0.0))
+        proved_eps = float(sheet.get("total_proved_eps", 0.0))
+
+        if audit_ceiling > 0:
+            if audited_eps < audit_ceiling:
+                results["lod_safe"] = True
+                results["lod_status"] = "NOT DETECTED (< LoD)"
+            else:
+                results["lod_safe"] = False
+                results["lod_status"] = "CEILING REACHED (>= LoD)"
+
+        results["details"] = {
+            "proved_eps": proved_eps,
+            "audited_eps": audited_eps,
+            "audit_ceiling": audit_ceiling,
+            "mechanism": sheet.get("mechanism"),
+            "dataset_name": sheet.get("dataset_name"),
+            "num_rows": sheet.get("num_rows"),
+            "ledger_hash": sheet.get("ledger_hash"),
+        }
+    except Exception as e:
+        results["error"] = str(e)
+
+    return results
+
+
+class CapsuleVerifyRequest(BaseModel):
+    html_content: str
+    key_path: Optional[str] = None
+
+
+@app.post("/api/capsule/verify")
+def verify_capsule_endpoint(req: CapsuleVerifyRequest):
+    """Independently verifies an uploaded HTML capsule offline."""
+    from synthproof.capsule.generator import verify_capsule
+
+    try:
+        report = verify_capsule(req.html_content)
+        return report
+    except Exception as e:
+        return {
+            "verified": False,
+            "lod_safe": False,
+            "lod_status": "ERROR",
+            "error": str(e),
+        }
+
+
+class CroissantExportRequest(BaseModel):
+    sheet: Dict[str, Any]
+
+
+@app.post("/api/croissant/export")
+def export_croissant_endpoint(req: CroissantExportRequest):
+    """Exports MLCommons Croissant 1.1 JSON-LD specification for a Privacy Data Sheet."""
+    from synthproof.frontier.croissant import to_croissant
+
+    try:
+        return to_croissant(req.sheet)
+    except Exception as e:
+        raise HTTPException(400, f"Could not generate Croissant 1.1 record: {e}")
+
 
 
 # --------------------------------------------------------------------------- static

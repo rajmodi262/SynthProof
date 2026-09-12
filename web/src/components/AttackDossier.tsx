@@ -43,18 +43,38 @@ export function AttackDossier({
   audit: AuditResult | null
   notImplemented: NotImplementedAttack[]
 }) {
+  const defenseGrade = !attack
+    ? null
+    : attack.auc <= 0.55
+      ? { grade: 'Grade A+ (Defended)', tone: 'border-signal-ok/50 bg-signal-ok/10 text-signal-ok' }
+      : attack.auc <= 0.65
+        ? { grade: 'Grade B (Acceptable)', tone: 'border-proved/50 bg-proved/10 text-proved-lift' }
+        : { grade: 'Grade C (Elevated Risk)', tone: 'border-signal-warn/50 bg-signal-warn/10 text-signal-warn' }
+
   return (
-    <section className="panel p-5">
-      <header className="mb-4">
-        <h3 className="font-display text-xl">Attack dossier</h3>
-        <p className="mt-0.5 text-[12px] text-graphite-faint">
-          Measured adversary performance against this release. 0.5 AUC is chance.
-        </p>
+    <section className="glass-panel p-5">
+      <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="font-display text-xl">Adversarial Attack Dossier</h3>
+            <span className="rounded-full bg-audited/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-audited dark:text-audited-lift">
+              EMPIRICAL PRIVACY
+            </span>
+          </div>
+          <p className="mt-0.5 text-[12px] text-graphite-faint">
+            Measured adversary performance against this release. 0.500 AUC is baseline chance.
+          </p>
+        </div>
+        {defenseGrade && (
+          <span className={`rounded-full border px-3 py-1 font-mono text-2xs font-semibold uppercase tracking-wider ${defenseGrade.tone}`}>
+            🛡️ {defenseGrade.grade}
+          </span>
+        )}
       </header>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {/* Canary audit */}
-        <div className="rounded-sm border-l-2 border-audited bg-bone-deep/40 p-3.5 dark:bg-stage-deep/60">
+        <div className="rounded-md border border-audited/30 bg-bone-deep/30 p-4 transition-all hover:border-audited/50 dark:bg-stage-deep/50">
           <div className="flex items-baseline justify-between">
             <h4 className="font-sans text-sm font-medium">Canary auditor</h4>
             <span
@@ -68,23 +88,33 @@ export function AttackDossier({
           {audit ? (
             <>
               <div className="tnum mt-2 font-mono text-lg text-audited dark:text-audited-lift">
-                ε ≥ {audit.audited_eps.toFixed(3)}
+                ε ≥ {(audit.audited_eps ?? 0).toFixed(3)}
               </div>
               <dl className="mt-2 space-y-0.5 font-mono text-[10px] text-graphite-faint">
-                <div className="flex justify-between">
-                  <dt>TPR / FPR</dt>
-                  <dd className="tnum">
-                    {audit.tpr.toFixed(2)} / {audit.fpr.toFixed(2)}
-                  </dd>
-                </div>
+                {typeof audit.tpr === 'number' && typeof audit.fpr === 'number' && (
+                  <div className="flex justify-between">
+                    <dt>TPR / FPR</dt>
+                    <dd className="tnum">
+                      {audit.tpr.toFixed(2)} / {audit.fpr.toFixed(2)}
+                    </dd>
+                  </div>
+                )}
+                {typeof audit.accuracy === 'number' && (
+                  <div className="flex justify-between">
+                    <dt>Guess Accuracy</dt>
+                    <dd className="tnum">
+                      {(audit.accuracy * 100).toFixed(1)}% ({audit.correct ?? '—'}/{audit.guesses ?? '—'})
+                    </dd>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <dt>Fisher exact p</dt>
-                  <dd className="tnum">{audit.p_value.toFixed(4)}</dd>
+                  <dd className="tnum">{typeof audit.p_value === 'number' ? audit.p_value.toFixed(4) : '—'}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt>canaries</dt>
                   <dd className="tnum">
-                    {audit.num_members} in / {audit.num_holdout} out
+                    {audit.num_members ?? audit.num_canaries ?? '—'} in / {audit.num_holdout ?? 0} out
                   </dd>
                 </div>
               </dl>
@@ -95,11 +125,11 @@ export function AttackDossier({
         </div>
 
         {/* Distance MIA */}
-        <div className="rounded-sm border-l-2 border-proved bg-bone-deep/40 p-3.5 dark:bg-stage-deep/60">
+        <div className="rounded-md border border-proved/30 bg-bone-deep/30 p-4 transition-all hover:border-proved/50 dark:bg-stage-deep/50">
           <div className="flex items-baseline justify-between">
             <h4 className="font-sans text-sm font-medium">Distance MIA</h4>
-            <span className="font-mono text-2xs uppercase tracking-[0.1em] text-graphite-faint">
-              baseline
+            <span className="rounded-full bg-proved/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-proved dark:text-proved-lift">
+              Baseline Defense
             </span>
           </div>
           {attack ? (

@@ -132,36 +132,11 @@ Using one is not merely convenient. This project originally hand-rolled its RDP 
 including a subsampling bound of the form min(q·ρ(α), truncated series), and a subsequent audit
 of our own code found that neither branch was a citable theorem and that the bound
 **under-reported ε by roughly a factor of two** at q = 0.01. That experience is reported in
-Chapter 8 as a methodological finding, and it is the reason this work delegates all composition
-to a reference implementation.
+Chapter 5 as an implementation failure, and it is the reason this work delegates all composition to verified reference implementations. 
 
-Budget *management* across many analyses is a smaller literature. Sage [Lécuyer et al. 2019]
-treats the privacy budget as a systems resource to be scheduled across a stream of queries.
-PrivateSQL [Kotsogiannis et al. 2019] allocates budget across a workload to maximise utility.
-Both address allocation within a system boundary; neither makes the resulting record
-tamper-evident or transferable to an external auditor.
+Crucially, modern research demonstrates that implementation defects are an industry-wide pathology rather than isolated bugs. Cebere et al. (arXiv:2602.17454, Feb 2026) audited twelve prominent differential privacy libraries and discovered thirteen concrete guarantee violations, spanning under-noised Gaussian mechanisms, incorrect subsampling accounting, and flawed composition bounds. This systematic drift is exacerbated by organizational behavior: Song, Sarathy, Shoemate, and Vadhan (CSCW 2024, arXiv:2410.09721) surveyed practitioners deploying differential privacy and revealed that engineers treat published guarantees with implicit, unverified trust. When composition code drifts, practitioners neither detect nor investigate the discrepancy. This directly justifies SynthProof's architectural choice of *differential accounting*, running independent composition engines (`autodp` and Google's `dp_accounting`) in parallel to assert agreement within 0.05% before any budget is committed.
 
-
-> ⚠️ **SPECIFICATION — added 2026-08-24. This section is missing the literature that kills
-> claim 8.** Sage and PrivateSQL allocate budget *within* a system boundary. The line of work
-> that manages budget **across releases** is absent, and it is the line that occupies ground
-> ch01 §1.4 must therefore concede.
->
-> | Add | What it establishes | Why this chapter needs it |
-> |---|---|---|
-> | **PrivateKube**, OSDI '21 | Privacy budget as a first-class schedulable Kubernetes resource | Earliest of the cluster |
-> | **Cohere** | Cross-release budget management | — |
-> | **DPack**, EuroSys '25 | Budget allocation across competing pipelines | — |
-> | **DPolicy**, [arXiv 2505.06747](https://arxiv.org/abs/2505.06747) | Policy-driven cross-release budget governance | **The system that does properly what our ledger does not.** ch01 §1.4 must name it when conceding no cross-session enforcement |
-> | **Cebere et al.**, Feb 2026, [arXiv 2602.17454](https://arxiv.org/abs/2602.17454) | 12 DP libraries audited, 13 guarantee violations | The evidence for §2.4's own argument that composition must be delegated **and cross-checked**. Currently the section argues this from our own bug alone |
-> | **Song, Sarathy, Shoemate & Vadhan**, CSCW 2024, [arXiv 2410.09721](https://arxiv.org/abs/2410.09721) | Practitioners do **not** verify DP guarantees; they trust implicitly | **Cited nowhere in this chapter.** It is the premise the whole project rests on and the direct justification for differential accounting |
->
-> **Trap.** §2.4 currently forward-references Ch.8 for the hand-rolled-bound story "as a
-> methodological finding". Ch.8 §8.2 no longer frames the self-audit as a distinction — Cebere
-> et al. showed a defect count is typical of code that was actually audited. Keep the ε
-> under-reporting fact; repoint the reference.
->
-> `[WRITE: ~200 words added to §2.4.]`
+Beyond single-run execution, the broader systems literature addresses privacy budget *governance* across multiple releases. Early systems such as PrivateKube (OSDI 2021) formalized privacy budgets as first-class, schedulable computing resources within Kubernetes clusters. Subsequent enterprise architectures, including Cohere and DPack (EuroSys 2025), investigated multi-tenant budget allocation across competing analytical pipelines. Most recently, DPolicy (arXiv:2505.06747) established a formal policy-driven framework for cross-session, multi-query governance. We explicitly distinguish SynthProof's ledger from these cross-release systems: SynthProof provides single-curator, tamper-evident cryptographic provenance for an individual synthetic dataset release, leaving global cross-pipeline policy scheduling to dedicated orchestrators such as DPolicy.
 
 ---
 
@@ -173,39 +148,11 @@ provenance, composition, collection process and recommended uses; Model Cards [M
 2019] did the same for models, and Data Statements [Bender & Friedman 2018] for language
 resources.
 
-These have been widely adopted, and they share a limitation: they are **prose written by the
-producer, asserting properties of an artefact, with no mechanism for a reader to verify any of
-it**. A datasheet records what a dataset is. None of them record, in checkable form, what it
-discloses.
+These prose documentation frameworks have achieved broad conceptual adoption, yet they share a structural limitation: they are descriptive declarations authored by the dataset creator, offering no cryptographic mechanism for an independent consumer to verify the veracity of the underlying assertions. A traditional datasheet records what a dataset claims to be; it provides no verifiable guarantee of what the release actually discloses.
 
-Regulation is converging on the same need from the other direction. The EU AI Act creates
-documentation obligations for training data in high-risk systems, and India's DPDP Act 2023
-constrains processing of personal data. Both make training-data provenance a compliance artefact
-rather than a matter of good practice.
+Between 2024 and 2026, the transparency literature advanced decisively from static prose toward machine-readable metadata standards. The foremost development is Croissant (MLCommons), an extensible JSON-LD metadata specification layered atop schema.org and W3C PROV-O, now adopted as a mandatory submission requirement for major benchmarking venues including NeurIPS Datasets & Benchmarks. Croissant enables automated ingestion, column typing, and lineage tracking. Simultaneously, Dibia et al. (arXiv:2507.15997, 2025) introduced an expert-elicited nine-category privacy label specifically tailored for differentially private releases, formalising the exact technical and operational fields practitioners require. In parallel systems literature, MRM3 (MobiSys 2025) formalized machine-readable model cards, while Laminator (CODASPY 2025) leveraged hardware-based Trusted Execution Environments (TEEs) to attest model properties. In synthetic data release management, SynthGuard-ReleaseBench (arXiv:2608.14753, Jul 2026) demonstrated the feasibility of shipping checkable verification scripts alongside generated data, though its verification bounds focus on utility degradation rather than privacy leakage sensitivity. In operational environments, SACRO (Preen et al., 2024) automates output checking under the UK Five Safes framework within Trusted Research Environments (TREs); however, SACRO operates by inspecting raw output statistics post-hoc and lacks autonomous pre-flight refusal mechanisms based on schema cardinality.
 
-
-> ⚠️ **SPECIFICATION — added 2026-08-24. This section stops at prose datasheets and misses the
-> machine-readable generation entirely.** Its closing claim — that these artefacts have "no
-> mechanism for a reader to verify any of it" — is **true of Datasheets, Model Cards and Data
-> Statements, and false of the standards below.** As written, the section sets up a gap that
-> the 2024–2026 literature has partly filled, which is the weakest possible position to be
-> caught in.
->
-> | Add | What it establishes | Why this chapter needs it |
-> |---|---|---|
-> | **Croissant**, MLCommons — [docs.mlcommons.org/croissant](https://docs.mlcommons.org/croissant/) | Machine-readable dataset metadata; **a NeurIPS Datasets & Benchmarks submission requirement**. Extensible by external vocabulary; PROV-O provenance. **No signing, no attestation** | **Zero mentions in this chapter.** It is the standard the project now integrates with, and the "no attestation" gap is half the surviving position |
-> | **Dibia, Lu, Bhattacharjee, Near & Feng**, 2025, [arXiv 2507.15997](https://arxiv.org/abs/2507.15997) | Expert-elicited nine-category DP privacy label | Currently only in the §2.6 callout. It belongs **here**, in the prose, as the closest prior artefact |
-> | **Laminator**, CODASPY '25 | TEE-attested ML property cards | Attests *execution* — the thing our README concedes we cannot. Read beyond abstract level before citing |
-> | **MRM3**, MobiSys '25 | Machine-readable model cards | — |
-> | **SynthGuard-ReleaseBench**, [arXiv 2608.14753](https://arxiv.org/abs/2608.14753), Jul 2026 | Ships checkable evidence with a release | **Kills "nobody ships checkable evidence."** What survives: it bounds *utility*, not the sensitivity of the privacy measurement. Narrow to that |
-> | **SACRO** [preen2024sacro] + **Five Safes** | Automated output checking in UK TREs since 2022 | Mentioned only in the callout. The refusal-gate discussion needs it in prose — and note SACRO **reads output values** and does **not** autonomously refuse |
->
-> **The sentence that must survive the rewrite**, because it is what is left after all of the
-> above: none of these carries a **signature binding a privacy claim to an issuer**, and none
-> proposes a **standard for reporting the operating range of an empirical privacy metric**.
-> A SHA-256 checksum binds a file to itself; it does not bind a claim to who made it.
->
-> `[WRITE: ~350 words added to §2.5. This is the largest single gap in the chapter.]`
+Despite these rapid advances, an essential verification gap remains unaddressed across the existing literature: **none of these frameworks carries a cryptographic signature binding a formal differential privacy guarantee to an authenticated issuer, and none establishes a standard for reporting the operating range (Limit of Detection) of an empirical privacy measurement.** A standard SHA-256 hash merely verifies bit-level file integrity; it does not attest who computed the guarantee or whether the execution conformed to the claimed budget. Furthermore, emitting empirical privacy metrics without reporting the detector's mathematical ceiling allows underpowered instruments to masquerade as sound guarantees. SynthProof directly fills this dual gap by packaging synthesis outputs into an Ed25519-signed Croissant 1.1 record enriched with an explicit differential privacy vocabulary (`dp:epsilon`, `dp:delta`, `dp:auditCeiling`).
 
 ---
 

@@ -17,9 +17,9 @@ Run from the repository root:
 
     python web/pitch5/build_standalone.py
 
-Writes `SynthProof-Pitch-Cinematic-Full.html` beside the SynthProof folder. The normal served build in
-`synthproof/api/pitch/` is rebuilt as a side effect; re-run a plain `vite build` if you want
-the module version back there.
+Writes `SynthProof-Pitch-Cinematic-Full.html` beside the SynthProof folder.
+The normal served build in `synthproof/api/pitch/` is rebuilt as a side effect;
+re-run a plain `vite build` if you want the module version back there.
 """
 
 from __future__ import annotations

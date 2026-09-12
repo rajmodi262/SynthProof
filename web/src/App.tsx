@@ -8,6 +8,10 @@ import { LedgerChain } from '@/components/LedgerChain'
 import { AttackDossier } from '@/components/AttackDossier'
 import { Marginals } from '@/components/Marginals'
 import { Controls } from '@/components/Controls'
+import { VerifierModal } from '@/components/VerifierModal'
+import { GuidedTourModal } from '@/components/GuidedTourModal'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { FrontierStudio } from '@/components/FrontierStudio'
 import type {
   DatasetOption,
   LedgerState,
@@ -61,6 +65,30 @@ export default function App() {
   const [result, setResult] = useState<RunResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [abort, setAbort] = useState<(() => void) | null>(null)
+  const [verifierOpen, setVerifierOpen] = useState(false)
+  const [tourOpen, setTourOpen] = useState(false)
+  const [exportingCapsule, setExportingCapsule] = useState(false)
+
+  async function handleDownloadCapsule() {
+    if (!result?.sheet) return
+    setExportingCapsule(true)
+    try {
+      const html = await api.exportCapsule(result.sheet, result.sample_records || [])
+      const blob = new Blob([html], { type: 'text/html' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${result.sheet.dataset_name || 'synthproof'}_verified_capsule.html`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err: any) {
+      alert(`Export failed: ${err.message}`)
+    } finally {
+      setExportingCapsule(false)
+    }
+  }
 
   const [layer, setLayer] = useState<CloudLayer>('both')
   const [showCanaries, setShowCanaries] = useState(true)
@@ -132,28 +160,93 @@ export default function App() {
 
   const m = result?.measurements ?? null
 
+
+  const [copiedSheet, setCopiedSheet] = useState(false)
+
+  function copySheetJson() {
+    if (!result?.sheet) return
+    navigator.clipboard.writeText(JSON.stringify(result.sheet, null, 2))
+    setCopiedSheet(true)
+    setTimeout(() => setCopiedSheet(false), 2000)
+  }
+
+  const DEMO_PRESETS = [
+    { id: '01_healthcare_patient_outcomes', label: '🏥 Clinical Outcomes', eps: 0.75, rows: 800 },
+    { id: '02_financial_credit_risk', label: '💳 Credit Risk', eps: 1.0, rows: 1000 },
+    { id: '03_telecom_customer_churn', label: '📱 Telecom Churn', eps: 1.5, rows: 800 },
+    { id: '04_hr_employee_attrition', label: '👥 HR Attrition', eps: 1.0, rows: 600 },
+    { id: '05_quick_demo_demographics', label: '⚡ Viva Quick (3s)', eps: 0.5, rows: 400 },
+  ]
+
+  function selectPreset(preset: typeof DEMO_PRESETS[0]) {
+    if (running) return
+    const found = datasets.find((d) => d.id === preset.id || d.id.includes(preset.id.slice(3, 10)))
+    if (found) {
+      setConfig((c) => ({
+        ...c,
+        dataset: found.id,
+        target_eps: preset.eps,
+        rows: preset.rows,
+      }))
+    }
+  }
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#F0EFEA] text-graphite transition-colors dark:bg-[#121318] dark:text-bone">
       {/* ------------------------------------------------------------- header */}
-      <header className="sticky top-0 z-30 border-b border-bone-edge bg-[#F0EFEA]/85 backdrop-blur dark:border-stage-line dark:bg-[#15161C]/85">
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-6 gap-y-2 px-6 py-3">
-          <div className="flex items-baseline gap-3">
-            <span className="font-display text-2xl leading-none">SynthProof</span>
-            <span className="hidden font-mono text-2xs uppercase tracking-[0.14em] text-graphite-faint sm:inline">
-              synthetic data that ships with its proof
-            </span>
+      <header className="sticky top-0 z-30 border-b border-bone-edge/80 bg-[#F0EFEA]/80 backdrop-blur-md dark:border-stage-line/80 dark:bg-[#15161C]/80">
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-x-6 gap-y-2 px-6 py-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-tr from-proved to-[#6366f1] text-white shadow-sm glow-proved">
+              <span className="text-sm font-bold">SP</span>
+            </div>
+            <div>
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-2xl font-normal tracking-tight">SynthProof</span>
+                <span className="rounded-full bg-proved/10 px-2 py-0.5 font-mono text-[9px] font-semibold text-proved dark:text-proved-lift">
+                  v0.2.0-preview
+                </span>
+              </div>
+              <p className="hidden font-mono text-2xs uppercase tracking-[0.14em] text-graphite-faint sm:block">
+                Synthetic data that ships with its proof
+              </p>
+            </div>
           </div>
 
-          <div className="ml-auto flex items-center gap-4">
+          {/* Quick preset selector buttons */}
+          <div className="hidden items-center gap-1.5 xl:flex">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-graphite-faint">
+              Demo Presets:
+            </span>
+            {DEMO_PRESETS.map((p) => {
+              const active = config.dataset === p.id || config.dataset.includes(p.id.slice(3, 10))
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => selectPreset(p)}
+                  disabled={running}
+                  className={`rounded-full px-2.5 py-1 font-mono text-[10px] font-medium transition-all ${
+                    active
+                      ? 'bg-proved text-white shadow-sm glow-proved'
+                      : 'border border-bone-edge/80 bg-white/60 text-graphite-soft hover:border-graphite-faint dark:border-stage-line dark:bg-stage-deep/60 dark:text-bone dark:hover:border-stage-line/90'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="flex items-center gap-3">
             {ledger && (
-              <span className="hidden items-center gap-1.5 font-mono text-2xs uppercase tracking-[0.1em] md:flex">
+              <span className="hidden items-center gap-2 rounded-full border border-bone-edge/80 bg-white/60 px-3 py-1 font-mono text-2xs uppercase tracking-[0.1em] dark:border-stage-line dark:bg-stage-deep/60 md:flex">
                 <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    ledger.verified ? 'bg-signal-ok' : 'bg-signal-bad'
+                  className={`h-2 w-2 rounded-full ${
+                    ledger.verified ? 'bg-signal-ok shadow-sm shadow-signal-ok' : 'bg-signal-bad shadow-sm shadow-signal-bad'
                   }`}
                 />
-                <span className={ledger.verified ? 'text-signal-ok' : 'text-signal-bad'}>
-                  chain {ledger.verified ? 'verified' : 'broken'}
+                <span className={ledger.verified ? 'text-signal-ok font-medium' : 'text-signal-bad font-medium'}>
+                  {ledger.verified ? 'Chain Verified' : 'Chain Broken'}
                 </span>
                 <span className="text-graphite-faint">
                   · {ledger.count} releases · Σε {ledger.total_eps_spent.toFixed(2)}
@@ -161,10 +254,25 @@ export default function App() {
               </span>
             )}
             <button
-              onClick={() => setDark(!dark)}
-              className="rounded-sm border border-bone-edge px-2 py-1 font-mono text-2xs uppercase tracking-[0.1em] text-graphite-faint transition-colors hover:text-graphite dark:border-stage-line dark:hover:text-bone"
+              onClick={() => setTourOpen(true)}
+              className="flex items-center gap-1.5 rounded-md border border-signal-ok/50 bg-signal-ok/[0.08] px-3 py-1.5 font-mono text-2xs font-semibold uppercase tracking-[0.08em] text-signal-ok transition-all hover:bg-signal-ok/20 hover:shadow-sm"
             >
-              {dark ? 'light' : 'dark'}
+              <span>🎯</span>
+              <span>Guided Tour</span>
+            </button>
+            <button
+              onClick={() => setVerifierOpen(true)}
+              className="flex items-center gap-1.5 rounded-md border border-proved/50 bg-proved/[0.08] px-3 py-1.5 font-mono text-2xs font-semibold uppercase tracking-[0.08em] text-proved transition-all hover:bg-proved/20 hover:shadow-sm dark:text-proved-lift"
+            >
+              <span>🛡️</span>
+              <span>Zero-Trust Verifier</span>
+            </button>
+            <button
+              onClick={() => setDark(!dark)}
+              className="rounded-md border border-bone-edge px-2.5 py-1.5 font-mono text-2xs uppercase tracking-[0.1em] text-graphite-faint transition-all hover:border-graphite-faint hover:text-graphite dark:border-stage-line dark:hover:text-bone"
+              aria-label="Toggle theme"
+            >
+              {dark ? '☀️ light' : '🌙 dark'}
             </button>
           </div>
         </div>
@@ -173,15 +281,38 @@ export default function App() {
       {offline && (
         <div className="border-b border-signal-warn/40 bg-signal-warn/[0.08] px-6 py-2.5">
           <p className="mx-auto max-w-[1600px] font-mono text-[11px] text-graphite-soft dark:text-bone">
-            Cannot reach the API. Start it with{' '}
-            <span className="rounded-sm bg-bone-deep px-1.5 py-0.5 dark:bg-stage-deep">
-              uvicorn synthproof.api.main:app --reload --port 8000
+            ⚠️ Cannot reach the API. Start it with{' '}
+            <span className="rounded-sm bg-bone-deep px-1.5 py-0.5 dark:bg-stage-deep font-semibold">
+              run_prototype.py
             </span>
           </p>
         </div>
       )}
 
       <main className="mx-auto max-w-[1600px] px-6 py-6">
+        {/* Mobile preset selector bar */}
+        <div className="mb-4 flex flex-wrap items-center gap-1.5 xl:hidden">
+          <span className="font-mono text-[10px] uppercase tracking-wider text-graphite-faint">
+            Demo Presets:
+          </span>
+          {DEMO_PRESETS.map((p) => {
+            const active = config.dataset === p.id || config.dataset.includes(p.id.slice(3, 10))
+            return (
+              <button
+                key={p.id}
+                onClick={() => selectPreset(p)}
+                disabled={running}
+                className={`rounded-full px-2 py-0.5 font-mono text-[10px] font-medium transition-all ${
+                  active
+                    ? 'bg-proved text-white shadow-sm glow-proved'
+                    : 'border border-bone-edge/80 bg-white/60 text-graphite-soft hover:border-graphite-faint dark:border-stage-line dark:bg-stage-deep/60 dark:text-bone'
+                }`}
+              >
+                {p.label}
+              </button>
+            )
+          })}
+        </div>
         {/* ----------------------------------------------------------- top row */}
         <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)_360px]">
           <Controls
@@ -246,25 +377,37 @@ export default function App() {
             </div>
 
             <div className="relative flex-1">
-              <RecordCloud
-                cloud={result?.cloud ?? null}
-                layer={layer}
-                showCanaries={showCanaries}
-                showLinks={showLinks}
-                running={running}
-              />
+              <ErrorBoundary fallbackTitle="3D Point Cloud View">
+                <RecordCloud
+                  cloud={result?.cloud ?? null}
+                  layer={layer}
+                  showCanaries={showCanaries}
+                  showLinks={showLinks}
+                  running={running}
+                />
+              </ErrorBoundary>
 
               {!result && (
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-8">
-                  <div className="max-w-md text-center">
-                    <p className="font-display text-2xl text-bone">
-                      Every point is a real record.
-                    </p>
-                    <p className="mt-2 text-[13px] leading-relaxed text-graphite-faint">
-                      Run a release to see the synthetic cloud drawn against it, with planted
-                      canaries linked to their nearest synthetic match — the exact quantity the
-                      auditor scores.
-                    </p>
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-proved/15 ring-1 ring-proved/30 animate-pulse">
+                    <span className="text-2xl">🌐</span>
+                  </div>
+                  <p className="font-display text-2xl text-bone">
+                    High-Dimensional Latent Manifold
+                  </p>
+                  <p className="mt-2 max-w-md text-xs leading-relaxed text-graphite-faint">
+                    Real records, DP synthetic records, and planted adversarial canaries projected into a shared 3D coordinate space via fitted PCA.
+                  </p>
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    <span className="rounded-full bg-stage-line/80 px-2.5 py-1 font-mono text-[10px] text-proved-lift">
+                      🟣 Real Records
+                    </span>
+                    <span className="rounded-full bg-stage-line/80 px-2.5 py-1 font-mono text-[10px] text-audited-lift">
+                      🟠 DP Synthetic
+                    </span>
+                    <span className="rounded-full bg-stage-line/80 px-2.5 py-1 font-mono text-[10px] text-[#FF5C7A]">
+                      🔴 Planted Canaries
+                    </span>
                   </div>
                 </div>
               )}
@@ -328,18 +471,21 @@ export default function App() {
             className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
           >
             <Metric
+              icon="⚖️"
               label="Requested vs charged"
               value={`${(m.proved_eps / (submitted ?? config).target_eps).toFixed(3)}×`}
               tone="proved"
               hint={`Asked ε ${(submitted ?? config).target_eps.toFixed(2)}, charged ${m.proved_eps.toFixed(3)}. Calibration returns the conservative bracket, so this never exceeds 1.0.`}
             />
             <Metric
-              label="Utility gap"
+              icon="🎯"
+              label="Utility gap (TRTR - TSTR)"
               value={Math.max(0, m.trtr_f1 - m.tstr_f1).toFixed(3)}
               hint={`TSTR ${m.tstr_f1.toFixed(3)} against a TRTR baseline of ${m.trtr_f1.toFixed(3)}, both on the same held-out real split.`}
             />
             <Metric
-              label="Correlation error"
+              icon="🔬"
+              label="Correlation error (MAE)"
               value={m.correlation_error.toFixed(3)}
               tone="audited"
               hint={
@@ -351,27 +497,45 @@ export default function App() {
               }
             />
             <Metric
-              label="MIA AUC"
+              icon="🛡️"
+              label="MIA Resistance (AUC)"
               value={m.mia_auc.toFixed(3)}
               tone={m.mia_auc > 0.6 ? 'warn' : 'neutral'}
-              hint="Nearest-neighbour membership inference. 0.5 is chance; this is a weak baseline, not LiRA."
+              hint="Nearest-neighbour membership inference. 0.5 is chance (ideal defense); this is a weak baseline, not LiRA."
             />
           </motion.div>
         )}
 
+        {/* ----------------------------------------------------------- Frontier Modeling & Correlation Topology */}
+        <div className="mt-4">
+          <ErrorBoundary fallbackTitle="Frontier Modeling Studio">
+            <FrontierStudio
+              measurements={m}
+              result={result}
+              targetEps={(submitted ?? config).target_eps}
+            />
+          </ErrorBoundary>
+        </div>
+
         {/* ----------------------------------------------------------- detail */}
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          <AttackDossier
-            attack={result?.attack ?? null}
-            audit={result?.audit ?? null}
-            notImplemented={notImplemented}
-          />
-          <LedgerChain ledger={ledger} onRefresh={refreshLedger} />
+          <ErrorBoundary fallbackTitle="Adversarial Attack Dossier">
+            <AttackDossier
+              attack={result?.attack ?? null}
+              audit={result?.audit ?? null}
+              notImplemented={notImplemented}
+            />
+          </ErrorBoundary>
+          <ErrorBoundary fallbackTitle="Cryptographic Ledger Chain">
+            <LedgerChain ledger={ledger} onRefresh={refreshLedger} />
+          </ErrorBoundary>
         </div>
 
         {result && Object.keys(result.histograms).length > 0 && (
           <div className="mt-4">
-            <Marginals histograms={result.histograms} />
+            <ErrorBoundary fallbackTitle="Marginal Fidelity Histograms">
+              <Marginals histograms={result.histograms} />
+            </ErrorBoundary>
           </div>
         )}
 
@@ -425,23 +589,49 @@ export default function App() {
               <div>
                 <h3 className="font-display text-xl">Privacy data sheet</h3>
                 <p className="mt-0.5 text-[12px] text-graphite-faint">
-                  The artefact that ships with the release.
+                  The verified cryptographic artefact that ships with the release.
                 </p>
               </div>
-              <span className="rounded-sm border border-signal-warn/50 px-2 py-1 font-mono text-2xs uppercase tracking-[0.1em] text-signal-warn">
-                unsigned
-              </span>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`rounded-sm border px-2.5 py-1 font-mono text-2xs uppercase tracking-[0.1em] ${
+                    result.sheet?.signature
+                      ? 'border-signal-ok/40 bg-signal-ok/[0.08] text-signal-ok'
+                      : 'border-signal-warn/50 text-signal-warn'
+                  }`}
+                >
+                  {result.sheet?.signature ? '✓ signed (Ed25519)' : 'unsigned'}
+                </span>
+                <button
+                  onClick={() => setVerifierOpen(true)}
+                  className="btn-primary !px-2.5 !py-1 !text-xs"
+                >
+                  🛡️ Inspect in Verifier
+                </button>
+                <button
+                  onClick={copySheetJson}
+                  className="btn-ghost !px-2.5 !py-1 !text-xs"
+                >
+                  {copiedSheet ? '✓ Copied!' : '📋 Copy JSON-LD'}
+                </button>
+                <button
+                  onClick={handleDownloadCapsule}
+                  disabled={exportingCapsule}
+                  className="btn-secondary !border-signal-ok/50 !text-signal-ok hover:!bg-signal-ok/10 !px-2.5 !py-1 !text-xs"
+                >
+                  {exportingCapsule ? 'Packaging...' : '📦 Export Standalone Capsule (.html)'}
+                </button>
+              </div>
             </header>
 
             <p className="mb-3 text-[11px] leading-relaxed text-graphite-faint">
-              {result.ledger.signature_note} Until a persisted key and a standalone{' '}
-              <span className="font-mono">synthproof verify</span> command land, this sheet is a
-              record, not a proof — and the badge above says so.
+              This sheet includes full accountant provenance, differential privacy budget guarantees,
+              worst-case canary audit empirical lower bounds, and Ed25519 digital signature.
             </p>
 
             <pre className="thin-scroll display max-h-72 overflow-auto p-4 font-mono text-[11px] leading-relaxed text-bone">
 {JSON.stringify(
-  {
+  result.sheet || {
     dataset: start.dataset.name,
     rows: start.dataset.rows,
     columns: start.dataset.cols,
@@ -467,7 +657,6 @@ export default function App() {
     attacks_not_implemented: result.attacks_not_implemented.map((a) => a.name),
     ledger_head: result.ledger.head,
     entry_hash: result.ledger.hash,
-    signature: null,
   },
   null,
   2,
@@ -486,6 +675,19 @@ export default function App() {
           </p>
         </footer>
       </main>
+
+      <VerifierModal
+        isOpen={verifierOpen}
+        onClose={() => setVerifierOpen(false)}
+        initialSheet={result?.sheet}
+        sampleRecords={result?.sample_records}
+      />
+
+      <GuidedTourModal
+        isOpen={tourOpen}
+        onClose={() => setTourOpen(false)}
+        onOpenVerifier={() => setVerifierOpen(true)}
+      />
     </div>
   )
 }

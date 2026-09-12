@@ -123,15 +123,15 @@ export function BoundsGauge({
         <div className="mt-3 border-t border-stage-line pt-3">
           <p className="text-[11px] leading-relaxed text-graphite-faint">
             <span className="font-mono text-audited-lift">ε_audited = 0</span> means the audit
-            found no statistically significant leakage (p = {audit.p_value.toFixed(3)},{' '}
-            {audit.num_members} canaries) — <strong className="font-medium">not</strong> that
+            found no statistically significant leakage (p = {(audit.p_value ?? 0).toFixed(3)},{' '}
+            {audit.num_members ?? (audit as any).num_canaries ?? '—'} canaries) — <strong className="font-medium">not</strong> that
             leakage is absent.
           </p>
           <p className="mt-2 text-[11px] leading-relaxed text-graphite-faint">
             At this canary count the instrument cannot report above{' '}
-            <span className="tnum font-mono text-bone">ε ≈ {audit.ceiling.toFixed(2)}</span>{' '}
+            <span className="tnum font-mono text-bone">ε ≈ {(audit.ceiling ?? 0).toFixed(2)}</span>{' '}
             even against a release that is 100% verbatim training data
-            {proved > audit.ceiling && (
+            {proved > (audit.ceiling ?? 0) && (
               <>
                 , which is <strong className="font-medium text-bone">below the proved bound
                 of {proved.toFixed(2)}</strong>. The gap above is therefore a property of the
@@ -139,7 +139,7 @@ export function BoundsGauge({
               </>
             )}
             .{' '}
-            {audit.detects_leak_above !== null
+            {audit.detects_leak_above !== null && audit.detects_leak_above !== undefined
               ? `It detects leakage above roughly ${(audit.detects_leak_above * 100).toFixed(0)}% verbatim copying.`
               : 'No leak level tested was reliably detectable at this count.'}
           </p>
@@ -149,7 +149,6 @@ export function BoundsGauge({
   )
 }
 
-/** Budget drawdown, updated live from the accountant as each stage charges. */
 export function BudgetMeter({
   spent,
   total,
@@ -160,53 +159,91 @@ export function BudgetMeter({
   stage: string | null
 }) {
   const frac = total > 0 ? Math.min(1, spent / total) : 0
+  const pct = (frac * 100).toFixed(1)
   return (
-    <div className="panel p-4">
+    <div className="glass-panel p-4.5">
       <div className="flex items-baseline justify-between">
-        <span className="label">Budget drawdown</span>
-        <span className="tnum font-mono text-xs text-graphite-soft dark:text-bone">
-          {spent.toFixed(3)} / {total.toFixed(2)}
+        <div className="flex items-center gap-2">
+          <span className="label">Budget Drawdown</span>
+          <span className="rounded-full bg-proved/15 px-1.5 py-0.2 font-mono text-[9px] font-semibold text-proved dark:text-proved-lift">
+            {pct}%
+          </span>
+        </div>
+        <span className="tnum font-mono text-xs font-semibold text-graphite-soft dark:text-bone">
+          {spent.toFixed(3)} <span className="font-normal text-graphite-faint">/</span> {total.toFixed(2)} ε
         </span>
       </div>
-      <div className="relative mt-3 h-2 overflow-hidden rounded-sm bg-bone-deep dark:bg-stage-deep">
+      <div className="relative mt-3 h-2.5 overflow-hidden rounded-full bg-bone-deep shadow-inner dark:bg-stage-deep">
         <motion.div
-          className="absolute inset-y-0 left-0 bg-proved"
+          className="absolute inset-y-0 left-0 bg-gradient-to-r from-proved via-[#6366f1] to-proved-lift shadow-sm"
           initial={false}
           animate={{ width: `${frac * 100}%` }}
           transition={{ type: 'spring', stiffness: 120, damping: 22 }}
         />
       </div>
-      <p className="mt-2 font-mono text-[11px] text-graphite-faint">
-        {stage ? `charging: ${stage}` : 'idle'}
-      </p>
+      <div className="mt-2.5 flex items-center justify-between font-mono text-[11px]">
+        <span className="flex items-center gap-1.5 text-graphite-faint">
+          <span className={`h-1.5 w-1.5 rounded-full ${stage ? 'bg-proved animate-pulse' : 'bg-graphite-faint/50'}`} />
+          <span>{stage ? `charging: ${stage}` : 'accountant idle'}</span>
+        </span>
+        <span className="text-[10px] text-graphite-faint">Composition: Sublinear RDP</span>
+      </div>
     </div>
   )
 }
 
-/** A single labelled measurement. `hint` carries the caveat, never the headline. */
+/** A single labelled measurement card with modern glassmorphism. */
 export function Metric({
   label,
   value,
   hint,
   tone = 'neutral',
+  icon,
 }: {
   label: string
   value: string
   hint?: string
   tone?: 'neutral' | 'proved' | 'audited' | 'warn'
+  icon?: string
 }) {
-  const toneClass = {
-    neutral: 'text-graphite dark:text-bone',
-    proved: 'text-proved dark:text-proved-lift',
-    audited: 'text-audited dark:text-audited-lift',
-    warn: 'text-signal-warn',
+  const toneConfig = {
+    neutral: {
+      text: 'text-graphite dark:text-bone',
+      border: 'border-bone-edge dark:border-stage-line',
+      bg: '',
+    },
+    proved: {
+      text: 'text-proved dark:text-proved-lift',
+      border: 'border-proved/30 dark:border-proved/40',
+      bg: 'hover:shadow-proved/10',
+    },
+    audited: {
+      text: 'text-audited dark:text-audited-lift',
+      border: 'border-audited/30 dark:border-audited/40',
+      bg: 'hover:shadow-audited/10',
+    },
+    warn: {
+      text: 'text-signal-warn',
+      border: 'border-signal-warn/30 dark:border-signal-warn/40',
+      bg: 'hover:shadow-signal-warn/10',
+    },
   }[tone]
 
   return (
-    <div className="panel p-4">
-      <span className="label">{label}</span>
-      <div className={`tnum mt-1.5 font-mono text-2xl ${toneClass}`}>{value}</div>
-      {hint && <p className="mt-1.5 text-[11px] leading-snug text-graphite-faint">{hint}</p>}
+    <div className={`glass-panel p-4.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${toneConfig.border} ${toneConfig.bg}`}>
+      <div className="flex items-center justify-between">
+        <span className="label">{label}</span>
+        {icon && <span className="text-sm">{icon}</span>}
+      </div>
+      <div className={`tnum mt-2 font-mono text-2xl font-semibold tracking-tight ${toneConfig.text}`}>
+        {value}
+      </div>
+      {hint && (
+        <p className="mt-2 text-[11px] leading-relaxed text-graphite-faint">
+          {hint}
+        </p>
+      )}
     </div>
   )
 }
+

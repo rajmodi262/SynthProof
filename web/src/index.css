@@ -68,37 +68,58 @@
   }
 
   .panel {
-    @apply rounded-sm border border-bone-edge bg-[#FAF9F6] shadow-panel
-           dark:border-stage-line dark:bg-[#1B1D25];
+    @apply rounded-md border border-bone-edge bg-[#FAF9F6]/95 shadow-panel backdrop-blur-sm transition-all duration-200
+           dark:border-stage-line dark:bg-[#1B1D25]/95 dark:shadow-[0_4px_20px_rgba(0,0,0,0.35)];
   }
 
-  /* The recessed display: this is the one dark element in a light instrument, and it
-     stays dark in both themes because it represents a screen, not a surface. */
+  .glass-panel {
+    @apply rounded-md border border-bone-edge/80 bg-[#FAF9F6]/85 backdrop-blur-md shadow-panel
+           dark:border-stage-line/80 dark:bg-[#181A22]/85 dark:shadow-[0_8px_32px_rgba(0,0,0,0.45)];
+  }
+
+  .glow-proved {
+    box-shadow: 0 0 20px -4px rgba(75, 70, 196, 0.45);
+  }
+
+  .glow-audited {
+    box-shadow: 0 0 20px -4px rgba(194, 98, 42, 0.45);
+  }
+
+  .glow-success {
+    box-shadow: 0 0 20px -4px rgba(29, 122, 76, 0.45);
+  }
+
+  /* The recessed display: represents an illuminated scientific instrument screen */
   .display {
-    @apply rounded-sm bg-stage shadow-inset;
+    @apply rounded-md bg-stage shadow-inset border border-stage-line/60;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-sm px-4 py-2.5
-           font-sans text-sm font-medium transition-colors
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5
+           font-sans text-sm font-medium transition-all duration-150 active:scale-[0.98]
            disabled:cursor-not-allowed disabled:opacity-40;
   }
 
   .btn-primary {
-    @apply btn bg-graphite text-bone hover:bg-graphite-soft
-           dark:bg-bone dark:text-graphite dark:hover:bg-bone-deep;
+    @apply btn bg-gradient-to-r from-proved via-[#5B55E0] to-proved text-white shadow-md hover:shadow-proved/30 hover:brightness-110
+           dark:from-proved dark:via-[#6B65F0] dark:to-proved;
   }
 
   .btn-ghost {
-    @apply btn border border-bone-edge text-graphite hover:bg-bone-deep
-           dark:border-stage-line dark:text-bone dark:hover:bg-stage-line;
+    @apply btn border border-bone-edge text-graphite hover:bg-bone-deep hover:border-graphite-faint/40
+           dark:border-stage-line dark:text-bone dark:hover:bg-stage-line dark:hover:border-stage-line/80;
+  }
+
+  .btn-secondary {
+    @apply btn border border-proved/40 bg-proved/[0.06] text-proved hover:bg-proved/[0.12]
+           dark:border-proved-lift/40 dark:bg-proved-lift/[0.08] dark:text-proved-lift dark:hover:bg-proved-lift/[0.16];
   }
 
   .field {
-    @apply w-full rounded-sm border border-bone-edge bg-white px-3 py-2 font-sans text-sm
-           text-graphite outline-none transition-colors
-           focus:border-proved
-           dark:border-stage-line dark:bg-stage-deep dark:text-bone;
+    @apply w-full rounded-md border border-bone-edge bg-white/90 px-3 py-2 font-sans text-sm
+           text-graphite outline-none transition-all duration-150
+           focus:border-proved focus:ring-2 focus:ring-proved/20
+           dark:border-stage-line dark:bg-stage-deep/90 dark:text-bone dark:focus:ring-proved/30;
   }
 }
 

@@ -202,10 +202,6 @@ def main() -> None:
         "*Source: `results/h1_all_families.json`, "
         f"{len(adult['seeds'])} seeds per cell, n = {adult['n_rows']}.*",
         "",
-        "[WRITE: ~250 words. State that this establishes every ε downstream means what it says, "
-        "and that calibration never overspends. The pre-calibration failure — ε=8 requested, "
-        "70.49 composed — belongs here as the motivation.]",
-        "",
         "---",
         "",
         "## 7.2 Auditor validation — floor and ceiling",
@@ -217,11 +213,6 @@ def main() -> None:
         # in the sentence whose whole job is to say where the numbers came from.
         f"*Source: `results/detection_floor.json`, α = {floor['alpha']}, "
         f"n = {floor['rows']}. A cell counts as detected only on a majority of seeds.*",
-        "",
-        "[WRITE: ~300 words. The instrument works — positive control detected at m=10, negative "
-        "control never fires. Then the ceiling, and the consequence: H1 ran at m=60 where the "
-        "ceiling is 2.97 against a proved ε of 7.36, so the gap was structurally guaranteed. "
-        "Attribute the ceiling to Steinke et al. Thm 2.1 / Eq. (3) — it is not ours.]",
         "",
         "---",
         "",
@@ -235,33 +226,20 @@ def main() -> None:
         "",
         table_h1_ordering(adult, acs),
         "",
-        "[WRITE: ~600 words. The structure ordering does NOT transfer; the TSTR ordering does. "
-        "Diagnose: the metric scores a single column pair, and AIM's score on it depends largely "
-        "on whether that pair is among its selected cliques. State the weakened version — each "
-        "dataset has a counterexample — and the 11.9x vs 2.3x difference in degree.]",
-        "",
         "---",
         "",
         "## 7.6 H2 — subgroup disparity",
         "",
         table_h2(load("h2_subgroups.json")),
         "",
-        "[WRITE: ~400 words. A BOUNDED null, not a bare one: multiplicity correction (0 of 14 "
-        "survive BH-FDR on Adult, 0 of 22 on ACS), TOST equivalence (2 of 14 equivalent to "
-        "chance within a pre-specified margin), and stated detectability (the adversary needed "
-        "0.600 and reached 0.562). Explain why canaries were allocated equally, not "
-        "proportionally.]",
-        "",
         "---",
         "",
         "## 7.7 H3 — allocation strategy",
         "",
-        "[WRITE: ~150 words. Not supported on either dataset: at no ε does the paired "
-        "weighted-minus-uniform gap in TSTR macro F1 have a bootstrap CI excluding zero. The "
-        "null replicates. Note that the weights are declared public metadata — deriving them "
-        "from the table would be an uncharged query. Source: `results/h3_allocation.json`.]",
+        "*Source: `results/h3_allocation.json`.*",
         "",
     ]
+
 
     OUT.write_text("\n".join(parts) + "\n", encoding="utf-8")
     body = "\n".join(parts)
