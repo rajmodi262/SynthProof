@@ -28,7 +28,7 @@
   ],
   "true_correlation": 0.07207986920920266,
   "utility_measured_on": "clean_fit",
-  "elapsed_seconds": 0.5,
+  "elapsed_seconds": 0.0,
   "cells": [
     {
       "dataset": "acs_income_CA2018",

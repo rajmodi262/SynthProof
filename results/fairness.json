@@ -19,7 +19,7 @@
   ],
   "utility_measured_on": "canary_free_fit",
   "note": "Every subgroup is scored against its own TRTR baseline; the reported number is the gap. `baseline_spread` is the same spread on real data and is the control -- if it is comparable to `gap_spread`, the disparity belongs to the task rather than to synthesis.",
-  "elapsed_seconds": 50.0,
+  "elapsed_seconds": 49.8,
   "cells": [
     {
       "attribute": "sex",

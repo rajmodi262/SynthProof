@@ -1,15 +1,15 @@
 {
   "manifest_version": 1,
-  "generated_at": "2026-09-09T01:01:13.000076+00:00",
+  "generated_at": "2026-09-12T15:34:29.253846+00:00",
   "git": {
-    "commit": "6f9e6e1605148e31ab1171a1eebdc34b8f1e9bb6",
+    "commit": "d66bad169e56b877017e5335253abb4882633b20",
     "branch": "audit-fixes-and-acs",
     "dirty": true
   },
   "environment": {
-    "python": "3.11.15",
-    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.35",
-    "machine": "x86_64"
+    "python": "3.11.4",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "machine": "AMD64"
   },
   "dependencies": {
     "numpy": "2.4.6",
@@ -151,9 +151,9 @@
     "results/h1_all_families.json": "493d9cb1be21f6df6c6bc8f899f64794c2d37f6671a791f2c5fc1e0fe6e5402d",
     "results/acs/h1_all_families.json": "e06bfa4b7bad80fee9deffbac08471d0c77289ad8bda1990bc43cf436c6d4d98",
     "results/h2_subgroups.json": "0072495d534915b91aea57fb1e7b93ad77d9b1d0f6f85342c1a9ac1d67066842",
-    "results/h2_analysis.json": "3c6df3f6ccc56f08d4f63d1b9f4500f532809442c4fcf3aa060e12b3fe630977",
+    "results/h2_analysis.json": "5e34a97a732997a58feacfce2dbeb46bf93f792100395fb925ebd7669239e99c",
     "results/acs/h2_subgroups.json": "561c53c668554dfe361ddb4a9ce82ee76a2585c58c63ec89c60987ff690aefd0",
-    "results/acs/h2_analysis.json": "e9e7ca4d63a507619ead625bc2a3e9e6ef4da1507ab5e82f94250f0eb0518541",
+    "results/acs/h2_analysis.json": "043ca06ae0ee886afc9d80fee4faeeee92908b50fa07afd4fa88b4d9eff69dde",
     "results/h3_allocation.json": "e763dceefde3e1ec641b61e72661b0dc9c48c8dbc3bed6197ccfa0e84118382c",
     "results/acs/h3_allocation.json": "b0c07215a3cb526f382f0d83c727c15a571a796b60b9a9f11897db066fe604b5",
     "results/detection_floor.json": "1bb59d07222093dc5d31f09a2d2edd7cdd624da730dfa1adeedf9b79fa14c6af",
@@ -161,5 +161,5 @@
     "results/acs/fairness.json": "5e7cd30b364067e39fa5bf82a018a1dff84cd625d34f0e508cb4ec5783018843",
     "results/gdp_audit.json": "d59ffeb71eb13fb2e566966556a3b68d4a484c822dd5f90ebf475ff3754e3343"
   },
-  "manifest_hash": "ac09f094059c959ce93b0cc48b8e617d05e1b40f54d0db23f3cc8696a8f7ba1e"
+  "manifest_hash": "d259e6b2a98b1240e5c91f357c9d3571dd5214204b80346cb6023193bc1cf800"
 }
