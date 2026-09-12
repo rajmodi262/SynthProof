@@ -56,8 +56,8 @@ def generate_capsule_html(
         records = data.to_dict(orient="records")
         columns = list(data.columns)
     else:
-        records = list(data)
-        columns = list(records[0].keys()) if records else []
+        records = list(data)  # type: ignore[arg-type]  # pandas-stubs: labels are Hashable, ours are always str
+        columns = list(records[0].keys()) if records else []  # type: ignore[arg-type]  # pandas-stubs: labels are Hashable, ours are always str
 
     # Emit Croissant 1.1 representation
     try:

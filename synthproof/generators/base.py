@@ -24,7 +24,17 @@ class BaseGenerator(ABC):
         accountant: Accountant,
         target_eps: float,
     ) -> None:
-        """Fits generator on sensitive dataset under accountant budget charges."""
+        """Fits generator on sensitive dataset under accountant budget charges.
+
+        NOTE, found by the type checker on 2026-09-12: the detection-floor controls call this
+        as `fit(ds, None, None, 0.0)`, deliberately -- a control spends no budget and has no
+        domain to respect. So the real contract is Optional, and this declaration is stricter
+        than the code. Widening it here alone is not the fix: all seven subclasses declare the
+        concrete types and a subclass may widen a parameter but never narrow it, so mypy
+        reports fourteen incompatible overrides. Doing it properly means deciding, per
+        generator, whether None means "control, proceed" or "programming error, raise" -- a
+        decision about the budget-charging contract. Tracked in docs/ROAD_TO_TEN.md.
+        """
         pass
 
     @abstractmethod

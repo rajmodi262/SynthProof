@@ -389,7 +389,7 @@ class FrontierEngine:
         # release of the SAME data cannot be detected at all — which is the first thing a
         # cross-session budget filter would need.
         fingerprint = hashlib.sha256(
-            pd.util.hash_pandas_object(dataset.df, index=False).values.tobytes()
+            pd.util.hash_pandas_object(dataset.df, index=False).values.tobytes()  # type: ignore[union-attr]  # pandas-stubs: .values is ndarray for our numeric frames
         ).hexdigest()
 
         last = curve[-1]

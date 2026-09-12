@@ -32,7 +32,8 @@ from typing import Dict, List, Optional, Sequence
 import numpy as np
 import pandas as pd
 
-from synthproof.audit.steinke import (
+from synthproof.audit.steinke import (  # noqa: F401  (OneRunCanarySet used in annotations)
+    OneRunCanarySet,
     SteinkeAuditor,
     epsilon_lower_bound,
     max_provable_epsilon,
@@ -105,15 +106,19 @@ class SubgroupAuditResult:
                 "exist."
             )
         gap = self.leakage_gap()
-        if gap is None:
+        rarest, common = self.rarest, self.most_common
+        # `leakage_gap()` returns None unless BOTH of these exist, so this is unreachable.
+        # Stated rather than asserted: an assert vanishes under -O, and the reader learns
+        # the invariant either way.
+        if gap is None or rarest is None or common is None:
             return "Only one subgroup was measurable; no comparison is possible."
         direction = "MORE" if gap > 0 else "LESS"
         return (
-            f"The rarest subgroup ({self.rarest.subgroup}, "
-            f"{self.rarest.population_share:.1%} of rows) audited at "
-            f"eps={self.rarest.audited_eps:.3f} against {self.most_common.audited_eps:.3f} "
+            f"The rarest subgroup ({rarest.subgroup}, "
+            f"{rarest.population_share:.1%} of rows) audited at "
+            f"eps={rarest.audited_eps:.3f} against {common.audited_eps:.3f} "
             f"for the most common — {direction} leakage, gap {gap:+.3f}. Ceilings were "
-            f"{self.rarest.ceiling:.2f} and {self.most_common.ceiling:.2f} respectively."
+            f"{rarest.ceiling:.2f} and {common.ceiling:.2f} respectively."
         )
 
     def to_dict(self) -> dict:
@@ -186,7 +191,7 @@ class SubgroupCanaryAuditor:
         self,
         dataset: TabularDataset,
         synthetic_df: pd.DataFrame,
-        canary_sets: Dict[str, object],
+        canary_sets: Dict[str, OneRunCanarySet],
     ) -> SubgroupAuditResult:
         """Audits each subgroup's canaries against the same released table."""
         shares = dataset.df[self.attribute].value_counts(normalize=True)

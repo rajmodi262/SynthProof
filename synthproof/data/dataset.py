@@ -23,6 +23,12 @@ _FALLBACK_CATEGORICAL_MAX_UNIQUE = 10
 class TabularDataset:
     """Wraps a dataframe with column-type classification and an optional public schema."""
 
+    # Declared here because TWO methods populate them -- `_apply_schema` when a schema is
+    # given, `_classify_columns` when one is not -- and annotating whichever ran first left
+    # the other looking like a redefinition.
+    numerical_cols: List[str]
+    categorical_cols: List[str]
+
     def __init__(self, df: pd.DataFrame, name: str = "dataset", schema: Optional[Schema] = None):
         self.name = name
         self.schema = schema
@@ -69,8 +75,10 @@ class TabularDataset:
 
     def _classify_columns(self) -> None:
         """Fallback classification when no schema is supplied."""
-        self.numerical_cols: List[str] = []
-        self.categorical_cols: List[str] = []
+        # Annotated once, on the class, rather than in whichever of the two paths happens to
+        # run first -- `_apply_schema` sets the same two attributes.
+        self.numerical_cols = []
+        self.categorical_cols = []
 
         for col in self.df.columns:
             is_num = pd.api.types.is_numeric_dtype(self.df[col])
@@ -98,7 +106,9 @@ class TabularDataset:
         """
         defaults = {"skipinitialspace": True}
         defaults.update(read_csv_kwargs)
-        df = pd.read_csv(path, **defaults)
+        # pandas-stubs enumerates read_csv's overloads explicitly and none of them accepts a
+        # `**dict[str, bool]` splat, though every key in it is a documented keyword.
+        df = pd.read_csv(path, **defaults)  # type: ignore[call-overload]
         df = df.dropna(axis=0, how="any").reset_index(drop=True)
 
         if name is None:

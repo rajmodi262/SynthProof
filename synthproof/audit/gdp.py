@@ -248,17 +248,20 @@ def mu_lower_bound(
     if a.size == 0 or b.size == 0:
         raise ValueError("Both score sets must be non-empty.")
 
+    grid: np.ndarray
     if thresholds is None:
         allv = np.unique(np.concatenate([a, b]))
-        thresholds = (
+        grid = (
             (allv[:-1] + allv[1:]) / 2.0
             if allv.size > 1
             else np.array([allv[0] - 1e-9, allv[0] + 1e-9])
         )
+    else:
+        grid = np.atleast_1d(np.asarray(thresholds, dtype=float))
 
     half = alpha / 2.0
     best: Optional[GDPAuditResult] = None
-    for t in np.atleast_1d(thresholds):
+    for t in grid:
         # Predict "in" when score > t.
         fp = int(np.sum(b > t))  # out-runs called in
         fn = int(np.sum(a <= t))  # in-runs called out

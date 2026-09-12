@@ -101,7 +101,7 @@ class LinkabilityEvaluator:
                 continue
             levels = pd.Index(sorted({str(v) for f in out for v in f[col].unique()}))
             for f in out:
-                f[col] = levels.get_indexer(f[col].astype(str)).astype(float)
+                f[col] = levels.get_indexer(f[col].astype(str)).astype(float)  # type: ignore[arg-type]  # pandas-stubs: labels are Hashable, ours are always str
 
         mats = [f.to_numpy(dtype=float) for f in out]
         ref = mats[0]

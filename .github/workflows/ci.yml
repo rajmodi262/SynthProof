@@ -45,6 +45,14 @@ jobs:
         # blocks. An advisory formatter is one nobody runs.
         run: black --check synthproof/ tests/ scripts/
 
+      - name: Type check (mypy)
+        # Added 2026-09-12, at zero errors. It was configured but never run, and 79 errors had
+        # accumulated behind that -- 52 of them missing third-party stubs, which is noise that
+        # HID the 27 real ones. It found an unguarded Optional on the audit path, a `width`
+        # property that would have computed a sensitivity from a missing bound, and a
+        # generator contract that disagrees with its only control caller.
+        run: mypy
+
       - name: Test with coverage
         # Raised 80 -> 90 on 2026-08-23. Measured 92% on 2026-09-12 (738 passed, 1
         # skipped) -- the comment here previously said 94%, which was never re-checked

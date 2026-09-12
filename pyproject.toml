@@ -41,6 +41,7 @@ dev = [
     "ruff>=0.1.0",
     "black>=23.7.0",
     "mypy>=1.5.0",
+    "pandas-stubs>=2.0",  # without it, 52 of mypy's 79 errors were just "pandas is untyped"
     "bandit>=1.7.5",    # Python SAST
     "pip-audit>=2.7.0", # known CVEs in resolved dependencies
     # A SECOND, independent DP accounting implementation. Used only by the differential
@@ -97,3 +98,21 @@ exclude_dirs = [".venv311", "web", "synthproof/api/console", "build", "dist"]
 # suite, so the rule is disabled for `tests/` via the CI invocation rather than here,
 # where it would also excuse asserts in library code.
 skips = []
+
+[tool.mypy]
+python_version = "3.11"
+files = ["synthproof"]
+# Not strict mode. The goal is to catch the errors that can produce a WRONG NUMBER --
+# an unguarded Optional on the audit path, an attribute that does not exist -- not to
+# annotate every helper. Strictness that nobody can satisfy gets switched off, and a
+# type checker nobody runs is what we had before 2026-09-12.
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+
+# Third-party packages that ship no type information. Their absence is not our defect and
+# 52 of the original 79 errors were this and nothing else -- noise that hid the 27 real
+# ones. pandas is handled by pandas-stubs, which IS installed (see the dev extra).
+[[tool.mypy.overrides]]
+module = ["mbi.*", "statsmodels.*", "sklearn.*", "scipy.*", "dp_accounting.*", "autodp.*", "folktables.*", "jax.*", "matplotlib.*", "reportlab.*"]
+ignore_missing_imports = true

@@ -59,6 +59,14 @@ class ColumnSpec:
         """Public range width — the basis for a defensible sensitivity."""
         if self.kind != NUMERICAL:
             raise ValueError(f"Column {self.name!r} is categorical and has no width.")
+        # Not a typing formality. `width` is the basis for a sensitivity, and a sensitivity
+        # computed from a missing bound would be silently wrong -- it would produce a real
+        # epsilon on a column whose range was never declared. Refuse instead.
+        if self.lower is None or self.upper is None:
+            raise ValueError(
+                f"Column {self.name!r} is numerical but has no declared bounds, so it has "
+                f"no defensible sensitivity. Declare lower and upper in the schema."
+            )
         return float(self.upper - self.lower)
 
 

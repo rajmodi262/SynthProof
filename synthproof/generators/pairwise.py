@@ -179,7 +179,7 @@ class PairwiseMarginalGenerator(BaseGenerator):
     # ------------------------------------------------------------------ sampling
 
     def generate(self, num_samples: int) -> pd.DataFrame:
-        if not self.is_fitted:
+        if not self.is_fitted or self.root_ is None or self.root_probs_ is None:
             raise RuntimeError("Generator must be fitted before calling generate().")
         rng = np.random.default_rng(self.seed)
 

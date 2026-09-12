@@ -7,7 +7,7 @@ is not evidence, and the preregistration commits to 5 seeds per configuration.
 
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 import numpy as np
 
@@ -18,8 +18,8 @@ from synthproof.attacks.distance_mia import DistanceMIABaseline
 from synthproof.attacks.domias import DOMIAS
 from synthproof.attacks.exact_match_risk import ExactMatchRiskEvaluator
 from synthproof.attacks.linkability import LinkabilityEvaluator
-from synthproof.audit.canary import CanaryAuditor
-from synthproof.audit.steinke import SteinkeAuditor
+from synthproof.audit.canary import AuditResult, CanaryAuditor, CanarySet
+from synthproof.audit.steinke import OneRunCanarySet, SteinkeAuditor, SteinkeResult
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
 from synthproof.evaluate.utility import UtilityEvaluator
@@ -219,6 +219,7 @@ def run_cell(
     # than two, and is measurably more sensitive to PARTIAL leakage, which is the regime a
     # real mechanism lives in. See results/AUDITOR_COMPARISON.md. The paired auditor stays
     # selectable so the two can be compared on identical runs.
+    auditor: Union[SteinkeAuditor, CanaryAuditor]
     if auditor_kind == "one_run":
         auditor = SteinkeAuditor(num_canaries=num_canaries, seed=seed)
     elif auditor_kind == "paired":
@@ -228,17 +229,23 @@ def run_cell(
     aug_ds, canary_set = auditor.plant_canaries(fit_ds)
     # Report what was actually planted, not what was requested. They coincide today, but a
     # reported count that cannot drift from reality is worth one attribute access.
-    planted = canary_set.num_included if auditor_kind == "one_run" else len(canary_set.members)
+    # isinstance, not the string tag: this is what tells the type checker (and the next
+    # reader) which result shape follows from which auditor.
+    # The canary set is a union for the same reason the auditor is, so it gets the same
+    # treatment. Narrowing on the SET rather than on the auditor is what lets the field
+    # accesses below be checked.
+    if isinstance(canary_set, OneRunCanarySet):
+        planted = canary_set.num_included
+        total_canaries = len(canary_set.canaries)
+    else:
+        planted = len(canary_set.members)
+        total_canaries = len(canary_set.members) + len(canary_set.holdout)
     emit(
         "canaries",
         {
             "auditor": auditor_kind,
             "planted": planted,
-            "total_canaries": (
-                len(canary_set.canaries)
-                if auditor_kind == "one_run"
-                else len(canary_set.members) + len(canary_set.holdout)
-            ),
+            "total_canaries": total_canaries,
             "fraction_of_fit": round(planted / max(1, len(fit_df)), 5),
         },
     )
@@ -277,32 +284,40 @@ def run_cell(
     )
     emit("generate", {"rows": len(audit_synth)})
 
-    audit = (
-        auditor.audit(audit_synth, canary_set, delta=delta)
-        if auditor_kind == "one_run"
-        else auditor.audit(audit_synth, canary_set)
-    )
-    if auditor_kind == "one_run":
+    # The two auditors return different result types -- SteinkeResult carries the ceiling,
+    # accuracy and saturation flag; AuditResult carries the TPR/FPR pair from the paired
+    # construction. Branching on the auditor's type rather than on a string keeps the two
+    # sets of field accesses provably matched to the object that produced them.
+    if isinstance(auditor, SteinkeAuditor) and isinstance(canary_set, OneRunCanarySet):
+        steinke_result = auditor.audit(audit_synth, canary_set, delta=delta)
+        audit: Union[SteinkeResult, AuditResult] = steinke_result
         emit(
             "audit",
             {
-                "audited_eps": float(audit.audited_eps),
-                "ceiling": float(audit.ceiling),
-                "accuracy": float(audit.accuracy),
-                "guesses": int(audit.guesses),
-                "saturated": bool(audit.saturated),
-                "p_value": float(audit.p_value),
+                "audited_eps": float(steinke_result.audited_eps),
+                "ceiling": float(steinke_result.ceiling),
+                "accuracy": float(steinke_result.accuracy),
+                "guesses": int(steinke_result.guesses),
+                "saturated": bool(steinke_result.saturated),
+                "p_value": float(steinke_result.p_value),
             },
         )
-    else:
+    elif isinstance(auditor, CanaryAuditor) and isinstance(canary_set, CanarySet):
+        paired_result = auditor.audit(audit_synth, canary_set)
+        audit = paired_result
         emit(
             "audit",
             {
-                "audited_eps": float(audit.audited_eps),
-                "tpr": float(audit.tpr),
-                "fpr": float(audit.fpr),
-                "p_value": float(audit.p_value),
+                "audited_eps": float(paired_result.audited_eps),
+                "tpr": float(paired_result.tpr),
+                "fpr": float(paired_result.fpr),
+                "p_value": float(paired_result.p_value),
             },
+        )
+    else:  # pragma: no cover - the two constructors above cannot produce a mixed pair
+        raise TypeError(
+            f"Auditor {type(auditor).__name__} produced a "
+            f"{type(canary_set).__name__}, which it should not be able to."
         )
 
     # ---------------------------------------------------------------- utility release
@@ -539,11 +554,12 @@ def run_grid(
             corr_cols=corr_cols,
         )
         # Only JSON-serialisable scalars go to disk; artefacts stay in memory.
-        return {
+        serialisable: Dict[str, Any] = {
             k: v
             for k, v in out.items()
             if not k.startswith("_") and isinstance(v, (int, float, str))
         }
+        return serialisable
 
     if checkpoint_dir is not None:
         flat = run_with_checkpoints(cells, compute, Path(checkpoint_dir), progress=progress)

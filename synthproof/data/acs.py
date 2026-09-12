@@ -244,7 +244,7 @@ def load_acs_income(
         rows_after_task_filter=rows_after,
         rows_used=len(df),
         content_sha256=hashlib.sha256(
-            pd.util.hash_pandas_object(df, index=False).values.tobytes()
+            pd.util.hash_pandas_object(df, index=False).values.tobytes()  # type: ignore[union-attr]  # pandas-stubs: .values is ndarray for our numeric frames
         ).hexdigest(),
     )
 

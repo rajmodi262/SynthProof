@@ -26,6 +26,7 @@ import numpy as np
 
 from synthproof.audit.canary import CanaryAuditor
 from synthproof.data.dataset import TabularDataset
+from synthproof.generators.base import BaseGenerator
 
 DEFAULT_CANARY_COUNTS: Sequence[int] = (10, 25, 50, 100, 200, 400)
 DEFAULT_LEAK_FRACTIONS: Sequence[float] = (0.0, 0.01, 0.05, 0.25, 1.0)
@@ -84,7 +85,7 @@ class FloorResult:
 
 def measure_detection_floor(
     dataset: TabularDataset,
-    generator_factory: Callable[[float, int], object],
+    generator_factory: Callable[[float, int], BaseGenerator],
     canary_counts: Sequence[int] = DEFAULT_CANARY_COUNTS,
     leak_fractions: Sequence[float] = DEFAULT_LEAK_FRACTIONS,
     seeds: Sequence[int] = (0, 1, 2),
@@ -122,7 +123,9 @@ def measure_detection_floor(
 
                 gen = generator_factory(leak, seed)
                 # Controls take no budget, so the accountant and profile are irrelevant.
-                gen.fit(aug_ds, None, None, 0.0)
+                # BaseGenerator.fit declares both as required; this call is the reason its
+                # docstring records that the real contract is Optional. See that note.
+                gen.fit(aug_ds, None, None, 0.0)  # type: ignore[arg-type]
                 synth = gen.generate(num_samples=aug_ds.num_rows)
 
                 res = auditor.audit(synth, canaries)

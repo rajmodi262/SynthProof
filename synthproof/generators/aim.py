@@ -280,7 +280,7 @@ class AIMGenerator(BaseGenerator):
     # ------------------------------------------------------------------ sampling
 
     def generate(self, num_samples: int) -> pd.DataFrame:
-        if not self.is_fitted:
+        if not self.is_fitted or self._model is None:
             raise RuntimeError("Generator must be fitted before calling generate().")
         rng = np.random.default_rng(self.seed)
 

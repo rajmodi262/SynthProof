@@ -94,7 +94,12 @@ class SubgroupUtilityResult:
         """
         if len(self.reliable) < 2:
             return None
-        return float(self.worst_served.utility_gap - self.best_served.utility_gap)
+        worst, best = self.worst_served, self.best_served
+        # Both are non-None whenever two or more groups are reliable; the guard above is
+        # what establishes that, and mypy cannot see across it.
+        if worst is None or best is None:
+            return None
+        return float(worst.utility_gap - best.utility_gap)
 
     @property
     def baseline_spread(self) -> Optional[float]:
@@ -221,7 +226,7 @@ class SubgroupUtilityEvaluator:
 
         groups = real_df[self.subgroup_col].astype(str)
         te_groups = groups.iloc[idx_te].to_numpy()
-        shares: Dict[str, float] = (groups.value_counts(normalize=True)).to_dict()
+        shares: Dict[str, float] = (groups.value_counts(normalize=True)).to_dict()  # type: ignore[assignment]  # pandas-stubs: labels are Hashable, ours are always str
 
         out: List[SubgroupUtility] = []
         for name in sorted(shares):

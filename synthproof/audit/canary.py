@@ -121,7 +121,11 @@ class CanaryAuditor:
                         row[col] = lo + span * float(rng.uniform(0.0, 0.03))
                 else:
                     observed = list(dataset.df[col].unique())
-                    row[col] = observed[int(rng.integers(0, len(observed)))] if observed else "NA"
+                    # A categorical cell holds a label, not a float. `row` is typed for the
+                    # numeric branch above, and the kind split is a runtime property of the
+                    # schema that no annotation on this dict can express.
+                    label = observed[int(rng.integers(0, len(observed)))] if observed else "NA"
+                    row[col] = label  # type: ignore[assignment]
             rows.append(row)
         return pd.DataFrame(rows)
 

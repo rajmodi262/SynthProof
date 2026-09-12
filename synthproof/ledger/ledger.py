@@ -38,6 +38,10 @@ class Ledger:
         self.db_path = db_path
         self._private_key = private_key or ed25519.Ed25519PrivateKey.generate()
         self._public_key = self._private_key.public_key()
+        # Optional by design: an in-memory ledger holds ONE connection open for its whole
+        # life (closing it would discard the database), while a file-backed one opens a
+        # fresh connection per call. `_get_conn` is what resolves the two.
+        self._conn: Optional[sqlite3.Connection]
         if self.db_path == ":memory:":
             self._conn = sqlite3.connect(":memory:", check_same_thread=False)
             self._conn.row_factory = sqlite3.Row

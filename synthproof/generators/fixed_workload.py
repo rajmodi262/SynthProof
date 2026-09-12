@@ -164,7 +164,9 @@ class FixedWorkloadGenerator(AIMGenerator):
             )
             measurements.append(LinearMeasurement(y + noise, clique, stddev=meas_sigma))
             self.measured_cliques_.append(clique)
-            self.workload_.append(clique)
+            # `clique` is a tuple of column names of length 1 or 2; the workload is
+            # declared as pairs. pandas-stubs cannot see the arity split.
+            self.workload_.append(clique)  # type: ignore[arg-type]
 
         self._model = estimation.MirrorDescent().estimate(
             domain, measurements, known_total=n, iters=400
