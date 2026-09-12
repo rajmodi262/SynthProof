@@ -29,7 +29,13 @@ dependencies = [
     "fastapi>=0.100.0",
     "uvicorn>=0.22.0",
     "python-multipart>=0.0.9",   # required by the /api/upload form endpoint
-    "click>=8.1.0"
+    "click>=8.1.0",
+    # Imported at module scope by generators/dpvae.py, which frontier/experiment.py imports
+    # unconditionally. It was in requirements.lock but never declared here, so a plain
+    # `pip install -e ".[dev]"` produced an environment where the entire experiment module
+    # failed to import. CI had been failing on exactly this since the DP-SGD VAE landed.
+    "jax>=0.4.20",
+    "jaxlib>=0.4.20",
 ]
 
 [project.optional-dependencies]
@@ -113,8 +119,11 @@ exclude_dirs = [".venv311", "web", "synthproof/api/console", "build", "dist"]
 skips = []
 
 [tool.mypy]
-python_version = "3.11"
 files = ["synthproof"]
+# No `python_version` pin. Setting it to 3.11 made mypy parse the 3.12/3.13 runners' numpy
+# stubs as 3.11 source, and numpy's stub uses the 3.12 `type` statement -- so mypy rejected
+# numpy's own stub file and stopped before checking a line of ours. It now follows the
+# interpreter it runs under, which is the point of testing across a matrix.
 # Not strict mode. The goal is to catch the errors that can produce a WRONG NUMBER --
 # an unguarded Optional on the audit path, an attribute that does not exist -- not to
 # annotate every helper. Strictness that nobody can satisfy gets switched off, and a

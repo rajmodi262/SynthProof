@@ -25,7 +25,6 @@ from synthproof.data.profiler import DPDomainProfiler
 from synthproof.evaluate.utility import UtilityEvaluator
 from synthproof.frontier.checkpoint import run_with_checkpoints
 from synthproof.generators.aim import AIMGenerator, mbi_available
-from synthproof.generators.dpvae import DPVAEGenerator
 from synthproof.generators.independent import IndependentMarginalGenerator
 from synthproof.generators.moments import GaussianMomentGenerator
 from synthproof.generators.pairwise import PairwiseMarginalGenerator
@@ -39,12 +38,23 @@ MECHANISMS: Dict[str, type] = {
     "independent": IndependentMarginalGenerator,
     "moments": GaussianMomentGenerator,
     "pairwise": PairwiseMarginalGenerator,
-    # `dpvae` is the first NON-marginal-based mechanism here, and it is registered as a
-    # control rather than a competitor. Every other entry selects a set of low-order
-    # marginals; a VAE trained with DP-SGD selects nothing, which is what makes it the
-    # control for the clique-selection confound. See generators/dpvae.py.
-    "dpvae": DPVAEGenerator,
 }
+
+# `dpvae` is the first NON-marginal-based mechanism here, and it is registered as a control
+# rather than a competitor. Every other entry selects a set of low-order marginals; a VAE
+# trained with DP-SGD selects nothing, which is what makes it the control for the
+# clique-selection confound. See generators/dpvae.py.
+#
+# Registered behind an import guard for the same reason AIM is: it needs JAX, and a missing
+# optional backend should make ONE mechanism unavailable, not break the import of the module
+# every experiment goes through. jax IS a declared dependency now, so this should not fire --
+# it is here so that if it ever does, the failure is legible.
+try:
+    from synthproof.generators.dpvae import DPVAEGenerator
+
+    MECHANISMS["dpvae"] = DPVAEGenerator
+except ImportError:  # pragma: no cover - only when JAX is absent
+    pass
 
 # Real AIM needs private-PGM, which needs Python >= 3.11. Registered only when importable so
 # the rest of the grid still runs on an environment without it.
