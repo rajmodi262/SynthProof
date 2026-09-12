@@ -94,3 +94,7 @@ web/test-results/
 web/playwright-report/
 web/blob-report/
 web/.cache/
+
+# demo fixtures and keys, rebuildable with `python -m scripts.setup_demo`
+demo/
+.demo_*.log

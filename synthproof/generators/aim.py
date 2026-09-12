@@ -61,7 +61,41 @@ _MBI_HINT = (
 )
 
 
+def _quiet_jax_cache() -> None:
+    """Turns off JAX's persistent compilation cache before mbi is imported.
+
+    mbi emits a UserWarning at import time saying this cache is counterproductive for its
+    workload -- it generates many small compiled programs, and a sweep of experiments all
+    writing to one cache location makes it worse, not better -- and names this exact call as
+    the remedy. We take the library at its word: our workload IS a sweep of experiments.
+
+    It is done here rather than left to the user because the warning prints on every single
+    CLI invocation, including in the middle of a live demo, immediately before the output the
+    audience is supposed to be reading. A warning nobody can act on trains people to ignore
+    warnings, which is expensive in a project whose other warnings matter.
+    """
+    try:
+        import jax
+
+        jax.config.update("jax_enable_compilation_cache", False)
+    except Exception:  # pragma: no cover - jax absent or API moved; the warning is cosmetic
+        pass
+
+
+# mbi emits a SECOND warning that is deliberately left alone: JAX runs in float32, and above
+# roughly N > 100K that can stall or diverge the estimation. It is NOT suppressed, for two
+# reasons. Our grids run at 6,000 rows -- more than an order of magnitude below where the
+# warning bites -- so the condition it warns about does not hold here. And enabling
+# `jax_enable_x64` changes the numerics of every AIM fit, which would invalidate every
+# published epsilon and utility number in results/ until the full grid is re-run.
+#
+# So it is a real warning, currently not applicable, and expensive to act on. A reader who
+# scales this past 100K rows should enable x64 and re-run the grid. Suppressing it would hide
+# exactly the information that reader needs.
+
+
 def _require_mbi():
+    _quiet_jax_cache()
     try:
         from mbi import Dataset, Domain, LinearMeasurement, estimation
         from mbi.junction_tree import hypothetical_model_size
@@ -72,6 +106,7 @@ def _require_mbi():
 
 def mbi_available() -> bool:
     """True when private-PGM can be imported, for tests and mechanism registration."""
+    _quiet_jax_cache()
     try:
         import mbi  # noqa: F401
 

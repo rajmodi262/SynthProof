@@ -3,18 +3,30 @@
 Every command here was run end to end and produces the output shown. Print this page and keep
 it in front of you.
 
+> **Executed end to end on 2026-09-13**, all six steps including the tamper, on Windows /
+> Python 3.11. The outputs below are copied from that run. Two things it caught: the `demo/`
+> folder this script depends on **did not exist in the repository**, so the rehearsed path
+> could not be rehearsed; and a JAX warning printed on every command, immediately above the
+> output the audience is meant to read. Both fixed.
+
 **Before you start**
 
 ```bash
 cd SynthProof
+python -m scripts.setup_demo               # builds demo/ok.csv and demo/patients.csv
 export SYNTHPROOF_KEY_DIR=demo/keys        # Windows: set SYNTHPROOF_KEY_DIR=demo\keys
 python -m synthproof.cli keygen --key-dir demo/keys
 ```
 
-Have two CSVs ready in `demo/`:
+`setup_demo.py` writes the two CSVs this script uses, deterministically (fixed seeds):
 
-* `ok.csv` — 3,000 rows of UCI Adult (a normal table)
-* `patients.csv` — 2,000 rows with an `mrn` identifier column, an age, and a diagnosis
+* `ok.csv` — 3,000 rows of real UCI Adult (a normal table)
+* `patients.csv` — 2,000 synthetic rows with an `mrn` identifier column, an age, and a
+  diagnosis that depends on age, so there is real structure to preserve
+
+**This runs with the network off**, once UCI Adult is in the local cache. Nothing in the five
+steps reaches the internet: every command reads a local CSV. Build `demo/` while you still
+have wifi, then unplug and rehearse.
 
 The through-line of the whole demo, and the sentence to open with:
 
@@ -233,3 +245,46 @@ from analytical chemistry, where **MIQE 2.0** (Bustin et al., *Clinical Chemistr
 < LOD"* rather than zero. The transfer is the claim; the convention is not our invention.
 
 Full attribution: [`docs/MEASUREMENT_CONVENTIONS.md`](MEASUREMENT_CONVENTIONS.md).
+
+---
+
+## If it breaks in the room — the fallback ladder
+
+Rehearsed 2026-09-13. Work **down** this ladder; each rung needs strictly less than the one
+above it. Do not debug in front of a panel — drop a rung and keep talking.
+
+| # | If this fails… | Fall back to | Needs |
+|---|---|---|---|
+| 1 | The five CLI commands above | The **web console** — `START_PROTOTYPE.bat`, HR preset (600 rows, ~4 s) | Python env + browser |
+| 2 | The backend will not start | The **offline capsule** — `OPEN_OFFLINE_CAPSULE.bat` | **A browser. Nothing else** |
+| 3 | The capsule will not open | The **standalone pitch deck** — `02_Presentations_and_Pitches/SynthProof-Pitch.html`, verified self-contained with **no external references** | A browser |
+| 4 | Nothing runs at all | This document plus `results/RESULTS.md`, read aloud from the printed copy | Paper |
+
+**Rung 2 is the one to trust.** The capsule is a single HTML file that recomputes SHA-256
+digests and checks an Ed25519 signature in the browser via WebCrypto, with no server, no
+network and no Python. It is also the best artefact in the project, so falling to it is not a
+downgrade — consider opening with it.
+
+Three things that actually go wrong, and what to do:
+
+- **No network.** Nothing in the five steps needs it, but `scripts/setup_demo.py` downloads
+  UCI Adult on a cold cache. **Build `demo/` before you travel**, then verify with the wifi
+  off.
+- **The 400-row preset "fails".** It does not — it *refuses*, by design, and that is the S3
+  contribution. Say so before someone else reads it as a crash. The CLI exits 1 on a refusal,
+  which is correct, and a shell that stops on errors will halt there.
+- **The smallest table is the slowest.** A toy table with independent columns is the worst
+  case, because the attack suite finds nothing and works hardest doing it. A UI run against
+  one was still going after nine minutes. Use the 600-row HR preset for anything timed.
+
+### Rehearse it like this
+
+```bash
+cd SynthProof
+python -m scripts.setup_demo        # while you still have wifi
+# ... turn the wifi off, then run all five steps and the tamper
+```
+
+The tamper step is the one to have done with your own hands at least once: edit
+`total_proved_eps` in `demo/signed.json` to `0.01`, re-run `verify`, and watch it print
+`FAILED` and exit 1.

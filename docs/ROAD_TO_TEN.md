@@ -135,7 +135,7 @@ reach.
 
 | # | Task | Status | Evidence |
 |---|---|---|---|
-| 6.1 | One rehearsed offline path, with a fallback | ⬜ TODO | |
+| 6.1 | One rehearsed offline path, with a fallback | ✅ **DONE** | All **six** steps executed end to end incl. the tamper (`FAILED`, exit 1). **The `demo/` folder the script depends on did not exist**, so the rehearsed path could not be rehearsed — it would have been a FileNotFoundError in front of a panel. Added `scripts/setup_demo.py` (deterministic). Verified: refusal exits **1**, ε=1.0 → proved **0.912**, ε=8.0 → **7.356** with the ceiling note firing. Also silenced a JAX warning printing on every command directly above the output the audience reads, and **deliberately did not silence** the float32 one, documenting why. 4-rung fallback ladder, each rung needing strictly less than the one above |
 | 6.2 | `CONTRIBUTIONS.md` matching what the git history shows | ✅ **DONE** | `d4767fc` (outer) · Measured before writing: **140 + 10 commits, one human author**, and **135 of 140 (96%) carry `Co-Authored-By: Claude Opus 5`**. 0 commits from the other three members. Both facts published with the reproducing command. Deliberately does **not** invent a four-way split — one row per member for them to complete, each requiring third-party-checkable evidence. Flags the institutional AI declaration as an **outstanding action** |
 | 6.3 | Rehearse the three questions you would least like | ✅ **DONE** | `docs/defence/REHEARSAL.md` · Three questions, each with the honest answer, **the answer that loses the room**, and the follow-up to assume. Q1 the disqualified auditor · Q2 authorship — **which the defence pack did not answer at all** and is checkable in 10 s by running `git log` · Q3 novelty. Linked from DEFENCE.md §9 |
 
