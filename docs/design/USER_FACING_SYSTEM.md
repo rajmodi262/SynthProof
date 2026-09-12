@@ -692,7 +692,8 @@ schema. Every refusal therefore names the column, the rule, and a remedy, and `e
 - **A DP data-release *service* with a real privacy filter**, in the Rogers et al. sense: a
   server-side wallet, authenticated organisational identity, adaptive parameter selection under a
   filter, and refusal as a first-class outcome. This is the honest "what it becomes".
-- **Transparency-log anchoring.** Publish the signed ledger head to an append-only public log so
+- **Transparency-log anchoring.** Publish the signed ledger head to an `append-only` public log (Certificate Transparency's
+  construction, not ours) so
   a third party can detect divergence without trusting the operator — Certificate Transparency's
   model applied to privacy budgets.
 - **Schema inference as a priced, published mechanism.** A proper treatment of "what does it cost

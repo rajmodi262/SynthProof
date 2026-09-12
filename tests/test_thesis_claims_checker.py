@@ -367,3 +367,91 @@ def test_canary_rule_does_not_fire_on_an_unrelated_percentage(prose):
     which the rule flagged for days.
     """
     assert not _fires("canary-89-percent", prose), f"false positive on: {prose!r}"
+
+
+# ------------------------------------------------- the blind spot found on 2026-09-12
+#
+# The clique-selection confound was retracted on 2026-08-25. Seventeen days later
+# results/RESULTS.md -- the first file anyone opens to see what this project found -- still
+# listed it with a star and the words "The strongest result here", and the gate passed the
+# file. The rule required a first-person claim verb ("we found ... clique-selection"), and a
+# table row has neither. A gate that passes the headline document is worse than the sentence
+# it missed, because by then nobody is reading the document; they are trusting the gate.
+
+
+def test_the_bare_table_row_that_evaded_the_gate_is_now_caught():
+    """The literal text from results/RESULTS.md, before it was corrected."""
+    evaded = (
+        "| **Clique-selection confound** | ⭐ The strongest result here. AIM's structure "
+        "score tracks whether the measured pair is one it selected | x |"
+    )
+    assert _fires("clique-confound-as-finding", evaded), "the rule is blind again"
+
+
+@pytest.mark.parametrize(
+    "prose",
+    [
+        "The clique-selection confound is our strongest result.",
+        "⭐ Key result: the selection confound.",
+        "Our key finding is the clique-selection confound.",
+        "We found that AIM's clique-selection explains the gap.",
+    ],
+)
+def test_presenting_the_retracted_confound_as_a_finding_is_caught(prose):
+    assert _fires("clique-confound-as-finding", prose), f"missed: {prose!r}"
+
+
+@pytest.mark.parametrize(
+    "prose",
+    [
+        "RETRACTED 2026-08-25: the clique-selection confound was refuted by our own ablation.",
+        "The selection confound claim is dead; see SELECTION_ABLATION.md.",
+        "This was published three times before us, so we do not claim the selection confound.",
+    ],
+)
+def test_a_correctly_written_retraction_is_not_flagged(prose):
+    """A retraction necessarily restates the claim. Punishing that pushes writers to be vaguer.
+
+    "retract", "refute" and "supersede" were missing from the hedge list until 2026-09-12,
+    so the clearest possible retraction tripped the rule that had demanded it.
+    """
+    assert not _fires("clique-confound-as-finding", prose), f"false positive on: {prose!r}"
+
+
+# --------------------------------------------- context the regexes cannot see for themselves
+#
+# Three shapes produced reports a writer could only silence by making a TRUE document vaguer.
+# That is the failure mode that teaches a team to stop trusting its own gate, and it is worth
+# as much guarding as a missed claim.
+
+
+@pytest.mark.parametrize(
+    "prose,label",
+    [
+        # docs/defence/DEFENCE.md is a Q&A document: the heading is the panel's question and
+        # the paragraph beneath it is the refutation. Both of these were flagged.
+        ("**4a. Isn't your refusal gate novel?**", "refusal-novel"),
+        ("**38. What does the audited epsilon = 0 mean?**", "audited-gap-as-finding"),
+        # docs/thesis/WRITING_NOTICE.md exists to LIST the dead claims. It quotes each one.
+        ('3. **"Charging domain profiling is our contribution."**', "profiling-novel"),
+        # A reference row cites a paper; it does not claim authorship of it.
+        (
+            "| carlini2022 | Membership Inference Attacks From First Principles (LiRA) |",
+            "lira-as-ours",
+        ),
+    ],
+)
+def test_questions_quotations_and_citations_are_not_assertions(prose, label):
+    assert not _fires(label, prose), f"unfixable false positive on: {prose!r}"
+
+
+@pytest.mark.parametrize(
+    "prose,label",
+    [
+        ("Our refusal gate is novel.", "refusal-novel"),
+        ("We implemented LiRA and report its AUC.", "lira-as-ours"),
+    ],
+)
+def test_the_guard_does_not_swallow_a_real_assertion(prose, label):
+    """The guard must narrow the rules, never disable them."""
+    assert _fires(label, prose), f"guard swallowed a real claim: {prose!r}"

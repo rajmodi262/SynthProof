@@ -17,7 +17,8 @@
 | Title | SynthProof — "Synthetic Data That Ships With Its Proof" |
 | One-line | A DP tabular-synthesis platform that releases synthetic data with a certificate stating both the formal bound (eps_proved) and an empirically audited lower bound (eps_audited), backed by a signed cross-release budget ledger |
 | Field | Differential privacy · synthetic tabular data · empirical privacy auditing |
-| Claimed novelty | (1) dual-sided assurance, (2) budget-charged domain profiling, (3) append-only signed budget ledger, (4) subgroup leakage disparity (H2) |
+| Claimed novelty | (1) dual-sided assurance, (2) budget-charged domain profiling, (3) "append-only" signed budget ledger [as claimed at the time; the phrase is retired — hash
+chaining alone does not detect truncation], (4) subgroup leakage disparity (H2) |
 | Resources | 4 people; ~6 h/week each; single Windows workstation, CPU-only; no paid APIs observed |
 | Constraints | Capstone 2026-27, MIT-WPU; Python 3.11; full H1 grid ~4 h wall-clock |
 | Target outcome | **UNKNOWN — blocking. See Q1.** |
@@ -168,7 +169,7 @@ working on this for thirty years under different vocabulary.**
 | synthetic data | **fully / partially synthetic microdata** (SDC) · multiple imputation (Rubin 1993; Reiter) — *the origin of the idea, routinely missed by CS work* |
 | budget ledger | privacy budget management · **privacy odometer / filter** (formal) · budget scheduler |
 | canary | planted record · honeypot record · **secret sharer** (Carlini) · shadow record |
-| tamper-evident log | transparency log · Merkle log · certificate transparency · append-only audit log |
+| tamper-evident log | transparency log · Merkle log · certificate transparency · `append-only` audit log |
 | disclosure risk | re-identification risk · singling-out / linkability / inference (Anonymeter, WP29) |
 | the field itself | **Statistical Disclosure Control (SDC)** — Eurostat / ONS / US Census, decades of it |
 

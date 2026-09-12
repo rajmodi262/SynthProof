@@ -852,8 +852,10 @@ configurations.
 disagree, something is wrong and we stop.*
 
 **71. What database do you use?**
-SQLite, for the spend ledger. It is append-only and single-writer, so anything heavier would be
-infrastructure without a purpose.
+SQLite, for the spend ledger. It is written once per entry and single-writer, and the chain is
+hash-linked with a signed head, so anything heavier would be infrastructure without a purpose.
+(Not "append-only" — hash chaining alone does not detect truncation; the signed head is what
+does.)
 *Example: we considered PostgreSQL and rejected it — there is no concurrency requirement to
 justify running a server.*
 

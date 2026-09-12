@@ -126,9 +126,21 @@ DEAD_CLAIMS: list[tuple[str, str, str, str]] = [
     # three rules matched nothing and gave false confidence. Verified against known-bad text.
     (
         "clique-confound-as-finding",
+        # Two shapes, because the first-person form turned out to be only half of it. On
+        # 2026-09-12 results/RESULTS.md -- the first file anyone opens to see what this
+        # project found -- still listed the retracted confound with a star and the words
+        # "The strongest result here", and sailed straight through: no "we", no "found",
+        # just a table row. A gate that passes the headline document is worse than the
+        # sentence it missed, because the team has stopped reading that document itself and
+        # is trusting the gate instead. The second and third alternatives catch the bare
+        # assertion, in either order.
         r"(?:we|our|this (?:work|project|thesis))[^\n]{0,100}"
         r"(?:find|found|show|showed|demonstrat\w*|discover\w*|reveal\w*|establish\w*)"
-        r"[^\n]{0,100}(?:clique[- ]selection|selection[- ]confound)",
+        r"[^\n]{0,100}(?:clique[- ]selection|selection[- ]confound)"
+        r"|(?:clique[- ]selection|selection[- ]confound)[^\n]{0,140}?"
+        r"(?:⭐|strongest|headline|key (?:result|finding)|our (?:result|finding|contribution))"
+        r"|(?:⭐|strongest|headline|key (?:result|finding))[^\n]{0,140}?"
+        r"(?:clique[- ]selection|selection[- ]confound)",
         "RETRACTED 2026-08-25. Published three times -- AIM's own paper (arXiv:2201.12677 S5) "
         "partitions supported/unsupported marginals with separate bounds and Fig 2c; Ganev, Xu "
         "& De Cristofaro CCS 2024 S5.3; Chen, Gong & Wang arXiv:2511.13893 S6.3. And our own "
@@ -320,8 +332,12 @@ REQUIRED_WITH_AUDIT: list[tuple[str, str, str, str]] = [
 # prohibition marker is dropped. False negatives here are cheap: a writer who types "not novel"
 # already knows.
 _HEDGE = re.compile(
+    # "retracted", "refuted" and "superseded" belong here for exactly the reason the rest do:
+    # a document that RETRACTS a claim necessarily restates it. Their absence meant a properly
+    # written retraction tripped the very rule that had asked for it, and the writer's only
+    # way out was to describe the retraction more vaguely -- the opposite of the intent.
     r"\b(not|never|no longer|rather than|instead of|unrefuted|avoid|do not|don't|"
-    r"must not|cannot|stop claiming|dead|killed|occupied)\b",
+    r"must not|cannot|stop claiming|dead|killed|occupied|retract\w*|refut\w*|superseded)\b",
     re.I,
 )
 _HEDGE_WINDOW = 60
@@ -338,6 +354,61 @@ def _is_hedged(text: str, start: int, end: int) -> bool:
     return bool(_HEDGE.search(window))
 
 
+def _line_of(text: str, pos: int) -> str:
+    """The whole line containing `pos`. Context the regexes cannot see for themselves."""
+    lo = text.rfind("\n", 0, pos) + 1
+    hi = text.find("\n", pos)
+    return text[lo:] if hi == -1 else text[lo:hi]
+
+
+def _is_not_an_assertion(text: str, start: int, end: int) -> bool:
+    """True when the match is on a line that cannot be asserting the claim.
+
+    Three shapes, all of which produced unfixable false positives on 2026-09-12 -- reports a
+    writer could only silence by making a true document vaguer, which is the failure mode that
+    teaches people to stop trusting the gate.
+
+      QUESTIONS.  docs/defence/DEFENCE.md is a Q&A document. Its headings are the panel's
+        questions, and the answer underneath is what refutes them. "Isn't your refusal gate
+        novel?" was flagged as claiming the refusal gate is novel; the paragraph below it says
+        the opposite. A question states a claim in order to answer it.
+
+      QUOTED DEAD CLAIMS.  docs/thesis/WRITING_NOTICE.md exists to LIST the killed claims so a
+        writer recognises them. It quotes each one. The `append-only` rule already carried its
+        own quote lookarounds; every other rule lacked them, so the notice permanently tripped
+        the rules it was documenting.
+
+      BIBLIOGRAPHY ROWS.  A reference-list entry naming a paper is a citation, not a claim of
+        authorship -- and the LiRA rule's own guidance says to cite LiRA as prior work freely.
+    """
+    line = _line_of(text, start)
+    stripped = line.strip()
+    match = text[start:end]
+
+    # A question states a claim in order to answer it. Headings in the defence pack carry
+    # Markdown emphasis, so "**4a. Isn't your refusal gate novel?**" has to count as one.
+    if stripped.rstrip("*_` ").endswith("?"):
+        return True
+
+    # The match sits inside quotation marks: it is being named, not asserted.
+    for lq, rq in ((chr(34), chr(34)), (chr(8220), chr(8221)), (chr(96), chr(96))):
+        pattern = re.escape(lq) + "[^" + re.escape(lq + rq) + "]{0,200}?" + re.escape(rq)
+        for quoted in re.finditer(pattern, line):
+            if match.lower() in quoted.group(0).lower():
+                return True
+
+    # A bibliography or reference row: "| carlini2022 | ... (LiRA) |". Citing a paper is
+    # not claiming to have written it, and this rule's own guidance says to cite LiRA
+    # freely as prior work.
+    if stripped.startswith("|") and stripped.endswith("|"):
+        has_year = re.search(r"(?:19|20)\d\d", stripped) is not None
+        claims_ours = re.search(r"\b(?:we|our|ours)\b", stripped, re.I) is not None
+        if has_year and not claims_ours:
+            return True
+
+    return False
+
+
 def check(path: Path) -> list[str]:
     text = path.read_text(encoding="utf-8")
     # Blockquotes are where we deliberately QUOTE dead claims in order to retract them, so
@@ -349,6 +420,8 @@ def check(path: Path) -> list[str]:
     for label, pattern, why, instead in DEAD_CLAIMS:
         for m in re.finditer(pattern, prose, re.I):
             if _is_hedged(prose, m.start(), m.end()):
+                continue
+            if _is_not_an_assertion(prose, m.start(), m.end()):
                 continue
             line = prose[: m.start()].count("\n") + 1
             problems.append(

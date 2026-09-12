@@ -332,9 +332,10 @@ Labelled a weak baseline, and treated as one.
 ## 6. `ledger/` — 621 lines
 
 ### `ledger.py` (317)
-Append-only SQLite store, SHA-256 hash chaining, Ed25519 signature per entry.
+Hash-chained and signed SQLite store: SHA-256 chaining, an Ed25519 signature per entry, and
+a signed head committing to `(entry_count, tip_hash)`.
 
-**The signed head is what makes it actually append-only.** Hash chaining detects modification,
+**The signed head is what closes truncation.** Hash chaining detects modification,
 insertion and reordering but **not truncation**: deleting the last *k* entries leaves a shorter,
 perfectly valid chain, so an operator who overspends can delete the entries recording it.
 Verified — before `ledger_head` existed, dropping the final two entries left `verify()` returning

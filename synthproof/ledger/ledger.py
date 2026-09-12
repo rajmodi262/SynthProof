@@ -1,6 +1,12 @@
-"""Append-only privacy budget ledger.
+"""Hash-chained, signed privacy budget ledger.
 
-Uses SHA-256 hash chaining plus Ed25519 signatures over each entry.
+SHA-256 chaining plus an Ed25519 signature over each entry, and a signed head committing to
+(entry_count, tip_hash).
+
+Deliberately NOT called "append-only". Hash chaining detects modification, insertion and
+reordering, but a TRUNCATED chain is internally consistent -- dropping the last k entries,
+including the ones recording an overspend, leaves something that verifies. The signed head is
+what closes that, and the distinction is why the phrase is retired across this repository.
 
 KEY CUSTODY. If no key is passed, one is generated in memory for this instance -- fine for a
 demo, useless for a durable record, because signatures become unverifiable after restart. For
@@ -24,7 +30,7 @@ class LedgerVerificationError(Exception):
 
 
 class Ledger:
-    """Append-only store with SHA-256 hash chaining and Ed25519 signature checks."""
+    """Hash-chained, signed store: SHA-256 chaining, Ed25519 per entry, plus a signed head."""
 
     def __init__(
         self, db_path: str = ":memory:", private_key: Optional[ed25519.Ed25519PrivateKey] = None

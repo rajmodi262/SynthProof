@@ -58,7 +58,7 @@ management across releases and workloads is a mature systems literature.
 | **DPolicy** | [arXiv 2505.06747](https://arxiv.org/pdf/2505.06747) | Risk management across multiple releases; sequential composition, allocation, risk aggregation |
 
 Separately, **tamper-evident privacy-budget ledgers already exist in the blockchain
-literature** — append-only hash-chained structures where "each block contains a hash of the
+literature** — `append-only` hash-chained structures where "each block contains a hash of the
 previous block, as well as information about which queries were processed and perturbed results
 released", with budget decremented by iterating the ledger.
 
