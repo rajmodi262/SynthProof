@@ -36,7 +36,7 @@ Baseline commit: `eac2e54` · branch `audit-fixes-and-acs` · scan date 2026-09-
 | types | `mypy` | ✅ **0 errors**, now a blocking CI step (was 79, ungated) |
 | console types | `npx tsc --noEmit` | ✅ clean |
 | console tests | `npm test` | ✅ **28 pass, 3 files** (was 10/1) |
-| e2e | `cd web && npm run test:e2e` | ✅ **10 Playwright specs**, real stack, in CI |
+| e2e | `cd web && npm run test:e2e` | ✅ **10 specs** — 9 gate every push (17s), the browser-driven synthesis is `@slow` and runs weekly |
 | **CI pipeline** | `gh run list` | ✅ **FULLY GREEN** on 3.11/3.12/3.13 — first green run since ≥2026-08-26 |
 | SAST | `bandit -c pyproject.toml -r synthproof/ scripts/ -ll` | ✅ 0 medium+ |
 | deps (py) | `pip-audit --skip-editable` | ✅ clean in declared closure |
@@ -101,8 +101,12 @@ a document of seven dead claims and asserts all seven are still caught.
 | 3.5 | Split `api/main.py` | ✅ **DONE** | `9d3e7af` · 1,225 lines → 7 modules, largest 356. Behaviour verified by 776 tests + mypy + all 10 e2e specs |
 | 3.6 | Fast lane under 5 min | ✅ **DONE** | `280dde3` · `make test-fast` = 762 tests in **1m32s** (target was 5 min). Four ACS files marked `slow`; CI still runs everything |
 
-**Gate 3:** ruff, black, mypy, pytest ≥94%, vitest ≥70%, Playwright, bandit, pip-audit, gitleaks,
-claims and reproduce all run in CI and all pass.
+**Gate 3:** ⚠️ **MOSTLY HELD.** ruff, black, mypy, pytest, vitest, Playwright, bandit, pip-audit,
+gitleaks, claims (`--all`) and reproduce all run in CI, and **all pass on 3.11/3.12/3.13**.
+Two parts of the original wording are NOT met and are not being quietly dropped:
+coverage is **92%**, not ≥94% (P3.2 remains partial), and the console has no coverage
+threshold yet. The gate stays at 90 rather than being raised to a number the suite does not
+reach.
 
 ## P4 — Close the science gaps · 7–10 days
 
@@ -155,6 +159,8 @@ claims and reproduce all run in CI and all pass.
 | 2026-09-12 | Tracker created from the deep scan. 33 tasks, 0 done. |
 | 2026-09-12 | **P0 complete.** `68d8186` lint · `04fb41a` CI gates · `1e9105b` manifest. Gate 0 holds locally. |
 | 2026-09-12 | **P1.1 + P1.2 complete.** `d66bad1`. Capsule verifier rewritten to three outcomes; forged capsules now rejected. |
+| 2026-09-13 | 🟢 **CI green again with e2e included** — 7 jobs, console job 2m07s. |
+| 2026-09-13 | **The toy table is the SLOWEST path**, not the fastest: independent columns mean the attack suite finds nothing and works hardest doing it. A UI run against it was still going after 9 minutes; the 600-row HR preset finishes in ~4s. Recorded because it is counter-intuitive and cost three debugging rounds. |
 | 2026-09-13 | **P3.4 + P3.5 complete.** e2e suite added (and it immediately found a hidden ceiling marker); API module split 1,225 → 7 files, none over 400 lines. |
 | 2026-09-13 | **Two lessons from the split, both the same failure in different clothes — a name that LOOKS like the thing but is a copy of it:** a router binding `GLOBAL_LEDGER` by name kept using the pre-reload ledger, so a tamper was applied to one chain and verified against another; and a test patching `main.DEMO_MODE` after the guard moved to `state` silently did nothing, asserting 403 against a service that was never locked down. |
 | 2026-09-12 | 🟢 **CI IS FULLY GREEN** — all 7 jobs, Python 3.11/3.12/3.13, 789 passed, 92.27%. First green run since at least 2026-08-26. |
