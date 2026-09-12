@@ -210,3 +210,48 @@ def test_capsule_never_offers_a_pass_without_a_signature_check():
     )
     for banned in ("Proof Format Verified", "Verified 64-byte"):
         assert banned not in html, f"the length-check bypass is back: {banned!r}"
+
+
+def test_no_private_key_material_ever_reaches_a_capsule(tmp_path, monkeypatch):
+    """The invariant the gitleaks allowlist assumes. Pinned here, not in a comment.
+
+    `.gitleaks.toml` exempts `demo_capsules/*.html` from the generic-api-key rule, because a
+    capsule legitimately embeds a 32-byte Ed25519 PUBLIC key and a 64-byte signature and the
+    heuristic cannot tell a signature from a credential. An allowlist is exactly how a
+    scanner stops being read, so the thing it assumes is asserted directly: whatever else a
+    capsule contains, it never contains the private half.
+    """
+    from synthproof.capsule.generator import generate_capsule_html
+    from synthproof.ledger import signing
+
+    key_dir = tmp_path / "keys"
+    monkeypatch.setenv("SYNTHPROOF_KEY_DIR", str(key_dir))
+    signing.generate_keypair(key_dir)
+
+    private_pem = (key_dir / "synthproof_ed25519").read_text(encoding="utf-8")
+    private_b64 = (
+        private_pem.replace("-----BEGIN PRIVATE KEY-----", "")
+        .replace("-----END PRIVATE KEY-----", "")
+        .strip()
+    )
+    assert private_b64, "the fixture produced no private key, so this test proves nothing"
+
+    html = generate_capsule_html(
+        {
+            "dataset_name": "LeakCheck",
+            "mechanism": "pairwise",
+            "num_rows": 3,
+            "total_proved_eps": 1.0,
+            "total_audited_eps": 0.0,
+            "audit_ceiling": 2.97,
+            "public_key": signing.public_key_hex(
+                signing.load_public_key(key_dir / "synthproof_ed25519.pub")
+            ),
+        },
+        [{"a": 1}, {"a": 2}, {"a": 3}],
+    )
+
+    # Both the PEM body and its raw bytes, since the payload is base64 and could re-encode.
+    assert private_b64 not in html
+    assert private_b64[:32] not in html
+    assert "BEGIN PRIVATE KEY" not in html

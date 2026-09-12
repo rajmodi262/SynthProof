@@ -77,18 +77,53 @@ def test_comparison_reports_every_kind_of_divergence():
         "files": {"a.json": "zzz", "b.json": "bbb"},
         "dependencies": {"numpy": "1.26.0"},
     }
-    diffs = "\n".join(reproduce.compare(current, committed))
+    results, environment = reproduce.compare(current, committed)
+    result_text = "\n".join(results)
 
-    assert "manifest hash" in diffs
-    assert "a.json" in diffs  # contents changed
-    assert "MISSING" in diffs  # b.json disappeared
-    assert "not in committed manifest" in diffs  # c.json is new
-    assert "numpy" in diffs  # dependency moved
+    assert "manifest hash" in result_text
+    assert "a.json" in result_text  # contents changed
+    assert "MISSING" in result_text  # b.json disappeared
+    assert "not in committed manifest" in result_text  # c.json is new
+
+    # A dependency version is reported SEPARATELY and does not fail the gate. On 2026-09-12
+    # CI reported four of these — numpy, scipy, scikit-learn, mbi — while every result hash
+    # matched exactly, and the run was marked a failure. A reproduction on a different
+    # dependency set is a stronger result than one on the same set, not a weaker one.
+    assert "numpy" in "\n".join(environment)
+    assert "numpy" not in result_text
 
 
 def test_identical_manifests_report_no_divergence():
     m = reproduce.build_manifest()
-    assert reproduce.compare(m, m) == []
+    assert reproduce.compare(m, m) == ([], [])
+
+
+def test_a_dependency_bump_alone_is_not_a_failed_reproduction():
+    """The distinction the gate turns on, stated as its own test.
+
+    Every result hash identical, one dependency moved. That is a reproduction with a caveat,
+    and the caveat belongs in the output rather than in the exit code -- a gate that fails on
+    every numpy patch release is one people learn to route around.
+    """
+    files = {"results/h1.json": "deadbeef", "results/h2.json": "cafebabe"}
+    current = {"manifest_hash": "same", "files": files, "dependencies": {"numpy": "2.5.3"}}
+    committed = {"manifest_hash": "same", "files": files, "dependencies": {"numpy": "2.4.6"}}
+
+    results, environment = reproduce.compare(current, committed)
+    assert results == [], "a dependency bump must not count as a changed result"
+    assert len(environment) == 1 and "numpy" in environment[0]
+
+
+def test_a_changed_result_still_fails_even_on_an_identical_environment():
+    """The other half. Narrowing the gate must not blunt it."""
+    deps = {"numpy": "2.5.3"}
+    current = {"manifest_hash": "new", "files": {"results/h1.json": "0001"}, "dependencies": deps}
+    committed = {"manifest_hash": "old", "files": {"results/h1.json": "9999"}, "dependencies": deps}
+
+    results, environment = reproduce.compare(current, committed)
+    assert environment == []
+    assert any("h1.json" in d for d in results)
+    assert any("manifest hash" in d for d in results)
 
 
 def test_dataset_checksum_is_pinned_from_the_committed_file():

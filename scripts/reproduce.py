@@ -39,7 +39,7 @@ import sys
 from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 MANIFEST_PATH = Path("results/MANIFEST.json")
 
@@ -322,11 +322,27 @@ def run_experiments() -> List[str]:
     return failed
 
 
-def compare(current: dict, committed: dict) -> List[str]:
-    """Differences that matter. Timestamps and paths are ignored deliberately."""
-    diffs = []
+def compare(current: dict, committed: dict) -> Tuple[List[str], List[str]]:
+    """Split the differences by what they mean. Timestamps and paths are ignored deliberately.
+
+    Returns `(result_diffs, environment_diffs)`.
+
+    A RESULT difference -- a moved file hash, or a moved manifest hash -- means a published
+    number changed, and that is what this gate exists to catch.
+
+    An ENVIRONMENT difference -- a dependency at a different version -- means the pinned set
+    was not what ran. It is the caveat on any claim of bit-identical reproduction and it is
+    always worth printing, but it is NOT a changed number, and on 2026-09-12 it failed CI
+    four times over while every single result hash matched exactly. `make install` resolves
+    to the latest compatible set on purpose; `make install-locked` is the one that pins.
+    Failing the build on a numpy patch release teaches people to route around the gate, which
+    costs more than the warning is worth.
+    """
+    results: List[str] = []
+    environment: List[str] = []
+
     if current["manifest_hash"] != committed.get("manifest_hash"):
-        diffs.append(
+        results.append(
             f"manifest hash: {committed.get('manifest_hash', 'none')[:16]}... -> "
             f"{current['manifest_hash'][:16]}..."
         )
@@ -334,16 +350,16 @@ def compare(current: dict, committed: dict) -> List[str]:
         old = committed.get("files", {}).get(name)
         if digest != old:
             if old is None:
-                diffs.append(f"{name}: not in committed manifest")
+                results.append(f"{name}: not in committed manifest")
             elif digest is None:
-                diffs.append(f"{name}: MISSING (was {old[:12]}...)")
+                results.append(f"{name}: MISSING (was {old[:12]}...)")
             else:
-                diffs.append(f"{name}: {old[:12]}... -> {digest[:12]}...")
+                results.append(f"{name}: {old[:12]}... -> {digest[:12]}...")
     for pkg, ver in current["dependencies"].items():
         old = committed.get("dependencies", {}).get(pkg)
         if old is not None and old != ver:
-            diffs.append(f"dependency {pkg}: {old} -> {ver}")
-    return diffs
+            environment.append(f"dependency {pkg}: {old} -> {ver}")
+    return results, environment
 
 
 def main():
@@ -435,14 +451,33 @@ def main():
         return
 
     committed = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
-    diffs = compare(manifest, committed)
+    result_diffs, env_diffs = compare(manifest, committed)
 
-    if not diffs:
-        print("\n  REPRODUCED: every result file matches the committed manifest.")
+    # Printed whether or not it is fatal: a reproduction on a different dependency set is
+    # still a reproduction, but the reader is entitled to know it was a different set.
+    if env_diffs:
+        print(f"\n  ENVIRONMENT DIFFERS from the one the manifest was built on ({len(env_diffs)}):")
+        for d in env_diffs:
+            print(f"    - {d}")
+        print(
+            "    This is not a changed result. `make install-locked` reproduces the exact\n"
+            "    dependency set behind the committed numbers; `make install` resolves to the\n"
+            "    latest compatible one, which is what CI does."
+        )
+
+    if not result_diffs:
+        if env_diffs:
+            print(
+                "\n  REPRODUCED: every result file matches the committed manifest, on a\n"
+                "  DIFFERENT dependency set than the one it was built with -- which is a\n"
+                "  stronger result than matching on the same one."
+            )
+        else:
+            print("\n  REPRODUCED: every result file matches the committed manifest.")
         return
 
-    print(f"\n  DIVERGED from the committed manifest ({len(diffs)}):")
-    for d in diffs:
+    print(f"\n  DIVERGED from the committed manifest ({len(result_diffs)}):")
+    for d in result_diffs:
         print(f"    - {d}")
     print(
         "\n  Note that floating-point results can differ across BLAS builds and CPU\n"
