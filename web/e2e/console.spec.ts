@@ -206,8 +206,33 @@ test.describe('the full pipeline, through the UI', () => {
   test('runs a release and reports the audited epsilon BESIDE its ceiling', async ({ page }) => {
     await page.goto('/')
 
-    // The smallest preset that pre-flight accepts, so this costs minutes rather than more.
+    // Drive the run down to the smallest thing the pipeline will accept, THROUGH THE UI.
+    //
+    // The point of this test is the seam -- click, SSE, readouts, ceiling -- not the size of
+    // the synthesis. At the console defaults (2,000 rows, 60 canary pairs) a run takes a few
+    // seconds on a warm developer machine and MORE THAN NINE MINUTES on a two-core CI runner
+    // with a cold JAX cache, which failed the first CI run of this suite outright. Setting
+    // the controls exercises them as well, which the previous version did not.
+    // The controls live inside a collapsed <details>, so the disclosure has to be opened
+    // first -- Playwright finds the input either way and then waits out the entire test
+    // timeout on "element is not visible".
+    //
+    // Located structurally rather than by accessible name, too: the label's text sits in a
+    // sibling <span>, so the number input has no accessible name to match against.
+    // Use a preset rather than the default. The built-in toy table is the SLOW path here --
+    // its columns are drawn independently, so the attack suite finds nothing and works
+    // hardest doing it; a run against it was still going after nine minutes, while the same
+    // pipeline over the 600-row HR CSV finishes in seconds.
     await page.getByRole('button', { name: /HR Attrition/i }).first().click()
+
+    // Then cut the canary count, which is the other multiplier. The controls live inside a
+    // collapsed <details>, so the disclosure has to be opened first: Playwright finds the
+    // input either way and then waits out the whole test timeout on "element is not
+    // visible". They are located structurally because the label's text sits in a sibling
+    // <span>, leaving the number input with no accessible name to match against.
+    await page.getByText(/Run parameters/i).first().click()
+    await page.locator('label:has-text("canary pairs") input').fill('4')
+
     await page.getByRole('button', { name: /Synthesise & Audit Release/i }).first().click()
 
     const abort = page.getByRole('button', { name: /Abort Verification Pipeline/i })
