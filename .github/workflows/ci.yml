@@ -214,6 +214,14 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: End-to-end (Playwright)
+        # `@slow` is excluded: the one spec that drives a real DP synthesis through the
+        # browser takes ~4s locally and does not finish inside nine minutes on a two-core
+        # runner. Same reasoning as the `slow` pytest marker -- a per-push check nobody waits
+        # for is one people route around. It runs on the weekly schedule below.
+        run: npx playwright test --grep-invert "@slow"
+
+      - name: End-to-end, including the slow pipeline run (weekly)
+        if: github.event_name == 'schedule'
         run: npx playwright test
 
       - name: Upload e2e trace on failure

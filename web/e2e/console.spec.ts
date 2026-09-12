@@ -198,7 +198,19 @@ test.describe('the capsule, end to end', () => {
   })
 })
 
-test.describe('the full pipeline, through the UI', () => {
+// @slow -- a real DP synthesis driven through a browser. It finishes in about four seconds
+// on a warm developer machine and does NOT finish inside nine minutes on a two-core GitHub
+// runner with a cold JAX cache; the run starts and is still going when the timeout expires.
+//
+// So it is excluded from the per-push pipeline (`--grep-invert @slow`) and runs on the weekly
+// schedule instead. This is the same call as the `slow` pytest marker, for the same reason:
+// a check that makes every push wait twenty minutes is a check people learn to route around,
+// and the nine specs that DO gate each push already cover the shell, the ledger, the tamper
+// demo and the capsule round trip.
+//
+// It earns its place regardless -- it is the test that found the audit-ceiling marker being
+// hidden whenever the ceiling exceeded the axis scale. Run it with `npm run test:e2e:slow`.
+test.describe('the full pipeline, through the UI @slow', () => {
   // The only test that pays for a complete run. Everything above proves a contract; this one
   // proves the seams hold when a person clicks the button.
   test.setTimeout(600_000)
