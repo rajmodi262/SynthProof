@@ -263,8 +263,13 @@ mechanism), measure it, re-solve. Adaptivity costs budget — selection is itsel
 but spends the rest far better. §4 bounds model size.
 *What we take:* the mechanism, and the model-size bound (adopted after an unbounded junction
 tree exhausted memory mid-grid; ours is capped at 128 MB).
-*What we found out about it:* see §7.2. AIM's clique selection interacts with the benchmark
-metric in a way that, on our evidence, can dominate the measured result.
+*What we found out about it:* **this reading is RETRACTED (2026-08-25).** We reported that
+AIM's clique selection interacts with the benchmark metric strongly enough to dominate the
+measured result. Our own selection ablation refutes it: measuring helps in proportion to
+TRUE dependence (r = −0.898), so AIM's advantage is the mechanism working as designed. The
+phenomenon was also already published three times — AIM's own paper (arXiv:2201.12677 §5,
+Fig 2c), Ganev, Xu & De Cristofaro (CCS 2024 §5.3), and Chen, Gong & Wang
+(arXiv:2511.13893 §6.3). See `results/SELECTION_ABLATION.md` and §7.2.
 
 **Xie et al. (2018), *DP-GAN*; Jordon, Yoon & van der Schaar (2019), *PATE-GAN*, ICLR.** The deep
 generative line.

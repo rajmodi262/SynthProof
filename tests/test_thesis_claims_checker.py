@@ -455,3 +455,80 @@ def test_questions_quotations_and_citations_are_not_assertions(prose, label):
 def test_the_guard_does_not_swallow_a_real_assertion(prose, label):
     """The guard must narrow the rules, never disable them."""
     assert _fires(label, prose), f"guard swallowed a real claim: {prose!r}"
+
+
+# --------------------------------------------------- the rules must not have gone blind
+#
+# Every narrowing in this file was made to stop a false positive, and each one is a chance to
+# have quietly disabled a rule instead. On 2026-09-12 the repo-wide count went 73 -> 0, which
+# is exactly the shape a broken checker also produces. These are the counter-tests.
+
+
+def test_ganev_rule_still_catches_the_claim_it_exists_for():
+    """Narrowed from proximity to a claim shape. The claim itself must still fire."""
+    for prose in [
+        "Ganev et al. obtain tight one-run audits of AIM.",
+        "arXiv:2604.18352 is a one-run audit of AIM.",
+        "Ganev and colleagues use a one-run estimator on AIM.",
+    ]:
+        assert _fires("ganev-as-one-run-full-aim", prose), f"missed: {prose!r}"
+
+
+@pytest.mark.parametrize(
+    "prose",
+    [
+        # "one-run" belongs to a different citation two sentences later.
+        "Ganev, Annamalai & Kulynych, arXiv:2604.18352 — same method, same mechanisms. "
+        "Mahloujifar, Melis & Chaudhuri, ICML 2025, for the underlying f-DP one-run idea.",
+        # A heading listing topics.
+        "## Axis D — verification of arXiv 2604.18352, f-DP/GDP auditing, one-run auditing "
+        "and its limits, audit sample efficiency",
+    ],
+)
+def test_ganev_rule_does_not_fire_on_mere_proximity(prose):
+    assert not _fires("ganev-as-one-run-full-aim", prose), f"false positive on: {prose!r}"
+
+
+def test_a_quoted_misdescription_on_a_line_full_of_other_quotes():
+    """The exact shape that defeated regex quote-pairing.
+
+    A line carrying several quoted spans, one of them over 200 characters, made every pairing
+    after it off by one, so a genuinely quoted phrase read as unquoted. Splitting on the
+    delimiter cannot drift.
+    """
+    prose = (
+        'They train "10,000 independent models (5,000 per D_out/D_in)"; the pair is '
+        '"D_out contains 10 identical records and D_in adds one target record"; each model '
+        '"releases a synthetic dataset of size 50"; and they audit "a restricted '
+        "configuration where only one-way marginals are measured, the dependency graph is "
+        "fixed and no higher-order marginals are selected, so MST and AIM reduce to "
+        'independent marginals entirely". Any thesis sentence of the form "Ganev et al. '
+        'obtain tight one-run audits of AIM" is wrong and must be fixed.'
+    )
+    assert not _fires("ganev-as-one-run-full-aim", prose), "quoted misdescription flagged"
+
+
+def test_a_document_of_dead_claims_is_still_caught_wholesale():
+    """The blunt counter-test: if the checker had gone blind, this would pass silently."""
+    prose = "\n".join(
+        [
+            "We are the first system to ship both bounds.",
+            "The ledger is append-only.",
+            "Our refusal gate is novel.",
+            "We implemented LiRA and report its AUC.",
+            "We derive the ceiling, which is our contribution.",
+            "The clique-selection confound is our strongest result.",
+            "Charging domain profiling is our contribution.",
+        ]
+    )
+    found = labels(check(_write(Path(__import__("tempfile").mkdtemp()), prose)))
+    for expected in [
+        "first-to",
+        "append-only",
+        "refusal-novel",
+        "lira-as-ours",
+        "ceiling-as-ours",
+        "clique-confound-as-finding",
+        "profiling-novel",
+    ]:
+        assert expected in found, f"the checker has gone blind to {expected}"

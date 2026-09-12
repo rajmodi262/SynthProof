@@ -55,7 +55,7 @@ The same discipline applies to prose.
 |---|---|---|
 | Pipeline architecture | `docs/deck/` diagram | Ch.4 |
 | Privacy–utility frontier with CI bands | M1.12 | Ch.7 |
-| ε_proved vs ε_audited across mechanisms | M1.13 | Ch.7 |
+| ε_proved vs ε_audited across mechanisms — **always reported beside the audit ceiling**, without which an audited 0 is uninterpretable | M1.13 | Ch.7 |
 | Per-subgroup leakage (H2) | M2.8 | Ch.7 |
 | Calibration: target vs achieved ε | already measurable | Ch.5 |
 | Ledger hash-chain schematic | — | Ch.4 |
@@ -68,3 +68,19 @@ The same discipline applies to prose.
 - [`../preregistration.md`](../preregistration.md) — the commitments Ch.6 must honour
 - [`../../brutal_project_audit.md`](../../brutal_project_audit.md) — the self-audit, which is
   itself worth a paragraph in Ch.8 as a methodological contribution
+
+---
+
+### Measurement convention — the ceiling is borrowed, and attributed
+
+The audit ceiling reported beside every ε_audited is `log(r / ln(1/α))`, a one-line corollary
+of Steinke, Nasr & Jagielski (NeurIPS 2023, arXiv:2305.08846) Thm 2.1 — **not a result of
+ours** — and the same quantity is already named *maximum auditable epsilon* by Annamalai,
+Ganev & De Cristofaro (USENIX Sec 2024, arXiv:2405.10994) §2.2.
+
+Reporting it alongside the measurement is a transfer of **limit-of-detection (LoD) reporting**
+from analytical chemistry, where **MIQE 2.0** (Bustin et al., *Clinical Chemistry*
+2025;71(6):634–651) mandates LoD/LLOQ disclosure and a laboratory reports *"Not Detected,
+< LOD"* rather than zero. The transfer is the claim; the convention is not our invention.
+
+Full attribution: [`docs/MEASUREMENT_CONVENTIONS.md`](../MEASUREMENT_CONVENTIONS.md).

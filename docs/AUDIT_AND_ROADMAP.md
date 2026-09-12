@@ -190,7 +190,7 @@ Everything genuinely outstanding, in the order it is worth doing:
 
 | # | Item | Hours | Milestone |
 |---|---|---:|---|
-| 9 | Attack suite: LiRA + DOMIAS + anonymeter | 35–50 | M2 |
+| 9 | Attack suite: DOMIAS + anonymeter (**"LiRA" is deliberately excluded** — ~21 h of compute for a likely wide-CI null, and naming anything cheaper after it would repeat audit finding F7) | 35–50 | M2 |
 | 10 | Full Steinke one-run audit | 15–25 | M2 |
 | 11 | Signed certificate + standalone verifier | 8–12 | M3 |
 | 12 | **H2 subgroup disparity** | 15–25 | M2 |

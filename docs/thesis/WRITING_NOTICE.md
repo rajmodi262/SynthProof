@@ -19,8 +19,8 @@ they instructed the writer toward claims that are now false:
   survive, led by the clique-selection confound.
 - **ch07 §7.3** made the proved-vs-audited gap *"the primary result"* — the comparison the
   ceiling finding disqualifies. It is now §7.4 and it is a **retraction section**. §7.5 (the
-  confound) is the new lead. §7.5-old told the writer to report **LiRA and anonymeter**, neither
-  of which exists.
+  confound) is the new lead. §7.5-old named an attack suite of
+  "LiRA and anonymeter" as the deliverable, neither of which exists.
 - **ch08 §8.1** was built on *"ε_proved = 8, ε_audited = 0.6"*, a number never measured. §8.2's
   *"self-audit is genuinely distinctive"* is dead (Cebere et al.).
 - **ch05** predated six modules and under-counted the suite by ~100 tests.

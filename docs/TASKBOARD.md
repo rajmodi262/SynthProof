@@ -164,7 +164,7 @@ See [`thesis/`](thesis/) for the chapter scaffolds with per-section outlines.
 | ~~`private-pgm` dependency problems~~ | — | — | ✅ **Resolved.** Works on Python 3.11; env verified end to end. See [PYTHON311_UPGRADE.md](PYTHON311_UPGRADE.md) |
 | Thesis left to the end | **High** | **Critical** | D.2/D.3/D.4 start this week, before any M1 code |
 | Audit detects nothing at realistic n | Medium | Medium | Scale canaries; report the detection floor; M2.2 validates the instrument |
-| LiRA compute exceeds available hardware | Medium | Medium | Reduce shadow models to 32 and report the sensitivity of the result |
+| ~~"LiRA" compute exceeds available hardware~~ **RETIRED** — the attack is deliberately not implemented, so the risk cannot materialise | — | — | No action. The decision and its reason are in README.md and `attacks/distance_mia.py` |
 | Utility collapses at small ε | Medium | Low | That is itself the finding — a frontier showing where utility ends |
 | Scope overrun | Medium | High | M1 alone is a complete project. M2 makes it good. M3 makes it excellent |
 

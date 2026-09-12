@@ -56,11 +56,13 @@ jobs:
       # were manual. On 2026-09-12 both were failing in the committed tree -- which is the
       # outcome you would predict from a gate that nothing runs. They are steps now.
 
-      - name: Dead claims (thesis chapters)
-        # Thesis-only for the moment. The repo-wide sweep still reports 73 hits in the
-        # surrounding documents; task 2.6 flips this to --all once P2 clears them, and a
-        # gate that is red on arrival is a gate people learn to ignore.
-        run: python scripts/check_thesis_claims.py
+      - name: Dead claims (repository-wide)
+        # Promoted from thesis-only to --all on 2026-09-12, once the count reached zero.
+        # It covers 75 documents: docs/, results/, research/ and ../REPORTS/. A dead claim
+        # can no longer enter ANY of them without failing a build, which matters because the
+        # chapters were already clean -- all 73 violations were in the material AROUND them,
+        # and that is what an examiner reads first.
+        run: python scripts/check_thesis_claims.py --all
 
       - name: Citations resolve
         run: python scripts/check_citations.py

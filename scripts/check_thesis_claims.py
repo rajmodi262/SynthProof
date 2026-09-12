@@ -62,15 +62,22 @@ DEAD_CLAIMS: list[tuple[str, str, str, str]] = [
     ),
     (
         "profiling-novel",
+        # `first(?!-class)` -- "charged domain discovery as a FIRST-CLASS mode" in
+        # docs/design/USER_FACING_SYSTEM.md is a design term for a supported top-level
+        # feature, not a priority claim. No real claim is weakened by excluding the
+        # compound, and leaving it in produced a report no writer could act on.
         r"\b(charg\w+|account\w+) (the |for )?(domain|profil)\w*[^.]{0,80}\b(novel|new|"
-        r"contribution|first)\b",
+        r"contribution|first(?!-class))\b",
         "Published by Ganev, Annamalai, Mahiou & De Cristofaro (arXiv 2504.08254, Apr 2025), "
         "which studies the same three domain strategies.",
         "Our contribution is the checkable `domain_source` FIELD, not the insight.",
     ),
     (
         "refusal-novel",
-        r"\b(refus\w+|pre-?flight|gate)\b[^.]{0,80}\b(novel|unique|first|nobody else|no other)\b",
+        # Same exclusion as profiling-novel: "refusal as a first-class outcome" is a
+        # design term, not a claim to have been first.
+        r"\b(refus\w+|pre-?flight|gate)\b[^.]{0,80}"
+        r"\b(novel|unique|first(?!-class)|nobody else|no other)\b",
         "Automated release gating is production practice under Five Safes; SACRO has automated "
         "it since 2022. The SDC Handbook could not be retrieved, so our search is incomplete.",
         "State the schema-only difference as UNREFUTED, never as novel.",
@@ -163,7 +170,14 @@ DEAD_CLAIMS: list[tuple[str, str, str, str]] = [
     ),
     (
         "ganev-as-one-run-full-aim",
-        r"(?:2604\.18352|Ganev)[^\n]{0,140}\bone[- ]run\b",
+        # Proximity is not a claim. The 140-char gap crossed sentence boundaries and
+        # flagged a topic list, a heading, and a citation of Mahloujifar et al. for the
+        # f-DP one-run idea -- none of which say Ganev's audit is one-run. A verb of
+        # assertion has to sit immediately before the phrase.
+        r"(?:2604\.18352|Ganev)[^\n]{0,140}?"
+        r"\b(?:is|are|was|were|use[sd]?|using|obtain\w*|perform\w*|report\w*|"
+        r"give[sn]?|provide[sd]?|a|an|their)\s+(?:a\s+)?"
+        r"(?:tight\s+|genuine\s+|true\s+)?one[- ]run\b",
         "Their audit is NOT one-run: 10,000 independent models, 5,000 per world, one target "
         "record on an 11-record worst-case dataset. It also audits a RESTRICTED configuration "
         "(fixed dependency graph, one-way marginals only), so AIM reduces to independent "
@@ -351,7 +365,15 @@ def _is_hedged(text: str, start: int, end: int) -> bool:
     than novel" -- where both hedges fall inside the matched span.
     """
     window = text[max(0, start - _HEDGE_WINDOW) : end + _HEDGE_WINDOW]
-    return bool(_HEDGE.search(window))
+    if _HEDGE.search(window):
+        return True
+    # A long match can carry its own refutation further away than the window reaches. Where a
+    # rule allows a gap of 100+ characters the match may span most of a line, and the negation
+    # that governs it sits at the start of that line -- as in "It is NOT a one-run audit ...",
+    # which then quotes the description it is refuting. For those, consider the whole line.
+    if end - start > _HEDGE_WINDOW:
+        return bool(_HEDGE.search(_line_of(text, start)))
+    return False
 
 
 def _line_of(text: str, pos: int) -> str:
@@ -391,11 +413,21 @@ def _is_not_an_assertion(text: str, start: int, end: int) -> bool:
         return True
 
     # The match sits inside quotation marks: it is being named, not asserted.
-    for lq, rq in ((chr(34), chr(34)), (chr(8220), chr(8221)), (chr(96), chr(96))):
-        pattern = re.escape(lq) + "[^" + re.escape(lq + rq) + "]{0,200}?" + re.escape(rq)
-        for quoted in re.finditer(pattern, line):
-            if match.lower() in quoted.group(0).lower():
+    #
+    # Split rather than pair with a regex. `"[^"]{0,200}?"` under finditer drifts on a line
+    # carrying several quoted spans -- one span on line 369 of the deep survey runs past 200
+    # characters, so it never pairs and every pairing after it is off by one. Splitting on the
+    # delimiter cannot drift: in a balanced line the odd-indexed segments are the quoted ones.
+    needle = match.lower()
+    for delim in (chr(34), chr(96)):
+        segments = line.split(delim)
+        if len(segments) > 2:
+            if any(needle in seg.lower() for seg in segments[1::2]):
                 return True
+    # Smart quotes are asymmetric, so pair them directly.
+    for quoted in re.finditer(chr(8220) + "[^" + chr(8221) + "]*" + chr(8221), line):
+        if needle in quoted.group(0).lower():
+            return True
 
     # A bibliography or reference row: "| carlini2022 | ... (LiRA) |". Citing a paper is
     # not claiming to have written it, and this rule's own guidance says to cite LiRA
