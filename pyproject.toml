@@ -89,7 +89,20 @@ select = ["E", "F", "B", "I"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --cov=synthproof --cov-report=term-missing"
+addopts = "-v --cov=synthproof --cov-report=term-missing --strict-markers"
+# Measured 2026-09-12: the suite runs 782 tests in 8m04s, and 340 of those seconds are four
+# ACS tests that fit real AIM models over census microdata. In practice that means nobody
+# runs the suite before pushing -- which is how 74 lint errors and two broken capsules
+# reached origin that same day.
+#
+# So there is a fast lane. `pytest -m "not slow"` finishes in about two minutes and covers
+# everything except those four files' worth of heavy fits. CI still runs the whole suite; the
+# marker changes what a developer can afford to do before every commit, not what is verified
+# before a merge. `--strict-markers` means a typo'd marker fails rather than silently
+# selecting nothing.
+markers = [
+    "slow: fits real models over ACS microdata; minutes, not seconds. Skipped by -m 'not slow'.",
+]
 
 [tool.bandit]
 # Vendored environments and build output are not our code.

@@ -1,4 +1,4 @@
-.PHONY: help claims tables thesis install install-locked lock test lint format h1 h1-acs h2 h2-acs h3 h3-acs h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
+.PHONY: help claims tables thesis install install-locked lock test test-fast lint format h1 h1-acs h2 h2-acs h3 h3-acs h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
         console-install console-test security audit docker-build docker-up
 
 help:
@@ -7,7 +7,8 @@ help:
 	@echo "  Python"
 	@echo "    make install         Install the package with dev dependencies"
 	@echo "    make install-locked  Install the EXACT versions behind the committed results"
-	@echo "    make test            Run the test suite with coverage"
+	@echo "    make test            Run the full test suite with coverage (~8 min)"
+	@echo "    make test-fast       Everything except the slow ACS fits (~90 s)"
 	@echo "    make lint            ruff + black checks (matches CI)"
 	@echo "    make security        bandit SAST + pip-audit CVEs + npm audit"
 	@echo "    make format          Format with black"
@@ -55,6 +56,14 @@ lock:
 # code -- piping to `tail` returns tail's status and turns a crash into a silent pass.
 test:
 	python -m pytest
+
+# The lane you can afford before every commit: 762 tests in about 90 seconds, against 8m04s
+# for the full suite. The difference is four ACS files that fit real AIM models over census
+# microdata -- 340 of the full run's 485 seconds. CI runs everything; this exists so that
+# running SOMETHING before pushing is realistic. On 2026-09-12, 74 lint errors and two broken
+# capsules reached origin because the only available check took eight minutes.
+test-fast:
+	python -m pytest -m "not slow"
 
 # Mirrors the CI job exactly, so a green local lint means a green pipeline.
 lint:

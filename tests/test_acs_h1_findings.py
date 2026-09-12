@@ -19,6 +19,13 @@ from synthproof.accounting.calibration import BudgetPlan
 from synthproof.data.profiler import DPDomainProfiler
 from synthproof.frontier.experiment import MECHANISMS
 
+# ---------------------------------------------------------------------------- slow
+# Every test here fits real AIM over ACS microdata. 273 of the suite's 485 seconds are
+# in this file, and its slowest single test is 130s. Skipped by the fast lane
+# (`pytest -m "not slow"`); CI still runs it.
+pytestmark = pytest.mark.slow
+
+
 ACS_H1 = Path("results/acs/h1_all_families.json")
 ADULT_H1 = Path("results/h1_all_families.json")
 

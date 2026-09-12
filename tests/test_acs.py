@@ -21,6 +21,11 @@ from synthproof.data.acs import (
     load_acs_income,
 )
 
+# ---------------------------------------------------------------------------- slow
+# Loads and subsamples real ACS microdata: 65 seconds across four tests. Skipped by
+# the fast lane (`pytest -m "not slow"`); CI still runs it.
+pytestmark = pytest.mark.slow
+
 
 def _fake_acs(n=500, seed=0):
     """Raw-coded ACS columns, spanning the real code ranges."""
