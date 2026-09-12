@@ -250,7 +250,21 @@ DEAD_CLAIMS: list[tuple[str, str, str, str]] = [
     ),
     (
         "canary-89-percent",
-        r"\b89\s?%|\b0\.0109\b",
+        # The percentage is only a dead claim IN CANARY CONTEXT. A bare `\b89\s?%` flagged
+        # REPORTS/00-MASTER-REPORT.md lines 70 and 78, which report that 8 of 73 surveyed
+        # papers used a DP generator and "the other 89% have no formal guarantee" -- true,
+        # unrelated, and unfixable by writing. A checker that reports problems a writer
+        # cannot fix is one that gets ignored, and the temptation is then to edit correct
+        # prose to appease it. So the percentage now requires canary/contamination/signal
+        # language within ~90 characters on the same line, either side of the match.
+        # 0.0109 stays unconditional: that value is specific to this measurement.
+        # Written as two directional alternatives rather than a lookbehind, because Python's
+        # `re` has no variable-length lookbehind. The keyword may sit either side of the
+        # number, so the match simply spans from one to the other; `m.group(0)` is truncated
+        # to 70 characters when reported, and the extra context is an improvement anyway.
+        r"\b0\.0109\b"
+        r"|(?<![\d.])89\s?%[^\n]{0,90}?\b(?:canar|contaminat|signal|corr\()"
+        r"|\b(?:canar|contaminat|signal)\w*[^\n]{0,90}?(?<![\d.])89\s?%",
         "The 89% canary-contamination figure DOES NOT REPLICATE. Over 40 seeds the real "
         "CanaryAuditor at the configuration it was recorded for (Adult, n=6,000, m=60) destroys "
         "about 4.5%, and the effect is not significant there (t=1.85). At 8 seeds the same cells "

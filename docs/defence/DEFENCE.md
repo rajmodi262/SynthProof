@@ -481,7 +481,8 @@ threats.
 
 | Threat | Status |
 |---|---|
-| **Measurement contamination** — the audit's canaries altering the thing the utility metric measures | **Found and fixed.** 60 canaries cut corr(age, hours) from 0.1014 to 0.0109. `run_cell` now fits **twice**: once on the augmented split for the audit, once on the clean split for utility and structure (`separate_utility_fit=True`) | **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
+| **Measurement contamination** — the audit's canaries altering the thing the utility metric measures | **Found and fixed.** Canaries measurably cut corr(age, hours); the size we first reported is
+retracted and does **not** replicate. `run_cell` now fits **twice**: once on the augmented split for the audit, once on the clean split for utility and structure (`separate_utility_fit=True`) | **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
 | **Seed artefacts** | 5 seeds per cell; bootstrapped CIs over 4,000 resamples; a detection-floor cell counts only on a **majority** of seeds |
 | **Engineering confound in AIM** — the model-size cap suppressing cliques | **Ruled out before the finding was written.** `skipped_cliques_` is empty at both ε = 0.5 and ε = 8, with 17 cliques measured at each |
 | **Instrument not working at all** | Positive control (verbatim release, detected at m = 10, TPR 1.00, FPR 0.00, p < 0.001) and negative control (perfect marginals, no real records — never detected) both hold, and CI enforces them |
@@ -810,7 +811,7 @@ distribution:
 
 ```
 corr(age, hours_per_week)    on the fit split        0.1014
-                             + 60 canaries           0.0109      89% of the signal destroyed
+                             + 60 canaries           [figure retracted 2026-09-06]
 ```
 
 The generator trained on a table with almost no correlation, then got scored against one that
@@ -1089,9 +1090,11 @@ A deliberately extreme record we insert so we can ask afterwards whether the rel
 it was there — the audit's test subject.
 
 **37. Doesn't inserting canaries change the data you are measuring?**
-Yes, and that is finding 3. Sixty canaries cut the measured correlation from 0.1014 to 0.0109 — **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
-89% of the signal. We now fit twice: once on the augmented split for the audit, once on the clean
-split for utility and structure.
+Yes, and that is finding 3. The size of the effect we originally reported did **not** replicate
+and is retracted; report the shape instead — contamination scales with the canary FRACTION m/(n+m) and is significant only above ~3%; at m=60 on Adult (n=6,000) it is not significant (t=1.85). See `results/CANARY_DOSE_RESPONSE.md`.
+The two-fit decision stands on its own regardless, and Mitchell et al. (arXiv:2606.10481 §3)
+recommend it independently: we fit twice, once on the augmented split for the audit and once on
+the clean split for utility and structure.
 
 **38. What does ε_audited = 0 mean?**
 That our adversary recovered nothing above the instrument's floor. It does **not** mean no
@@ -1168,3 +1171,19 @@ design. And replace the shared key with real identity so the ledger can attribut
 **The line to close on:** *we did not get the result we planned. We got a better one, we can show
 exactly why it is better, and every number in it traces to a committed experiment with a recorded
 seed.*
+
+---
+
+### Measurement convention — the ceiling is borrowed, and attributed
+
+The audit ceiling reported beside every ε_audited is `log(r / ln(1/α))`, a one-line corollary
+of Steinke, Nasr & Jagielski (NeurIPS 2023, arXiv:2305.08846) Thm 2.1 — **not a result of
+ours** — and the same quantity is already named *maximum auditable epsilon* by Annamalai,
+Ganev & De Cristofaro (USENIX Sec 2024, arXiv:2405.10994) §2.2.
+
+Reporting it alongside the measurement is a transfer of **limit-of-detection (LoD) reporting**
+from analytical chemistry, where **MIQE 2.0** (Bustin et al., *Clinical Chemistry*
+2025;71(6):634–651) mandates LoD/LLOQ disclosure and a laboratory reports *"Not Detected,
+< LOD"* rather than zero. The transfer is the claim; the convention is not our invention.
+
+Full attribution: [`docs/MEASUREMENT_CONVENTIONS.md`](../MEASUREMENT_CONVENTIONS.md).

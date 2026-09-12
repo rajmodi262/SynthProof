@@ -350,8 +350,9 @@ Three further problems specific to *stranger* data:
 - **Canaries need a domain to be drawn from.** `synthproof/audit/canary.py:95-105` draws them
   inside the declared public bounds, falling back to the raw min/max when no schema exists. On an
   unknown-domain upload, canary construction inherits the §2.1 problem entirely.
-- **Canaries change the release.** This repo already measured the cost: 60 canaries cut
-  corr(age, hours) from 0.1014 to 0.0109 — an 89% loss of the signal being measured. The fix was **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
+- **Canaries change the release.** This repo measured the cost, and then **retracted the size of
+  it**: the originally reported loss does not replicate (`results/CANARY_DOSE_RESPONSE.md`).
+  The shape survives — contamination scales with the canary FRACTION m/(n+m) and is significant only above ~3%; at m=60 on Adult (n=6,000) it is not significant (t=1.85). The fix was
   a second, canary-free fit, which means the audited artefact is *not the artefact the user
   receives*. Defensible in an experiment; hard to explain on a compliance document.
 - **Cost.** A meaningful ceiling needs hundreds of canaries, and each is a row the generator must
@@ -804,3 +805,19 @@ document.)*
 - *"We Need a Standard": Toward an Expert-Informed Privacy Label for Differential Privacy*, 2025.
   https://arxiv.org/html/2507.15997
 - SDV (Synthetic Data Vault). https://sdv.dev/
+
+---
+
+### Measurement convention — the ceiling is borrowed, and attributed
+
+The audit ceiling reported beside every ε_audited is `log(r / ln(1/α))`, a one-line corollary
+of Steinke, Nasr & Jagielski (NeurIPS 2023, arXiv:2305.08846) Thm 2.1 — **not a result of
+ours** — and the same quantity is already named *maximum auditable epsilon* by Annamalai,
+Ganev & De Cristofaro (USENIX Sec 2024, arXiv:2405.10994) §2.2.
+
+Reporting it alongside the measurement is a transfer of **limit-of-detection (LoD) reporting**
+from analytical chemistry, where **MIQE 2.0** (Bustin et al., *Clinical Chemistry*
+2025;71(6):634–651) mandates LoD/LLOQ disclosure and a laboratory reports *"Not Detected,
+< LOD"* rather than zero. The transfer is the claim; the convention is not our invention.
+
+Full attribution: [`docs/MEASUREMENT_CONVENTIONS.md`](../MEASUREMENT_CONVENTIONS.md).

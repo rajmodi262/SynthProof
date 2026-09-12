@@ -148,7 +148,7 @@ No figure; a table and three paragraphs. Source: `results/H1_RESULTS.md` §4.
 | | |
 |---|---|
 | corr(age, hours) on the fit split | 0.1014 |
-| after planting 60 canaries | **0.0109** — 89% of the signal destroyed | **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
+| after planting 60 canaries | *figure retracted 2026-09-06 — does not replicate.* Report the shape: contamination scales with the canary FRACTION m/(n+m) and is significant only above ~3%; at m=60 on Adult (n=6,000) it is not significant (t=1.85). See `results/CANARY_DOSE_RESPONSE.md` |
 | pairwise corr error, contaminated vs decoupled (ε=8) | 0.1098 → **0.0459** |
 | independent, same comparison | 0.9804 → 0.9778 (unchanged — the control working) |
 
@@ -230,3 +230,19 @@ in first:
 | gebru2021 | Datasheets for Datasets |
 | mitchell2019 | Model Cards |
 | lecuyer2019 | Sage: privacy budget as a systems resource |
+
+---
+
+### Measurement convention — the ceiling is borrowed, and attributed
+
+The audit ceiling reported beside every ε_audited is `log(r / ln(1/α))`, a one-line corollary
+of Steinke, Nasr & Jagielski (NeurIPS 2023, arXiv:2305.08846) Thm 2.1 — **not a result of
+ours** — and the same quantity is already named *maximum auditable epsilon* by Annamalai,
+Ganev & De Cristofaro (USENIX Sec 2024, arXiv:2405.10994) §2.2.
+
+Reporting it alongside the measurement is a transfer of **limit-of-detection (LoD) reporting**
+from analytical chemistry, where **MIQE 2.0** (Bustin et al., *Clinical Chemistry*
+2025;71(6):634–651) mandates LoD/LLOQ disclosure and a laboratory reports *"Not Detected,
+< LOD"* rather than zero. The transfer is the claim; the convention is not our invention.
+
+Full attribution: [`docs/MEASUREMENT_CONVENTIONS.md`](../MEASUREMENT_CONVENTIONS.md).

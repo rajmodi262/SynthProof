@@ -33,6 +33,21 @@ def labels(problems: list[str]) -> set[str]:
     return out
 
 
+def _fires(label: str, prose: str, tmp_dir: Path | None = None) -> bool:
+    """Does `label` fire on this prose, going through the real check()?
+
+    Deliberately not `re.search(pattern, ...)`: the hedge guard and the blockquote stripping
+    both sit between the pattern and the verdict, and a rule test that skips them is testing
+    something the gate does not run.
+    """
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d) / "chapter.md"
+        p.write_text(prose, encoding="utf-8")
+        return label in labels(check(p))
+
+
 # ----------------------------------------------------------------- it fires when it should
 
 
@@ -307,3 +322,48 @@ def test_the_refuted_canary_percentage_cannot_come_back(tmp_path):
         "dose-response shape instead."
     )
     assert "canary-89-percent" not in labels(check(_write(tmp_path, hedged)))
+
+
+# --------------------------------------------------------- rule precision (added 2026-09-12)
+#
+# A gate is wrong in two directions, and both cost something. A rule that MISSES the claim
+# lets a retracted figure reach a reader. A rule that fires on correct prose is worse in a
+# quieter way: the writer cannot fix it by writing, so the pressure is to edit true sentences
+# until the checker stops complaining. The canary rule was doing exactly that -- a bare
+# `\b89\s?%` flagged "8 of 73 papers used a DP generator; the other 89% have no formal
+# guarantee", which is true, unrelated, and none of the rule's business.
+
+
+@pytest.mark.parametrize(
+    "prose",
+    [
+        "60 canaries destroyed 89% of the correlation being measured",
+        "canary insertion destroying 89% of the signal we were measuring",
+        "planting canaries destroyed 89% of the signal H1 measures",
+        "89% of the signal destroyed by contamination",
+        "89% of the correlation was destroyed by canaries",
+        "the measured correlation fell to 0.0109",
+    ],
+)
+def test_canary_rule_still_catches_the_retracted_figure(prose):
+    """The claim this rule exists for, stated the several ways the repo actually stated it."""
+    assert _fires("canary-89-percent", prose), f"rule went blind to: {prose!r}"
+
+
+@pytest.mark.parametrize(
+    "prose",
+    [
+        "11% (8/73) used a differentially private generator. The other 89% have no "
+        "formal guarantee.",
+        "89% rely on:",
+        "coverage rose to 89% this week",
+        "the suite runs at 89% and the gate is 80%",
+    ],
+)
+def test_canary_rule_does_not_fire_on_an_unrelated_percentage(prose):
+    """True sentences that merely contain the same number must pass.
+
+    These are not hypothetical: the first is REPORTS/00-MASTER-REPORT.md lines 70 and 78,
+    which the rule flagged for days.
+    """
+    assert not _fires("canary-89-percent", prose), f"false positive on: {prose!r}"

@@ -193,7 +193,7 @@ everything. Canaries are extreme by construction and 60 of them move the joint d
 
 ```
 corr(age, hours_per_week)   fit split        0.1014
-                            + 60 canaries    0.0109     89% of the signal destroyed
+                            + 60 canaries    [figure retracted 2026-09-06]
 ```
 
 The generator trained on a table with almost no correlation and was scored against one that had
@@ -250,3 +250,19 @@ tempted to trust a 3-seed comparison in this literature should note that.
 | M1.4 | ACS PUMS — removes the single-dataset limitation |
 | — | A workload-wide fidelity metric (k-way marginal TV error), so §6's single-pair caveat goes away |
 | — | Full 30,162-row run |
+
+---
+
+### Measurement convention — the ceiling is borrowed, and attributed
+
+The audit ceiling reported beside every ε_audited is `log(r / ln(1/α))`, a one-line corollary
+of Steinke, Nasr & Jagielski (NeurIPS 2023, arXiv:2305.08846) Thm 2.1 — **not a result of
+ours** — and the same quantity is already named *maximum auditable epsilon* by Annamalai,
+Ganev & De Cristofaro (USENIX Sec 2024, arXiv:2405.10994) §2.2.
+
+Reporting it alongside the measurement is a transfer of **limit-of-detection (LoD) reporting**
+from analytical chemistry, where **MIQE 2.0** (Bustin et al., *Clinical Chemistry*
+2025;71(6):634–651) mandates LoD/LLOQ disclosure and a laboratory reports *"Not Detected,
+< LOD"* rather than zero. The transfer is the claim; the convention is not our invention.
+
+Full attribution: [`docs/MEASUREMENT_CONVENTIONS.md`](docs/MEASUREMENT_CONVENTIONS.md).

@@ -79,8 +79,8 @@ a machine that has never run this, saying nothing. That is still owed.
 | # | Task | Status | Evidence |
 |---|---|---|---|
 | 2.1 | Cite MIQE 2.0 for the LoD transfer — 26 files | ⬜ TODO | |
-| 2.2 | Purge the 89% canary figure — 20 hits, 9 files | ⬜ TODO | |
-| 2.3 | Stop calling the ledger append-only — 9 hits + `ledger.py` docstring | ⬜ TODO | |
+| 2.2 | Purge the canary percentage that does not replicate — 20 hits, 9 files | ⬜ TODO | |
+| 2.3 | Stop calling the ledger `append-only` — 9 hits + `ledger.py` docstring | ⬜ TODO | |
 | 2.4 | Un-star the retracted confound in `results/RESULTS.md` | ⬜ TODO | |
 | 2.5 | Close the checker's blind spot + regression tests | ⬜ TODO | |
 | 2.6 | Promote the claims gate to repo-wide in CI | ⬜ TODO | |
