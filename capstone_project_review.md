@@ -1,5 +1,12 @@
 # SynthProof: Brutal Capstone Project Review & Rating
 
+> **Historical record.** This review was written at a point in time and is kept as evidence.
+> Its use of *"append-only"* for the ledger was **corrected in place on 2026-09-13**: hash
+> chaining alone does not detect truncation, because a shortened chain is internally
+> consistent. That is precisely why the signed head committing to `(entry_count, tip_hash)`
+> exists. The original wording is in git history.
+
+
 > **Project Title:** SynthProof: Synthetic Data That Ships With Its Proof  
 > **Domain:** Differential Privacy, Trustworthy Machine Learning, Generative Modeling, Data Governance  
 > **Team:** Raj Modi (P1), Krishna Renuse (P2), Aaditya Kumar Sinha (P3), Levinesh G R (P4)  
@@ -13,7 +20,7 @@
 |---|---|---|
 | **Ambition & Theoretical Depth** | **9.8 / 10** | Research-paper grade (NeurIPS / USENIX Security workshop tier). Far above standard undergraduate capstones. |
 | **Industry Relevance & Problem Framing** | **9.5 / 10** | Identifies a massive blindspot: published $\epsilon$ guarantees are rarely audited, budget leakage across releases is ignored, and schema profiling cheats. |
-| **Engineering Architecture** | **9.2 / 10** | Impressive modularity, clear component separation, append-only budget ledger, pre-registration, and comprehensive CI/CD. |
+| **Engineering Architecture** | **9.2 / 10** | Impressive modularity, clear component separation, hash-chained, signed budget ledger, pre-registration, and comprehensive CI/CD. |
 | **Feasibility & Execution Risk** | **4.5 / 10** | **DANGER ZONE.** 958 tasks across 12 phases in 12 weeks for 4 students is an extreme over-engineering trap. Hardware constraints (4GB RTX 3050) will cause severe compute bottlenecks. |
 | **Panel / Viva Presentation Risk** | **6.0 / 10** | High risk of over-explaining dense DP math while college evaluators ask basic questions like *"Where is the accuracy graph?"* or *"Why didn't you just use CTGAN?"*. |
 | **OVERALL WEIGHTED RATING** | **8.6 / 10** | **A Masterpiece on Paper, a Nightmare to Deliver Unscoped.** |
@@ -27,7 +34,7 @@
 2. **Charging the Schema Discovery (DP Profiler):**  
    - A critical, under-discussed leak in literature: inferring minimum/maximum bounds and category sets from raw data without spending budget. Charging this step to the accountant is mathematically honest.
 3. **Budget Ledger vs. Per-Run Flag:**  
-   - Moving from $\epsilon$ as a CLI argument to an append-only, signed, cryptographic ledger. This treats DP budget as a finite organizational asset across multiple dataset releases.
+   - Moving from $\epsilon$ as a CLI argument to a hash-chained, signed cryptographic ledger. This treats DP budget as a finite organizational asset across multiple dataset releases.
 4. **Research Methodological Rigour:**  
    - Pre-registration (`preregistration.md`), metamorphic testing (24 relations), differential testing against reference accountants (Google `dp-accounting`, `autodp`), and mutation testing (`mutmut` target 80%) reflect elite software engineering and scientific standards.
 
@@ -70,7 +77,11 @@
 - **Warning:** Discrete Gaussian sampling (`Canonne–Kamath–Steinke`) to prevent floating-point vulnerabilities is great research, but ensure it doesn't slow down standard generator loops.
 
 ### Phase 2: Budget Ledger & Allocator
-- **Critique:** Append-only SQLite/Postgres with Ed25519 signatures and hash chains is clean and demo-ready.
+- **Critique:** Hash-chained SQLite with Ed25519 signatures and hash chains is clean and demo-ready.
+  *(Corrected 2026-09-13: "append-only" is a dead claim -- hash chaining alone does not detect
+  truncation, since a shortened chain is internally consistent. That is why the signed head
+  committing to `(entry_count, tip_hash)` exists. Postgres was also removed: the compose file
+  declared a database nothing read.)*
 - **Warning:** Avoid over-complicating key management or multi-node consensus. A local signed hash chain is more than sufficient for capstone scope.
 
 ### Phase 3 & 4: Data Layer & Generator Bank

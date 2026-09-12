@@ -532,3 +532,42 @@ def test_a_document_of_dead_claims_is_still_caught_wholesale():
         "profiling-novel",
     ]:
         assert expected in found, f"the checker has gone blind to {expected}"
+
+
+# --------------------------------------------------------- the 2026-09-13 sweep's false positives
+#
+# Extending the repo-wide sweep to the repository root, CITATION.cff and the outer capstone
+# documents found four REAL dead claims -- including the 89% canary figure in ARTIFACT.md and
+# "append-only" in the root README, twice. It also produced one false positive, from two
+# genuine defects in a single pattern. Both are pinned here, alongside a positive control, so
+# the narrowing cannot silently become blindness.
+
+
+def test_four_does_not_contain_a_claim_just_because_it_contains_our(tmp_path):
+    """`ceiling-as-ours` had no word boundary, so "f-our" matched "our".
+
+    Combined with `[^.]` spanning newlines, the phrase below -- two unrelated items in a list
+    of open questions, where "ceiling" refers to a COMPUTE budget and not the audit ceiling --
+    tripped a rule about claiming the audit ceiling as our own theorem.
+    """
+    text = (
+        "Q3 is novelty required or desired · Q4 are the four\n"
+        "synopsis contributions locked · Q5 compute ceiling · Q6 ACS availability\n"
+    )
+    assert "ceiling-as-ours" not in labels(check(_write(tmp_path, text)))
+
+
+def test_a_claim_may_not_reach_across_a_line_break_to_find_its_verb(tmp_path):
+    """A claim is a sentence. Two unrelated lines are not one claim because a regex spans them."""
+    text = "We contributed the noise calibration.\nThe compute ceiling was 8 GPU-hours.\n"
+    assert "ceiling-as-ours" not in labels(check(_write(tmp_path, text)))
+
+
+def test_but_the_real_claim_is_still_caught(tmp_path):
+    """The positive control. Narrowing a rule must not disarm it.
+
+    If this ever stops failing, the two tests above have been bought at the price of the rule
+    they guard, which is the trade this file exists to prevent.
+    """
+    text = "We derive the audit ceiling and prove it is tight.\n"
+    assert "ceiling-as-ours" in labels(check(_write(tmp_path, text)))

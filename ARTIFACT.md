@@ -113,14 +113,14 @@ cd web && npm install && npm run dev
 | C1 | Calibration never overspends; proved/target ≈ 0.92 (§4.4, §7.1) | `make test` then inspect the `calibration-guard` CI job, or run the inline script in `.github/workflows/ci.yml` | Passes across 24 configurations; no achieved ε exceeds its target | 1 min |
 | C2 | Composed ε agrees with `autodp` to within 0.05% (§5) | `pytest tests/test_accounting_properties.py -k autodp` | 12 configurations pass at `rel=0.01` | 1 min |
 | C3 | The auditor detects a verbatim release and does not fire on a shuffled one (§7.2) | `pytest tests/test_detection_floor.py -q` | 12 passed | 1 min |
-| C4 | Detection floor and **audit ceiling** (§7.2) | `make floor` | Reproduces `results/detection_floor.json`; floor at leak=1.0 is m=10, leak≤0.05 undetected at m=800 | ~25 min |
+| C4 | Detection floor and **audit ceiling** (§7.2) — the ceiling is a corollary of Steinke et al. (2023) Thm 2.1, and reporting it beside the measurement transfers limit-of-detection reporting from analytical chemistry (MIQE 2.0, Bustin et al., *Clinical Chemistry* 2025;71(6):634–651). Neither convention is ours | `make floor` | Reproduces `results/detection_floor.json`; floor at leak=1.0 is m=10, leak≤0.05 undetected at m=800 | ~25 min |
 | C5 | H1: structured mechanisms preserve structure better, non-overlapping CIs (§7.3) | `make h1` | Reproduces `results/h1_all_families.json`, 75 cells | **~4 h** |
-| C6 | Canary contamination destroys 89% of the correlation signal (§7.4) | See `results/H1_RESULTS.md` §4; reproduce with `run_cell(..., separate_utility_fit=False)` vs `True` | corr 0.1014 → 0.0109 at 60 canaries | 5 min | **[SUPERSEDED 2026-09-06 — does not replicate; see `results/CANARY_DOSE_RESPONSE.md`]**
+| C6 | **RETRACTED.** This row claimed a fixed fraction of the correlation signal was destroyed by canary contamination. **The effect is real; the figure does not replicate** — a dose-response run found the loss varies continuously with the canary fraction and does not sit at any single value. Report the fraction axis, never a percentage | `results/CANARY_DOSE_RESPONSE.md` records the run that superseded it | The contamination mechanism reproduces; no fixed figure does | 5 min |
 | C7 | H2 is a bounded null; adversary needed accuracy 0.600 and reached 0.562 (§7.6) | `make h2` then `make h2-analyse` | Reproduces `results/h2_analysis.json` | ~5 min |
 | C8 | Every published number matches its manifest | `make reproduce` | `REPRODUCED` | seconds |
 | C9 | All figures derive from committed results | `make figures` | 8 figures in `docs/thesis/figures/` | 1 min |
 
-**C5 is the long one.** Evaluators short of time should run C1–C4 and C6–C9 (~35 minutes
+**C5 is the long one.** Evaluators short of time should run C1–C4 and C7–C9 (C6 is retracted) (~35 minutes
 total) and treat C5 as available-but-not-rerun. The grid is **resumable**: it checkpoints every
 cell, so an interrupted run continues where it stopped rather than starting over.
 

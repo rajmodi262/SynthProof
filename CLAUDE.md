@@ -27,7 +27,10 @@ Sheet almost field for field. It kills "we invented the concept" AND is the stro
 validation the project has. Critically it proposes **no signing** and **no standard for
 reporting the limits of an empirical privacy metric** — an omission one of their own experts
 called **"privacy theater"**. Those two gaps are exactly what our Ed25519 signature and
-`audit_ceiling` fill. Lead with this.
+`audit_ceiling` fill. Lead with this. (The ceiling-in-the-artefact convention is a transfer
+of limit-of-detection reporting from analytical chemistry — MIQE 2.0, Bustin et al.,
+*Clinical Chemistry* 2025;71(6):634–651 — not our invention. See
+`docs/MEASUREMENT_CONVENTIONS.md`.)
 
 **Second: Song, Sarathy, Shoemate & Vadhan, CSCW 2024 (arXiv 2410.09721)** — practitioners do
 NOT verify DP guarantees, they trust implicitly. That is the missing premise under the whole

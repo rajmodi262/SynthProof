@@ -33,8 +33,15 @@ THESIS = ROOT / "docs" / "thesis"
 DEAD_CLAIMS: list[tuple[str, str, str, str]] = [
     (
         "ceiling-as-ours",
-        r"(our|we|this (work|project|thesis))[^.]{0,80}\b(derive|prove|establish|discover|"
-        r"contribut)\w*[^.]{0,60}\bceiling\b",
+        # Two narrowings, both for false positives the 2026-09-13 repo-wide sweep exposed, and
+        # neither weakening a true detection -- "we derive the ceiling" is still caught:
+        #   \b before the alternation. Without it "four" matched "our", so "the four synopsis
+        #     contributions locked" tripped the rule.
+        #   [^.\n] rather than [^.]. A claim is a sentence, not a span reaching across a line
+        #     break into an unrelated one. The same false positive joined "our" in one question
+        #     to a COMPUTE ceiling -- a hardware budget -- in another.
+        r"\b(our|we|this (work|project|thesis))[^.\n]{0,80}\b(derive|prove|establish|discover|"
+        r"contribut)\w*[^.\n]{0,60}\bceiling\b",
         "The ceiling is a one-line corollary of Steinke, Nasr & Jagielski (2023) Thm 2.1 / "
         "Eq. (3) -- the paper we implement. Verified bit-identical to max_provable_epsilon.",
         "Attribute it to Steinke et al. Ours is the MEASUREMENT of where it bites, not the "
@@ -492,7 +499,23 @@ def main() -> None:
         # ARCHITECTURE.md, the defence pack, the REPORTS folder and results/ all carry them,
         # and a chapter-only check would pass while the submitted PDF still made the claim.
         seen, targets = set(), []
-        for pat in ("docs/**/*.md", "results/**/*.md", "research/**/*.md", "../REPORTS/*.md"):
+        # The root and the citation metadata are included because that is exactly where a
+        # dead claim survived the 2026-09-13 sweep: CITATION.cff still described the ledger as
+        # "append-only" -- the phrase P2.3 removed everywhere else -- because the sweep only
+        # looked at Markdown inside three directories. The blind spot, not the phrase, was the
+        # defect. The outer README is included for the same reason: it is the first file a
+        # stranger opens and it lives above this repository.
+        for pat in (
+            "docs/**/*.md",
+            "results/**/*.md",
+            "research/**/*.md",
+            "../REPORTS/*.md",
+            "*.md",
+            "CITATION.cff",
+            "../README.md",
+            "../INDEX.md",
+            "../CONTRIBUTIONS.md",
+        ):
             for f in sorted(ROOT.glob(pat)):
                 if f.is_file() and f not in seen:
                     seen.add(f)

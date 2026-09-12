@@ -59,6 +59,11 @@ At 60 canaries our auditor could not report above 2.97 even against a release th
 copied training data. The gap was guaranteed before the mechanism ran. We report the ceiling
 next to the number so nobody can misread it."
 
+**If asked where the convention comes from:** analytical chemistry. MIQE 2.0 (Bustin et al.,
+*Clinical Chemistry* 2025;71(6):634-651) mandates limit-of-detection reporting, and a lab
+writes *"Not Detected, < LOD"* rather than zero. The ceiling itself is a corollary of Steinke
+et al. Thm 2.1. **Neither is ours** -- the transfer into a privacy artefact is."
+
 ---
 
 ## 3. ⭐⭐ The tamper demo — THE moment (90 s)

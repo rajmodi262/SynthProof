@@ -25,7 +25,8 @@ abstract: >-
   reports both a formal upper bound on privacy loss and an empirical lower
   bound recovered by canary auditing, with every operation that reads the
   sensitive table charged to a privacy accountant and recorded in a signed
-  append-only ledger. Its principal finding is negative and concerns the
+  hash-linked ledger whose head commits to the chain's length, so truncation
+  is detectable. Its principal finding is negative and concerns the
   measurement rather than the mechanisms: the epsilon a one-run canary audit
   can certify is bounded by the canary count alone, so certifying a given
   epsilon costs on the order of ln(1/alpha)*e^epsilon canaries. At the counts

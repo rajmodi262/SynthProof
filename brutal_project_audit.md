@@ -63,6 +63,22 @@
 
 ### F1 — The headline metric is structurally always zero
 
+> **Corrected 2026-09-13 — this section reads the zero correctly but for the wrong reason,
+> and the right reason is worse.** Everything below predates the audit-ceiling finding. The
+> zero is not primarily a bug in the auditor: at the canary counts used, the auditor **could
+> not have reported a non-zero epsilon at all**. The maximum an r-canary audit can certify is
+> `log(r / ln(1/α))` — a corollary of Steinke, Nasr & Jagielski (2023) Thm 2.1, verified
+> bit-identical in `synthproof/audit/steinke.py` — which is **2.97 at the 60 canaries used
+> here**, against proved epsilons up to 7.36. The gap was guaranteed by the instrument before
+> any mechanism ran.
+>
+> So line 255's later conclusion, that the zero became "a genuine null result", is **wrong**:
+> a measurement below its own limit of detection is not a null result, it is an absence of
+> evidence. Reporting the ceiling beside every audited epsilon — the convention this project
+> now follows, transferred from limit-of-detection reporting in analytical chemistry (MIQE 2.0,
+> Bustin et al., *Clinical Chemistry* 2025;71(6):634–651) — is what keeps the two apart. See
+> `results/DETECTION_FLOOR.md`.
+
 `ε_audited` — the entire point of the project — is `0.00` in every row of [`results/RESULTS.md`](results/RESULTS.md). Verified that this is not noise but a structural impossibility:
 
 ```
@@ -252,7 +268,7 @@ The architecture is the hard part and it is already right. Every module boundary
 
 - **F8 fixed** — TSTR and TRTR are now scored on a shared held-out real split. TRTR fell from a bogus 0.971 to ~0.334 (chance level, which is correct for the toy table's independent labels).
 - **New finding, discovered while fixing the above: the mechanism dispatch never matched.** `run_cell` tested `mechanism_name.lower() in ("aim", "mst")` while the sweep passed `"AIM / MST"`. The AIM branch was **never taken** — both halves of the old results table were secretly the copula generator. This fully explains the previously identical rows in F6.
-- **The canary auditor is now a real instrument** — Clopper-Pearson bounds with a *measured* FPR from held-out canaries, score-based rather than exact-match detection, and a Fisher exact test. It is validated by a test showing it recovers ε > 0 with p < 0.05 on a deliberately leaky release. `audited_eps` is still 0.00 across the sweep, but that is now a genuine null result rather than a structurally impossible one.
+- **The canary auditor is now a real instrument** — Clopper-Pearson bounds with a *measured* FPR from held-out canaries, score-based rather than exact-match detection, and a Fisher exact test. It is validated by a test showing it recovers ε > 0 with p < 0.05 on a deliberately leaky release. `audited_eps` is still 0.00 across the sweep, ~~but that is now a genuine null result rather than a structurally impossible one~~. **Superseded 2026-09-13:** it is neither. It sits below the audit ceiling of 2.97 at 60 canaries, so it is an absence of evidence, not evidence of absence — the distinction analytical chemistry draws with a limit of detection, where MIQE 2.0 (Bustin et al., *Clinical Chemistry* 2025;71(6):634-651) requires a lab to report *"Not Detected, < LOD"* rather than zero. See the correction above.
 - **F10 partially fixed** — `FrontierEngine` now actually appends to its ledger, so `ledger_hash` is a real chain head instead of the genesis hash. The data sheet remains unsigned.
 - **The API `mechanism` parameter is now honoured** instead of silently ignored; CORS `allow_credentials` disabled.
 - Noise samplers are now seedable and reproducible; test suite grew 25 → 36, all passing.
