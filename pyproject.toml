@@ -89,8 +89,9 @@ select = ["E", "F", "B", "I"]
 [tool.ruff.lint.per-file-ignores]
 # B008 flags function calls in argument defaults. FastAPI's dependency injection is
 # *expressed* that way — `file: UploadFile = File(...)` is the documented idiom, not an
-# accident — so the rule does not apply to route handlers.
-"synthproof/api/main.py" = ["B008"]
+# accident — so the rule does not apply to route handlers. Followed the upload handler from
+# api/main.py to api/routes/datasets.py in the 2026-09-13 split.
+"synthproof/api/routes/datasets.py" = ["B008"]
 # These scripts EMIT markdown: their long lines are table rows and prose inside the generated
 # document, not code. Wrapping them would change the artefact the script writes, and a `# noqa`
 # cannot go inside a string literal without appearing in the output. The line-length rule does

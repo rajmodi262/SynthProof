@@ -57,7 +57,9 @@ def test_only_lira_is_declared_unimplemented():
 
 def test_the_api_and_the_certificate_agree_about_what_is_missing():
     """Two hardcoded lists drifted apart once already; they must not disagree again."""
-    from synthproof.api.main import NOT_IMPLEMENTED_ATTACKS
+    # Moved out of main.py in the 2026-09-13 split: it is reference data about what the
+    # system does NOT do, which is the vocabulary, not the application.
+    from synthproof.api.descriptions import NOT_IMPLEMENTED_ATTACKS
 
     api_names = {a["name"].lower() for a in NOT_IMPLEMENTED_ATTACKS}
     cert_names = {a.lower() for a in ATTACKS_NOT_IMPLEMENTED}
@@ -66,7 +68,9 @@ def test_the_api_and_the_certificate_agree_about_what_is_missing():
 
 def test_every_absent_attack_gives_a_reason_in_the_api():
     """A capability reported as missing without a reason reads as an oversight."""
-    from synthproof.api.main import NOT_IMPLEMENTED_ATTACKS
+    # Moved out of main.py in the 2026-09-13 split: it is reference data about what the
+    # system does NOT do, which is the vocabulary, not the application.
+    from synthproof.api.descriptions import NOT_IMPLEMENTED_ATTACKS
 
     for entry in NOT_IMPLEMENTED_ATTACKS:
         assert entry.get("reason"), entry

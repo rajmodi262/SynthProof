@@ -34,12 +34,26 @@ GUARDED = [
 
 
 def _app(monkeypatch, key=None, **env):
-    """Re-imports the API with a patched environment and returns a client."""
+    """Re-imports the API with a patched environment and returns a client.
+
+    `state` is reloaded FIRST and `main` second, and the order matters. API_KEY, AUTH_ENABLED
+    and the CORS origins are read from the environment at import time, and since the 2026-09-13
+    split they live in `synthproof.api.state` while the routes that depend on them live in
+    `main` and under `routes/`. Reloading only `main` would rebind its re-exported names to
+    values `state` computed under the OLD environment, and every auth assertion here would
+    silently test the wrong thing.
+
+    That import-time read is itself a trap -- the same one `ledger/signing.py` documents and
+    fixed by resolving per call. It is left alone here deliberately: changing how
+    authentication resolves its key does not belong in a structural refactor.
+    """
     import synthproof.api.main as m
+    import synthproof.api.state as st
 
     monkeypatch.setenv("SYNTHPROOF_API_KEY", key or "")
     for k, v in env.items():
         monkeypatch.setenv(k, v)
+    importlib.reload(st)
     importlib.reload(m)
     return TestClient(m.app), m
 
@@ -49,7 +63,9 @@ def _restore():
     """Leaves the module in its default (open) state for other test files."""
     yield
     import synthproof.api.main as m
+    import synthproof.api.state as st
 
+    importlib.reload(st)
     importlib.reload(m)
 
 

@@ -426,7 +426,8 @@ def test_sse_serialiser_refuses_to_stringify_an_unknown_type():
     """
     import numpy as np
 
-    from synthproof.api.main import _json_default, _sse
+    # The SSE serialiser moved with the pipeline it serialises.
+    from synthproof.api.routes.run import _json_default, _sse
 
     assert _json_default(np.float64(0.5)) == 0.5
     assert isinstance(_json_default(np.float64(0.5)), float)
@@ -459,9 +460,13 @@ def test_destructive_ledger_endpoints_are_refused_outside_demo_mode(monkeypatch)
     Against a file-backed ledger they would be unauthenticated remote primitives for
     rewriting a spend and deleting the entire history.
     """
-    import synthproof.api.main as api_main
+    # Patch where the GUARD reads it, not where it is re-exported. `_require_demo_ledger`
+    # lives in `synthproof.api.state` since the 2026-09-13 split, and patching the copy
+    # re-exported by `main` left the guard reading the real value -- the endpoints stayed
+    # open and this test went green against a service that had not been locked down at all.
+    import synthproof.api.state as api_state
 
-    monkeypatch.setattr(api_main, "DEMO_MODE", False)
+    monkeypatch.setattr(api_state, "DEMO_MODE", False)
     assert client.post("/api/ledger/reset").status_code == 403
     assert (
         client.post("/api/ledger/tamper", json={"entry_id": "x", "eps_spent": 0.1}).status_code
@@ -471,8 +476,8 @@ def test_destructive_ledger_endpoints_are_refused_outside_demo_mode(monkeypatch)
     # Demo mode on, but pointed at a persistent database: still refused. The path is a
     # sentinel that is never opened — the guard only compares it against ":memory:" — so it
     # deliberately avoids /tmp, which bandit flags as a hardcoded temp directory (B108).
-    monkeypatch.setattr(api_main, "DEMO_MODE", True)
-    monkeypatch.setattr(api_main, "_LEDGER_DB", "persistent-ledger.db")
+    monkeypatch.setattr(api_state, "DEMO_MODE", True)
+    monkeypatch.setattr(api_state, "_LEDGER_DB", "persistent-ledger.db")
     assert client.post("/api/ledger/reset").status_code == 403
     assert (
         client.post("/api/ledger/tamper", json={"entry_id": "x", "eps_spent": 0.1}).status_code
@@ -504,7 +509,9 @@ def test_audit_result_reports_the_instruments_working_range():
 
 def test_audit_ceiling_is_monotone_in_canary_count():
     """More canaries must never buy a looser bound."""
-    from synthproof.api.main import audit_ceiling
+    # Moved out of main.py in the 2026-09-13 split. It is reference data about what the
+    # auditor can see, so it lives with the rest of that vocabulary.
+    from synthproof.api.descriptions import audit_ceiling
 
     counts = [10, 25, 50, 60, 100, 200, 400, 800, 5000]
     ceilings = [audit_ceiling(m) for m in counts]
