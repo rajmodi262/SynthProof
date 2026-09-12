@@ -16,13 +16,13 @@ Baseline commit: `eac2e54` · branch `audit-fixes-and-acs` · scan date 2026-09-
 | Phase | Tasks | Done | Remaining |
 |---|---:|---:|---:|
 | P0 — Green the gates | 3 | **3** | 0 ✅ |
-| P1 — Every artifact works | 6 | **2** | 4 |
+| P1 — Every artifact works | 6 | **6** | 0 ✅ |
 | P2 — Honesty ledger to zero | 6 | 0 | 6 |
 | P3 — Harden the engineering | 6 | 0 | 6 |
 | P4 — Close the science gaps | 4 | 0 | 4 |
 | P5 — Consolidate and release | 5 | 0 | 5 |
 | P6 — Viva readiness | 3 | 0 | 3 |
-| **Total** | **33** | **5** | **28** |
+| **Total** | **33** | **9** | **24** |
 
 ## Gate status
 
@@ -35,8 +35,8 @@ Baseline commit: `eac2e54` · branch `audit-fixes-and-acs` · scan date 2026-09-
 | tests | `python -m pytest` | ✅ 738 pass, 92% |
 | types | `mypy synthproof` | ❌ 79 errors (~27 real), ungated — P3.1 |
 | console types | `npx tsc --noEmit` | ✅ clean |
-| console tests | `npm test` | ✅ 10 pass, 1 file |
-| e2e | *(none)* | ❌ does not exist |
+| console tests | `npm test` | ✅ **18 pass, 2 files** (was 10/1) |
+| e2e | *(none)* | ❌ does not exist — P3.4 |
 | SAST | `bandit -c pyproject.toml -r synthproof/ scripts/ -ll` | ✅ 0 medium+ |
 | deps (py) | `pip-audit --skip-editable` | ✅ clean in declared closure |
 | deps (npm prod) | `npm audit --omit=dev` | ✅ 0 vulnerabilities |
@@ -62,12 +62,17 @@ Still to confirm on a real push — the branch has not been pushed.
 |---|---|---|---|
 | 1.1 | Restore the missing `try {`, regenerate both capsules | ✅ **DONE** | `d66bad1` · `node --check` passes on both; badge resolves to a real verdict |
 | 1.2 | Kill the green-tick verification bypass | ✅ **DONE** | `d66bad1` · browser-verified 4 states: genuine→green, ε 1.0→0.001→**red**, Ed25519-unsupported→amber, no-WebCrypto→amber. `grep -c 'Proof Format Verified'` = 0 |
-| 1.3 | Single-source the verifier into `web/src/lib/capsuleVerify.ts` | ⬜ TODO | |
-| 1.4 | Fix demo presets; keep the refusal as a deliberate feature | ⬜ TODO | |
-| 1.5 | Repoint the three PDF builders at `01_Thesis_and_Deliverables/` | ⬜ TODO | |
-| 1.6 | Bind `make serve` to 127.0.0.1 | ⬜ TODO | |
+| 1.3 | Single-source the verifier | ✅ **DONE** | `aaab786` · logic moved to `synthproof/capsule/verifier.js`; vitest reads the *same bytes off disk* (8 cases, 10→18 total); Python test pins verbatim inlining; CI parses the emitted `<script>` with node's vm and greps for the retired bypass |
+| 1.4 | Fix demo presets; keep the refusal as a feature | ✅ **DONE** | `1f9498b` · all 5 presets run against the real pipeline: 4 COMPLETE, 1 REFUSES by design. Relabelled “🛑 Refusal demo (400 rows)”, amber at both render sites, hover says so |
+| 1.5 | Repoint the three PDF builders | ✅ **DONE** | `a84c3aa` · all three build into the deliverables folder, no stray root PDFs. **Also found: `make defence` had been refusing to build since before `eac2e54`** — hand-typed manifest commit had gone stale; now injected at build time |
+| 1.6 | Bind `make serve` to 127.0.0.1 | ✅ **DONE** | `a84c3aa` · Dockerfile keeps `0.0.0.0`, where the container is the boundary |
 
-**Gate 1:** all three `.bat` launchers work from a cold start, driven by someone who is not the author.
+**Gate 1:** ⚠️ **MECHANICALLY VERIFIED, human cold-start still pending.** Every path the three
+launchers resolve exists and the targets work: `run_prototype.py` prerequisites pass, both
+capsules parse and verify in a browser, the pitch deck resolves through the
+`02_Presentations_and_Pitches/..` fallback and has a pre-built copy behind it. What has *not*
+happened is the part that matters — someone who is not the author double-clicking all three on
+a machine that has never run this, saying nothing. That is still owed.
 
 ## P2 — Take the honesty ledger to zero · ~8 h
 
@@ -147,4 +152,6 @@ claims and reproduce all run in CI and all pass.
 | 2026-09-12 | Tracker created from the deep scan. 33 tasks, 0 done. |
 | 2026-09-12 | **P0 complete.** `68d8186` lint · `04fb41a` CI gates · `1e9105b` manifest. Gate 0 holds locally. |
 | 2026-09-12 | **P1.1 + P1.2 complete.** `d66bad1`. Capsule verifier rewritten to three outcomes; forged capsules now rejected. |
+| 2026-09-12 | **P1 complete (6/6).** `a84c3aa` PDF paths + serve · `1f9498b` presets · `aaab786` shared verifier. |
+| 2026-09-12 | Found in passing: `make defence` had been REFUSING TO BUILD since before `eac2e54` — the shipped Defence-Pack PDF could not be regenerated from its own sources. Its gate wanted a hand-typed manifest commit that had gone stale. Now injected at build time. |
 | 2026-09-12 | Found in passing: `/api/ledger/tamper` claimed the ledger "guarantees non-repudiation", contradicting `ledger/signing.py`. Corrected in `68d8186`. The claims checker reads only Markdown, which is why it survived in Python — noted for P2.5. |
