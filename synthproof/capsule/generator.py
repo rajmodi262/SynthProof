@@ -21,6 +21,24 @@ from synthproof.frontier.certificate import PrivacyDataSheet
 from synthproof.frontier.croissant import to_croissant
 from synthproof.ledger import signing
 
+VERIFIER_JS = Path(__file__).resolve().parent / "verifier.js"
+
+
+def _verifier_source() -> str:
+    """The shared browser verifier, indented to sit inside the capsule's <script> block.
+
+    Read at call time from synthproof/capsule/verifier.js rather than duplicated into the
+    template. That file is also what tests/test_capsule.py and web/src/lib/capsuleVerify.test.ts
+    read, so the logic under test is byte-for-byte the logic that ships.
+
+    No brace-doubling here, deliberately. The template is an f-string, but this text arrives
+    through a `{verifier_js}` substitution, and a substituted VALUE is inserted verbatim --
+    Python does not rescan it for replacement fields. Doubling would emit literal `{{` into
+    the JavaScript and break it, which is exactly what happened the first time.
+    """
+    src = VERIFIER_JS.read_text(encoding="utf-8")
+    return "\n".join(("    " + ln) if ln.strip() else ln for ln in src.splitlines())
+
 
 def generate_capsule_html(
     sheet: Union[PrivacyDataSheet, Dict[str, Any]],
@@ -100,6 +118,7 @@ def generate_capsule_html(
     payload_json = json.dumps(embedded_payload)
     payload_b64 = base64.b64encode(payload_json.encode("utf-8")).decode("ascii")
 
+    verifier_js = _verifier_source()
     html_content = f"""<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
@@ -420,108 +439,29 @@ def generate_capsule_html(
       alert('Signing payload copied to clipboard!');
     }}
 
-    // Offline Ed25519 verification against the embedded payload.
-    //
-    // THREE outcomes, never two. A capsule is verified, refuted, or UNVERIFIABLE-HERE, and
-    // the third is not a pass. An earlier version of this function fell through to a
-    // "structural check" -- is the signature 64 bytes -- and painted the badge green on the
-    // strength of it, which meant a forged capsule displayed as verified on any browser
-    // whose WebCrypto lacks Ed25519, and also whenever crypto.subtle.verify simply returned
-    // false. The word "Verified" is now reachable only downstream of a check that returned
-    // true. Everything else is amber or red.
+    // ---------------------------------------------------------------- verifier
+    // The decision logic below is inlined verbatim from synthproof/capsule/verifier.js --
+    // ONE implementation, shared with the vitest suite that reads the same bytes off disk.
+    // It used to live in this f-string, where nothing could lint or test it, and two defects
+    // shipped that way. Everything here is a thin DOM binding over spDecideVerdict().
+{verifier_js}
+
     async function verifyPayload(verbose = false) {{
       const badge = document.getElementById('verificationBadge');
       const summary = document.getElementById('cryptoSummary');
+      const subtle = (window.crypto && window.crypto.subtle) ? window.crypto.subtle : null;
 
-      function setState(kind, badgeText, summaryText, alertText) {{
-        badge.className = 'badge badge-' + kind;
-        badge.innerHTML = badgeText;
-        const colour = kind === 'verified' ? '#34d399'
-                     : kind === 'unverifiable' ? '#fbbf24'
-                     : '#fb7185';
-        summary.innerHTML = '<span style="color: ' + colour + ';">' + summaryText + '</span>';
-        if (verbose) alert(alertText);
-      }}
+      const verdict = await spDecideVerdict(PAYLOAD, subtle);
 
-      try {{
-        function toBytes(str) {{
-          if (!str) return new Uint8Array(0);
-          if (/^[0-9a-fA-F]+$/.test(str) && str.length % 2 === 0) {{
-            const arr = new Uint8Array(str.length / 2);
-            for (let i = 0; i < str.length; i += 2) arr[i / 2] = parseInt(str.substr(i, 2), 16);
-            return arr;
-          }}
-          try {{
-            return Uint8Array.from(atob(str), c => c.charCodeAt(0));
-          }} catch(e) {{
-            return new TextEncoder().encode(str);
-          }}
-        }}
-        const sigBytes = toBytes(PAYLOAD.signature);
-        const keyBytes = toBytes(PAYLOAD.public_key);
-        const dataBytes = new TextEncoder().encode(PAYLOAD.signing_payload);
-
-        // A malformed signature or key is a FAILURE. It used to be the pass condition.
-        if (sigBytes.length !== 64 || keyBytes.length !== 32) {{
-          setState('failed', '✗ Verification Failed',
-            '✗ Malformed signature or public key',
-            'This capsule does not carry a well-formed Ed25519 signature (expected 64 '
-            + 'signature bytes and a 32-byte key, found ' + sigBytes.length + ' and '
-            + keyBytes.length + ').');
-          return;
-        }}
-
-        if (!(window.crypto && crypto.subtle && crypto.subtle.importKey)) {{
-          // No WebCrypto at all -- typically a non-secure context, such as opening this
-          // file from a data: URL. Nothing has been checked, and we say so.
-          setState('unverifiable', '⚠ Cannot Verify In This Browser',
-            '⚠ Not checked — WebCrypto unavailable',
-            'This browser exposes no WebCrypto in this context, so the signature could '
-            + 'not be checked. Nothing here has been verified. Open the capsule over '
-            + 'https:// or localhost, or verify it with: synthproof verify-capsule.');
-          return;
-        }}
-
-        let key;
-        try {{
-          key = await crypto.subtle.importKey(
-            "raw", keyBytes, {{ name: "Ed25519" }}, false, ["verify"]
-          );
-        }} catch (e) {{
-          // The ONLY case that is neither a pass nor a refutation: this browser's
-          // WebCrypto does not implement Ed25519. Firefox before 130 and Chrome before
-          // 137 land here. Amber, never green.
-          setState('unverifiable', '⚠ Cannot Verify In This Browser',
-            '⚠ Not checked — Ed25519 unsupported here',
-            'This browser\\'s WebCrypto does not implement Ed25519, so the signature '
-            + 'could not be checked. Nothing here has been verified. Use a current '
-            + 'Chrome, Firefox or Safari, or verify it with: synthproof verify-capsule.');
-          return;
-        }}
-
-        // From here a false result is a refutation, not a reason to try something weaker.
-        const valid = await crypto.subtle.verify(
-          {{ name: "Ed25519" }}, key, sigBytes, dataBytes
-        );
-        if (valid) {{
-          setState('verified', '✓ Cryptographically Verified',
-            '✓ Authentic Ed25519 Signature',
-            'Verified. The embedded Privacy Data Sheet carries a valid Ed25519 signature '
-            + 'over its canonical bytes and has not been altered since it was signed.\\n\\n'
-            + 'This proves authorship and integrity. It does NOT prove the epsilon is '
-            + 'correct: a key holder can sign a sheet saying anything.');
-        }} else {{
-          setState('failed', '✗ Verification Failed',
-            '✗ Signature does not match this payload',
-            'REJECTED. The signature does not verify against this payload. Either the '
-            + 'capsule was altered after signing, or it was not signed by this key.');
-        }}
-      }} catch (err) {{
-        // Fail closed. Anything unexpected is a failure, never a downgrade to a weaker check.
-        setState('failed', '✗ Verification Failed',
-          '✗ Signature / Payload Mismatch',
-          'Verification failed: ' + err.message);
-      }}
+      const colour = verdict.state === 'verified' ? '#34d399'
+                   : verdict.state === 'unverifiable' ? '#fbbf24'
+                   : '#fb7185';
+      badge.className = 'badge badge-' + (verdict.state === 'verified' ? 'verified'
+                                        : verdict.state === 'unverifiable' ? 'unverifiable'
+                                        : 'failed');
+      badge.innerHTML = verdict.headline;
+      summary.innerHTML = '<span style="color: ' + colour + ';">' + verdict.summary + '</span>';
+      if (verbose) alert(verdict.detail);
     }}
 
     window.addEventListener('DOMContentLoaded', () => {{

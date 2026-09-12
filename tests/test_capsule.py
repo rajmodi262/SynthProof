@@ -154,3 +154,59 @@ def test_verify_capsule_tampered(tmp_path: Path):
 
     with pytest.raises(signing.SignatureError):
         verify_capsule(capsule_file)
+
+
+# --------------------------------------------------------------------------- shared verifier
+
+
+def test_capsule_inlines_the_shared_verifier_rather_than_a_copy():
+    """The emitted capsule must carry synthproof/capsule/verifier.js, not a duplicate of it.
+
+    Two defects shipped in 2026-09 because the browser verifier lived as a string literal
+    inside this module's f-string, where no linter, type checker or test could reach it: a
+    missing `try {` that stopped the script parsing, and a fallback that rendered a green
+    "Verified" badge for a forged capsule. The fix was to move the logic into one file that
+    both the generator and `web/src/lib/capsuleVerify.test.ts` read. This test is what stops
+    it drifting back apart -- if someone re-inlines a copy, the two stop matching and this
+    fails.
+    """
+    from synthproof.capsule.generator import VERIFIER_JS, generate_capsule_html
+
+    html = generate_capsule_html(
+        {
+            "dataset_name": "DriftCheck",
+            "mechanism": "pairwise",
+            "num_rows": 3,
+            "total_proved_eps": 1.0,
+            "total_audited_eps": 0.0,
+            "audit_ceiling": 2.97,
+        },
+        [{"a": 1}, {"a": 2}, {"a": 3}],
+    )
+
+    source = VERIFIER_JS.read_text(encoding="utf-8")
+    # Every non-trivial line of the shared file must appear in the emitted document.
+    missing = [
+        ln.strip()
+        for ln in source.splitlines()
+        if len(ln.strip()) > 25 and not ln.strip().startswith("*") and ln.strip() not in html
+    ]
+    assert not missing, f"capsule does not carry the shared verifier verbatim: {missing[:3]}"
+
+
+def test_capsule_never_offers_a_pass_without_a_signature_check():
+    """No branch may render "Verified" on the strength of a length check.
+
+    The retired fallback tested `sigBytes.length === 64 && keyBytes.length === 32` and then
+    displayed "Proof Format Verified" / "Verified 64-byte Ed25519 Signature". A capsule that
+    says "verified" when it has verified a length is the worst defect this project could
+    ship, given what it claims to be for.
+    """
+    from synthproof.capsule.generator import generate_capsule_html
+
+    html = generate_capsule_html(
+        {"dataset_name": "X", "mechanism": "pairwise", "num_rows": 1, "audit_ceiling": 1.0},
+        [{"a": 1}],
+    )
+    for banned in ("Proof Format Verified", "Verified 64-byte"):
+        assert banned not in html, f"the length-check bypass is back: {banned!r}"

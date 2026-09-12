@@ -71,6 +71,36 @@ jobs:
         # deterministic across machines -- it compares file bytes, not recomputed floats.
         run: python -m scripts.reproduce
 
+      # The capsule ships JavaScript that Python emits, and for a while nothing on either
+      # side of that boundary could see it: the Python suite asserted substrings, and the
+      # console suite never loaded it. A missing `try {` therefore reached users and the page
+      # failed to parse with no test noticing. This runs where the package is already
+      # installed, and parses what actually gets written.
+      - name: Node (for parsing the emitted capsule)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Emitted capsule JavaScript parses, and the bypass stays dead
+        run: |
+          python scripts/generate_demo_capsules.py
+          node -e "
+            const fs = require('fs'), vm = require('vm');
+            const files = fs.readdirSync('demo_capsules').filter(f => f.endsWith('.html'));
+            if (!files.length) { console.error('no capsules emitted'); process.exit(1); }
+            for (const f of files) {
+              const html = fs.readFileSync('demo_capsules/' + f, 'utf8');
+              const m = html.match(/<script>([\s\S]*?)<\/script>/);
+              if (!m) { console.error(f + ': no inline script'); process.exit(1); }
+              new vm.Script(m[1], { filename: f });
+              if (/Proof Format Verified|Verified 64-byte/.test(html)) {
+                console.error(f + ': the length-check verification bypass is back');
+                process.exit(1);
+              }
+              console.log(f + ': parses, no bypass');
+            }
+          "
+
       - name: Smoke — CLI demo runs end to end
         run: python -m synthproof.cli demo --rows 60 --eps 1.0
 
