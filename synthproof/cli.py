@@ -828,7 +828,22 @@ def prototype_cmd(port: int):
     """Launches the 100% working interactive prototype showcase."""
     import os
 
-    import run_prototype
+    # run_prototype.py is a loose launcher at the REPOSITORY ROOT, not part of the installed
+    # package, so this import resolves only from a source checkout. After
+    # `pip install synthproof` it raised a bare ModuleNotFoundError. Say what is wrong and
+    # what to do instead, rather than failing with an import error naming a file the user has
+    # never heard of.
+    try:
+        import run_prototype
+    except ImportError as exc:
+        raise click.ClickException(
+            "`synthproof prototype` needs the launcher script that lives at the root of the "
+            "source checkout, and it is not importable here -- this usually means SynthProof "
+            "was pip-installed rather than cloned.\n"
+            "Run it from a checkout, or start the service directly with:\n"
+            "    uvicorn synthproof.api.main:app --host 127.0.0.1 --port "
+            f"{port}"
+        ) from exc
 
     os.environ["PORT"] = str(port)
     run_prototype.main()

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
 
 from synthproof.api.main import app
 

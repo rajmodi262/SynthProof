@@ -36,9 +36,20 @@ dependencies = [
     # failed to import. CI had been failing on exactly this since the DP-SGD VAE landed.
     "jax>=0.4.20",
     "jaxlib>=0.4.20",
+    # Imported at module scope by audit/equivalence.py, for the TOST equivalence test and
+    # the Benjamini-Hochberg correction that H2's bounded null depends on. Undeclared until
+    # 2026-09-12, so every environment built from pyproject alone failed to collect
+    # tests/test_equivalence.py.
+    "statsmodels>=0.14",
 ]
 
 [project.optional-dependencies]
+# The SECOND benchmark dataset (ACSIncome, US Census PUMS). Imported LAZILY, inside
+# data/acs.py's loader, so the package works without it and only the ACS experiments need
+# it. Kept out of the core set because it pulls census tooling that a reader reproducing the
+# Adult results has no use for. `pip install -e ".[acs,dev]"` to run the ACS grid.
+acs = ["folktables>=0.0.12"]
+
 dev = [
     "pytest>=7.4.0",
     "httpx>=0.24.0",   # starlette TestClient needs it on newer versions
@@ -55,7 +66,8 @@ dev = [
     # right; agreement of our code with itself is not. The test skips if it is absent.
     "autodp>=0.2.3",
     "matplotlib>=3.7",  # thesis figures (scripts/make_figures.py)
-    "reportlab>=4.0"    # thesis/defence/explainer PDF builds (scripts/build_thesis.py)
+    "reportlab>=4.0",   # thesis/defence/explainer PDF builds (scripts/build_thesis.py)
+    "pypdf>=4.0",       # page counts and assembly in the same builders
 ]
 
 [project.scripts]

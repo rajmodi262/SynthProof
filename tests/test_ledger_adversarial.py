@@ -175,9 +175,9 @@ def test_replaying_a_signed_entry_under_a_new_id_is_detected(ledger):
     sql(
         db,
         (
-            # nosec B608 - the column list is a module constant and every VALUE is a bound
-            # parameter. This file's entire purpose is to attack the ledger's database.
-            f"INSERT INTO ledger_entries ({','.join(COLS)}) VALUES ({','.join('?' * 14)})",
+            # The column list is a module constant and every VALUE is a bound parameter.
+            # This file's entire purpose is attacking the ledger's own database.
+            f"INSERT INTO ledger_entries ({','.join(COLS)}) VALUES ({','.join('?' * 14)})",  # nosec B608
             tuple(vals[k] for k in COLS),
         ),
     )
@@ -207,9 +207,9 @@ def test_appending_a_forged_entry_and_rewriting_the_head_is_detected(ledger):
     sql(
         db,
         (
-            # nosec B608 - the column list is a module constant and every VALUE is a bound
-            # parameter. This file's entire purpose is to attack the ledger's database.
-            f"INSERT INTO ledger_entries ({','.join(COLS)}) VALUES ({','.join('?' * 14)})",
+            # The column list is a module constant and every VALUE is a bound parameter.
+            # This file's entire purpose is attacking the ledger's own database.
+            f"INSERT INTO ledger_entries ({','.join(COLS)}) VALUES ({','.join('?' * 14)})",  # nosec B608
             (
                 "evil",
                 evil.prev_hash,
