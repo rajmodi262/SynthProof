@@ -15,32 +15,32 @@ Baseline commit: `eac2e54` · branch `audit-fixes-and-acs` · scan date 2026-09-
 
 | Phase | Tasks | Done | Remaining |
 |---|---:|---:|---:|
-| P0 — Green the gates | 3 | 0 | 3 |
-| P1 — Every artifact works | 6 | 0 | 6 |
+| P0 — Green the gates | 3 | **3** | 0 ✅ |
+| P1 — Every artifact works | 6 | **2** | 4 |
 | P2 — Honesty ledger to zero | 6 | 0 | 6 |
 | P3 — Harden the engineering | 6 | 0 | 6 |
 | P4 — Close the science gaps | 4 | 0 | 4 |
 | P5 — Consolidate and release | 5 | 0 | 5 |
 | P6 — Viva readiness | 3 | 0 | 3 |
-| **Total** | **33** | **0** | **33** |
+| **Total** | **33** | **5** | **28** |
 
 ## Gate status
 
 | Gate | Command | Status |
 |---|---|---|
-| lint | `make lint` | ❌ 74 ruff errors |
-| reproduce | `python -m scripts.reproduce` | ❌ 3 divergences |
+| lint | `make lint` | ✅ ruff 0, black 0 |
+| reproduce | `python -m scripts.reproduce` | ✅ exit 0 |
 | claims (thesis) | `python scripts/check_thesis_claims.py` | ✅ clean |
 | claims (repo-wide) | `python scripts/check_thesis_claims.py --all` | ❌ 73 violations |
 | tests | `python -m pytest` | ✅ 738 pass, 92% |
-| types | `mypy synthproof` | ❌ 79 errors, ungated |
+| types | `mypy synthproof` | ❌ 79 errors (~27 real), ungated — P3.1 |
 | console types | `npx tsc --noEmit` | ✅ clean |
 | console tests | `npm test` | ✅ 10 pass, 1 file |
 | e2e | *(none)* | ❌ does not exist |
 | SAST | `bandit -c pyproject.toml -r synthproof/ scripts/ -ll` | ✅ 0 medium+ |
 | deps (py) | `pip-audit --skip-editable` | ✅ clean in declared closure |
 | deps (npm prod) | `npm audit --omit=dev` | ✅ 0 vulnerabilities |
-| capsule | open `demo_capsules/*.html` | ❌ SyntaxError, both files |
+| capsule | open `demo_capsules/*.html` | ✅ verifies; tamper → red; no-crypto → amber |
 
 ---
 
@@ -48,18 +48,20 @@ Baseline commit: `eac2e54` · branch `audit-fixes-and-acs` · scan date 2026-09-
 
 | # | Task | Status | Evidence |
 |---|---|---|---|
-| 0.1 | Clear 74 ruff errors | ⬜ TODO | |
-| 0.2 | Regenerate the reproducibility manifest | ⬜ TODO | |
-| 0.3 | Put both honesty gates into CI | ⬜ TODO | |
+| 0.1 | Clear 74 ruff errors | ✅ **DONE** | `68d8186` · ruff 0, black 0. 33 auto-fixed, 10 real lines wrapped, 4 dead bindings removed, 27 template E501s per-file-ignored (verified all inside the f-string, lines 103–494) |
+| 0.2 | Regenerate the reproducibility manifest | ✅ **DONE** | `1e9105b` · exit 0. Diff read first: 2 path strings, 0 numeric changes. Full `--update` re-run reproduced every hash across **Linux 3.11.15 → Windows 3.11.4** |
+| 0.3 | Put both honesty gates into CI | ✅ **DONE** | `04fb41a` · claims + citations + reproduce are CI steps; black now blocking; stale "94%" coverage comment corrected to 92% |
 
-**Gate 0:** CI green on a real push; `make lint && make reproduce` exit 0 locally.
+**Gate 0:** ✅ **HELD** (2026-09-12, local). Verified explicitly, one command each:
+`ruff 0 · black 0 · claims 0 · citations 0 · reproduce 0 · CLI demo smoke 0`.
+Still to confirm on a real push — the branch has not been pushed.
 
 ## P1 — Make every shipped artifact work · ~6 h
 
 | # | Task | Status | Evidence |
 |---|---|---|---|
-| 1.1 | Restore the missing `try {`, regenerate both capsules | ⬜ TODO | |
-| 1.2 | Kill the green-tick verification bypass | ⬜ TODO | |
+| 1.1 | Restore the missing `try {`, regenerate both capsules | ✅ **DONE** | `d66bad1` · `node --check` passes on both; badge resolves to a real verdict |
+| 1.2 | Kill the green-tick verification bypass | ✅ **DONE** | `d66bad1` · browser-verified 4 states: genuine→green, ε 1.0→0.001→**red**, Ed25519-unsupported→amber, no-WebCrypto→amber. `grep -c 'Proof Format Verified'` = 0 |
 | 1.3 | Single-source the verifier into `web/src/lib/capsuleVerify.ts` | ⬜ TODO | |
 | 1.4 | Fix demo presets; keep the refusal as a deliberate feature | ⬜ TODO | |
 | 1.5 | Repoint the three PDF builders at `01_Thesis_and_Deliverables/` | ⬜ TODO | |
@@ -143,3 +145,6 @@ claims and reproduce all run in CI and all pass.
 | Date | Change |
 |---|---|
 | 2026-09-12 | Tracker created from the deep scan. 33 tasks, 0 done. |
+| 2026-09-12 | **P0 complete.** `68d8186` lint · `04fb41a` CI gates · `1e9105b` manifest. Gate 0 holds locally. |
+| 2026-09-12 | **P1.1 + P1.2 complete.** `d66bad1`. Capsule verifier rewritten to three outcomes; forged capsules now rejected. |
+| 2026-09-12 | Found in passing: `/api/ledger/tamper` claimed the ledger "guarantees non-repudiation", contradicting `ledger/signing.py`. Corrected in `68d8186`. The claims checker reads only Markdown, which is why it survived in Python — noted for P2.5. |
