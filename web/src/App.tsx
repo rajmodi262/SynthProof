@@ -170,15 +170,31 @@ export default function App() {
     setTimeout(() => setCopiedSheet(false), 2000)
   }
 
-  const DEMO_PRESETS = [
+  // The last preset is EXPECTED to be refused, and that is the point of it.
+  //
+  // It used to be labelled "⚡ Viva Quick (3s)" and pointed at a 400-row table. Pre-flight
+  // refuses anything under 500 rows (R1: protecting one record among that few needs noise
+  // that leaves nothing to release), so the headline speed button produced a refusal rather
+  // than a run -- the system contradicting its own demo. Rather than pad the file to 500
+  // rows and lose the example, it is now the one-click demonstration of data-blind refusal,
+  // which is one of the three claims that survived the novelty protocol and is better
+  // material than a fifth successful run. `refuses` marks it so the UI can say so first.
+  type Preset = { id: string; label: string; eps: number; rows: number; refuses?: boolean }
+  const DEMO_PRESETS: Preset[] = [
     { id: '01_healthcare_patient_outcomes', label: '🏥 Clinical Outcomes', eps: 0.75, rows: 800 },
     { id: '02_financial_credit_risk', label: '💳 Credit Risk', eps: 1.0, rows: 1000 },
     { id: '03_telecom_customer_churn', label: '📱 Telecom Churn', eps: 1.5, rows: 800 },
-    { id: '04_hr_employee_attrition', label: '👥 HR Attrition', eps: 1.0, rows: 600 },
-    { id: '05_quick_demo_demographics', label: '⚡ Viva Quick (3s)', eps: 0.5, rows: 400 },
+    { id: '04_hr_employee_attrition', label: '⚡ HR Attrition (fastest)', eps: 1.0, rows: 600 },
+    {
+      id: '05_quick_demo_demographics',
+      label: '🛑 Refusal demo (400 rows)',
+      eps: 0.5,
+      rows: 400,
+      refuses: true,
+    },
   ]
 
-  function selectPreset(preset: typeof DEMO_PRESETS[0]) {
+  function selectPreset(preset: Preset) {
     if (running) return
     const found = datasets.find((d) => d.id === preset.id || d.id.includes(preset.id.slice(3, 10)))
     if (found) {
@@ -225,10 +241,19 @@ export default function App() {
                   key={p.id}
                   onClick={() => selectPreset(p)}
                   disabled={running}
+                  title={
+                    p.refuses
+                      ? 'Expected to be REFUSED: 400 rows is below the 500-row floor. Demonstrates data-blind refusal — pre-flight sees only the schema and the row count, never the data.'
+                      : `${p.rows} rows at eps=${p.eps}`
+                  }
                   className={`rounded-full px-2.5 py-1 font-mono text-[10px] font-medium transition-all ${
                     active
-                      ? 'bg-proved text-white shadow-sm glow-proved'
-                      : 'border border-bone-edge/80 bg-white/60 text-graphite-soft hover:border-graphite-faint dark:border-stage-line dark:bg-stage-deep/60 dark:text-bone dark:hover:border-stage-line/90'
+                      ? p.refuses
+                        ? 'bg-amber-500 text-white shadow-sm'
+                        : 'bg-proved text-white shadow-sm glow-proved'
+                      : p.refuses
+                        ? 'border border-amber-500/60 bg-amber-50/70 text-amber-700 hover:border-amber-500 dark:border-amber-500/50 dark:bg-amber-950/30 dark:text-amber-300'
+                        : 'border border-bone-edge/80 bg-white/60 text-graphite-soft hover:border-graphite-faint dark:border-stage-line dark:bg-stage-deep/60 dark:text-bone dark:hover:border-stage-line/90'
                   }`}
                 >
                   {p.label}
@@ -302,10 +327,19 @@ export default function App() {
                 key={p.id}
                 onClick={() => selectPreset(p)}
                 disabled={running}
+                title={
+                  p.refuses
+                    ? 'Expected to be REFUSED: 400 rows is below the 500-row floor. Demonstrates data-blind refusal — pre-flight sees only the schema and the row count, never the data.'
+                    : `${p.rows} rows at eps=${p.eps}`
+                }
                 className={`rounded-full px-2 py-0.5 font-mono text-[10px] font-medium transition-all ${
                   active
-                    ? 'bg-proved text-white shadow-sm glow-proved'
-                    : 'border border-bone-edge/80 bg-white/60 text-graphite-soft hover:border-graphite-faint dark:border-stage-line dark:bg-stage-deep/60 dark:text-bone'
+                    ? p.refuses
+                      ? 'bg-amber-500 text-white shadow-sm'
+                      : 'bg-proved text-white shadow-sm glow-proved'
+                    : p.refuses
+                      ? 'border border-amber-500/60 bg-amber-50/70 text-amber-700 hover:border-amber-500 dark:border-amber-500/50 dark:bg-amber-950/30 dark:text-amber-300'
+                      : 'border border-bone-edge/80 bg-white/60 text-graphite-soft hover:border-graphite-faint dark:border-stage-line dark:bg-stage-deep/60 dark:text-bone'
                 }`}
               >
                 {p.label}
