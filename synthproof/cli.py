@@ -723,13 +723,29 @@ def audit_power(eps, canaries, alpha, subgroups, as_json, gdp, gdp_delta, mu, ru
 
 
 @main.command("export-capsule")
-@click.option("--sheet", required=True, type=click.Path(exists=True), help="Path to PrivacyDataSheet JSON.")
-@click.option("--data", required=True, type=click.Path(exists=True), help="Path to synthetic CSV or Parquet.")
-@click.option("--out", required=False, type=click.Path(), default="capsule.html", help="Output HTML file path.")
-@click.option("--curator", required=False, default="SynthProof Autonomous Curator", help="Curator organization name.")
+@click.option(
+    "--sheet", required=True, type=click.Path(exists=True), help="Path to PrivacyDataSheet JSON."
+)
+@click.option(
+    "--data", required=True, type=click.Path(exists=True), help="Path to synthetic CSV or Parquet."
+)
+@click.option(
+    "--out",
+    required=False,
+    type=click.Path(),
+    default="capsule.html",
+    help="Output HTML file path.",
+)
+@click.option(
+    "--curator",
+    required=False,
+    default="SynthProof Autonomous Curator",
+    help="Curator organization name.",
+)
 def export_capsule(sheet: str, data: str, out: str, curator: str):
     """Exports a self-verifying, offline HTML release capsule."""
     import pandas as pd
+
     from synthproof.capsule.generator import generate_capsule_html
 
     sheet_path = Path(sheet)
@@ -749,16 +765,25 @@ def export_capsule(sheet: str, data: str, out: str, curator: str):
     click.echo(f"Generating self-verifying capsule for {len(df):,} records...")
     generate_capsule_html(sheet_dict, df, output_path=out_path, curator_name=curator)
 
-    click.secho(f"  SUCCESS: Exported self-verifying capsule to {out_path.resolve()}", fg="green", bold=True)
+    click.secho(
+        f"  SUCCESS: Exported self-verifying capsule to {out_path.resolve()}", fg="green", bold=True
+    )
     click.echo("  Anyone can open this single file in ANY browser to verify the Ed25519 signature,")
     click.echo("  inspect the Limit of Detection gauge, and explore the data completely offline.")
 
 
 @main.command("verify-capsule")
-@click.option("--capsule", required=True, type=click.Path(exists=True), help="Path to capsule HTML file.")
-@click.option("--key-path", required=False, type=click.Path(exists=True), help="Path to expected Ed25519 public key file.")
+@click.option(
+    "--capsule", required=True, type=click.Path(exists=True), help="Path to capsule HTML file."
+)
+@click.option(
+    "--key-path",
+    required=False,
+    type=click.Path(exists=True),
+    help="Path to expected Ed25519 public key file.",
+)
 def verify_capsule_cmd(capsule: str, key_path: Optional[str] = None):
-    """Independently verifies an offline HTML capsule's Ed25519 signature and MIQE 2.0 LoD bounds."""
+    """Verifies an offline capsule's Ed25519 signature and its MIQE 2.0 LoD bounds."""
     from synthproof.capsule.generator import verify_capsule
 
     capsule_path = Path(capsule)
@@ -767,11 +792,15 @@ def verify_capsule_cmd(capsule: str, key_path: Optional[str] = None):
         res = verify_capsule(capsule_path, key_path=Path(key_path) if key_path else None)
     except Exception as exc:
         click.secho(f"  VERIFICATION FAILED: {exc}", fg="red", bold=True)
-        raise SystemExit(1)
+        raise SystemExit(1) from exc
 
     click.echo("")
     click.secho("  ✓ CRYPTOGRAPHIC INTEGRITY: ED25519 SIGNATURE AUTHENTIC", fg="green", bold=True)
-    click.echo(f"    Dataset       : {res['dataset_name']} ({res['num_rows']:,} rows recorded, {res['total_records_in_capsule']:,} in capsule)")
+    click.echo(
+        f"    Dataset       : {res['dataset_name']} "
+        f"({res['num_rows']:,} rows recorded, "
+        f"{res['total_records_in_capsule']:,} in capsule)"
+    )
     click.echo(f"    Mechanism     : {res['mechanism']}")
     click.echo(f"    Ledger Head   : {res['ledger_hash']}")
     click.echo(f"    Signing Key   : {res['public_key'][:32]}...")
@@ -779,10 +808,17 @@ def verify_capsule_cmd(capsule: str, key_path: Optional[str] = None):
     click.echo("")
     if res["lod_safe"]:
         click.secho(f"  ✓ MIQE 2.0 LoD BOUNDS: {res['lod_status']}", fg="green", bold=True)
-        click.echo(f"    Audited eps ({res['audited_eps']:.3f}) < Auditor ceiling ({res['audit_ceiling']:.3f}) <= Proved eps ({res['proved_eps']:.3f})")
+        click.echo(
+            f"    Audited eps ({res['audited_eps']:.3f}) < "
+            f"Auditor ceiling ({res['audit_ceiling']:.3f}) <= "
+            f"Proved eps ({res['proved_eps']:.3f})"
+        )
     else:
         click.secho(f"  ! MIQE 2.0 WARNING: {res['lod_status']}", fg="yellow", bold=True)
-        click.echo(f"    Audited eps ({res['audited_eps']:.3f}) reached or exceeded auditor ceiling ({res['audit_ceiling']:.3f})")
+        click.echo(
+            f"    Audited eps ({res['audited_eps']:.3f}) reached or exceeded "
+            f"auditor ceiling ({res['audit_ceiling']:.3f})"
+        )
     click.echo("")
 
 
@@ -790,14 +826,13 @@ def verify_capsule_cmd(capsule: str, key_path: Optional[str] = None):
 @click.option("--port", default=8000, help="Port to run server on.")
 def prototype_cmd(port: int):
     """Launches the 100% working interactive prototype showcase."""
-    import run_prototype
     import os
+
+    import run_prototype
+
     os.environ["PORT"] = str(port)
     run_prototype.main()
 
 
 if __name__ == "__main__":
     main()
-
-
-

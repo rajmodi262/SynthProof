@@ -1,13 +1,13 @@
 """Generates pre-packaged, verified standalone demo capsules."""
 
-import sys
 from pathlib import Path
+
 import pandas as pd
 
 from synthproof.capsule.generator import generate_capsule_html, verify_capsule
+from synthproof.data import datasets
 from synthproof.frontier.certificate import PrivacyDataSheet
 from synthproof.ledger import signing
-from synthproof.data import datasets
 
 OUT_DIR = Path("demo_capsules")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -33,18 +33,32 @@ try:
     sample_df = ds.df.head(250).copy()
 except Exception as exc:
     print(f"  Note: Using synthetic fallback for adult: {exc}", flush=True)
-    sample_df = pd.DataFrame({
-        "age": [39, 50, 38, 53, 28],
-        "workclass": ["State-gov", "Self-emp-not-inc", "Private", "Private", "Private"],
-        "education": ["Bachelors", "Bachelors", "HS-grad", "11th", "Bachelors"],
-        "marital_status": ["Never-married", "Married-civ-spouse", "Divorced", "Married-civ-spouse", "Married-civ-spouse"],
-        "occupation": ["Adm-clerical", "Exec-managerial", "Handlers-cleaners", "Handlers-cleaners", "Prof-specialty"],
-        "relationship": ["Not-in-family", "Husband", "Not-in-family", "Husband", "Wife"],
-        "race": ["White", "White", "White", "Black", "Black"],
-        "sex": ["Male", "Male", "Male", "Male", "Female"],
-        "hours_per_week": [40, 13, 40, 40, 40],
-        "income": ["<=50K", "<=50K", "<=50K", "<=50K", "<=50K"],
-    })
+    sample_df = pd.DataFrame(
+        {
+            "age": [39, 50, 38, 53, 28],
+            "workclass": ["State-gov", "Self-emp-not-inc", "Private", "Private", "Private"],
+            "education": ["Bachelors", "Bachelors", "HS-grad", "11th", "Bachelors"],
+            "marital_status": [
+                "Never-married",
+                "Married-civ-spouse",
+                "Divorced",
+                "Married-civ-spouse",
+                "Married-civ-spouse",
+            ],
+            "occupation": [
+                "Adm-clerical",
+                "Exec-managerial",
+                "Handlers-cleaners",
+                "Handlers-cleaners",
+                "Prof-specialty",
+            ],
+            "relationship": ["Not-in-family", "Husband", "Not-in-family", "Husband", "Wife"],
+            "race": ["White", "White", "White", "Black", "Black"],
+            "sex": ["Male", "Male", "Male", "Male", "Female"],
+            "hours_per_week": [40, 13, 40, 40, 40],
+            "income": ["<=50K", "<=50K", "<=50K", "<=50K", "<=50K"],
+        }
+    )
 
 sheet_adult = PrivacyDataSheet(
     domain_source="US Census Bureau / UCI Machine Learning Repository",
@@ -90,16 +104,18 @@ print(f"  Verified: {rep1['verified']} | LoD Status: {rep1['lod_status']}", flus
 
 # 2. ACS California Income Capsule
 print("\nGenerating ACS California Income Capsule...", flush=True)
-acs_df = pd.DataFrame({
-    "AGEP": [42, 35, 61, 29, 50],
-    "COW": ["Private", "Private", "Self-emp", "Local-gov", "State-gov"],
-    "SCHL": ["College", "HighSchool", "Masters", "Bachelors", "Doctorate"],
-    "MAR": ["Married", "Single", "Married", "Single", "Married"],
-    "OCCP": ["Tech", "Sales", "Management", "Education", "Healthcare"],
-    "SEX": ["Male", "Female", "Male", "Female", "Male"],
-    "WKHP": [45, 40, 50, 35, 40],
-    "PINCP": [85000, 52000, 120000, 48000, 95000],
-})
+acs_df = pd.DataFrame(
+    {
+        "AGEP": [42, 35, 61, 29, 50],
+        "COW": ["Private", "Private", "Self-emp", "Local-gov", "State-gov"],
+        "SCHL": ["College", "HighSchool", "Masters", "Bachelors", "Doctorate"],
+        "MAR": ["Married", "Single", "Married", "Single", "Married"],
+        "OCCP": ["Tech", "Sales", "Management", "Education", "Healthcare"],
+        "SEX": ["Male", "Female", "Male", "Female", "Male"],
+        "WKHP": [45, 40, 50, 35, 40],
+        "PINCP": [85000, 52000, 120000, 48000, 95000],
+    }
+)
 
 sheet_acs = PrivacyDataSheet(
     domain_source="US Census Bureau American Community Survey (ACS) 2018",

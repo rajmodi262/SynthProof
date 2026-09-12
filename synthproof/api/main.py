@@ -22,7 +22,7 @@ import traceback
 import uuid
 from collections import OrderedDict
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -220,7 +220,11 @@ def _init_demo_datasets() -> None:
         if d.is_dir():
             for p in sorted(d.glob("*.csv")):
                 try:
-                    df = pd.read_csv(p, skipinitialspace=True, na_values=["?", ""]).dropna().reset_index(drop=True)
+                    df = (
+                        pd.read_csv(p, skipinitialspace=True, na_values=["?", ""])
+                        .dropna()
+                        .reset_index(drop=True)
+                    )
                     if not df.empty:
                         name = p.stem
                         schema = Schema.infer_nonprivate(df)
@@ -435,7 +439,8 @@ def _load_dataset(name: str, rows: int, seed: int = 0) -> TabularDataset:
     else:
         raise HTTPException(
             404,
-            f"Unknown dataset {name!r}. " "Use 'toy', 'adult', a demo dataset, or an upload id from /api/upload.",
+            f"Unknown dataset {name!r}. "
+            "Use 'toy', 'adult', a demo dataset, or an upload id from /api/upload.",
         )
 
     if ds.num_rows > rows:
@@ -541,7 +546,10 @@ def datasets():
             "label": f"Demo: {k.replace('_', ' ').title()}",
             "rows": v.num_rows,
             "kind": "demo",
-            "note": f"Pre-packaged capstone demo dataset ({v.num_rows} rows, {v.num_cols} features).",
+            "note": (
+                f"Pre-packaged capstone demo dataset "
+                f"({v.num_rows} rows, {v.num_cols} features)."
+            ),
         }
         for k, v in _DEMO_DATASETS.items()
     ]
@@ -792,7 +800,8 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
 
         measurements = {k: v for k, v in payload.items() if not k.startswith("_")}
 
-        # Build signed Privacy Data Sheet record for zero-trust certificate verification and capsule export
+        # Build the signed Privacy Data Sheet record used for zero-trust certificate
+        # verification and capsule export.
         sheet_dict = {
             "domain_source": "SynthProof Autonomous Verification Pipeline",
             "contribution_bound": "bounded_one",
@@ -823,7 +832,10 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
         }
         try:
             import json as _json
-            payload_bytes = _json.dumps(sheet_dict, sort_keys=True, separators=(",", ":")).encode("utf-8")
+
+            payload_bytes = _json.dumps(sheet_dict, sort_keys=True, separators=(",", ":")).encode(
+                "utf-8"
+            )
             sheet_dict["signature"] = GLOBAL_LEDGER._private_key.sign(payload_bytes).hex()
             sheet_dict["public_key"] = GLOBAL_LEDGER._public_key.public_bytes_raw().hex()
         except Exception:
@@ -978,7 +990,7 @@ class TamperRequest(BaseModel):
 
 @app.post("/api/ledger/tamper", dependencies=[Depends(require_api_key)])
 def tamper(req: TamperRequest):
-    """Executes an adversarial attack directly on the SQLite database to demonstrate tamper-evidence."""
+    """Runs an adversarial attack straight against the SQLite file, to show tamper-evidence."""
     _require_demo_ledger()
 
     entries = GLOBAL_LEDGER.get_entries()
@@ -986,36 +998,47 @@ def tamper(req: TamperRequest):
         raise HTTPException(404, f"Entry {req.entry_id!r} not found in ledger")
 
     if not entries:
-        raise HTTPException(400, "Ledger is empty. Run a synthesis release first before executing attacks.")
+        raise HTTPException(
+            400, "Ledger is empty. Run a synthesis release first before executing attacks."
+        )
 
     target_id = req.entry_id or entries[-1].entry_id
 
     with _ledger_conn() as conn:
         if req.attack_type == "truncate":
             # Delete the most recent row while leaving the signed ledger_head intact
-            cur = conn.execute("DELETE FROM ledger_entries WHERE entry_id = ?", (target_id,))
+            conn.execute("DELETE FROM ledger_entries WHERE entry_id = ?", (target_id,))
             conn.commit()
             broken_from = len(entries) - 1
-            attack_desc = "History Truncation: Deleted recent entry without updating the signed ledger_head."
+            attack_desc = (
+                "History Truncation: Deleted recent entry without updating the signed ledger_head."
+            )
         elif req.attack_type == "corrupt_hash":
-            cur = conn.execute("UPDATE ledger_entries SET hash = 'deadbeef00000000' WHERE entry_id = ?", (target_id,))
+            conn.execute(
+                "UPDATE ledger_entries SET hash = 'deadbeef00000000' WHERE entry_id = ?",
+                (target_id,),
+            )
             conn.commit()
             broken_from = next((i for i, e in enumerate(entries) if e.entry_id == target_id), 0)
             attack_desc = "Hash Corruption: Injected fraudulent row hash."
         elif req.attack_type == "corrupt_signature":
-            cur = conn.execute("UPDATE ledger_entries SET signature = '00' * 64 WHERE entry_id = ?", (target_id,))
+            conn.execute(
+                "UPDATE ledger_entries SET signature = '00' * 64 WHERE entry_id = ?", (target_id,)
+            )
             conn.commit()
             broken_from = next((i for i, e in enumerate(entries) if e.entry_id == target_id), 0)
             attack_desc = "Signature Forgery: Corrupted cryptographic entry signature."
         else:
             # Default: modify_eps
-            cur = conn.execute(
+            conn.execute(
                 "UPDATE ledger_entries SET eps_spent = ? WHERE entry_id = ?",
                 (req.eps_spent, target_id),
             )
             conn.commit()
             broken_from = next((i for i, e in enumerate(entries) if e.entry_id == target_id), 0)
-            attack_desc = f"Retroactive Spend Manipulation: Altered recorded epsilon to {req.eps_spent}."
+            attack_desc = (
+                f"Retroactive Spend Manipulation: Altered recorded epsilon to {req.eps_spent}."
+            )
 
     valid, reason = GLOBAL_LEDGER.verify_with_reason()
     return {
@@ -1026,7 +1049,15 @@ def tamper(req: TamperRequest):
         "tampered_entry": target_id,
         "broken_from_index": broken_from,
         "broken_count": len(entries) - broken_from if broken_from is not None else 1,
-        "explanation": "SynthProof hash-chaining and signed checkpoint heads guarantee non-repudiation.",
+        # NOT "guarantee non-repudiation" -- that overstates what this construction does, and
+        # contradicts ledger/signing.py, which records that anyone holding the private key can
+        # rewrite the chain and re-sign it. Hash chaining plus a signed head makes tampering
+        # DETECTABLE; it does not make it impossible, and it cannot bind a key to a person.
+        "explanation": (
+            "Hash chaining plus a signed head committing to (entry_count, tip_hash) makes "
+            "this edit detectable. It is tamper-evident, not tamper-proof: a holder of the "
+            "signing key could rewrite the chain and re-sign it."
+        ),
     }
 
 
@@ -1046,9 +1077,12 @@ class CapsuleExportRequest(BaseModel):
 
 @app.post("/api/capsule/export")
 def export_capsule_endpoint(req: CapsuleExportRequest):
-    """Exports a self-verifying standalone HTML capsule containing data, proofs, and WebCrypto engine."""
+    """Exports a standalone HTML capsule carrying the data, the proofs and a verifier."""
     from synthproof.capsule.generator import generate_capsule_html
-    html_content = generate_capsule_html(req.sheet, req.records or [], curator_name=req.curator_name)
+
+    html_content = generate_capsule_html(
+        req.sheet, req.records or [], curator_name=req.curator_name
+    )
     return HTMLResponse(content=html_content, media_type="text/html")
 
 
@@ -1061,6 +1095,7 @@ class CertificateVerifyRequest(BaseModel):
 def verify_certificate_endpoint(req: CertificateVerifyRequest):
     """Independently verifies a Privacy Data Sheet or Croissant 1.1 record."""
     from synthproof.ledger import signing
+
     sheet = req.sheet
     pubkey = req.public_key or sheet.get("public_key")
 
@@ -1143,8 +1178,7 @@ def export_croissant_endpoint(req: CroissantExportRequest):
     try:
         return to_croissant(req.sheet)
     except Exception as e:
-        raise HTTPException(400, f"Could not generate Croissant 1.1 record: {e}")
-
+        raise HTTPException(400, f"Could not generate Croissant 1.1 record: {e}") from e
 
 
 # --------------------------------------------------------------------------- static

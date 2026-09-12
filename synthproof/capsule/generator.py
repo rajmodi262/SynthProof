@@ -75,18 +75,15 @@ def generate_capsule_html(
     # Compute LoD Status
     if audit_ceiling > 0 and audited_eps < audit_ceiling:
         lod_status = "NOT DETECTED (< LoD)"
-        lod_badge_color = "emerald"
         lod_desc = (
             f"Observed leakage (ε={audited_eps:.3f}) falls strictly below the empirical detector's "
             f"Limit of Detection (LoD ceiling ε_max={audit_ceiling:.3f}). Bounded under MIQE 2.0."
         )
     elif audit_ceiling > 0 and audited_eps >= audit_ceiling:
         lod_status = "CEILING REACHED (>= LoD)"
-        lod_badge_color = "amber"
         lod_desc = "Empirical leakage reaches detector operating limit."
     else:
         lod_status = "UNKNOWN RANGE"
-        lod_badge_color = "slate"
         lod_desc = "No operating range ceiling specified."
 
     embedded_payload = {
@@ -510,7 +507,9 @@ def extract_capsule_payload(html_content_or_path: Union[str, Path]) -> Dict[str,
 
     if isinstance(html_content_or_path, Path):
         html_content = html_content_or_path.read_text(encoding="utf-8")
-    elif isinstance(html_content_or_path, str) and not html_content_or_path.strip().startswith("<!DOCTYPE"):
+    elif isinstance(html_content_or_path, str) and not html_content_or_path.strip().startswith(
+        "<!DOCTYPE"
+    ):
         p = Path(html_content_or_path)
         if p.exists() and p.is_file():
             html_content = p.read_text(encoding="utf-8")

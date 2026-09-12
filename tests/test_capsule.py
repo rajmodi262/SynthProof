@@ -11,11 +11,13 @@ from synthproof.ledger import signing
 
 def test_generate_capsule_html_basic(tmp_path: Path):
     sk, pk = signing.generate_keypair(key_dir=tmp_path)
-    df = pd.DataFrame({
-        "age": [25, 45, 65, 30],
-        "workclass": ["Private", "Self-emp", "Private", "Federal-gov"],
-        "income": ["<=50K", ">50K", "<=50K", ">50K"],
-    })
+    df = pd.DataFrame(
+        {
+            "age": [25, 45, 65, 30],
+            "workclass": ["Private", "Self-emp", "Private", "Federal-gov"],
+            "income": ["<=50K", ">50K", "<=50K", ">50K"],
+        }
+    )
 
     sheet = PrivacyDataSheet(
         dataset_name="TestAdult",
@@ -141,6 +143,7 @@ def test_verify_capsule_tampered(tmp_path: Path):
     content = capsule_file.read_text(encoding="utf-8")
     import base64
     import re
+
     m = re.search(r'JSON\.parse\(atob\("([^"]+)"\)\)', content)
     assert m is not None
     payload = json.loads(base64.b64decode(m.group(1).encode("ascii")).decode("utf-8"))
@@ -151,4 +154,3 @@ def test_verify_capsule_tampered(tmp_path: Path):
 
     with pytest.raises(signing.SignatureError):
         verify_capsule(capsule_file)
-

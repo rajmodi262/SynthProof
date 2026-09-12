@@ -1,9 +1,8 @@
-"""Comprehensive verification that all demo CSV datasets run 100% cleanly through the SynthProof pipeline.
-"""
+"""Verifies that every demo CSV dataset runs cleanly through the SynthProof pipeline."""
 
-from pathlib import Path
-import io
 import json
+from pathlib import Path
+
 import pytest
 from starlette.testclient import TestClient
 
@@ -44,7 +43,7 @@ DEMO_FILES = [
 def test_demo_csv_uploads_and_runs_successfully(filename: str):
     filepath = DATASETS_DIR / filename
     assert filepath.exists(), f"Missing demo CSV: {filepath}"
-    
+
     # 1. Upload CSV to API
     with open(filepath, "rb") as f:
         upload_res = client.post(
@@ -72,14 +71,14 @@ def test_demo_csv_uploads_and_runs_successfully(filename: str):
         },
     )
     assert run_res.status_code == 200, f"Run failed: {run_res.text}"
-    
+
     events = _parse_sse(run_res.text)
     event_names = [e for e, _ in events]
-    
+
     assert "stage" in event_names
     assert "done" in event_names
     assert "error" not in event_names
-    
+
     done_payload = next(p for e, p in events if e == "done")
     assert "measurements" in done_payload
     assert "evaluation" in done_payload

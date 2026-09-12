@@ -240,7 +240,6 @@ def main() -> None:
         "",
     ]
 
-
     OUT.write_text("\n".join(parts) + "\n", encoding="utf-8")
     body = "\n".join(parts)
     print(f"wrote {OUT.relative_to(ROOT)}")

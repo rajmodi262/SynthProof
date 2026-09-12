@@ -296,7 +296,15 @@ def test_export_and_verify_capsule_cli(tmp_path):
     # Test export-capsule
     r_exp = CliRunner().invoke(
         main,
-        ["export-capsule", "--sheet", str(sheet_file), "--data", str(csv_file), "--out", str(capsule_out)],
+        [
+            "export-capsule",
+            "--sheet",
+            str(sheet_file),
+            "--data",
+            str(csv_file),
+            "--out",
+            str(capsule_out),
+        ],
     )
     assert r_exp.exit_code == 0, r_exp.output
     assert capsule_out.exists()
@@ -308,4 +316,3 @@ def test_export_and_verify_capsule_cli(tmp_path):
     assert "CRYPTOGRAPHIC INTEGRITY: ED25519 SIGNATURE AUTHENTIC" in r_ver.output
     assert "CLICapsuleTest" in r_ver.output
     assert "NOT DETECTED (< LoD)" in r_ver.output
-

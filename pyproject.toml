@@ -78,6 +78,12 @@ select = ["E", "F", "B", "I"]
 # not apply to embedded document content.
 "scripts/run_ceiling_ablation.py" = ["E501"]
 "scripts/run_ceiling_survey.py" = ["E501"]
+# Same reasoning, different output format. `generate_capsule_html` is one f-string spanning
+# lines 103-494 that EMITS a standalone HTML document: its long lines are markup, inline CSS
+# and inline JavaScript, not Python. Every E501 in this file falls inside that template --
+# checked, not assumed. Re-wrapping them would change the bytes of the artefact a third party
+# verifies, and a `# noqa` cannot go inside a string literal without appearing in the output.
+"synthproof/capsule/generator.py" = ["E501"]
 "scripts/run_canary_dose_response.py" = ["E501"]
 
 [tool.pytest.ini_options]
