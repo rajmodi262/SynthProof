@@ -1,0 +1,41 @@
+{
+  "title": "SynthProof: differentially private synthetic tabular data with measured, not asserted, privacy claims",
+  "upload_type": "software",
+  "license": "MIT",
+  "creators": [
+    { "name": "Modi, Raj", "affiliation": "MIT World Peace University, Pune" },
+    { "name": "Renuse, Krishna", "affiliation": "MIT World Peace University, Pune" },
+    { "name": "Sinha, Aaditya Kumar", "affiliation": "MIT World Peace University, Pune" },
+    { "name": "G R, Levinesh", "affiliation": "MIT World Peace University, Pune" }
+  ],
+  "description": "<p>SynthProof generates differentially private synthetic tabular data and reports both a formal upper bound on privacy loss and an empirical lower bound recovered by canary auditing. Every operation that reads the sensitive table is charged to a privacy accountant and recorded in a hash-chained, signed ledger whose head commits to the chain's length, so truncation is detectable.</p><p><strong>The principal finding is negative and concerns the measurement rather than the mechanisms.</strong> The epsilon a one-run canary audit can certify is bounded by the canary count alone, so certifying a given epsilon costs on the order of ln(1/alpha)&middot;e^epsilon canaries. At the counts used here the instrument could not have certified the epsilons being claimed, regardless of how much the mechanisms leaked. Empirical auditing is therefore a tool for catching broken implementations rather than for confirming tight bounds.</p><p>A second negative result: across three datasets in two domains, the structural advantage of the AIM mechanism appears on only one of them. The coarse claim that modelling pairwise structure beats not modelling it replicates everywhere; which structure-aware mechanism wins does not.</p><p>The repository publishes its null results, its retractions, and the limits of its own instrument alongside the results that worked.</p>",
+  "keywords": [
+    "differential privacy",
+    "synthetic data",
+    "privacy auditing",
+    "membership inference",
+    "reproducibility",
+    "limit of detection"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "arXiv:2305.08846",
+      "relation": "cites",
+      "scheme": "arxiv",
+      "resource_type": "publication-article"
+    },
+    {
+      "identifier": "arXiv:2201.12677",
+      "relation": "cites",
+      "scheme": "arxiv",
+      "resource_type": "publication-article"
+    },
+    {
+      "identifier": "arXiv:2507.15997",
+      "relation": "cites",
+      "scheme": "arxiv",
+      "resource_type": "publication-article"
+    }
+  ],
+  "notes": "Deposit metadata for Zenodo. The DOI is minted by connecting this GitHub repository to Zenodo and publishing a release; that step requires the repository owner's own Zenodo account and is not automatable from the repository. Once minted, add the DOI badge to README.md and the `doi:` field to CITATION.cff."
+}

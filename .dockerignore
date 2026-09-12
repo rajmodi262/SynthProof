@@ -1,0 +1,43 @@
+# The build context was previously unfiltered, so every `docker build` uploaded the local
+# virtualenv, node_modules, cached datasets and results -- hundreds of megabytes, and a route
+# for local state to end up inside an image that is supposed to be reproducible from source.
+
+# Virtualenvs and Python build state
+.venv*/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage*
+*.egg-info/
+build/
+dist/
+
+# Node: the console is built INSIDE the image by the console stage, from web/ sources.
+# Copying a host node_modules would both bloat the context and risk a platform mismatch.
+**/node_modules/
+web/dist/
+web/playwright-report/
+web/test-results/
+
+# Downloaded datasets and generated experiment output. These are large, they are not needed to
+# run the service, and baking them in would make the image contents depend on who built it.
+data/
+results/
+demo/
+build/
+
+# Keys must never enter an image.
+.keys/
+*.pem
+*_ed25519
+*_ed25519.pub
+
+# Repository and editor state
+.git/
+.github/
+.gitignore
+*.log
+archive/
