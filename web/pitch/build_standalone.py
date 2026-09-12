@@ -34,8 +34,12 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 WEB = HERE.parent
 REPO = WEB.parent
-# The "outermost folder": the directory CONTAINING the repo, beside Start Pitch Deck.bat.
-OUT = REPO.parent / "SynthProof-Pitch.html"
+# The presentations folder in the outer capstone directory, if the repo is sitting inside
+# the organised capstone layout; otherwise beside the repo, which is where this used to write
+# unconditionally. The reorganisation into numbered folders left the old path writing a 1 MB
+# file into the capstone root, next to -- but not among -- the decks it belongs with.
+_PRESENTATIONS = REPO.parent / "02_Presentations_and_Pitches"
+OUT = (_PRESENTATIONS if _PRESENTATIONS.is_dir() else REPO.parent) / "SynthProof-Pitch.html"
 DIST = REPO / "synthproof" / "api" / "pitch"
 
 

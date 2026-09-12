@@ -123,8 +123,8 @@ reach.
 
 | # | Task | Status | Evidence |
 |---|---|---|---|
-| 5.1 | Kill or generate the three stale planning documents | ⬜ TODO | |
-| 5.2 | Rewrite the outer README; fix B.Tech vs Master's | ⬜ TODO | |
+| 5.1 | Kill or generate the three stale planning documents | ✅ **DONE** | `6a03701` · **Four** documents claimed to say what was left; three carried self-written staleness warnings. `TASKS.md` (1,832 lines) opened with *"THIS BOARD IS STALE. Do not use it to decide what is left."* Deleted it, `docs/TASKBOARD.md` and a 3-line `NOT STARTED` stub; repointed every inbound link, 0 dangling. `AUDIT_AND_ROADMAP.md` **frozen, not deleted** — DATA_PACK cites F4, `.coderabbit.yaml` + RESULTS cite §7. Its §4–6 forward plan removed (a second plan beside the tracker is what caused the drift twice); 4 finding rows corrected. Both honesty gates still exit 0 |
+| 5.2 | Rewrite the outer README; fix B.Tech vs Master's | ✅ **DONE** | `c9a7f5c` (outer repo, **local only — it has no git remote**) · Degree fixed in both places. **The serious fix was the novelty framing**: it advertised *"5 Core Scientific & Engineering Novelties"* over a verdict document that killed 8 of its own claims and concluded *integration, not invention*. Now each component carries its novelty status and S1–S3 their caveats. Added the disqualifying ceiling result, the retraction and the TEE limitation. *"All tests… 100% green"* covered a cherry-picked 76; measured today: **846 pytest · 28 vitest · 10 e2e · mypy clean · 92.3%**. 3 wrong filenames and 1 dead link fixed; all links verified |
 | 5.3 | One `INDEX.md`, one `archive/`; prune the pitch decks | ⬜ TODO | |
 | 5.4 | Merge to `master`; tag `v1.0.0` | ⬜ TODO | |
 | 5.5 | Mint a Zenodo DOI; verify `docker-compose up` on a clean machine | ⬜ TODO | |
