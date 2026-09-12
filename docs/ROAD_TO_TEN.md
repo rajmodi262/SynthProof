@@ -18,11 +18,11 @@ Baseline commit: `eac2e54` · branch `audit-fixes-and-acs` · scan date 2026-09-
 | P0 — Green the gates | 3 | **3** | 0 ✅ |
 | P1 — Every artifact works | 6 | **6** | 0 ✅ |
 | P2 — Honesty ledger to zero | 6 | **6** | 0 ✅ |
-| P3 — Harden the engineering | 6 | **4** | 2 |
+| P3 — Harden the engineering | 6 | **5** | 1 |
 | P4 — Close the science gaps | 4 | 0 | 4 |
 | P5 — Consolidate and release | 5 | 0 | 5 |
 | P6 — Viva readiness | 3 | 0 | 3 |
-| **Total** | **33** | **19** | **14** |
+| **Total** | **33** | **21** | **12** |
 
 ## Gate status
 
@@ -36,7 +36,7 @@ Baseline commit: `eac2e54` · branch `audit-fixes-and-acs` · scan date 2026-09-
 | types | `mypy` | ✅ **0 errors**, now a blocking CI step (was 79, ungated) |
 | console types | `npx tsc --noEmit` | ✅ clean |
 | console tests | `npm test` | ✅ **28 pass, 3 files** (was 10/1) |
-| e2e | *(none)* | ❌ does not exist — P3.4 |
+| e2e | `cd web && npm run test:e2e` | ✅ **10 Playwright specs**, real stack, in CI |
 | **CI pipeline** | `gh run list` | ✅ **FULLY GREEN** on 3.11/3.12/3.13 — first green run since ≥2026-08-26 |
 | SAST | `bandit -c pyproject.toml -r synthproof/ scripts/ -ll` | ✅ 0 medium+ |
 | deps (py) | `pip-audit --skip-editable` | ✅ clean in declared closure |
@@ -97,8 +97,8 @@ a document of seven dead claims and asserts all seven are still caught.
 | 3.1 | Turn on type checking | ✅ **DONE** | `6b88bee` · **79 → 0**, blocking in CI. Found a `width` property that would compute a sensitivity from a missing bound, unguarded Optionals on the audit path, and a generator contract that disagrees with its only control caller. 6 suppressions, all error-coded pandas-stubs limits |
 | 3.2 | Coverage 92% → 95%, gate at 94% | ⚠️ **PARTIAL** | `allocator.py` 79%→**100%**, `api/main.py` 79%→**85%**. 24 new tests incl. all four ledger-attack branches. CI measures **92.27%** on 789 tests. Gate stays at 90 until 94 is actually met |
 | 3.3 | Test the console | ✅ **DONE** | `280dde3` · 10 component tests for LedgerChain, VerifierModal, ErrorBoundary. Console suite **10 → 28**. Coverage gate still to add |
-| 3.4 | One Playwright end-to-end spec | ⬜ TODO | |
-| 3.5 | Split the 1,191-line `api/main.py` into routers | ⬜ TODO | |
+| 3.4 | Playwright end-to-end | ✅ **DONE** | `248a4b5` · 10 specs against the real FastAPI service + built bundle + real synthesis. **Found a live defect**: the audit-ceiling marker was hidden whenever the ceiling exceeded the axis scale — i.e. exactly when it matters. Also caught its own first version being vacuous (passed in 2.5s without running anything) |
+| 3.5 | Split `api/main.py` | ✅ **DONE** | `9d3e7af` · 1,225 lines → 7 modules, largest 356. Behaviour verified by 776 tests + mypy + all 10 e2e specs |
 | 3.6 | Fast lane under 5 min | ✅ **DONE** | `280dde3` · `make test-fast` = 762 tests in **1m32s** (target was 5 min). Four ACS files marked `slow`; CI still runs everything |
 
 **Gate 3:** ruff, black, mypy, pytest ≥94%, vitest ≥70%, Playwright, bandit, pip-audit, gitleaks,
@@ -155,6 +155,8 @@ claims and reproduce all run in CI and all pass.
 | 2026-09-12 | Tracker created from the deep scan. 33 tasks, 0 done. |
 | 2026-09-12 | **P0 complete.** `68d8186` lint · `04fb41a` CI gates · `1e9105b` manifest. Gate 0 holds locally. |
 | 2026-09-12 | **P1.1 + P1.2 complete.** `d66bad1`. Capsule verifier rewritten to three outcomes; forged capsules now rejected. |
+| 2026-09-13 | **P3.4 + P3.5 complete.** e2e suite added (and it immediately found a hidden ceiling marker); API module split 1,225 → 7 files, none over 400 lines. |
+| 2026-09-13 | **Two lessons from the split, both the same failure in different clothes — a name that LOOKS like the thing but is a copy of it:** a router binding `GLOBAL_LEDGER` by name kept using the pre-reload ledger, so a tamper was applied to one chain and verified against another; and a test patching `main.DEMO_MODE` after the guard moved to `state` silently did nothing, asserting 403 against a service that was never locked down. |
 | 2026-09-12 | 🟢 **CI IS FULLY GREEN** — all 7 jobs, Python 3.11/3.12/3.13, 789 passed, 92.27%. First green run since at least 2026-08-26. |
 | 2026-09-12 | **Pushed to `origin/audit-fixes-and-acs`.** Note: `on: push` watches only master/main, so this branch had never triggered CI — every run since August was a scheduled one on stale master. |
 | 2026-09-12 | **Five CI failures found and fixed, four of them pre-existing:** (1) `jax` imported but undeclared — `pip install -e ".[dev]"` produced an environment that could not import the experiment module; (2) `statsmodels` likewise, so `test_equivalence.py` never collected; (3) bandit B608 on the adversarial SQL tests, a scan no local target ran; (4) gitleaks flagging the capsules' **public** key + signature; (5) mine: a mypy `python_version` pin that made 3.12/3.13 reject numpy's own stubs. |
