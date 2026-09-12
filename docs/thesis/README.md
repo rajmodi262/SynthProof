@@ -63,8 +63,8 @@ The same discipline applies to prose.
 
 ## Related documents
 
-- [`../AUDIT_AND_ROADMAP.md`](../AUDIT_AND_ROADMAP.md) — findings and remaining work
-- [`../TASKBOARD.md`](../TASKBOARD.md) — trackable tasks
+- [`../ROAD_TO_TEN.md`](../ROAD_TO_TEN.md) — the live tracker: what is done, what is left
+- [`../AUDIT_AND_ROADMAP.md`](../AUDIT_AND_ROADMAP.md) — the 2026-08-13 audit record (findings F1–F11 / G1–G7, and the standing rules)
 - [`../preregistration.md`](../preregistration.md) — the commitments Ch.6 must honour
 - [`../../brutal_project_audit.md`](../../brutal_project_audit.md) — the self-audit, which is
   itself worth a paragraph in Ch.8 as a methodological contribution

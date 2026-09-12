@@ -47,6 +47,7 @@
 
 ### ⚠️ Trap 3: The 958-Task Mental Fatigue & Project Management Overhead
 - **The Issue:** `TASKS.md` is 1,809 lines long with 958 tasks.
+  *(Resolved 2026-09-13: deleted. `docs/ROAD_TO_TEN.md` is the single tracker.)*
 - **The Brutal Reality:** Managing this task board will become a full-time job. By Week 4, team members will stop updating individual `[ ]` check-boxes due to fatigue. 
 - **Fix:** Immediately adopt Section **X.5 (Minimum Viable Capstone)** as your primary sprint scope (~180 tasks). Treat the remaining 778 tasks as optional stretch goals.
 

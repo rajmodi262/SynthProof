@@ -231,6 +231,7 @@ Note also that the toy data is **independent by construction**, so there is no j
 - **`_classify_columns`** ([`dataset.py:21`](synthproof/data/dataset.py)) uses `nunique() > 10` on raw data — a schema decision derived from sensitive data with no budget charged.
 - **Repo hygiene**: `.coverage` and `.pytest_cache/` present in the working tree and absent from `.gitignore`.
 - **Narrative drift**: 427 / 950 TASKS.md checkboxes complete (45%), yet README and RESULTS are written as though the project is finished.
+  *(Resolved 2026-09-13: `TASKS.md` and `docs/TASKBOARD.md` deleted; `docs/ROAD_TO_TEN.md` is the single tracker, and it records per-task evidence.)*
 
 ---
 

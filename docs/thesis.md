@@ -36,7 +36,7 @@ prevents that budget from silently degrading across a multi-release programme.
 | H3 | No | Allocator wired into the generators (M3.5) |
 
 Reporting a hypothesis as untested is not a failure; presenting an untested hypothesis as
-supported would be. See [`TASKBOARD.md`](TASKBOARD.md).
+supported would be. See [`ROAD_TO_TEN.md`](ROAD_TO_TEN.md).
 
 ---
 
@@ -45,4 +45,5 @@ supported would be. See [`TASKBOARD.md`](TASKBOARD.md).
 - [`thesis/`](thesis/) — chapter scaffolds and writing order
 - [`preregistration.md`](preregistration.md) — the commitments the results chapter must honour
 - [`threat_model.md`](threat_model.md) — adversary model (expanded in `thesis/ch03`)
-- [`AUDIT_AND_ROADMAP.md`](AUDIT_AND_ROADMAP.md) — current state and remaining work
+- [`ROAD_TO_TEN.md`](ROAD_TO_TEN.md) — current state and remaining work
+- [`AUDIT_AND_ROADMAP.md`](AUDIT_AND_ROADMAP.md) — the 2026-08-13 audit record: the numbered findings, the calibration table and the standing rules
