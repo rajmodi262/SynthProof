@@ -17,12 +17,12 @@ Baseline commit: `eac2e54` · branch `audit-fixes-and-acs` · scan date 2026-09-
 |---|---:|---:|---:|
 | P0 — Green the gates | 3 | **3** | 0 ✅ |
 | P1 — Every artifact works | 6 | **6** | 0 ✅ |
-| P2 — Honesty ledger to zero | 6 | 0 | 6 |
+| P2 — Honesty ledger to zero | 6 | **4** | 2 |
 | P3 — Harden the engineering | 6 | 0 | 6 |
 | P4 — Close the science gaps | 4 | 0 | 4 |
 | P5 — Consolidate and release | 5 | 0 | 5 |
 | P6 — Viva readiness | 3 | 0 | 3 |
-| **Total** | **33** | **9** | **24** |
+| **Total** | **33** | **13** | **20** |
 
 ## Gate status
 
@@ -31,8 +31,8 @@ Baseline commit: `eac2e54` · branch `audit-fixes-and-acs` · scan date 2026-09-
 | lint | `make lint` | ✅ ruff 0, black 0 |
 | reproduce | `python -m scripts.reproduce` | ✅ exit 0 |
 | claims (thesis) | `python scripts/check_thesis_claims.py` | ✅ clean |
-| claims (repo-wide) | `python scripts/check_thesis_claims.py --all` | ❌ 73 violations |
-| tests | `python -m pytest` | ✅ 738 pass, 92% |
+| claims (repo-wide) | `python scripts/check_thesis_claims.py --all` | ⚠️ **10 violations** (was 73) |
+| tests | `python -m pytest` | ✅ **740 pass, 1 skip, 91%** (10m03s) |
 | types | `mypy synthproof` | ❌ 79 errors (~27 real), ungated — P3.1 |
 | console types | `npx tsc --noEmit` | ✅ clean |
 | console tests | `npm test` | ✅ **18 pass, 2 files** (was 10/1) |
@@ -78,12 +78,12 @@ a machine that has never run this, saying nothing. That is still owed.
 
 | # | Task | Status | Evidence |
 |---|---|---|---|
-| 2.1 | Cite MIQE 2.0 for the LoD transfer — 26 files | ⬜ TODO | |
-| 2.2 | Purge the canary percentage that does not replicate — 20 hits, 9 files | ⬜ TODO | |
-| 2.3 | Stop calling the ledger `append-only` — 9 hits + `ledger.py` docstring | ⬜ TODO | |
-| 2.4 | Un-star the retracted confound in `results/RESULTS.md` | ⬜ TODO | |
-| 2.5 | Close the checker's blind spot + regression tests | ⬜ TODO | |
-| 2.6 | Promote the claims gate to repo-wide in CI | ⬜ TODO | |
+| 2.1 | Cite MIQE 2.0 for the LoD transfer — 26 files | ✅ **DONE** | `73694d9` · 26→0. `docs/MEASUREMENT_CONVENTIONS.md` states it once; each affected doc carries an attribution |
+| 2.2 | Purge the canary percentage that does not replicate | ✅ **DONE** | `73694d9` · 20→0. Docs carried a SUPERSEDED marker *and then printed the number anyway*. **Also fixed the rule**, which flagged an unrelated literature statistic — 10 regression tests pin it both ways |
+| 2.3 | Stop calling the ledger `append-only` | ✅ **DONE** | `d933708` · 9→0, plus both `ledger.py` docstrings — the phrase sat untouched in the module the prose described, because the checker reads only Markdown |
+| 2.4 | Un-star the retracted confound in `results/RESULTS.md` | ✅ **DONE** | `d933708` · now a replication with a selection-deleted control arm, citing the three prior papers |
+| 2.5 | Close the checker's blind spot + regression tests | ✅ **DONE** | `d933708` · widened for bare assertions, pinned with the literal evading text. Also guarded 3 sources of *unfixable* false positives (questions, quoted dead claims, citation rows). Checker suite 31→55 tests |
+| 2.6 | Promote the claims gate to repo-wide in CI | ⬜ **BLOCKED** on the last 10 violations |
 
 **Gate 2:** `check_thesis_claims.py --all` exits 0; widened rules have regression tests.
 
@@ -152,6 +152,8 @@ claims and reproduce all run in CI and all pass.
 | 2026-09-12 | Tracker created from the deep scan. 33 tasks, 0 done. |
 | 2026-09-12 | **P0 complete.** `68d8186` lint · `04fb41a` CI gates · `1e9105b` manifest. Gate 0 holds locally. |
 | 2026-09-12 | **P1.1 + P1.2 complete.** `d66bad1`. Capsule verifier rewritten to three outcomes; forged capsules now rejected. |
+| 2026-09-12 | **P2.1–P2.5 complete.** Repo-wide dead claims **73 → 10**. `73694d9` LoD + canary · `d933708` append-only + confound + blind spot. |
+| 2026-09-12 | Full suite after P0+P1: **740 passed, 1 skipped, 91%**, 10m03s (was 738/92%/36m42s). Coverage dipped 1pt on new capsule code — P3.2 raises it. |
 | 2026-09-12 | **P1 complete (6/6).** `a84c3aa` PDF paths + serve · `1f9498b` presets · `aaab786` shared verifier. |
 | 2026-09-12 | Found in passing: `make defence` had been REFUSING TO BUILD since before `eac2e54` — the shipped Defence-Pack PDF could not be regenerated from its own sources. Its gate wanted a hand-typed manifest commit that had gone stale. Now injected at build time. |
 | 2026-09-12 | Found in passing: `/api/ledger/tamper` claimed the ledger "guarantees non-repudiation", contradicting `ledger/signing.py`. Corrected in `68d8186`. The claims checker reads only Markdown, which is why it survived in Python — noted for P2.5. |
