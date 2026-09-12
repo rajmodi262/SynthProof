@@ -613,7 +613,7 @@ the opposite — which is the argument for believing measurements over docstring
 
 | Mechanism | What it gives you |
 |---|---|
-| `results/MANIFEST.json` | Pins results to git commit `c10968c…`, branch, dirty flag, Python 3.11.4, and exact versions of numpy / pandas / scipy / scikit-learn / dp-accounting 0.6.0 / mbi 1.3.0 / autodp |
+| `results/MANIFEST.json` | Pins results to git commit `{MANIFEST_COMMIT}…`, branch, dirty flag, Python 3.11.4, and exact versions of numpy / pandas / scipy / scikit-learn / dp-accounting 0.6.0 / mbi 1.3.0 / autodp |
 | Dataset hashing | UCI Adult verified against committed SHA-256 `7537312d…` on every load |
 | Recorded seeds | Every result file carries its seed list |
 | `make reproduce` | Re-runs the grid and compares against the manifest |

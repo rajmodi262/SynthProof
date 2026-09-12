@@ -47,7 +47,14 @@ from reportlab.platypus import (
 ROOT = Path(__file__).resolve().parents[2]
 SRC = Path(__file__).resolve().parent / "SIMPLE.md"
 # The outermost folder, alongside the decks, so it is easy to find and share.
-OUT = ROOT.parent / "SynthProof-Simple-Guide.pdf"
+# The deliverables folder, not the folder above the repo. Before the 2026-09-12
+# reorganisation these three builders wrote straight into the CAPSTONE root, which is where
+# the PDFs used to live; after it they kept writing there while the shipped copies moved into
+# 01_Thesis_and_Deliverables/, so `make simple` silently left the deliverable stale and
+# dropped a stray file at the root. Created if absent so a standalone clone still builds.
+DELIVERABLES = ROOT.parent / "01_Thesis_and_Deliverables"
+DELIVERABLES.mkdir(parents=True, exist_ok=True)
+OUT = DELIVERABLES / "SynthProof-Simple-Guide.pdf"
 
 # The deck's palette, so the two deliverables read as one project.
 INK = colors.HexColor("#1B1D24")
@@ -81,7 +88,10 @@ def register_fonts() -> None:
     for name, file in FACES.items():
         pdfmetrics.registerFont(TTFont(name, str(FONT_DIR / file)))
     pdfmetrics.registerFontFamily(
-        "Body", normal="Body", bold="Body-Bold", italic="Body-Italic",
+        "Body",
+        normal="Body",
+        bold="Body-Bold",
+        italic="Body-Italic",
         boldItalic="Body-BoldItalic",
     )
 
@@ -147,31 +157,83 @@ def inline(s: str) -> str:
 
 def styles() -> dict[str, ParagraphStyle]:
     base = ParagraphStyle(
-        "body", fontName="Body", fontSize=10.4, leading=14.6, textColor=INK,
-        alignment=TA_LEFT, spaceAfter=6.5,
+        "body",
+        fontName="Body",
+        fontSize=10.4,
+        leading=14.6,
+        textColor=INK,
+        alignment=TA_LEFT,
+        spaceAfter=6.5,
     )
     return {
         "body": base,
-        "title": ParagraphStyle("title", parent=base, fontName="Head", fontSize=27,
-                                leading=30, textColor=INK, spaceAfter=6),
-        "h2": ParagraphStyle("h2", parent=base, fontName="Head", fontSize=16.5, leading=20,
-                             textColor=PROVED, spaceBefore=2, spaceAfter=8),
-        "h3": ParagraphStyle("h3", parent=base, fontName="Head", fontSize=11.2, leading=14.5,
-                             textColor=INK, spaceBefore=9, spaceAfter=4),
-        "bullet": ParagraphStyle("bullet", parent=base, leftIndent=13, bulletIndent=3,
-                                 spaceAfter=3.5),
-        "quote": ParagraphStyle("quote", parent=base, fontSize=10.6, leading=15,
-                                leftIndent=9, rightIndent=6, textColor=INK,
-                                spaceBefore=3, spaceAfter=3),
-        "cellhead": ParagraphStyle("cellhead", parent=base, fontName="Head-Regular",
-                                   fontSize=8.3, leading=11, textColor=SOFT, spaceAfter=0),
+        "title": ParagraphStyle(
+            "title",
+            parent=base,
+            fontName="Head",
+            fontSize=27,
+            leading=30,
+            textColor=INK,
+            spaceAfter=6,
+        ),
+        "h2": ParagraphStyle(
+            "h2",
+            parent=base,
+            fontName="Head",
+            fontSize=16.5,
+            leading=20,
+            textColor=PROVED,
+            spaceBefore=2,
+            spaceAfter=8,
+        ),
+        "h3": ParagraphStyle(
+            "h3",
+            parent=base,
+            fontName="Head",
+            fontSize=11.2,
+            leading=14.5,
+            textColor=INK,
+            spaceBefore=9,
+            spaceAfter=4,
+        ),
+        "bullet": ParagraphStyle(
+            "bullet", parent=base, leftIndent=13, bulletIndent=3, spaceAfter=3.5
+        ),
+        "quote": ParagraphStyle(
+            "quote",
+            parent=base,
+            fontSize=10.6,
+            leading=15,
+            leftIndent=9,
+            rightIndent=6,
+            textColor=INK,
+            spaceBefore=3,
+            spaceAfter=3,
+        ),
+        "cellhead": ParagraphStyle(
+            "cellhead",
+            parent=base,
+            fontName="Head-Regular",
+            fontSize=8.3,
+            leading=11,
+            textColor=SOFT,
+            spaceAfter=0,
+        ),
         "cell": ParagraphStyle("cell", parent=base, fontSize=9.2, leading=12, spaceAfter=0),
         # Worked calculations. Monospaced so the columns of an equation line up down the
         # page, which is most of what makes an arithmetic step followable by hand.
-        "calc": ParagraphStyle("calc", parent=base, fontName="Mono", fontSize=9,
-                               leading=14.5, textColor=INK, spaceAfter=0),
-        "coverlead": ParagraphStyle("coverlead", parent=base, fontSize=12.4, leading=17.6,
-                                    textColor=SOFT, spaceAfter=9),
+        "calc": ParagraphStyle(
+            "calc",
+            parent=base,
+            fontName="Mono",
+            fontSize=9,
+            leading=14.5,
+            textColor=INK,
+            spaceAfter=0,
+        ),
+        "coverlead": ParagraphStyle(
+            "coverlead", parent=base, fontSize=12.4, leading=17.6, textColor=SOFT, spaceAfter=9
+        ),
         "toc": ParagraphStyle("toc", parent=base, fontSize=10, leading=15.5, spaceAfter=0),
     }
 
@@ -186,16 +248,18 @@ def build_table(rows: list[list[str]], st: dict) -> Table:
     data += [[Paragraph(inline(c), st["cell"]) for c in r] for r in body]
     t = Table(data, hAlign="LEFT", repeatRows=1)
     t.setStyle(
-        TableStyle([
-            ("LINEBELOW", (0, 0), (-1, 0), 0.7, PROVED),
-            ("LINEBELOW", (0, 1), (-1, -2), 0.3, RULE),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("TOPPADDING", (0, 0), (-1, -1), 4),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-            ("LEFTPADDING", (0, 0), (0, -1), 0),
-            ("RIGHTPADDING", (-1, 0), (-1, -1), 0),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, WASH]),
-        ])
+        TableStyle(
+            [
+                ("LINEBELOW", (0, 0), (-1, 0), 0.7, PROVED),
+                ("LINEBELOW", (0, 1), (-1, -2), 0.3, RULE),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("LEFTPADDING", (0, 0), (0, -1), 0),
+                ("RIGHTPADDING", (-1, 0), (-1, -1), 0),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, WASH]),
+            ]
+        )
     )
     return t
 
@@ -219,14 +283,18 @@ def render(text: str, st: dict) -> list:
         if quote:
             inner = Paragraph(inline(" ".join(quote)), st["quote"])
             box = Table([[inner]], colWidths=[165 * mm], hAlign="LEFT")
-            box.setStyle(TableStyle([
-                ("LINEBEFORE", (0, 0), (0, -1), 2.2, AUDITED),
-                ("BACKGROUND", (0, 0), (-1, -1), WASH),
-                ("LEFTPADDING", (0, 0), (-1, -1), 9),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 9),
-                ("TOPPADDING", (0, 0), (-1, -1), 7),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
-            ]))
+            box.setStyle(
+                TableStyle(
+                    [
+                        ("LINEBEFORE", (0, 0), (0, -1), 2.2, AUDITED),
+                        ("BACKGROUND", (0, 0), (-1, -1), WASH),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 9),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 9),
+                        ("TOPPADDING", (0, 0), (-1, -1), 7),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+                    ]
+                )
+            )
             story.append(box)
             story.append(Spacer(1, 7))
             quote = []
@@ -260,14 +328,18 @@ def render(text: str, st: dict) -> list:
             # alignment of these columns is the whole point of showing the working.
             rendered = "<br/>".join(inline(b).replace(" ", " ") for b in block)
             box = Table([[Paragraph(rendered, st["calc"])]], colWidths=[165 * mm], hAlign="LEFT")
-            box.setStyle(TableStyle([
-                ("LINEBEFORE", (0, 0), (0, -1), 2.2, PROVED),
-                ("BACKGROUND", (0, 0), (-1, -1), WASH),
-                ("LEFTPADDING", (0, 0), (-1, -1), 11),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 9),
-                ("TOPPADDING", (0, 0), (-1, -1), 9),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
-            ]))
+            box.setStyle(
+                TableStyle(
+                    [
+                        ("LINEBEFORE", (0, 0), (0, -1), 2.2, PROVED),
+                        ("BACKGROUND", (0, 0), (-1, -1), WASH),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 11),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 9),
+                        ("TOPPADDING", (0, 0), (-1, -1), 9),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
+                    ]
+                )
+            )
             story.append(box)
             story.append(Spacer(1, 8))
             continue
@@ -288,8 +360,9 @@ def render(text: str, st: dict) -> list:
             flush_para()
             story.append(Spacer(1, 26 * mm))
             story.append(Paragraph(inline(line[2:]), st["title"]))
-            story.append(HRFlowable(width="100%", thickness=2, color=PROVED,
-                                    spaceBefore=4, spaceAfter=12))
+            story.append(
+                HRFlowable(width="100%", thickness=2, color=PROVED, spaceBefore=4, spaceAfter=12)
+            )
             i += 1
             continue
 
@@ -299,16 +372,21 @@ def render(text: str, st: dict) -> list:
             flush_para()
             story.append(Spacer(1, 8))
             story.append(Paragraph("What is in here", st["h3"]))
-            story.append(HRFlowable(width="100%", thickness=0.6, color=RULE,
-                                    spaceBefore=2, spaceAfter=7))
+            story.append(
+                HRFlowable(width="100%", thickness=0.6, color=RULE, spaceBefore=2, spaceAfter=7)
+            )
             entries = [ln[3:].strip() for ln in lines if ln.startswith("## ")]
             rows = [[Paragraph(inline(e), st["toc"])] for e in entries[1:]]
             toc = Table(rows, colWidths=[120 * mm], hAlign="LEFT")
-            toc.setStyle(TableStyle([
-                ("LEFTPADDING", (0, 0), (-1, -1), 0),
-                ("TOPPADDING", (0, 0), (-1, -1), 1.5),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 1.5),
-            ]))
+            toc.setStyle(
+                TableStyle(
+                    [
+                        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                        ("TOPPADDING", (0, 0), (-1, -1), 1.5),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 1.5),
+                    ]
+                )
+            )
             story.append(toc)
             story.append(Spacer(1, 12))
             i += 1
@@ -320,8 +398,9 @@ def render(text: str, st: dict) -> list:
                 story.append(PageBreak())
             first_section = False
             story.append(Paragraph(inline(line[3:]), st["h2"]))
-            story.append(HRFlowable(width="100%", thickness=0.6, color=RULE,
-                                    spaceBefore=0, spaceAfter=9))
+            story.append(
+                HRFlowable(width="100%", thickness=0.6, color=RULE, spaceBefore=0, spaceAfter=9)
+            )
             i += 1
             continue
 
@@ -395,8 +474,12 @@ def main() -> None:
     st = styles()
     tmp = OUT.with_suffix(".building.pdf")
     doc = BaseDocTemplate(
-        str(tmp), pagesize=A4,
-        leftMargin=22 * mm, rightMargin=22 * mm, topMargin=20 * mm, bottomMargin=18 * mm,
+        str(tmp),
+        pagesize=A4,
+        leftMargin=22 * mm,
+        rightMargin=22 * mm,
+        topMargin=20 * mm,
+        bottomMargin=18 * mm,
         title="SynthProof — the simple guide",
         author="SynthProof capstone team",
         subject="A from-zero explanation plus 120 questions a panel might ask",

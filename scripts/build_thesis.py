@@ -51,7 +51,14 @@ from reportlab.platypus import (
 ROOT = Path(__file__).resolve().parents[1]
 THESIS = ROOT / "docs" / "thesis"
 MD_OUT = THESIS / "THESIS.md"
-PDF_OUT = ROOT.parent / "SynthProof-Thesis.pdf"
+# The deliverables folder, not the folder above the repo. Before the 2026-09-12
+# reorganisation these three builders wrote straight into the CAPSTONE root, which is where
+# the PDFs used to live; after it they kept writing there while the shipped copies moved into
+# 01_Thesis_and_Deliverables/, so `make thesis` silently left the deliverable stale and
+# dropped a stray file at the root. Created if absent so a standalone clone still builds.
+DELIVERABLES = ROOT.parent / "01_Thesis_and_Deliverables"
+DELIVERABLES.mkdir(parents=True, exist_ok=True)
+PDF_OUT = DELIVERABLES / "SynthProof-Thesis.pdf"
 
 TITLE = "SynthProof: Synthetic Data That Ships With Its Proof"
 SUBTITLE = (

@@ -178,7 +178,11 @@ croissant-validate:
 	python scripts/validate_croissant.py build/release/release.croissant.json
 
 serve:
-	uvicorn synthproof.api.main:app --reload --host 0.0.0.0 --port 8000
+# Loopback, not 0.0.0.0. Authentication is opt-in (SYNTHPROOF_API_KEY) and unset by
+# default, so binding every interface put upload, budget-spend and ledger-read on the
+# LAN of anyone who ran the documented command. The Dockerfile keeps 0.0.0.0, where the
+# container boundary is doing that job. Set SYNTHPROOF_API_KEY before exposing this.
+	uvicorn synthproof.api.main:app --reload --host 127.0.0.1 --port 8000
 
 console-install:
 	cd web && npm install
