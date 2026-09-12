@@ -125,7 +125,7 @@ reach.
 |---|---|---|---|
 | 5.1 | Kill or generate the three stale planning documents | ✅ **DONE** | `6a03701` · **Four** documents claimed to say what was left; three carried self-written staleness warnings. `TASKS.md` (1,832 lines) opened with *"THIS BOARD IS STALE. Do not use it to decide what is left."* Deleted it, `docs/TASKBOARD.md` and a 3-line `NOT STARTED` stub; repointed every inbound link, 0 dangling. `AUDIT_AND_ROADMAP.md` **frozen, not deleted** — DATA_PACK cites F4, `.coderabbit.yaml` + RESULTS cite §7. Its §4–6 forward plan removed (a second plan beside the tracker is what caused the drift twice); 4 finding rows corrected. Both honesty gates still exit 0 |
 | 5.2 | Rewrite the outer README; fix B.Tech vs Master's | ✅ **DONE** | `c9a7f5c` (outer repo, **local only — it has no git remote**) · Degree fixed in both places. **The serious fix was the novelty framing**: it advertised *"5 Core Scientific & Engineering Novelties"* over a verdict document that killed 8 of its own claims and concluded *integration, not invention*. Now each component carries its novelty status and S1–S3 their caveats. Added the disqualifying ceiling result, the retraction and the TEE limitation. *"All tests… 100% green"* covered a cherry-picked 76; measured today: **846 pytest · 28 vitest · 10 e2e · mypy clean · 92.3%**. 3 wrong filenames and 1 dead link fixed; all links verified |
-| 5.3 | One `INDEX.md`, one `archive/`; prune the pitch decks | ⬜ TODO | |
+| 5.3 | One `INDEX.md`, one `archive/`; prune the pitch decks | ✅ **DONE** | `3b15c6c` (outer) · **Six** files claimed to be the pitch deck, 5.2 MB; two were **byte-identical** and **none was launched by anything** — the launcher runs the React source. Rebuilt the survivor from source (0.98 MB, fonts inlined, **no external references — verified**), which also exercised the P6.1 offline fallback. Five archived as a record of what was presented; boards deleted outright. Fixed `build_standalone.py`, which the folder reorganisation had left writing 1 MB into the capstone root. `INDEX.md` names the authoritative copy of each artefact; every rebuild command verified (an earlier draft listed a `make defence` that does not exist) |
 | 5.4 | Merge to `master`; tag `v1.0.0` | ⬜ TODO | |
 | 5.5 | Mint a Zenodo DOI; verify `docker-compose up` on a clean machine | ⬜ TODO | |
 
@@ -136,8 +136,8 @@ reach.
 | # | Task | Status | Evidence |
 |---|---|---|---|
 | 6.1 | One rehearsed offline path, with a fallback | ⬜ TODO | |
-| 6.2 | `CONTRIBUTIONS.md` matching what the git history shows | ⬜ TODO | |
-| 6.3 | Rehearse the three questions you would least like | ⬜ TODO | |
+| 6.2 | `CONTRIBUTIONS.md` matching what the git history shows | ✅ **DONE** | `d4767fc` (outer) · Measured before writing: **140 + 10 commits, one human author**, and **135 of 140 (96%) carry `Co-Authored-By: Claude Opus 5`**. 0 commits from the other three members. Both facts published with the reproducing command. Deliberately does **not** invent a four-way split — one row per member for them to complete, each requiring third-party-checkable evidence. Flags the institutional AI declaration as an **outstanding action** |
+| 6.3 | Rehearse the three questions you would least like | ✅ **DONE** | `docs/defence/REHEARSAL.md` · Three questions, each with the honest answer, **the answer that loses the room**, and the follow-up to assume. Q1 the disqualified auditor · Q2 authorship — **which the defence pack did not answer at all** and is checkable in 10 s by running `git log` · Q3 novelty. Linked from DEFENCE.md §9 |
 
 **Gate 6:** nothing in the room is being seen for the first time.
 

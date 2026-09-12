@@ -862,6 +862,12 @@ and it removes the panel's best questions before they are asked.
 
 ## 9. Questions a panel will ask, with answers
 
+> **Rehearse the hard three separately.** This section covers breadth. The three questions that
+> could actually go badly -- the disqualified auditor, the authorship of the commits, and what
+> is genuinely novel -- are rehearsed with a concession-first script in
+> [`REHEARSAL.md`](REHEARSAL.md). The authorship one is **not answered in this section**, and
+> it is trivially checkable by any panel member who runs `git log`.
+
 ### On validity and framing
 
 **1. Is this a real problem or a manufactured one?**
