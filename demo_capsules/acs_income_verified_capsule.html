@@ -55,6 +55,9 @@
     .badge-verifying { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
     .badge-verified { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
     .badge-failed { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+    /* Distinct from both. "We could not check" is not "we checked and it passed", and it is
+       not "we checked and it failed" either. Amber, and it says so in words. */
+    .badge-unverifiable { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
     
     .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 28px; }
     .card {
@@ -315,11 +318,30 @@
       alert('Signing payload copied to clipboard!');
     }
 
-    // In-browser verification simulation & WebCrypto Ed25519 check
+    // Offline Ed25519 verification against the embedded payload.
+    //
+    // THREE outcomes, never two. A capsule is verified, refuted, or UNVERIFIABLE-HERE, and
+    // the third is not a pass. An earlier version of this function fell through to a
+    // "structural check" -- is the signature 64 bytes -- and painted the badge green on the
+    // strength of it, which meant a forged capsule displayed as verified on any browser
+    // whose WebCrypto lacks Ed25519, and also whenever crypto.subtle.verify simply returned
+    // false. The word "Verified" is now reachable only downstream of a check that returned
+    // true. Everything else is amber or red.
     async function verifyPayload(verbose = false) {
       const badge = document.getElementById('verificationBadge');
       const summary = document.getElementById('cryptoSummary');
 
+      function setState(kind, badgeText, summaryText, alertText) {
+        badge.className = 'badge badge-' + kind;
+        badge.innerHTML = badgeText;
+        const colour = kind === 'verified' ? '#34d399'
+                     : kind === 'unverifiable' ? '#fbbf24'
+                     : '#fb7185';
+        summary.innerHTML = '<span style="color: ' + colour + ';">' + summaryText + '</span>';
+        if (verbose) alert(alertText);
+      }
+
+      try {
         function toBytes(str) {
           if (!str) return new Uint8Array(0);
           if (/^[0-9a-fA-F]+$/.test(str) && str.length % 2 === 0) {
@@ -337,48 +359,66 @@
         const keyBytes = toBytes(PAYLOAD.public_key);
         const dataBytes = new TextEncoder().encode(PAYLOAD.signing_payload);
 
-        // Check if WebCrypto supports Ed25519 in current browser
-        if (window.crypto && crypto.subtle && crypto.subtle.importKey) {
-          try {
-            const key = await crypto.subtle.importKey(
-              "raw",
-              keyBytes,
-              { name: "Ed25519" },
-              false,
-              ["verify"]
-            );
-            const valid = await crypto.subtle.verify(
-              { name: "Ed25519" },
-              key,
-              sigBytes,
-              dataBytes
-            );
-            if (valid) {
-              badge.className = 'badge badge-verified';
-              badge.innerHTML = '✓ Cryptographically Verified';
-              summary.innerHTML = '<span style="color: #34d399;">✓ Authentic Ed25519 Signature</span>';
-              if (verbose) alert('Cryptographic verification succeeded! Signature is mathematically authentic.');
-              return;
-            }
-          } catch (e) {
-            // Browser WebCrypto might not have Ed25519 enabled; fallback to structural check
-          }
+        // A malformed signature or key is a FAILURE. It used to be the pass condition.
+        if (sigBytes.length !== 64 || keyBytes.length !== 32) {
+          setState('failed', '✗ Verification Failed',
+            '✗ Malformed signature or public key',
+            'This capsule does not carry a well-formed Ed25519 signature (expected 64 '
+            + 'signature bytes and a 32-byte key, found ' + sigBytes.length + ' and '
+            + keyBytes.length + ').');
+          return;
         }
 
-        // Structural check fallback if WebCrypto lacks Ed25519 algorithm support in this browser
-        if (sigBytes.length === 64 && keyBytes.length === 32) {
-          badge.className = 'badge badge-verified';
-          badge.innerHTML = '✓ Proof Format Verified';
-          summary.innerHTML = '<span style="color: #34d399;">✓ Verified 64-byte Ed25519 Signature</span>';
-          if (verbose) alert('Capsule signature and canonical digest format successfully validated.');
+        if (!(window.crypto && crypto.subtle && crypto.subtle.importKey)) {
+          // No WebCrypto at all -- typically a non-secure context, such as opening this
+          // file from a data: URL. Nothing has been checked, and we say so.
+          setState('unverifiable', '⚠ Cannot Verify In This Browser',
+            '⚠ Not checked — WebCrypto unavailable',
+            'This browser exposes no WebCrypto in this context, so the signature could '
+            + 'not be checked. Nothing here has been verified. Open the capsule over '
+            + 'https:// or localhost, or verify it with: synthproof verify-capsule.');
+          return;
+        }
+
+        let key;
+        try {
+          key = await crypto.subtle.importKey(
+            "raw", keyBytes, { name: "Ed25519" }, false, ["verify"]
+          );
+        } catch (e) {
+          // The ONLY case that is neither a pass nor a refutation: this browser's
+          // WebCrypto does not implement Ed25519. Firefox before 130 and Chrome before
+          // 137 land here. Amber, never green.
+          setState('unverifiable', '⚠ Cannot Verify In This Browser',
+            '⚠ Not checked — Ed25519 unsupported here',
+            'This browser\'s WebCrypto does not implement Ed25519, so the signature '
+            + 'could not be checked. Nothing here has been verified. Use a current '
+            + 'Chrome, Firefox or Safari, or verify it with: synthproof verify-capsule.');
+          return;
+        }
+
+        // From here a false result is a refutation, not a reason to try something weaker.
+        const valid = await crypto.subtle.verify(
+          { name: "Ed25519" }, key, sigBytes, dataBytes
+        );
+        if (valid) {
+          setState('verified', '✓ Cryptographically Verified',
+            '✓ Authentic Ed25519 Signature',
+            'Verified. The embedded Privacy Data Sheet carries a valid Ed25519 signature '
+            + 'over its canonical bytes and has not been altered since it was signed.\n\n'
+            + 'This proves authorship and integrity. It does NOT prove the epsilon is '
+            + 'correct: a key holder can sign a sheet saying anything.');
         } else {
-          throw new Error('Invalid signature or key length');
+          setState('failed', '✗ Verification Failed',
+            '✗ Signature does not match this payload',
+            'REJECTED. The signature does not verify against this payload. Either the '
+            + 'capsule was altered after signing, or it was not signed by this key.');
         }
       } catch (err) {
-        badge.className = 'badge badge-failed';
-        badge.innerHTML = '✗ Verification Failed';
-        summary.innerHTML = '<span style="color: #fb7185;">✗ Signature / Payload Mismatch</span>';
-        if (verbose) alert('Verification failed: ' + err.message);
+        // Fail closed. Anything unexpected is a failure, never a downgrade to a weaker check.
+        setState('failed', '✗ Verification Failed',
+          '✗ Signature / Payload Mismatch',
+          'Verification failed: ' + err.message);
       }
     }
 
