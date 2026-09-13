@@ -150,21 +150,21 @@ need a browser and must be done by a maintainer:
 1. Sign in to <https://zenodo.org> **with GitHub** and authorise the app.
 2. Go to Zenodo → your profile → **GitHub**. Find `rajmodi262/SynthProof` and toggle it
    **on**. That installs a webhook on the repository.
-3. In GitHub, cut a **Release** (not just a tag) — e.g. `v0.2.0`, titled
-   `SynthProof v0.2.0 — auditor validation and the audit ceiling`.
+3. In GitHub, cut a **Release** (not just a tag) from the existing tag `v1.0.0`, titled
+   `SynthProof v1.0.0`, using `CHANGELOG.md` as the release notes.
+
+   **Order matters: do step 2 first.** Zenodo archives only Releases published *after* its
+   webhook is switched on. The `v1.0.0` tag was pushed on 2026-09-13 but no Release was
+   created from it, precisely so that the first Release can be archived. Publishing it before
+   the toggle means v1.0.0 is never archived and the DOI has to wait for a later release.
 4. Zenodo archives the release automatically and mints **two** DOIs:
    - a **concept DOI**, which always resolves to the newest version — cite this in the thesis;
    - a **version DOI** for that specific release — cite this when a reader must see the exact
      code behind a number.
 5. Add both to `CITATION.cff` (`doi:` and `identifiers:`) and to the README badge row.
 
-Suggested release notes:
-
-> Auditor validation: detection floor and ceiling measured, with positive and negative
-> controls enforced in CI. One-run (Steinke) auditor alongside the paired Clopper-Pearson
-> estimator. H1 answered on UCI Adult with bootstrapped CIs; H2 reported as a bounded null with
-> FDR control, equivalence testing and a power statement. Signed Privacy Data Sheet with a
-> standalone verifier. Reproducibility manifest and per-cell grid checkpointing.
+Release notes: use `CHANGELOG.md` for v1.0.0 verbatim. It opens with the release's known gaps,
+and those should stay first in the published notes too.
 
 ---
 
@@ -173,17 +173,33 @@ Suggested release notes:
 Stated here because an evaluator will find them, and because the project's standing rules
 require capabilities that do not exist to be named rather than omitted.
 
-- **One dataset.** UCI Adult only; ACS PUMS was not run. Every H1/H2 conclusion is
-  single-dataset.
+> **Rewritten 2026-09-13.** The previous version of this list was written for v0.2.0 and had
+> become false in three places: it said only UCI Adult was run, that attribute inference was not
+> implemented, and that H3 was untested. An evaluator checking the repository would have found
+> all three contradicted, which is worse than finding a limitation.
+
 - **The audit ceiling disqualifies the headline comparison.** At the canary counts used, the
   instrument could not have certified the ε values being claimed. This is the project's main
-  finding, not a caveat hidden here.
-- **Three attacks, not four.** Shadow-model MIA and attribute inference are not implemented and
-  are named as absent in the API, the console, and the thesis.
+  finding, not a caveat hidden here. Every sheet now carries a verdict saying so when it applies.
+- **Three datasets, unevenly.** UCI Adult and ACSIncome (CA 2018) carry the full preregistered
+  grid; UCI Bank Marketing carries a reduced grid (2 ε × 3 seeds), marked `reduced_run: true`.
+  The structure-ordering and utility-ordering findings do not all transfer across the three.
+- **LiRA is not implemented**, and is declared absent in every sheet
+  (`attacks_not_implemented`). Each release runs six attacks: canary audit, distance MIA,
+  DOMIAS, exact-match risk, linkability and attribute inference. A seventh, the marginal-ratio
+  adversary, is used in the adversary-comparison experiment, not per release.
+- **H2 and H3 are nulls.** H2 is a bounded null at this scale; H3 replicated null on both census
+  datasets, with no bootstrap CI excluding zero at any of five ε.
 - **The ledger is tamper-evident, not tamper-proof.** A holder of the signing key can rewrite
   and re-sign. Key custody is an organisational control.
+- **A signature proves origin, not truth.** Until 2026-09-13 the two demo capsules were
+  hand-typed and signed, and verified as authentic. They are now built from real releases, and
+  the verifier recomputes the audit ceiling from the declared audit.
+- **The certificate attests the claim, not the execution.** Nothing proves the code that ran is
+  the code that was audited; that requires a trusted execution environment.
 - **`dp_accounting` is trusted**, mitigated by the `autodp` differential test.
-- **H3 untested.**
+- **`docker compose up` has not been executed** for v1.0.0, and real AIM is not available inside
+  the image (private-pgm installs from git and is not a declared dependency).
 
 ---
 

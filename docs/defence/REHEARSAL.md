@@ -86,7 +86,7 @@ commands that reproduce it.
 > per member in `CONTRIBUTIONS.md`, each with evidence you can inspect.
 >
 > On the AI assistance: I would rather be judged on whether the work is correct and whether I
-> can explain it. There are 846 Python tests, 28 console tests, 10 end-to-end specs, `mypy`
+> can explain it. There are 884 Python tests, 28 console tests, 10 end-to-end specs, `mypy`
 > clean and blocking in CI, and two honesty gates that fail the build if any document asserts a
 > finding we retracted. Ask me about any part of the system."
 
