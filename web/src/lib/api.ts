@@ -108,7 +108,10 @@ export const api = {
   verifyCapsule: (htmlContent: string) =>
     json<{
       verified: boolean
-      lod_safe: boolean
+      claim_in_audit_range: boolean
+      range_code: string
+      range_tone: 'ok' | 'warn' | 'fail'
+      range_explanation: string
       lod_status: string
       proved_eps?: number
       audited_eps?: number

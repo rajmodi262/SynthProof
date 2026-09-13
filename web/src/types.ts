@@ -158,9 +158,18 @@ export interface TamperResult {
   explanation: string
 }
 
+/**
+ * Colour only. There is deliberately no "safe" outcome: the verdict answers whether an audit
+ * could have certified a claim, never whether a release is safe. See synthproof/audit/ceiling.py.
+ */
+export type RangeTone = 'ok' | 'warn' | 'fail'
+
 export interface CertificateVerifyResult {
   signature_valid: boolean
-  lod_safe: boolean
+  claim_in_audit_range: boolean
+  range_code: string
+  range_tone: RangeTone
+  range_explanation: string
   lod_status: string
   error: string | null
   details: {

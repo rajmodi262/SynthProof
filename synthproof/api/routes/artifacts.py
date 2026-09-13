@@ -46,7 +46,10 @@ def verify_certificate_endpoint(req: CertificateVerifyRequest):
 
     results = {
         "signature_valid": False,
-        "lod_safe": False,
+        "claim_in_audit_range": False,
+        "range_code": "UNKNOWN",
+        "range_tone": "warn",
+        "range_explanation": "",
         "lod_status": "UNKNOWN",
         "error": None,
         "details": {},
@@ -61,18 +64,26 @@ def verify_certificate_endpoint(req: CertificateVerifyRequest):
         else:
             results["error"] = "Missing public key for verification."
 
-        # Check LoD
-        audit_ceiling = float(sheet.get("audit_ceiling", 0.0))
-        audited_eps = float(sheet.get("total_audited_eps", 0.0))
-        proved_eps = float(sheet.get("total_proved_eps", 0.0))
+        # Could this audit have certified this claim? One verdict, shared with the capsule
+        # and the CLI -- see synthproof/audit/ceiling.py for why the old inline check was wrong.
+        from synthproof.audit.ceiling import range_verdict
 
-        if audit_ceiling > 0:
-            if audited_eps < audit_ceiling:
-                results["lod_safe"] = True
-                results["lod_status"] = "NOT DETECTED (< LoD)"
-            else:
-                results["lod_safe"] = False
-                results["lod_status"] = "CEILING REACHED (>= LoD)"
+        audit_ceiling = float(sheet.get("audit_ceiling") or 0.0)
+        audited_eps = float(sheet.get("total_audited_eps") or 0.0)
+        proved_eps = float(sheet.get("total_proved_eps") or 0.0)
+        verdict = range_verdict(
+            proved_eps,
+            audited_eps,
+            audit_ceiling,
+            estimator=sheet.get("audit_estimator"),
+            budget=sheet.get("audit_budget"),
+            alpha=sheet.get("audit_alpha"),
+        )
+        results["claim_in_audit_range"] = verdict.claim_in_audit_range
+        results["range_code"] = verdict.code
+        results["range_tone"] = verdict.tone
+        results["range_explanation"] = verdict.explanation
+        results["lod_status"] = verdict.label
 
         results["details"] = {
             "proved_eps": proved_eps,
@@ -105,7 +116,10 @@ def verify_capsule_endpoint(req: CapsuleVerifyRequest):
     except Exception as e:
         return {
             "verified": False,
-            "lod_safe": False,
+            "claim_in_audit_range": False,
+            "range_code": "ERROR",
+            "range_tone": "fail",
+            "range_explanation": "",
             "lod_status": "ERROR",
             "error": str(e),
         }

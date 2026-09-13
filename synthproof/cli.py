@@ -783,7 +783,13 @@ def export_capsule(sheet: str, data: str, out: str, curator: str):
     help="Path to expected Ed25519 public key file.",
 )
 def verify_capsule_cmd(capsule: str, key_path: Optional[str] = None):
-    """Verifies an offline capsule's Ed25519 signature and its MIQE 2.0 LoD bounds."""
+    """Verifies an offline capsule's Ed25519 signature, and whether its audit could have
+    certified its privacy claim.
+
+    Exits 1 on a bad signature, AND on a claim that fails its own consistency checks (an audit
+    lower bound above the proof, or a ceiling that is not the one its declared audit produces).
+    A signature proves who made a claim; it does not make the claim coherent.
+    """
     from synthproof.capsule.generator import verify_capsule
 
     capsule_path = Path(capsule)
@@ -806,20 +812,23 @@ def verify_capsule_cmd(capsule: str, key_path: Optional[str] = None):
     click.echo(f"    Signing Key   : {res['public_key'][:32]}...")
 
     click.echo("")
-    if res["lod_safe"]:
-        click.secho(f"  ✓ MIQE 2.0 LoD BOUNDS: {res['lod_status']}", fg="green", bold=True)
-        click.echo(
-            f"    Audited eps ({res['audited_eps']:.3f}) < "
-            f"Auditor ceiling ({res['audit_ceiling']:.3f}) <= "
-            f"Proved eps ({res['proved_eps']:.3f})"
-        )
-    else:
-        click.secho(f"  ! MIQE 2.0 WARNING: {res['lod_status']}", fg="yellow", bold=True)
-        click.echo(
-            f"    Audited eps ({res['audited_eps']:.3f}) reached or exceeded "
-            f"auditor ceiling ({res['audit_ceiling']:.3f})"
-        )
+    # The previous version printed "Audited < Ceiling <= Proved" under a green tick without
+    # checking the second inequality -- which was false for both shipped demo capsules.
+    import textwrap
+
+    tone = res["range_tone"]
+    colour = {"ok": "green", "warn": "yellow", "fail": "red"}[tone]
+    mark = {"ok": "✓", "warn": "!", "fail": "✗"}[tone]
+    click.secho(f"  {mark} AUDIT RANGE: {res['lod_status']}", fg=colour, bold=True)
+    click.echo(
+        f"    proved eps {res['proved_eps']:.3f} · audited eps {res['audited_eps']:.3f} · "
+        f"audit ceiling {res['audit_ceiling']:.3f}"
+    )
+    for line in textwrap.wrap(res["range_explanation"], 88):
+        click.echo(f"    {line}")
     click.echo("")
+    if tone == "fail":
+        raise SystemExit(1)
 
 
 @main.command("prototype")

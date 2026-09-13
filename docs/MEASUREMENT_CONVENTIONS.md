@@ -31,8 +31,20 @@ Real-Time PCR Experiments Guidelines", *Clinical Chemistry* 2025;71(6):634–651
 mandates that the **limit of detection (LoD)** and **lower limit of quantification (LLOQ)** be
 reported alongside any quantitative result. An analytical laboratory does not report a
 concentration of zero; it reports **"Not Detected, < LOD"**, and names the LOD. That is
-exactly the shape of the claim this project makes about ε_audited, and the capsule's own
-badge — `NOT DETECTED (< LoD)` — is written in that borrowed vocabulary deliberately.
+exactly the shape of the claim this project makes about ε_audited.
+
+> **Corrected 2026-09-13 — the borrowed vocabulary was applied backwards.** The capsule, CLI,
+> API and console all showed a green `NOT DETECTED (< LoD)` whenever ε_audited sat below the
+> ceiling, and the capsule added *"Bounded under MIQE 2.0"*. That misreads the transfer in two
+> ways. The audit ceiling is an **upper** limit on what an audit can certify, not a lower limit
+> of detection, so an audited 1.5 under a 2.97 ceiling is a detection, not a non-detection.
+> And the comparison that matters is **ε_proved against the ceiling**: whether the audit could
+> have certified the claim at all. The old check never made it, so a release proving ε = 7.36
+> against a ceiling of 2.97 — this project's own H1 situation — rendered green. The single
+> verdict in `synthproof/audit/ceiling.py::range_verdict` replaces all four copies, and reports
+> `CLAIM EXCEEDS AUDIT RANGE` for exactly that case. It also recomputes the ceiling from the
+> declared estimator, budget and α, because the two shipped demo capsules carried signed
+> ceilings (3.50 at 60 canaries, 4.00 at 100) that their own declared audits cannot produce.
 
 **The transfer is the claim, not the invention.** What survived the novelty protocol (see
 `research/08_novelty_verdict.md`, survivor S1) is narrower and should always be stated in this

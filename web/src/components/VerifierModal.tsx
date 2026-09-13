@@ -1,7 +1,22 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { api } from '@/lib/api'
-import type { CertificateVerifyResult } from '@/types'
+import type { CertificateVerifyResult, RangeTone } from '@/types'
+
+// The audit-range verdict comes from the API (synthproof/audit/ceiling.py::range_verdict).
+// This used to key off `lod_safe = audited < ceiling`, which never compared the PROVED epsilon
+// with the ceiling, so a claim no audit could certify rendered green. Green now means only that
+// the audit's reach covered the claim; it never means the release is safe.
+const RANGE_BOX: Record<RangeTone, string> = {
+  ok: 'border-signal-ok/50 bg-signal-ok/[0.04]',
+  warn: 'border-signal-warn/50 bg-signal-warn/[0.04]',
+  fail: 'border-signal-bad/50 bg-signal-bad/[0.05]',
+}
+const RANGE_BADGE: Record<RangeTone, string> = {
+  ok: 'bg-signal-ok/20 text-signal-ok',
+  warn: 'bg-signal-warn/20 text-signal-warn',
+  fail: 'bg-signal-bad/20 text-signal-bad',
+}
 
 interface VerifierModalProps {
   isOpen: boolean
@@ -62,7 +77,10 @@ export function VerifierModal({
     } catch (err: any) {
       setResult({
         signature_valid: false,
-        lod_safe: false,
+        claim_in_audit_range: false,
+        range_code: 'ERROR',
+        range_tone: 'fail',
+        range_explanation: '',
         lod_status: 'ERROR',
         error: err.message || 'Verification failed.',
         details: {},
@@ -113,7 +131,10 @@ export function VerifierModal({
           if (capReport.verified) {
             setResult({
               signature_valid: true,
-              lod_safe: capReport.lod_safe,
+              claim_in_audit_range: capReport.claim_in_audit_range,
+              range_code: capReport.range_code,
+              range_tone: capReport.range_tone,
+              range_explanation: capReport.range_explanation,
               lod_status: capReport.lod_status,
               error: null,
               details: {
@@ -130,7 +151,10 @@ export function VerifierModal({
           } else {
             setResult({
               signature_valid: false,
-              lod_safe: false,
+              claim_in_audit_range: false,
+              range_code: 'ERROR',
+              range_tone: 'fail',
+              range_explanation: '',
               lod_status: 'ERROR',
               error: capReport.error || 'Capsule signature invalid',
               details: {},
@@ -301,23 +325,15 @@ export function VerifierModal({
                   </div>
                 </div>
 
-                {/* MIQE 2.0 Operating Range Box */}
-                <div
-                  className={`rounded-md border p-4 ${
-                    result.lod_safe
-                      ? 'border-proved/50 bg-proved/[0.04]'
-                      : 'border-signal-warn/50 bg-signal-warn/[0.04]'
-                  }`}
-                >
+                {/* Audit range: could this audit have certified this claim? */}
+                <div className={`rounded-md border p-4 ${RANGE_BOX[result.range_tone]}`}>
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs font-semibold uppercase tracking-wider text-graphite dark:text-bone">
-                      MIQE 2.0 Operating Range
+                      Audit range
                     </span>
                     <span
                       className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${
-                        result.lod_safe
-                          ? 'bg-proved/20 text-proved dark:text-proved-lift'
-                          : 'bg-signal-warn/20 text-signal-warn'
+                        RANGE_BADGE[result.range_tone]
                       }`}
                     >
                       {result.lod_status}
@@ -325,9 +341,7 @@ export function VerifierModal({
                   </div>
 
                   <p className="mt-2 text-xs text-graphite-soft dark:text-bone/80">
-                    {result.lod_safe
-                      ? 'Audited epsilon sits strictly below the statistical ceiling. The empirical test operated inside its valid detection zone.'
-                      : 'Audited epsilon reached or exceeded the maximum detectable ceiling m.'}
+                    {result.range_explanation}
                   </p>
 
                   <div className="mt-3 grid grid-cols-3 gap-2 text-center font-mono text-xs">

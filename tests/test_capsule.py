@@ -42,8 +42,10 @@ def test_generate_capsule_html_basic(tmp_path: Path):
     assert "SynthProof Verified Capsule" in html
     assert "TestAdult" in html
     assert "pairwise" in html
-    assert "Limit of Detection" in html
-    assert "NOT DETECTED (< LoD)" in html
+    assert "Audit range" in html
+    # proved 1.0 <= ceiling 2.5 and audited 0.2 > 0: in range, and consistent with the proof.
+    assert "IN RANGE · CONSISTENT" in html
+    assert "NOT DETECTED (< LoD)" not in html and "Bounded under MIQE" not in html
     assert sheet.public_key in html
 
 
@@ -67,7 +69,10 @@ def test_generate_capsule_from_dict(tmp_path: Path):
     html = generate_capsule_html(sheet_dict, df, output_path=out_file)
 
     assert out_file.exists()
-    assert "CEILING REACHED (>= LoD)" in html
+    # audited 3.0 > proved 2.0. This used to render "CEILING REACHED", as though the only
+    # problem were the instrument's reach; an audit lower bound ABOVE the proof means the
+    # accounting or the audit is wrong.
+    assert "AUDIT EXCEEDS PROOF" in html
     assert "independent" in html
 
 
@@ -104,8 +109,10 @@ def test_verify_capsule_offline(tmp_path: Path):
     # 2. Test independent verification
     report = verify_capsule(capsule_file)
     assert report["verified"] is True
-    assert report["lod_safe"] is True
-    assert report["lod_status"] == "NOT DETECTED (< LoD)"
+    assert "lod_safe" not in report  # a field named "safe" was the defect, not a naming nit
+    assert report["claim_in_audit_range"] is True
+    assert report["range_code"] == "IN_RANGE_CONSISTENT"
+    assert report["range_tone"] == "ok"
     assert report["dataset_name"] == "OfflineCapsuleTest"
     assert report["proved_eps"] == 1.5
 

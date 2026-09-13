@@ -82,27 +82,29 @@ def generate_capsule_html(
     public_key_hex_val = public_key_raw
 
     # Audit ceiling & bounds
-    proved_eps = float(sheet_dict.get("total_proved_eps", 0.0))
-    audited_eps = float(sheet_dict.get("total_audited_eps", 0.0))
-    audit_ceiling = float(sheet_dict.get("audit_ceiling", 0.0))
+    proved_eps = float(sheet_dict.get("total_proved_eps") or 0.0)
+    audited_eps = float(sheet_dict.get("total_audited_eps") or 0.0)
+    audit_ceiling = float(sheet_dict.get("audit_ceiling") or 0.0)
     delta = float(sheet_dict.get("delta", 1e-5))
     mechanism = str(sheet_dict.get("mechanism", "unknown"))
     dataset_name = str(sheet_dict.get("dataset_name", "Dataset"))
     num_rows = int(sheet_dict.get("num_rows", len(records)))
 
-    # Compute LoD Status
-    if audit_ceiling > 0 and audited_eps < audit_ceiling:
-        lod_status = "NOT DETECTED (< LoD)"
-        lod_desc = (
-            f"Observed leakage (ε={audited_eps:.3f}) falls strictly below the empirical detector's "
-            f"Limit of Detection (LoD ceiling ε_max={audit_ceiling:.3f}). Bounded under MIQE 2.0."
-        )
-    elif audit_ceiling > 0 and audited_eps >= audit_ceiling:
-        lod_status = "CEILING REACHED (>= LoD)"
-        lod_desc = "Empirical leakage reaches detector operating limit."
-    else:
-        lod_status = "UNKNOWN RANGE"
-        lod_desc = "No operating range ceiling specified."
+    # Could this audit have certified this claim? The verdict lives in ONE place; see
+    # synthproof/audit/ceiling.py for why the previous inline check was wrong.
+    from synthproof.audit.ceiling import range_verdict
+
+    verdict = range_verdict(
+        proved_eps,
+        audited_eps,
+        audit_ceiling,
+        estimator=sheet_dict.get("audit_estimator"),
+        budget=sheet_dict.get("audit_budget"),
+        alpha=sheet_dict.get("audit_alpha"),
+    )
+    lod_status = verdict.label
+    lod_desc = verdict.explanation
+    tone_color = {"ok": "#34d399", "warn": "#fbbf24", "fail": "#f87171"}[verdict.tone]
 
     embedded_payload = {
         "sheet": sheet_dict,
@@ -309,11 +311,11 @@ def generate_capsule_html(
       </div>
 
       <div class="card">
-        <div class="card-title">Limit of Detection (LoD / MIQE 2.0)</div>
-        <div class="metric-val mono" style="color: #34d399;">{lod_status}</div>
-        <div class="metric-sub mono">Detector Range: ε_max = {audit_ceiling:.3f}</div>
+        <div class="card-title">Audit range (a reported limit, per MIQE 2.0)</div>
+        <div class="metric-val mono" style="color: {tone_color};">{lod_status}</div>
+        <div class="metric-sub mono">audit ceiling ε_max = {audit_ceiling:.3f} · proved ε = {proved_eps:.3f}</div>
         <div class="lod-bar">
-          <div class="lod-fill-safe" style="width: {min(100.0, (audited_eps / max(audit_ceiling, 0.01)) * 100):.1f}%;"></div>
+          <div class="lod-fill-safe" style="width: {min(100.0, (audited_eps / max(audit_ceiling, 0.01)) * 100):.1f}%; background: {tone_color};"></div>
         </div>
         <div style="font-size: 0.8rem; color: var(--text-muted);">
           {lod_desc}
@@ -526,21 +528,31 @@ def verify_capsule(
 
     signing.verify_datasheet(sheet, public_key=public_key, key_path=key_path)
 
-    audit_ceiling = float(sheet.get("audit_ceiling", 0.0))
-    audited_eps = float(sheet.get("total_audited_eps", 0.0))
-    proved_eps = float(sheet.get("total_proved_eps", 0.0))
+    from synthproof.audit.ceiling import range_verdict
 
-    if audit_ceiling > 0:
-        lod_safe = audited_eps < audit_ceiling
-        lod_status = "NOT DETECTED (< LoD)" if lod_safe else "CEILING REACHED (>= LoD)"
-    else:
-        lod_safe = False
-        lod_status = "UNKNOWN"
+    audit_ceiling = float(sheet.get("audit_ceiling") or 0.0)
+    audited_eps = float(sheet.get("total_audited_eps") or 0.0)
+    proved_eps = float(sheet.get("total_proved_eps") or 0.0)
+    verdict = range_verdict(
+        proved_eps,
+        audited_eps,
+        audit_ceiling,
+        estimator=sheet.get("audit_estimator"),
+        budget=sheet.get("audit_budget"),
+        alpha=sheet.get("audit_alpha"),
+    )
 
     return {
+        # `verified` is the SIGNATURE. Whether the claim is within the audit's reach is a
+        # separate question with its own fields: a valid signature on an out-of-range or
+        # internally inconsistent claim is still a valid signature.
         "verified": True,
-        "lod_safe": lod_safe,
-        "lod_status": lod_status,
+        "claim_in_audit_range": verdict.claim_in_audit_range,
+        "range_code": verdict.code,
+        "range_tone": verdict.tone,
+        "range_explanation": verdict.explanation,
+        "recomputed_ceiling": verdict.recomputed_ceiling,
+        "lod_status": verdict.label,
         "proved_eps": proved_eps,
         "audited_eps": audited_eps,
         "audit_ceiling": audit_ceiling,

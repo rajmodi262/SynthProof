@@ -315,4 +315,4 @@ def test_export_and_verify_capsule_cli(tmp_path):
     assert r_ver.exit_code == 0, r_ver.output
     assert "CRYPTOGRAPHIC INTEGRITY: ED25519 SIGNATURE AUTHENTIC" in r_ver.output
     assert "CLICapsuleTest" in r_ver.output
-    assert "NOT DETECTED (< LoD)" in r_ver.output
+    assert "AUDIT RANGE:" in r_ver.output
