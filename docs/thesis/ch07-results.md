@@ -27,7 +27,7 @@ Empirical privacy evaluation requires a strict methodological dependency orderin
 | 7.2 | Auditor validation — floor **and ceiling** | 400 | ✅ instrument works, range is bounded |
 | 7.3 | H1 utility & structure | 500 | ✅ Adult; **does not reproduce on ACS** |
 | 7.4 | The proved-vs-audited gap, and why it is not a finding | 300 | ⚠️ **disqualified** |
-| 7.5 | Clique selection — the confound | 400 | ⭐ **strongest result in the project** |
+| 7.5 | Workload selection replication | 400 | ⚠️ retracted as confound; replicated per SELECTION_ABLATION.md |
 | 7.6 | Attack range | 250 | ✅ 5 attacks, 3/3 EDPB risks |
 | 7.7 | H2 subgroup leakage | 250 | ⚠️ bounded null, replicated |
 | 7.8 | Subgroup utility (fairness) | 200 | ✅ real on `sex`, control kills it on `race` |
@@ -96,9 +96,11 @@ Our auditing pipeline reliably detects coarse implementation defects—readily f
 
 ---
 
-## 7.5 Clique selection — the confound
+## 7.5 Workload selection and dependence replication (was "clique selection confound")
 
-The pre-registered H1 hypothesis posited that AIM's graphical model architecture would consistently outperform lower-order marginal mechanisms on multi-attribute structural correlation error. While Adult confirmed this ordering, our investigation uncovered a fundamental methodological confound: **benchmarking marginal-based synthesizers on a small, fixed set of low-order statistics risks measuring clique selection rather than general synthesis fidelity.**
+> **Retraction & Replication Note (2026-08-25):** The initial hypothesis that this effect constituted an evaluation confound was retracted following our fixed-workload ablation (`results/SELECTION_ABLATION.md`). Our ablation demonstrated that measuring marginals improves utility in proportion to true attribute dependence ($r = -0.898$), confirming that AIM's advantage reflects the mechanism operating as designed rather than a benchmark artefact. Furthermore, the underlying phenomenon was previously published in three independent works: AIM's original paper (McKenna et al., arXiv:2201.12677 §5, Fig 2c), Ganev, Xu & De Cristofaro (CCS 2024 §5.3), and Chen, Gong & Wang (arXiv:2511.13893 §6.3). The numbers below are preserved as a replication study.
+
+The pre-registered H1 hypothesis posited that AIM's graphical model architecture would consistently outperform lower-order marginal mechanisms on multi-attribute structural correlation error. While Adult confirmed this ordering, initial investigation observed an apparent dependency: evaluating marginal-based synthesizers on a small, fixed set of low-order statistics directly tracks which pairs receive measurement budget.
 
 In AIM, privacy budget is partitioned between candidate selection (identifying informative marginal cliques) and noisy measurement. For a dataset with $d$ features, AIM selects approximately 6 two-way marginal cliques. The structural correlation metric used in standard benchmarks evaluates the correlation of a single designated column pair:
 - On UCI Adult, the evaluated pair is `age × hours_per_week`. Because these continuous attributes exhibit strong mutual dependence, AIM's exponential mechanism selects this specific clique at **every** evaluated privacy budget $\varepsilon \in \{0.5, 1.0, 2.0, 4.0, 8.0\}$. Consequently, AIM measures this interaction directly and achieves near-zero error ($0.0078$).
@@ -106,7 +108,7 @@ In AIM, privacy budget is partitioned between candidate selection (identifying i
 
 We verified that model-size limits did not cause this variation: `skipped_cliques_` is empty at both $\varepsilon = 0.5$ and $\varepsilon = 8.0$, with exactly 17 total cliques measured across both runs. 
 
-We emphasize the bounded nature of this finding: we do not claim that AIM *only* improves utility on selected cliques, as both datasets exhibit off-clique utility gains. However, when measured directly against a no-dependence baseline, AIM's relative advantage on the selected pair is $11.9\times$ larger on Adult, but shrinks to $2.3\times$ on ACSIncome. Any evaluation protocol that benchmarks graphical model synthesizers against fixed low-order marginals without rotating target workloads measures whether the selection heuristic prioritized the benchmark metric rather than overall distributional fidelity.
+We emphasize the bounded nature of this replication: as established by our fixed-workload ablation (`results/SELECTION_ABLATION.md`), AIM's relative advantage on Adult ($11.9\times$ vs no-dependence baseline) shrinking on ACSIncome ($2.3\times$) reflects differences in underlying correlation structure ($0.1034$ on Adult vs $0.0721$ on ACSIncome), not a failure of synthesis. As Chen, Gong & Wang (2025) note, on weakly dependent pairs the independent-marginals baseline is a well-specified model. Evaluating marginal-based synthesizers therefore requires accounting for ground-truth attribute dependence rather than attributing performance shifts solely to clique selection.
 
 ---
 

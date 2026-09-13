@@ -60,9 +60,9 @@ From `research/08_novelty_verdict.md`, after all 8 query families ran:
 
 Volunteer in this order — weakest instrument first, scope last:
 
-1. **The adversary is a nearest-neighbour score.** MAMA-MIA-class algorithm-aware attacks (Golob et al., SaTML 2025) are orders of magnitude stronger against exactly this mechanism family. Our bound is a lower bound on a lower bound.
+1. **Baseline adversary is nearest-neighbour distance.** On structured mechanisms, the distance baseline is essentially at chance (AUC 0.498–0.538; see `results/ADVERSARY_COMPARISON.md`). While a marginal-ratio adversary improves distinguishability on AIM to AUC 0.590 (+0.092 at $\varepsilon = 8$), it relies on oracle focal points and is not MAMA-MIA. The principal limitation remains that no full algorithm-aware shadow-model attack (Golob et al., SaTML 2025) is implemented; our empirical bound remains a lower bound on a lower bound.
 2. **The audit half of H1 is disqualified** by our own instrument's range.
-3. **Two datasets, both US census-derived**, n = 6,000, single table, binary target.
+3. **Dataset coverage**: Two US census-derived datasets (UCI Adult and ACSIncome, full grid) plus UCI Bank Marketing (non-census, retail telemarketing domain, $n = 6,000$; see `results/bank/BANK_MARKETING.md`). Single-table schemas with binary targets only; healthcare records, time-series, and relational schemas are not evaluated.
 4. **`LeakyGenerator` is coarse** — verbatim copying is the easiest leak to detect.
 5. **δ by union bound**, conservative rather than exact.
 6. **Not deployment-ready**: single-table CSV, one shared key so the ledger cannot say *who* spent the budget, no cross-session enforcement.

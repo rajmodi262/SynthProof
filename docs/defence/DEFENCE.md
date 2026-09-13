@@ -528,10 +528,7 @@ Two things could not be held identical, and both are reported rather than correc
    Equalising the ceilings by raising ACS's budget would have confounded group count with total
    canary count instead.
 
-**Remaining external-validity limits, stated first:** two datasets, both US census-derived,
-both single-table, both with a binary income target, at n = 6,000. We do not claim behaviour on
-healthcare records, time series, or multi-table schemas, and the system does not support the
-last of those at all.
+**Remaining external-validity limits, stated first:** three datasets — two US census-derived with the full grid (UCI Adult and ACSIncome, n = 6,000) and UCI Bank Marketing (non-census, retail telemarketing domain, n = 6,000; see `results/bank/BANK_MARKETING.md`). All single-table with binary targets. We do not claim behaviour on healthcare records, time series, or multi-table schemas, and the system does not support the last of those at all.
 
 ### 4.4 Statistical conclusion validity — are the inferences sound?
 
@@ -849,10 +846,10 @@ and it removes the panel's best questions before they are asked.
 |---|---|
 | **Not deployment-ready** | Single-table CSV only. **One shared API key**, so the ledger's `actor` cannot say *who* spent the budget, and rotation invalidates everyone at once. No cross-session budget enforcement. No multi-table support |
 | **The audit half of H1 is disqualified** | By our own instrument's working range, not by a mechanism result |
-| **One adversary** | Both auditors use the same nearest-neighbour similarity score. A stronger, mechanism-aware adversary would raise every audited number and could change the ordering |
+| **Baseline adversary is nearest-neighbour distance** | Distance baseline is at chance (0.498–0.538 AUC) on structured mechanisms. While a marginal-ratio adversary reaches 0.590 AUC (+0.092; `results/ADVERSARY_COMPARISON.md`), full algorithm-aware shadow-model attacks remain unimplemented |
 | **LiRA is not implemented** | Deliberately. ~21 hours of compute for a likely wide-CI null, and naming something cheaper "LiRA" would be false |
 | **`LeakyGenerator` is coarse** | Verbatim copying is the *easiest* leak to detect. Real mechanisms leak in subtler ways that may be harder or easier to see |
-| **Two datasets, both US census-derived** | n = 6,000 each, single table, binary target. No healthcare, no time series |
+| **Three datasets** | Two US census-derived (UCI Adult, ACSIncome, n = 6,000, full grid) plus UCI Bank Marketing (non-census, n = 6,000; `results/bank/BANK_MARKETING.md`). Single table, binary target. No healthcare, no time series |
 | **δ handled by a union bound** | Conservative rather than exact. At δ = 1e-5 the correction is negligible, but it is not the paper's tighter treatment |
 | **Detection floor measured at one n** | n = 3,000, 5 seeds. Enough to reject one-seed artefacts; not enough to estimate the false-positive rate precisely |
 | **Verification is of the sheet, not the run** | A third party can verify the signature and the arithmetic. They cannot verify that we ran the pipeline we say we ran |
