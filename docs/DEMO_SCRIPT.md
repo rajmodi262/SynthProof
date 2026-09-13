@@ -265,6 +265,12 @@ digests and checks an Ed25519 signature in the browser via WebCrypto, with no se
 network and no Python. It is also the best artefact in the project, so falling to it is not a
 downgrade — consider opening with it.
 
+There are two capsules, both from real releases on 3,000 UCI Adult rows. Open
+`uci_adult_verified_capsule.html` (ε = 1, **IN RANGE · NOT DETECTED**), then
+`uci_adult_eps8_claim_exceeds_audit_range_capsule.html`: its signature is just as valid, and it
+shows in amber that its own audit could not have certified the ε it proves. That second one *is*
+the project's finding, in a single file a panel member can open without you.
+
 Three things that actually go wrong, and what to do:
 
 - **No network.** Nothing in the five steps needs it, but `scripts/setup_demo.py` downloads

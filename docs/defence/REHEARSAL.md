@@ -103,7 +103,7 @@ procedural question into a credibility question, and you do not recover from tha
 - **"What did you get wrong, and how did you find it?"** Strong material here: the auditor
   ceiling, the retracted confound, a hand-rolled bound that under-reported ε by ~2×, a
   Playwright test that passed without running anything, a bound test that could not fail
-  because the data was clipped to the bounds it compared against. Someone who only prompted an
+  because the data was clipped to the bounds it compared against. And the demo capsules themselves: until 2026-09-13 they were hand-typed and signed, with an audit ceiling their own declared audit could not produce and a green tick computed backwards. Found by recomputing one number. Someone who only prompted an
   AI cannot tell these stories.
 - **"Does your institution permit this?"** Know the policy and have made the declaration
   **before** the viva. `CONTRIBUTIONS.md` flags this as an outstanding action; close it.
@@ -163,6 +163,18 @@ that was audited; that requires a trusted execution environment, which Laminator
 does and we do not. This limitation is already in the README.
 
 ---
+
+**"Your capsule says verified. Were those numbers real?"** — **Say this first, before anyone
+finds it.** Until 2026-09-13 the two shipped demo capsules were typed by hand and signed with a
+real key: the Adult one claimed an audit ceiling of 3.50 from a 60-canary audit that can certify
+at most 2.972, and its green "NOT DETECTED" tick never compared the proved epsilon with the
+ceiling at all. The signature was valid, which is the point worth making: **a signature proves
+who made a claim, not that the claim is true.** (Reporting the ceiling inside the artefact is a transfer of
+limit-of-detection reporting from analytical chemistry — MIQE 2.0, Bustin et al., *Clinical
+Chemistry* 2025;71(6):634–651 — which is exactly why reading it backwards was so damaging.) The capsules are now built from real releases,
+the verifier recomputes the ceiling from the declared audit, and the ε = 8 capsule shows in amber
+that its own audit could not have certified its claim. If any older PDF, slide or screenshot
+shows 0.384 or 3.50, it predates the fix — say so.
 
 ## How to rehearse this
 
