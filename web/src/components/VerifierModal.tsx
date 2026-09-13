@@ -77,6 +77,9 @@ export function VerifierModal({
     } catch (err: any) {
       setResult({
         signature_valid: false,
+        publisher_authenticated: false,
+        key_source: null,
+        key_fingerprint: null,
         claim_in_audit_range: false,
         range_code: 'ERROR',
         range_tone: 'fail',
@@ -131,6 +134,9 @@ export function VerifierModal({
           if (capReport.verified) {
             setResult({
               signature_valid: true,
+              publisher_authenticated: capReport.publisher_authenticated ?? false,
+              key_source: capReport.key_source ?? null,
+              key_fingerprint: capReport.key_fingerprint ?? null,
               claim_in_audit_range: capReport.claim_in_audit_range,
               range_code: capReport.range_code,
               range_tone: capReport.range_tone,
@@ -151,17 +157,32 @@ export function VerifierModal({
           } else {
             setResult({
               signature_valid: false,
+              publisher_authenticated: false,
+              key_source: null,
+              key_fingerprint: null,
               claim_in_audit_range: false,
               range_code: 'ERROR',
               range_tone: 'fail',
               range_explanation: '',
               lod_status: 'ERROR',
-              error: capReport.error || 'Capsule signature invalid',
+              error: capReport.error || 'Capsule verification failed.',
               details: {},
             })
           }
         } catch (err: any) {
-          alert(`Capsule parse error: ${err.message}`)
+          setResult({
+            signature_valid: false,
+            publisher_authenticated: false,
+            key_source: null,
+            key_fingerprint: null,
+            claim_in_audit_range: false,
+            range_code: 'ERROR',
+            range_tone: 'fail',
+            range_explanation: '',
+            lod_status: 'ERROR',
+            error: err.message || 'Could not verify capsule.',
+            details: {},
+          })
         } finally {
           setLoading(false)
         }
@@ -277,7 +298,9 @@ export function VerifierModal({
                 <div
                   className={`rounded-md border p-4 ${
                     result.signature_valid
-                      ? 'border-signal-ok/50 bg-signal-ok/[0.04]'
+                      ? result.publisher_authenticated
+                        ? 'border-signal-ok/50 bg-signal-ok/[0.04]'
+                        : 'border-signal-warn/50 bg-signal-warn/[0.04]'
                       : 'border-signal-bad/50 bg-signal-bad/[0.04]'
                   }`}
                 >
@@ -288,17 +311,25 @@ export function VerifierModal({
                     <span
                       className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${
                         result.signature_valid
-                          ? 'bg-signal-ok/20 text-signal-ok'
+                          ? result.publisher_authenticated
+                            ? 'bg-signal-ok/20 text-signal-ok'
+                            : 'bg-signal-warn/20 text-signal-warn'
                           : 'bg-signal-bad/20 text-signal-bad'
                       }`}
                     >
-                      {result.signature_valid ? '✓ Authenticated' : '✗ Invalid / Forged'}
+                      {result.signature_valid
+                        ? result.publisher_authenticated
+                          ? '✓ Authenticated'
+                          : '! Embedded Key'
+                        : '✗ Invalid / Forged'}
                     </span>
                   </div>
 
                   <p className="mt-2 text-xs text-graphite-soft dark:text-bone/80">
                     {result.signature_valid
-                      ? 'Mathematical proof that this sheet has not been tampered with and was signed by the registered authority.'
+                      ? result.publisher_authenticated
+                        ? 'Mathematical proof that this sheet has not been tampered with and was signed by the registered authority.'
+                        : `Signature is valid, but was checked only against the key inside the file (fingerprint ${result.key_fingerprint || 'unknown'}). Compare this fingerprint with the publisher's before trusting it.`
                       : result.error || 'The cryptographic signature does not verify against this payload.'}
                   </p>
 

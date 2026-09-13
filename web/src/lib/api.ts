@@ -108,6 +108,9 @@ export const api = {
   verifyCapsule: (htmlContent: string) =>
     json<{
       verified: boolean
+      publisher_authenticated?: boolean
+      key_source?: 'supplied' | 'embedded' | null
+      key_fingerprint?: string | null
       claim_in_audit_range: boolean
       range_code: string
       range_tone: 'ok' | 'warn' | 'fail'

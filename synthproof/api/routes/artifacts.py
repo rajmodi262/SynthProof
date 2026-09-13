@@ -39,13 +39,30 @@ class CertificateVerifyRequest(BaseModel):
 @router.post("/api/certificate/verify")
 def verify_certificate_endpoint(req: CertificateVerifyRequest):
     """Independently verifies a Privacy Data Sheet or Croissant 1.1 record."""
+    import hashlib
+
     from synthproof.ledger import signing
 
     sheet = req.sheet
-    pubkey = req.public_key or sheet.get("public_key")
+    pubkey: Optional[str] = None
+    if req.public_key:
+        pubkey = req.public_key
+        key_source = "supplied"
+        publisher_authenticated = True
+    elif sheet.get("public_key"):
+        pubkey = str(sheet["public_key"])
+        key_source = "embedded"
+        publisher_authenticated = False
+    else:
+        pubkey = None
+        key_source = None
+        publisher_authenticated = False
 
-    results = {
+    results: Dict[str, Any] = {
         "signature_valid": False,
+        "publisher_authenticated": False,
+        "key_source": key_source,
+        "key_fingerprint": None,
         "claim_in_audit_range": False,
         "range_code": "UNKNOWN",
         "range_tone": "warn",
@@ -59,8 +76,14 @@ def verify_certificate_endpoint(req: CertificateVerifyRequest):
         # Check signature
         if pubkey:
             pk = signing.public_key_from_hex(pubkey)
+            raw_pk = pk.public_bytes(
+                encoding=signing.serialization.Encoding.Raw,
+                format=signing.serialization.PublicFormat.Raw,
+            )
+            results["key_fingerprint"] = hashlib.sha256(raw_pk).hexdigest()[:16]
             signing.verify_datasheet(sheet, public_key=pk)
             results["signature_valid"] = True
+            results["publisher_authenticated"] = publisher_authenticated
         else:
             results["error"] = "Missing public key for verification."
 
@@ -108,14 +131,22 @@ class CapsuleVerifyRequest(BaseModel):
 @router.post("/api/capsule/verify")
 def verify_capsule_endpoint(req: CapsuleVerifyRequest):
     """Independently verifies an uploaded HTML capsule offline."""
+    from pathlib import Path
+
     from synthproof.capsule.generator import verify_capsule
 
     try:
-        report = verify_capsule(req.html_content)
+        report = verify_capsule(
+            req.html_content,
+            key_path=Path(req.key_path) if req.key_path else None,
+        )
         return report
     except Exception as e:
         return {
             "verified": False,
+            "publisher_authenticated": False,
+            "key_source": None,
+            "key_fingerprint": None,
             "claim_in_audit_range": False,
             "range_code": "ERROR",
             "range_tone": "fail",

@@ -95,6 +95,18 @@ async function spDecideVerdict(payload, subtle) {
     // From here a false result is a refutation, not a reason to try something weaker.
     var valid = await subtle.verify({ name: 'Ed25519' }, key, sigBytes, dataBytes);
     if (valid) {
+      var fp = '';
+      try {
+        var hashBuf = await subtle.digest('SHA-256', keyBytes);
+        var hashArr = new Uint8Array(hashBuf);
+        for (var i = 0; i < 8; i++) {
+          var h = hashArr[i].toString(16);
+          if (h.length === 1) h = '0' + h;
+          fp += h;
+        }
+      } catch (e) {
+        fp = 'unknown';
+      }
       return {
         state: 'verified',
         headline: '✓ Cryptographically Verified',
@@ -102,6 +114,8 @@ async function spDecideVerdict(payload, subtle) {
         detail:
           'Verified. The embedded Privacy Data Sheet carries a valid Ed25519 signature ' +
           'over its canonical bytes and has not been altered since it was signed.\n\n' +
+          'Key fingerprint: ' + fp + ' (checked only against embedded key; publisher not authenticated). ' +
+          'Compare this fingerprint with the publisher\'s before trusting it.\n\n' +
           'This proves authorship and integrity. It does NOT prove the epsilon is ' +
           'correct: a key holder can sign a sheet saying anything.',
       };

@@ -802,6 +802,19 @@ def verify_capsule_cmd(capsule: str, key_path: Optional[str] = None):
 
     click.echo("")
     click.secho("  ✓ CRYPTOGRAPHIC INTEGRITY: ED25519 SIGNATURE AUTHENTIC", fg="green", bold=True)
+    fp = res.get("key_fingerprint", "unknown")
+    if not res.get("publisher_authenticated", False):
+        click.secho(
+            f"  ! KEY TRUST: Verified against embedded key (fingerprint {fp}).\n"
+            "    Not checked against a publisher key. Compare fingerprint before trusting.",
+            fg="yellow",
+        )
+    else:
+        click.secho(
+            f"  ✓ KEY TRUST: Authenticated against supplied publisher key\n"
+            f"    (fingerprint {fp}).",
+            fg="green",
+        )
     click.echo(
         f"    Dataset       : {res['dataset_name']} "
         f"({res['num_rows']:,} rows recorded, "

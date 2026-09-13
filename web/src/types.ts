@@ -166,6 +166,9 @@ export type RangeTone = 'ok' | 'warn' | 'fail'
 
 export interface CertificateVerifyResult {
   signature_valid: boolean
+  publisher_authenticated: boolean
+  key_source: 'supplied' | 'embedded' | null
+  key_fingerprint: string | null
   claim_in_audit_range: boolean
   range_code: string
   range_tone: RangeTone
@@ -182,6 +185,7 @@ export interface CertificateVerifyResult {
     ledger_hash?: string
   }
 }
+
 
 export interface StartEvent {
   dataset: DatasetInfo

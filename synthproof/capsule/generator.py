@@ -520,13 +520,28 @@ def verify_capsule(
     records = payload.get("records", [])
 
     embedded_pk = sheet.get("public_key")
-    if public_key is None and key_path is None:
+    if public_key is not None or key_path is not None:
+        key_source = "supplied"
+        publisher_authenticated = True
+        if public_key is None:
+            public_key = signing.load_public_key(key_path)
+    else:
+        key_source = "embedded"
+        publisher_authenticated = False
         if embedded_pk:
             public_key = signing.public_key_from_hex(embedded_pk)
         else:
             raise signing.SignatureError("Capsule sheet is unsigned or missing public key.")
 
     signing.verify_datasheet(sheet, public_key=public_key, key_path=key_path)
+
+    import hashlib
+
+    raw_pk = public_key.public_bytes(
+        encoding=signing.serialization.Encoding.Raw,
+        format=signing.serialization.PublicFormat.Raw,
+    )
+    key_fingerprint = hashlib.sha256(raw_pk).hexdigest()[:16]
 
     from synthproof.audit.ceiling import range_verdict
 
@@ -547,6 +562,9 @@ def verify_capsule(
         # separate question with its own fields: a valid signature on an out-of-range or
         # internally inconsistent claim is still a valid signature.
         "verified": True,
+        "publisher_authenticated": publisher_authenticated,
+        "key_source": key_source,
+        "key_fingerprint": key_fingerprint,
         "claim_in_audit_range": verdict.claim_in_audit_range,
         "range_code": verdict.code,
         "range_tone": verdict.tone,
