@@ -18,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from synthproof import __version__
 from synthproof.api.routes import artifacts as artifacts_routes
 from synthproof.api.routes import datasets as datasets_routes
 from synthproof.api.routes import ledger as ledger_routes
@@ -43,7 +44,7 @@ from synthproof.api.state import (  # noqa: F401  (re-exported for tests)
 app = FastAPI(
     title="SynthProof API",
     description="Synthetic data that ships with its proof — console backend.",
-    version="0.2.0",
+    version=__version__,  # one source; this literal had drifted to 0.2.0
 )
 
 # Wildcard origins with credentials is rejected by browsers and unsafe besides. Credentials

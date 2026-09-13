@@ -41,8 +41,8 @@ keywords:
   - membership inference
   - reproducibility
 license: MIT
-version: 0.2.0
-date-released: '2026-08-15'
+version: 1.0.0
+date-released: '2026-09-13'
 references:
   - type: article
     title: Privacy Auditing with One (1) Training Run
