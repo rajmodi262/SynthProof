@@ -1,4 +1,8 @@
 import { expect, test } from '@playwright/test'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
 /* The console, driven the way a person drives it, against the real stack.
  *
@@ -195,6 +199,28 @@ test.describe('the capsule, end to end', () => {
     ).json()
     expect(report.verified).toBe(false)
     expect(report.lod_status).toBe('ERROR')
+  })
+
+  test('verifier modal reports CLAIM EXCEEDS AUDIT RANGE when uploaded capsule exceeds ceiling', async ({ page }) => {
+    await page.goto('/')
+    // Open the Verifier modal
+    await page.getByRole('button', { name: /Zero-Trust Verifier/i }).click()
+    await expect(page.getByText('Zero-Trust Certificate Verifier')).toBeVisible()
+
+    // Upload the demo capsule file
+    const capsulePath = resolve(__dirname, '../../demo_capsules/uci_adult_eps8_claim_exceeds_audit_range_capsule.html')
+    const fileChooserPromise = page.waitForEvent('filechooser')
+    await page.getByText(/Upload Sheet \/ Capsule/i).click()
+    const fileChooser = await fileChooserPromise
+    await fileChooser.setFiles(capsulePath)
+
+    // Wait for the badge to be visible before any negative assertion (trap 8)
+    const badge = page.getByText('CLAIM EXCEEDS AUDIT RANGE')
+    await expect(badge).toBeVisible({ timeout: 15_000 })
+
+    // Negative assertions: old strings must not appear anywhere
+    await expect(page.getByText(/valid detection zone/i)).toHaveCount(0)
+    await expect(page.getByText(/MIQE 2\.0 Operating Range/i)).toHaveCount(0)
   })
 })
 

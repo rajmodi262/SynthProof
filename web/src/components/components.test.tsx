@@ -141,6 +141,76 @@ describe('VerifierModal', () => {
       expect(onClose).toHaveBeenCalled()
     }
   })
+
+  it('renders green border and explanation when verdict tone is ok', async () => {
+    vi.mocked(api.exportCroissant).mockResolvedValue({})
+    vi.mocked(api.verifyCertificate).mockResolvedValueOnce({
+      signature_valid: true,
+      publisher_authenticated: true,
+      key_source: 'supplied',
+      key_fingerprint: 'abcdef0123456789',
+      claim_in_audit_range: true,
+      range_code: 'IN_RANGE_NOT_DETECTED',
+      range_tone: 'ok',
+      range_explanation: 'Claim is within verifiable audit range.',
+      lod_status: 'IN RANGE · NOT DETECTED',
+      error: null,
+      details: { proved_eps: 1.0, audited_eps: 0.0, audit_ceiling: 2.254 },
+    })
+    render(<VerifierModal isOpen onClose={() => {}} initialSheet={{ dataset_name: 'Adult', public_key: 'abc' }} />)
+
+    await waitFor(() => expect(screen.getByText('IN RANGE · NOT DETECTED')).toBeInTheDocument())
+    const rangeBox = screen.getByText('Audit range').closest('.rounded-md')
+    expect(rangeBox).toHaveClass('border-signal-ok/50')
+    expect(screen.getByText('Claim is within verifiable audit range.')).toBeInTheDocument()
+  })
+
+  it('renders amber warn box with NO signal-ok class when claim exceeds audit range', async () => {
+    vi.mocked(api.exportCroissant).mockResolvedValue({})
+    vi.mocked(api.verifyCertificate).mockResolvedValueOnce({
+      signature_valid: true,
+      publisher_authenticated: true,
+      key_source: 'supplied',
+      key_fingerprint: 'abcdef0123456789',
+      claim_in_audit_range: false,
+      range_code: 'CLAIM_EXCEEDS_AUDIT_RANGE',
+      range_tone: 'warn',
+      range_explanation: 'Proved epsilon exceeds what this audit could certify.',
+      lod_status: 'CLAIM EXCEEDS AUDIT RANGE',
+      error: null,
+      details: { proved_eps: 7.356, audited_eps: 0.0, audit_ceiling: 2.254 },
+    })
+    render(<VerifierModal isOpen onClose={() => {}} initialSheet={{ dataset_name: 'Adult', public_key: 'abc' }} />)
+
+    await waitFor(() => expect(screen.getByText('CLAIM EXCEEDS AUDIT RANGE')).toBeInTheDocument())
+    const rangeBox = screen.getByText('Audit range').closest('.rounded-md')
+    expect(rangeBox).toHaveClass('border-signal-warn/50')
+    expect(rangeBox?.className).not.toMatch(/signal-ok/)
+    expect(screen.queryByText(/valid detection zone/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/MIQE 2\.0 Operating Range/i)).not.toBeInTheDocument()
+  })
+
+  it('renders red bad box when ceiling does not match audit parameters', async () => {
+    vi.mocked(api.exportCroissant).mockResolvedValue({})
+    vi.mocked(api.verifyCertificate).mockResolvedValueOnce({
+      signature_valid: true,
+      publisher_authenticated: true,
+      key_source: 'supplied',
+      key_fingerprint: 'abcdef0123456789',
+      claim_in_audit_range: false,
+      range_code: 'CEILING_MISMATCH',
+      range_tone: 'fail',
+      range_explanation: 'Reported ceiling does not match declared audit budget.',
+      lod_status: 'CEILING DOES NOT MATCH ITS AUDIT',
+      error: null,
+      details: { proved_eps: 1.0, audited_eps: 0.0, audit_ceiling: 5.0 },
+    })
+    render(<VerifierModal isOpen onClose={() => {}} initialSheet={{ dataset_name: 'Adult', public_key: 'abc' }} />)
+
+    await waitFor(() => expect(screen.getByText('CEILING DOES NOT MATCH ITS AUDIT')).toBeInTheDocument())
+    const rangeBox = screen.getByText('Audit range').closest('.rounded-md')
+    expect(rangeBox).toHaveClass('border-signal-bad/50')
+  })
 })
 
 // -------------------------------------------------------------------------- ErrorBoundary
