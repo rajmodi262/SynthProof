@@ -66,9 +66,9 @@ runs `git log` — it takes ten seconds.
 
 | | |
 |---|---|
-| Commits, code repository | **140**, all from a single human author |
-| Commits, outer repository | **10**, same author |
-| Commits carrying `Co-Authored-By: Claude Opus 5` | **135 of 140 — 96%** |
+| Commits, code repository (at `v1.0.0`) | **151**, all from a single human author |
+| Commits, outer repository (at `6b3b639`) | **13**, same author |
+| Commits carrying `Co-Authored-By: Claude Opus 5` | **146 of 151 — 97%** in code; **13 of 13** outer |
 | Commits by the other three named members | **0** |
 
 See [`../../../CONTRIBUTIONS.md`](../../../CONTRIBUTIONS.md), which records this with the
@@ -93,7 +93,7 @@ commands that reproduce it.
 ### The answer that loses the room
 
 Minimising — "Claude just helped with boilerplate", or letting the trailer go unmentioned and
-hoping. The trailer is in 135 commit messages. Being caught understating it converts a
+hoping. The trailer is in 146 commit messages. Being caught understating it converts a
 procedural question into a credibility question, and you do not recover from that in a viva.
 
 ### Assume these follow-ups
