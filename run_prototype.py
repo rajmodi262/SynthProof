@@ -1,100 +1,109 @@
-"""SynthProof Master Prototype Launcher.
+"""SynthProof prototype launcher.
 
-Starts the interactive web application, pre-seeds the cryptographic ledger,
-and opens the browser directly to the prototype demonstration.
+Starts the web application and opens the browser to the console.
+
+WHAT THE BANNER USED TO SAY, AND WHY IT CHANGED (2026-09-13). It listed three "pre-seeded
+releases in ledger" with audited epsilons (0.384, 0.712, 0.180) and "Verified" beside each,
+including a "Texas Inpatient Health" release. None of that existed. The ledger is seeded with
+three budget CHARGES (see synthproof/api/state.py) so the tamper studio has a chain to attack:
+no synthesis ran for them, they carry no audit result, and no Texas dataset exists anywhere in
+this repository. The audited values were the fabricated demo-capsule numbers. It also announced
+"CORE ARCHITECTURAL NOVELTIES" over a novelty verdict that killed eight of the project's claims,
+and a gauge that "prevents false certifications" while computing its verdict backwards.
 """
 
 import os
+import shutil
+import subprocess
 import sys
+import threading
 import time
 import webbrowser
 from pathlib import Path
 
-# Ensure root directory is on sys.path
 ROOT_DIR = Path(__file__).resolve().parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-# Ensure demo environment variables are set
+# Demo mode with an in-memory ledger: the destructive tamper/reset endpoints are only enabled
+# here, and nothing written during a demo survives the process.
 os.environ.setdefault("SYNTHPROOF_DEMO", "1")
 os.environ.setdefault("SYNTHPROOF_LEDGER_DB", ":memory:")
 
 
-def check_prerequisites():
-    """Validates that build assets and keys exist."""
+def check_prerequisites() -> None:
+    """Builds the console bundle and the demo capsules if they are missing."""
     console_index = ROOT_DIR / "synthproof" / "api" / "console" / "index.html"
     if not console_index.exists():
-        print("[-] Warning: Console production bundle not found.")
-        print("    Building web console with npm run build...")
-        import subprocess
-        subprocess.run(["npm", "run", "build"], cwd=str(ROOT_DIR / "web"), check=True)
+        # `npm` is `npm.cmd` on Windows, which subprocess cannot resolve from a bare name --
+        # the previous version raised FileNotFoundError here on exactly the OS the double-click
+        # launcher targets.
+        npm = shutil.which("npm") or shutil.which("npm.cmd")
+        if npm is None:
+            print("[-] The web console is not built and Node.js/npm is not on PATH.")
+            print("    Install Node.js LTS, then run:  cd web && npm install && npm run build")
+            sys.exit(1)
+        print("[*] Building the web console (npm run build)...")
+        subprocess.run([npm, "run", "build"], cwd=str(ROOT_DIR / "web"), check=True)
 
     capsules_dir = ROOT_DIR / "demo_capsules"
     if not capsules_dir.exists() or not list(capsules_dir.glob("*.html")):
-        print("[*] Generating standalone verified demo capsules...")
-        import subprocess
-        subprocess.run([sys.executable, str(ROOT_DIR / "scripts" / "generate_demo_capsules.py")], check=True)
+        print("[*] Building demo capsules from real pipeline releases...")
+        subprocess.run(
+            [sys.executable, str(ROOT_DIR / "scripts" / "generate_demo_capsules.py")], check=True
+        )
 
 
-def print_banner():
-    banner = """
-========================================================================================
-   ____             _   _     ____                        __ 
-  / ___| _   _ _ __ | |_| |__ |  _ \ _ __ ___   ___  ___ / _|
-  \___ \| | | | '_ \| __| '_ \| |_) | '__/ _ \ / _ \/ _ \ |_ 
-   ___) | |_| | | | | |_| | | |  __/| | | (_) | (_) |  _/  _|
-  |____/ \__, |_| |_|\__|_| |_|_|   |_|  \___/ \___/ \___|_|  
-         |___/                                                
-            Synthetic Data that Ships with its Proof
-========================================================================================
-  [+] 100% WORKING LIVE PROTOTYPE READY
-  
-  CORE ARCHITECTURAL NOVELTIES & MVPS:
-  --------------------------------------------------------------------------------------
-  1. Self-Verifying Capsule (.html) : Standalone offline container with embedded WebCrypto
-  2. Red-Team Tamper Studio         : Interactive multi-class database attack simulator
-  3. Zero-Trust Certificate Verifier: Independent Ed25519 & Croissant 1.1 JSON-LD auditor
-  4. MIQE 2.0 LoD Operating Gauge   : Prevents false certifications below detector ceiling
-  5. Interactive Guided Tour        : 5-stage comprehensive presentation walkthrough
+BANNER = """
+==========================================================================================
+  SynthProof -- synthetic data that ships with its proof
+  B.Tech capstone prototype, running locally
+==========================================================================================
 
-  PRE-SEEDED RELEASES IN LEDGER:
-  --------------------------------------------------------------------------------------
-  * Release #1: UCI Adult Income       -> AIM (eps=1.000, audited eps=0.384, Verified)
-  * Release #2: ACS California Income  -> Pairwise (eps=2.000, audited eps=0.712, Verified)
-  * Release #3: Texas Inpatient Health -> Fixed Workload (eps=0.500, audited eps=0.180, Verified)
+  WHAT TO TRY
+  ----------------------------------------------------------------------------------------
+  1. Run a release    Pick a dataset and an epsilon, then Run. Every number shown is computed.
+  2. Tamper studio    Attack the ledger four ways and watch the hash chain report the break.
+  3. Verifier         Check a signed sheet or capsule without trusting this server.
+  4. Audit range      Each release states whether its audit could have certified its epsilon.
+  5. Guided tour      A scripted walkthrough of the pipeline.
 
-  LOCAL ACCESS:
-  --------------------------------------------------------------------------------------
-  * Web Application Console  : http://127.0.0.1:8000/
-  * Standalone Demo Capsules : demo_capsules/uci_adult_verified_capsule.html
-  * API Documentation        : http://127.0.0.1:8000/docs
-========================================================================================
-    """
-    print(banner)
+  THE LEDGER AT START
+  ----------------------------------------------------------------------------------------
+  Three ILLUSTRATIVE budget charges (run ids begin "illustrative-") so the tamper studio has
+  a chain to attack. They are spend records only: no synthesis ran for them and they carry no
+  audit result. Real releases appear after you click Run.
+
+  LOCAL ACCESS
+  ----------------------------------------------------------------------------------------
+  Console          http://127.0.0.1:{port}/
+  API docs         http://127.0.0.1:{port}/docs
+  Offline capsule  demo_capsules/uci_adult_verified_capsule.html            (eps = 1, in range)
+                   demo_capsules/uci_adult_eps8_claim_exceeds_audit_range_capsule.html
+==========================================================================================
+"""
 
 
-def main():
+def main() -> None:
     check_prerequisites()
-    print_banner()
 
     port = int(os.environ.get("PORT", 8000))
     host = "127.0.0.1"
     url = f"http://{host}:{port}/"
-
+    print(BANNER.format(port=port))
     print(f"[*] Starting SynthProof server on {url} ...")
 
-    # Launch browser after a short delay
-    def open_browser():
+    def open_browser() -> None:
         time.sleep(1.2)
         try:
             webbrowser.open(url)
         except Exception:
             pass
 
-    import threading
     threading.Thread(target=open_browser, daemon=True).start()
 
     import uvicorn
+
     from synthproof.api.main import app
 
     uvicorn.run(app, host=host, port=port, log_level="info")

@@ -35,12 +35,22 @@ DEMO_MODE = os.environ.get("SYNTHPROOF_DEMO", "1" if _LEDGER_DB == ":memory:" el
 
 
 def _seed_demo_ledger():
+    """Gives the tamper studio a chain to attack on a fresh in-memory ledger.
+
+    These are ILLUSTRATIVE budget charges, and the run ids say so where the console displays
+    them (standing rule 5: label illustrative values where they are shown). No synthesis ran
+    for them and they carry no audit result.
+
+    Until 2026-09-13 they were indistinguishable from real releases, one named a
+    `texas_inpatient` dataset that exists nowhere in this repository, and the launcher banner
+    printed audited epsilons and "Verified" beside them -- numbers that were never computed.
+    """
     if not DEMO_MODE or GLOBAL_LEDGER.get_entries():
         return
     seeds = [
-        ("uci_adult", "aim_eps1.0_seed42", "aim", 1.0, 1e-5, 42),
-        ("acs_income_ca", "pairwise_eps2.0_seed0", "pairwise", 2.0, 1e-5, 0),
-        ("texas_inpatient", "fixed_workload_eps0.5_seed7", "fixed_workload", 0.5, 1e-5, 7),
+        ("adult", "illustrative-charge-1_aim_eps1.0", "aim", 1.0, 1e-5, 42),
+        ("adult", "illustrative-charge-2_pairwise_eps2.0", "pairwise", 2.0, 1e-5, 0),
+        ("toy", "illustrative-charge-3_independent_eps0.5", "independent", 0.5, 1e-5, 7),
     ]
     for ds_id, run_id, mech, eps, delta, seed in seeds:
         GLOBAL_LEDGER.append(
