@@ -571,3 +571,16 @@ def test_but_the_real_claim_is_still_caught(tmp_path):
     """
     text = "We derive the audit ceiling and prove it is tight.\n"
     assert "ceiling-as-ours" in labels(check(_write(tmp_path, text)))
+
+
+def test_clique_confound_heading_plus_sentence_evading_form(tmp_path):
+    """Exact text from ch01-introduction.md contribution 1 (heading + first sentence)."""
+    text = (
+        "1. **The Clique-Selection Confound in Graphical Model Benchmarks** "
+        "(*evaluated across two datasets*): "
+        "We show that evaluating marginal-based differentially private tabular synthesizers "
+        "(such as AIM and MST) on fixed low-order marginals risks measuring whether target "
+        "column pairs were selected into the model's clique workload rather than true "
+        "synthesis fidelity.\n"
+    )
+    assert "clique-confound-as-finding" in labels(check(_write(tmp_path, text)))

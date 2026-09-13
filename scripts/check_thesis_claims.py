@@ -154,7 +154,10 @@ DEAD_CLAIMS: list[tuple[str, str, str, str]] = [
         r"|(?:clique[- ]selection|selection[- ]confound)[^\n]{0,140}?"
         r"(?:⭐|strongest|headline|key (?:result|finding)|our (?:result|finding|contribution))"
         r"|(?:⭐|strongest|headline|key (?:result|finding))[^\n]{0,140}?"
-        r"(?:clique[- ]selection|selection[- ]confound)",
+        r"(?:clique[- ]selection|selection[- ]confound)"
+        r"|(?:clique[- ]selection|selection[- ]confound)[^\n]{0,140}?"
+        r"(?:we|our|this (?:work|project|thesis))\s+"
+        r"(?:find|found|show|showed|demonstrat\w*|discover\w*|reveal\w*|establish\w*)",
         "RETRACTED 2026-08-25. Published three times -- AIM's own paper (arXiv:2201.12677 S5) "
         "partitions supported/unsupported marginals with separate bounds and Fig 2c; Ganev, Xu "
         "& De Cristofaro CCS 2024 S5.3; Chen, Gong & Wang arXiv:2511.13893 S6.3. And our own "
@@ -379,7 +382,8 @@ def _is_hedged(text: str, start: int, end: int) -> bool:
     # that governs it sits at the start of that line -- as in "It is NOT a one-run audit ...",
     # which then quotes the description it is refuting. For those, consider the whole line.
     if end - start > _HEDGE_WINDOW:
-        return bool(_HEDGE.search(_line_of(text, start)))
+        lo = text.rfind("\n", 0, start) + 1
+        return bool(_HEDGE.search(text[lo : end + _HEDGE_WINDOW]))
     return False
 
 
