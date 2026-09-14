@@ -21,6 +21,7 @@ and re-sign it, so the chain is tamper-EVIDENT, not tamper-proof.
 """
 
 import os
+import secrets
 import stat
 from pathlib import Path
 from typing import Optional, Tuple
@@ -31,6 +32,9 @@ from cryptography.hazmat.primitives.asymmetric import ed25519
 DEFAULT_KEY_DIR = Path(os.environ.get("SYNTHPROOF_KEY_DIR", ".keys"))
 PRIVATE_KEY_NAME = "synthproof_ed25519"
 PUBLIC_KEY_NAME = "synthproof_ed25519.pub"
+# The curator's secret for keyed input fingerprints. Held beside the signing key and, like it,
+# never published. See `load_fingerprint_key`.
+FINGERPRINT_KEY_NAME = "fingerprint.key"
 
 
 def resolve_key_dir() -> Path:
@@ -137,6 +141,45 @@ def public_key_hex(key: ed25519.Ed25519PublicKey) -> str:
 
 def public_key_from_hex(value: str) -> ed25519.Ed25519PublicKey:
     return ed25519.Ed25519PublicKey.from_public_bytes(bytes.fromhex(value))
+
+
+def load_fingerprint_key(key_dir: Optional[Path] = None, create: bool = False) -> Optional[bytes]:
+    """The curator's secret for keyed input fingerprints, or None when there is none.
+
+    An UNKEYED hash of the input table is a deterministic membership test: an adversary who knows
+    every other record hashes both candidate tables and compares
+    (docs/design/PUBLIC_RELEASE_BOUNDARY.md, D3). Keyed with a secret that never leaves the
+    curator, the fingerprint still lets the curator recognise a repeat release of the same table
+    and gives nobody else anything to test.
+
+    Args:
+        key_dir: Defaults to `resolve_key_dir()`, resolved at call time.
+        create: Write a new 32-byte key when none exists. An existing key is never replaced: a new
+            key makes every earlier fingerprint unmatchable, which is the one thing it is for.
+    """
+    key_dir = Path(key_dir) if key_dir is not None else resolve_key_dir()
+    path = key_dir / FINGERPRINT_KEY_NAME
+    if not path.exists():
+        if not create:
+            return None
+        key_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            # "x": fail rather than overwrite if another process created it in the meantime.
+            with open(path, "xb") as fh:
+                fh.write(secrets.token_bytes(32))
+        except FileExistsError:
+            pass
+        try:
+            os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)
+        except OSError:  # pragma: no cover - platform dependent
+            pass
+    key = path.read_bytes()
+    if len(key) < 32:
+        raise ValueError(
+            f"{path} holds {len(key)} bytes; a fingerprint key needs at least 32. Refusing to "
+            "fingerprint with a key short enough to guess."
+        )
+    return key
 
 
 # --------------------------------------------------------------------------- sign / verify

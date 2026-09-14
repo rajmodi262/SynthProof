@@ -323,9 +323,12 @@ export function Controls({
             <input
               type="number"
               className="field mt-1 !py-1.5 !text-xs font-mono"
-              value={config.seed}
+              placeholder="secret"
+              value={config.seed ?? ''}
               disabled={running}
-              onChange={(e) => patch({ seed: Number(e.target.value) })}
+              onChange={(e) =>
+                patch({ seed: e.target.value === '' ? null : Number(e.target.value) })
+              }
             />
           </label>
           <label className="block">

@@ -2,6 +2,54 @@
 
 ## Unreleased
 
+### Fixed — privacy (self-found, 2026-09-14)
+
+Found while investigating whether AIM's selection step is accounted correctly
+([`research/11_selection_accounting.md`](research/11_selection_accounting.md)). The spec every
+change below is checked against is
+[`docs/design/PUBLIC_RELEASE_BOUNDARY.md`](docs/design/PUBLIC_RELEASE_BOUNDARY.md).
+
+- **D1 — AIM and fixed_workload fitted their model with the exact row count** (`known_total=n`).
+  Under add/remove-one, n is private. Holding the released noisy measurements fixed, adding one
+  record moved AIM's selection score by up to 1.71 against the sensitivity-1 calibration, so
+  selection was under-charged by at least 1.71×, and the final fit read n with no charge at all.
+  Both now take the total from the noisy measurements. **Every AIM and fixed_workload number
+  published before this fix is superseded; the re-runs are in progress and the documents will be
+  corrected when they finish.** (`4225e76`)
+- **AIM releases were not reproducible from their seed** — private-pgm samples from NumPy's
+  global generator. Seeded locally, and grid checkpoints bumped to version 2 so no cached AIM cell
+  is silently reused. (`0da936e`)
+- **D5 — the run seed was published, and it replays every noise draw.** Measured before the fix:
+  with the seed from the sheet, rebuilding the release from the true table matched it exactly in
+  15 of 15 trials (independent, pairwise, AIM) and from the neighbouring table in 0 of 15.
+  `independent` and `pairwise` were replayable before this work; the AIM sampler seeding above made
+  AIM replayable too. The seed is no longer written to the sheet, Croissant record or capsule. Left
+  unset, it is drawn from the OS at 63 bits; the default of 42 is gone. The evaluators now receive a
+  32-bit reduction, since they draw no DP noise. DP-VAE folds the high words into its JAX key: with
+  x64 off, JAX kept only 32 bits.
+- **D2 — the exact row count was published** in the sheet's `num_rows`, in the synthetic table's
+  length, and through the refusal gate's 500-row floor. A release's size is now public by
+  construction, and the sheet records the source as `release_rows_source`: `declared` (CLI
+  `--release-rows`, API `rows`), or `dp_count`, a charged discrete-Laplace count costing 2% of the
+  smallest ε that is included in the proved ε. The gate judges that size, never the table's.
+- **D3 — the sheet carried an unkeyed SHA-256 of the input table**, a deterministic membership test
+  for anyone who knows every other record. It is now an HMAC-SHA-256 under a curator secret
+  (`<key dir>/fingerprint.key`, created beside the signing key) and is omitted without one. The
+  Croissant term is renamed `dp:inputFingerprintHmacSha256`.
+- **D4 — measurements on the real table were released without saying so.** The sheet now carries
+  `evaluation_privacy`, which states that TSTR/TRTR F1, correlation error, MIA AUC and the audited ε
+  are not covered by ε. The residual-risk list and the Croissant record carry the same statement.
+
+Every fix is pinned by `tests/test_release_boundary.py`. Each fix was reverted in turn, and the
+test that should catch it failed 7 of 7 times.
+
+### Open
+
+- **DP-VAE: the two accountants disagree.** `dp_accounting` 0.94 against autodp 2.45 at 900 rows and
+  9.50 at 3000, independent of the seed, so `run_sweep` refuses the release. Pinned as a strict
+  expected failure; not yet investigated. DP-VAE numbers from `run_cell`, which does not run the
+  cross-check, should not be quoted until it is resolved.
+
 - **Zenodo DOI minted** from the GitHub Release `v1.1.0`: concept DOI `10.5281/zenodo.22746910` (all
   versions — cite this) and version DOI `10.5281/zenodo.22746911` (v1.1.0 exactly). This closes the 1.1.0
   known gap "No Zenodo DOI", which is left as written in the released notes below. The README

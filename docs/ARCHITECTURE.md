@@ -20,7 +20,7 @@
         │                                      │
         ▼                                      ▼
    preflight.enforce()  ──refuse──►  PreflightRefused
-        │  (reads schema + row count ONLY — never a cell)
+        │  (reads schema + PUBLIC release size ONLY — never a cell)
         ▼
    BudgetPlan.split(total_eps)  ──►  profile_eps (10%) + synthesis_eps (90%)
         │                                      │

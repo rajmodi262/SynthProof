@@ -255,7 +255,8 @@ export interface RunRequest {
   mechanism: string
   target_eps: number
   delta: number
-  seed: number
+  /** null: the API draws a secret seed and never writes it to the sheet. */
+  seed: number | null
   num_canaries: number
   rows: number
 }

@@ -99,7 +99,9 @@ def main() -> None:
                 "--out", str(sheet_path),
                 "--eps", str(eps),
                 "--mechanism", "pairwise",
-                "--seed", str(SEED),
+                # The sample size is fixed above, before any data is read, so it is a public
+                # declaration. No --seed: the CLI then draws a secret one, as a real release must.
+                "--release-rows", str(N_ROWS),
                 "--sign",
                 "--synthetic-out", str(synth_path),
             )  # fmt: skip

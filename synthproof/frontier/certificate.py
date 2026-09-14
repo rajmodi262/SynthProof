@@ -17,8 +17,10 @@ name an algorithm the code did not run.
 """
 
 import hashlib
+import hmac
 import json
 import math
+import secrets
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Optional, Sequence
 
@@ -35,6 +37,7 @@ from synthproof.audit.steinke import DEFAULT_ALPHA
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.preflight import enforce
 from synthproof.frontier.experiment import MECHANISMS, run_cell
+from synthproof.frontier.release_size import DP_COUNT_FRAC, declared, dp_count
 from synthproof.ledger.ledger import Ledger
 from synthproof.ledger.types import LedgerEntry
 
@@ -53,6 +56,16 @@ class FrontierPoint:
     mia_auc: float
 
 
+# What the evaluation numbers in a sheet are, stated in the sheet itself. Every one of them is
+# computed on the sensitive table, and none is noised. PUBLIC_RELEASE_BOUNDARY.md, D4.
+EVALUATION_PRIVACY = (
+    "NOT COVERED BY EPSILON: total_audited_eps, evaluation, and the utility and audit fields of "
+    "frontier_curve are measured on the sensitive input table (its holdout split, and canaries "
+    "planted in it). They are published as scientific measurements and are non-private "
+    "statistics of that table. total_proved_eps covers the synthetic table and its size only."
+)
+
+
 @dataclass
 class PrivacyDataSheet:
     """The machine-readable claim that accompanies a release.
@@ -63,11 +76,16 @@ class PrivacyDataSheet:
     """
 
     dataset_name: str
+    # Rows in the RELEASED synthetic table, never the input's exact count, which is private under
+    # add/remove-one. `release_rows_source` says why this number is public.
     num_rows: int
     mechanism: str  # registry key — the algorithm that actually ran
     mechanism_available: bool
     delta: float
-    seed: int
+    # None on every release. The run seed replays every noise draw, so a reader holding it and
+    # every other record can rebuild the release for both candidate tables and see which one
+    # matches (research/release_boundary/). PUBLIC_RELEASE_BOUNDARY.md, D5.
+    seed: Optional[int]
     target_column: str
     total_proved_eps: float
     total_audited_eps: float
@@ -98,7 +116,14 @@ class PrivacyDataSheet:
     # the curator does, and every epsilon here is conditional on that curator being trusted.
     # SynthProof is central-model: we read your table.
     deployment_model: str = "central"  # central | local | shuffle
-    input_fingerprint: Optional[str] = None  # SHA-256 of the input table
+    # HMAC-SHA-256 of the input table under the curator's secret key, or None without one. An
+    # unkeyed hash would be a membership test (PUBLIC_RELEASE_BOUNDARY.md, D3).
+    input_fingerprint: Optional[str] = None
+    # Where `num_rows` came from: protocol | declared | dp_count.
+    release_rows_source: str = "unknown"
+    # Epsilon a dp_count size cost. Already included in total_proved_eps.
+    release_rows_eps: float = 0.0
+    evaluation_privacy: str = EVALUATION_PRIVACY
     # THE OPERATING RANGE OF THE EMPIRICAL MEASUREMENT. `audit_ceiling` alone is not enough:
     # this repo carries three ceiling series in two units, and quoting one where another belongs
     # is a checkable error (see audit/ceiling.py). So the estimator, the budget and the
@@ -231,14 +256,31 @@ _RESIDUAL_RISK = [
     "the signing key can produce a sheet saying anything.",
     "An audited epsilon of 0 means the auditor detected nothing, which is only informative if "
     "`audit_ceiling` exceeds the proved epsilon. Check `audit_is_informative()`.",
+    "The evaluation figures -- utility, correlation error, membership-inference AUC and the "
+    "audited epsilon -- are computed on the real table and are not covered by epsilon. See "
+    "`evaluation_privacy`.",
 ]
+
+
+def input_fingerprint(df: pd.DataFrame, key: bytes) -> str:
+    """HMAC-SHA-256 of a table under the curator's secret key.
+
+    The curator, holding the key, can recognise a repeat release of the same table. Nobody else
+    can compute it for a candidate table, so it is no use as a membership test -- which an
+    unkeyed SHA-256 of the table was, for anyone who knows every other record.
+    """
+    content = pd.util.hash_pandas_object(df, index=False).values.tobytes()  # type: ignore[union-attr]  # pandas-stubs: .values is ndarray for our numeric frames
+    return hmac.new(key, content, hashlib.sha256).hexdigest()
 
 
 class FrontierEngine:
     """Sweeps epsilon and exports a Privacy Data Sheet."""
 
-    def __init__(self, seed: int = 42):
-        self.seed = seed
+    def __init__(self, seed: Optional[int] = None):
+        # Omitted, the seed is drawn from the OS and never leaves this object. A default anyone
+        # can read in the source (it used to be 42) is a published seed. 63 bits keeps it a
+        # valid signed 64-bit integer wherever a library stores one.
+        self.seed = seed if seed is not None else secrets.randbits(63)
         # Populated only when `run_sweep(retain_release=True)`. None means "not retained",
         # which is not the same as "the release was empty" -- callers must check.
         self.last_release: Optional[pd.DataFrame] = None
@@ -256,6 +298,8 @@ class FrontierEngine:
         contribution_bound: int = 1,
         skip_preflight: bool = False,
         retain_release: bool = False,
+        release_rows: Optional[int] = None,
+        fingerprint_key: Optional[bytes] = None,
     ) -> PrivacyDataSheet:
         """Runs one release per epsilon and returns the resulting data sheet.
 
@@ -272,6 +316,13 @@ class FrontierEngine:
                 retain memory they have no use for, which is why the artefacts are otherwise
                 read once and dropped. `last_release` is the canary-free utility release --
                 the audit release is trained on planted canaries and must never be shipped.
+            release_rows: The PUBLIC number of rows to release, declared before the data is
+                read. None spends `DP_COUNT_FRAC` of the smallest epsilon on a noisy count
+                instead, taken out of each release's budget and included in every proved
+                epsilon. The exact row count is never used: under add/remove-one it is
+                private (PUBLIC_RELEASE_BOUNDARY.md, D2).
+            fingerprint_key: The curator's secret for `input_fingerprint`, from
+                `signing.load_fingerprint_key`. None omits the field (D3).
         """
         if mechanism not in MECHANISMS:
             raise KeyError(
@@ -282,16 +333,25 @@ class FrontierEngine:
         # Refuse before anything reads a cell. `preflight` inspects only the declared schema
         # and the row count, so this check is itself free — see synthproof/data/preflight.py
         # for why a check that reads the data would be the defect it is meant to catch.
+        eps_grid = list(eps_grid) if eps_grid else [0.5, 1.0, 2.0]
+
+        # The size every artefact reports and the gate judges. Never `dataset.num_rows`: under
+        # add/remove-one that is private, and a refusal near the 500-row floor would announce it.
+        # A dp_count is spent before the gate runs, so a refused input has still paid for it.
+        if release_rows is not None:
+            size = declared(release_rows)
+        else:
+            count_eps = DP_COUNT_FRAC * min(float(e) for e in eps_grid)
+            size = dp_count(dataset.num_rows, count_eps, seed=self.seed)
+
         findings = []
         if not skip_preflight:
             findings = enforce(
                 dataset.schema,
-                dataset.num_rows,
+                size.rows,
                 schema_declared=(domain_source != "inferred-nonprivate"),
                 contribution_bound=contribution_bound,
             )
-
-        eps_grid = list(eps_grid) if eps_grid else [0.5, 1.0, 2.0]
         ledger = ledger or Ledger(db_path=":memory:")
 
         if target_col is None:
@@ -313,8 +373,11 @@ class FrontierEngine:
             res = run_cell(
                 dataset,
                 mechanism,
-                float(eps),
+                # A charged count comes out of this release's budget, so the total never exceeds
+                # the epsilon that was asked for. It is pure eps-DP and composes basically.
+                float(eps) - size.eps,
                 seed=self.seed,
+                release_rows=size.rows,
                 delta=delta,
                 num_canaries=num_canaries,
                 target_col=target_col,
@@ -332,7 +395,7 @@ class FrontierEngine:
             curve.append(
                 FrontierPoint(
                     target_eps=float(eps),
-                    proved_eps=res["proved_eps"],
+                    proved_eps=res["proved_eps"] + size.eps,
                     audited_eps=res["audited_eps"],
                     audit_p=res["audit_p"],
                     tstr_f1=res["tstr_f1"],
@@ -378,7 +441,7 @@ class FrontierEngine:
                     dataset_id=dataset.name,
                     run_id=f"{mechanism}_eps{eps}_seed{self.seed}",
                     mechanism_name=mechanism,
-                    eps_spent=float(res["proved_eps"]),
+                    eps_spent=float(res["proved_eps"]) + size.eps,
                     delta=delta,
                     seed=self.seed,
                 )
@@ -388,9 +451,10 @@ class FrontierEngine:
         # tied to an input, so two releases of different data look interchangeable and a repeat
         # release of the SAME data cannot be detected at all — which is the first thing a
         # cross-session budget filter would need.
-        fingerprint = hashlib.sha256(
-            pd.util.hash_pandas_object(dataset.df, index=False).values.tobytes()  # type: ignore[union-attr]  # pandas-stubs: .values is ndarray for our numeric frames
-        ).hexdigest()
+        # Keyed, because a plain hash is a membership test for anyone who knows the other records.
+        fingerprint = (
+            input_fingerprint(dataset.df, fingerprint_key) if fingerprint_key is not None else None
+        )
 
         last = curve[-1]
         return PrivacyDataSheet(
@@ -407,11 +471,13 @@ class FrontierEngine:
             residual_risk=_RESIDUAL_RISK,
             accountant_agreement=agreement.to_dict(),
             dataset_name=dataset.name,
-            num_rows=dataset.num_rows,
+            num_rows=size.rows,
+            release_rows_source=size.source,
+            release_rows_eps=size.eps,
             mechanism=mechanism,
             mechanism_available=mechanism in MECHANISMS,
             delta=delta,
-            seed=self.seed,
+            seed=None,  # withheld: it replays every noise draw (D5)
             target_column=target_col,
             total_proved_eps=last.proved_eps,
             total_audited_eps=last.audited_eps,

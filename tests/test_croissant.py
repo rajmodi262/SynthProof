@@ -454,12 +454,26 @@ def test_retained_release_is_the_canary_free_one():
     ds = TabularDataset.create_synthetic_toy(num_rows=600, seed=7)
 
     engine = FrontierEngine(seed=7)
+    # The same declared size on both paths. 600, not the 420-row fit split: a declared 420 is below
+    # the 500-row floor, and the gate now judges the declared size, so it would rightly refuse.
     engine.run_sweep(
-        ds, eps_grid=[1.0], mechanism="independent", num_canaries=10, retain_release=True
+        ds,
+        eps_grid=[1.0],
+        mechanism="independent",
+        num_canaries=10,
+        retain_release=True,
+        release_rows=600,
     )
 
     res = run_cell(
-        ds, "independent", 1.0, seed=7, delta=1e-5, num_canaries=10, return_artifacts=True
+        ds,
+        "independent",
+        1.0,
+        seed=7,
+        delta=1e-5,
+        num_canaries=10,
+        return_artifacts=True,
+        release_rows=600,
     )
 
     assert engine.last_release is not None

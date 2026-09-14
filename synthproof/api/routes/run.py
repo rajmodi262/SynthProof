@@ -13,6 +13,7 @@ the instrument could have certified reads as "no leakage" when it means "below r
 
 import json
 import queue
+import secrets
 import threading
 import traceback
 from typing import Any, Iterator, Optional
@@ -30,6 +31,7 @@ from synthproof.api.descriptions import (  # noqa: F401  (audit_ceiling re-expor
     audit_ceiling,
 )
 from synthproof.api.state import require_api_key
+from synthproof.frontier.certificate import EVALUATION_PRIVACY
 from synthproof.frontier.experiment import MECHANISMS, informative_numeric_columns, run_cell
 from synthproof.ledger.types import LedgerEntry
 
@@ -43,10 +45,17 @@ class RunRequest(BaseModel):
     mechanism: str = Field("pairwise")
     target_eps: float = Field(1.0, gt=0, le=64)
     delta: float = Field(1e-5, gt=0, lt=1)
-    seed: int = 0
+    seed: Optional[int] = Field(
+        None,
+        description="Noise seed. Leave it out and a secret one is drawn: anyone who can guess "
+        "the seed can replay the release and test whether a record was in the input.",
+    )
     num_canaries: int = Field(60, ge=1, le=500)
     rows: int = Field(
-        2000, ge=100, le=50_000, description="Subsample size, so the console stays interactive."
+        2000,
+        ge=100,
+        le=50_000,
+        description="Rows to release, declared in advance, and the subsample size.",
     )
 
 
@@ -89,6 +98,14 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
     """
     events: "queue.Queue[Optional[tuple]]" = queue.Queue()
 
+    if req.seed is None:
+        # Drawn here and never written to the sheet (PUBLIC_RELEASE_BOUNDARY.md, D5). The console
+        # still sees it: the operator already holds the table, so it is not a release.
+        req = req.model_copy(update={"seed": secrets.randbits(63)})
+    assert req.seed is not None
+    # pandas and the projection need a 32-bit seed. Neither draws DP noise.
+    seed32 = req.seed % (2**32)
+
     if req.mechanism not in MECHANISMS:
         yield _sse(
             "error",
@@ -100,7 +117,7 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
         return
 
     try:
-        ds = state._load_dataset(req.dataset, req.rows, req.seed)
+        ds = state._load_dataset(req.dataset, req.rows, seed32)
     except HTTPException as exc:
         yield _sse("error", {"message": exc.detail})
         return
@@ -149,6 +166,9 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
                 corr_cols=corr_cols or None,
                 on_stage=lambda name, payload: events.put(("stage", name, payload)),
                 return_artifacts=True,
+                # `rows` is declared in the request, so the release size is public whatever the
+                # table's real length is (PUBLIC_RELEASE_BOUNDARY.md, D2).
+                release_rows=req.rows,
             )
             events.put(("result", "done", res))
         except Exception as exc:  # surfaced to the console rather than swallowed
@@ -196,7 +216,7 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
         payload.pop("_profile", None)
 
         cloud = projection.project(
-            fit_df, synth, ds.numerical_cols, canary_df=canaries.members, seed=req.seed
+            fit_df, synth, ds.numerical_cols, canary_df=canaries.members, seed=seed32
         )
         hists = projection.marginal_histograms(fit_df, synth, ds.numerical_cols[:4])
 
@@ -218,13 +238,16 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
         sheet_dict = {
             "domain_source": "SynthProof Autonomous Verification Pipeline",
             "contribution_bound": "bounded_one",
-            "input_fingerprint": ds.name,
+            # No fingerprint: this console holds no curator key, and a table name is not one.
+            "input_fingerprint": None,
             "dataset_name": ds.name,
-            "num_rows": len(synth),
+            "num_rows": req.rows,
+            "release_rows_source": "declared",
+            "release_rows_eps": 0.0,
             "mechanism": req.mechanism,
             "mechanism_available": True,
             "delta": req.delta,
-            "seed": req.seed,
+            "seed": None,  # withheld: it replays every noise draw (D5)
             "target_column": getattr(ds, "target_col", None) or getattr(ds, "target", None),
             "total_proved_eps": float(payload["proved_eps"]),
             "total_audited_eps": float(audit.audited_eps),
@@ -240,6 +263,7 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
                 "mia_auc": mia.auc,
                 "correlation_error": measurements.get("correlation_error", 0.0),
             },
+            "evaluation_privacy": EVALUATION_PRIVACY,
             "attacks_run": ["canary_audit", "distance_mia"],
             "attacks_not_implemented": NOT_IMPLEMENTED_ATTACKS,
         }

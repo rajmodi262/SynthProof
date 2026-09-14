@@ -122,6 +122,26 @@ def _clip(grad, clip_norm):
     return jax.tree_util.tree_map(lambda g: g * factor, grad)
 
 
+def _prng_key(seed: int):
+    """A JAX key that keeps every bit of `seed`.
+
+    With x64 disabled -- how private-pgm runs JAX in this environment -- `jax.random.PRNGKey`
+    keeps only the low 32 bits of an integer: 2**40 + 7 and 2**40 + 2**33 + 7 give the identical
+    key. A 63-bit secret seed would then leave DP-SGD's noise with 32 bits of entropy, few enough
+    to replay (PUBLIC_RELEASE_BOUNDARY.md, D5). The higher words are folded in; a seed below 2**32
+    gets exactly the key it always had, so no committed result moves.
+    """
+    import jax
+
+    seed = int(seed)
+    key = jax.random.PRNGKey(seed % (2**32))
+    high = seed >> 32
+    while high:
+        key = jax.random.fold_in(key, high % (2**32))
+        high >>= 32
+    return key
+
+
 class DPVAEGenerator(BaseGenerator):
     """Deep generative DP mechanism trained with DP-SGD. Selects no marginals."""
 
@@ -238,7 +258,7 @@ class DPVAEGenerator(BaseGenerator):
         accountant.charge(spec, run_id="dpvae_dpsgd")
         self.noise_scale_ = float(noise_scale)
 
-        key = jax.random.PRNGKey(self.seed)
+        key = _prng_key(self.seed)
         key, ik = jax.random.split(key)
         params = _init_params(ik, X.shape[1], self.hidden, self.latent, self.block_sizes_)
         block_sizes = tuple(self.block_sizes_)
@@ -281,7 +301,7 @@ class DPVAEGenerator(BaseGenerator):
         if not self.is_fitted:
             raise RuntimeError("DPVAEGenerator.generate called before fit.")
 
-        key = jax.random.PRNGKey(self.seed + 1)
+        key = _prng_key(self.seed + 1)
         key, zk = jax.random.split(key)
         z = jax.random.normal(zk, (num_samples, self.latent))
         logits = np.asarray(_decode(self.params_, z))

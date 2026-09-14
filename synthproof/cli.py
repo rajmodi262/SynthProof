@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import secrets
 from datetime import date
 from pathlib import Path
 from typing import Optional
@@ -170,7 +171,22 @@ def list_mechanisms():
     help="Generator to use. `synthproof mechanisms` lists what is available.",
 )
 @click.option("--rows", default=100, help="Rows for the toy table when --input is omitted.")
-@click.option("--seed", default=42, help="Random seed.")
+@click.option(
+    "--seed",
+    type=int,
+    default=None,
+    help="Noise seed. Leave it out and a secret one is drawn. Anyone who learns the seed can "
+    "replay the release and test whether a record was in the input, so it is never written to "
+    "the sheet.",
+)
+@click.option(
+    "--release-rows",
+    "release_rows",
+    type=click.IntRange(min=1),
+    default=None,
+    help="Rows to release, declared in advance. Left out with --input, a small share of the "
+    "budget buys a noisy row count instead, because the exact count is private.",
+)
 @click.option("--canaries", default=30, help="Canaries planted for the audit.")
 @click.option(
     "--sign/--no-sign",
@@ -207,9 +223,25 @@ def run(
     out,
     synthetic_out,
     croissant_out,
+    release_rows,
 ):
     """Synthesises a dataset and emits its Privacy Data Sheet."""
-    ds, domain_source = _load(input_path, schema_path, rows, seed)
+    if seed is None:
+        seed = secrets.randbits(63)
+        click.echo("Noise seed drawn from the OS and kept secret; it is not written anywhere.")
+    else:
+        click.echo(
+            "  WARNING: --seed given. This release is only as private as that number is secret. "
+            "The sheet does not record it; do not publish it."
+        )
+    # The toy generator needs a 32-bit seed. Its table is public test data either way.
+    ds, domain_source = _load(input_path, schema_path, rows, seed % (2**32))
+    if input_path is None and release_rows is None:
+        # The toy table has exactly --rows rows, a number the operator chose, so it is public.
+        release_rows = rows
+    # Created only beside a signing key that exists: a key directory is the operator's to set up.
+    key_ready = sign and (signing.resolve_key_dir() / signing.PRIVATE_KEY_NAME).exists()
+    fingerprint_key = signing.load_fingerprint_key(create=key_ready)
 
     click.echo(f"Synthesising at total eps={eps} (delta={delta}) with '{mechanism}'...")
     try:
@@ -222,6 +254,8 @@ def run(
             mechanism=mechanism,
             num_canaries=canaries,
             domain_source=domain_source,
+            release_rows=release_rows,
+            fingerprint_key=fingerprint_key,
         )
     except PreflightRefused as exc:
         # A refusal is an outcome, not a crash. Show every blocking reason and its remedy.
@@ -476,12 +510,14 @@ def demo(rows: int, eps: float, mechanism: str):
         "  NOTE: pre-flight refusal checks are SKIPPED for the toy table. A real table of "
         f"{rows} rows would be refused (R1: below the 500-row floor)."
     )
-    datasheet = FrontierEngine(seed=42).run_sweep(
+    datasheet = FrontierEngine().run_sweep(
         ds,
         eps_grid=[eps],
         mechanism=mechanism,
         num_canaries=min(20, rows // 5),
         skip_preflight=True,
+        # The toy table has exactly --rows rows, a number the operator chose, so it is public.
+        release_rows=rows,
     )
     click.echo("=" * 60)
     click.echo("PRIVACY DATA SHEET")

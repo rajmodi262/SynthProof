@@ -1,9 +1,14 @@
-# 11 — Is AIM's selection step accounted correctly? (IN PROGRESS — defect indicated, scope and fix pending)
+# 11 — Is AIM's selection step accounted correctly? (DEFECT CONFIRMED AND FIXED — re-runs in progress)
 
-> **Status: investigation open, 2026-09-14.** Nothing in this file is a finding yet. It records
-> what has been verified against sources and code, what is still unmeasured, and the exact
-> experiments that will decide it. Standing rules apply: no citation without a fetched source,
-> `INFERENCE:` for reasoning, `CONFIDENCE:` with a reason.
+> **Status, 2026-09-14.** E1 and E2 below confirmed defect D1. It is fixed in `4225e76`, and
+> `tests/test_model_total_is_private.py` pins it with a negative control. AIM sampling was made
+> reproducible and grid checkpoints bumped to version 2 in `0da936e`. Every AIM and fixed_workload
+> result is being recomputed. The published numbers are **superseded until those re-runs land**, and
+> no AIM ε may be quoted from the old files. The scoping work found four further release-boundary
+> defects (D2–D5, including a published seed that replays every release). They are specified and
+> fixed in `docs/design/PUBLIC_RELEASE_BOUNDARY.md`, and the D5 measurement is in
+> `research/release_boundary/`. E3 has not been run. Standing rules apply: no citation without a
+> fetched source, `INFERENCE:` for reasoning, `CONFIDENCE:` with a reason.
 
 ## Why this was opened
 

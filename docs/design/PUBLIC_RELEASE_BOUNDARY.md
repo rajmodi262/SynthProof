@@ -34,7 +34,8 @@ Every field that reaches an artefact, what it depends on, and what changes.
 | Sheet `evaluation` (TSTR F1, TRTR F1, correlation error, MIA AUC), `frontier_curve` utility fields, `total_audited_eps` | `certificate.py:338-344`; `api/routes/run.py` | **the real table** (holdout, canaries) | released, undisclosed | **D4** — kept, and labelled outside ε in the artefact |
 | AIM / fixed_workload model total | `generators/aim.py`, `generators/fixed_workload.py` | **exact n**, uncharged | fixed | **D1 — fixed in `4225e76`** |
 | `total_proved_eps`, `ledger_hash`, `accountant_agreement` | accountant | the charges; charges depend on the DP profile (post-processing) | fine | unchanged |
-| `mechanism`, `delta`, `seed`, `target_column`, `dataset_name` | operator configuration | public declaration | fine | unchanged |
+| Sheet `seed`, Croissant `dp:seed` | `certificate.py`; `croissant.py` prov | **every noise draw** | released, signed | **D5** — withheld; an unset seed is drawn from the OS |
+| `mechanism`, `delta`, `target_column`, `dataset_name` | operator configuration | public declaration | fine | unchanged |
 | Profile `num_rows` | `data/profiler.py:255,303` | exact n | **never read** by anything | set from the public size, so no private value sits in a structure that later code could publish |
 
 ## D2 — where the public size comes from
@@ -76,6 +77,55 @@ comes from canaries planted in the real table. They are the scientific reporting
 but **not silently**: the sheet carries `evaluation_privacy` stating they are computed on the
 sensitive table and not covered by ε, and the residual-risk list says the same. The Croissant
 record mirrors the label.
+
+## D5 — the run seed
+
+Found while implementing D2, and measured before anything was changed. The sheet recorded `seed`
+and the Croissant record mirrored it as `dp:seed`. Every noise draw derives from that seed, so a
+release is a deterministic function of (table, seed). The standard adversary rebuilds the release
+for both candidate tables with the published seed and sees which one matches.
+
+`research/release_boundary/seed_replay_probe.py`: n = 1000, one record removed, ε = 1, the same
+900 output rows in both worlds so the row count cannot be what separates them, 5 trials each.
+
+| Code | Mechanism | Replay of true table matches | Replay of neighbour matches | Wrong seed matches |
+|---|---|---:|---:|---:|
+| `0da936e` | independent | 5 / 5 | 0 / 5 | 0 / 5 |
+| `0da936e` | pairwise | 5 / 5 | 0 / 5 | 0 / 5 |
+| `0da936e` | aim | 5 / 5 | 0 / 5 | 0 / 5 |
+| `ab0107e` | independent | 5 / 5 | 0 / 5 | 0 / 5 |
+| `ab0107e` | pairwise | 5 / 5 | 0 / 5 | 0 / 5 |
+| `ab0107e` | aim | 0 / 5 | 0 / 5 | 0 / 5 |
+
+`independent` and `pairwise` were exactly replayable before this work. AIM was not, only because
+private-pgm's sampler drew from NumPy's unseeded global generator. Seeding that sampler (`0da936e`)
+made AIM replayable too. `INFERENCE:` AIM's measurement and selection noise was replayable at
+`ab0107e` as well, so an adversary could have compared model output distributions rather than
+tables; that weaker attack was not run.
+
+**Fix.** The seed is never written to a sheet, a Croissant record or a capsule. `FrontierEngine()`,
+the CLI and the API draw a 63-bit seed from the OS when none is given. The old default of 42 was a
+published seed. A seed the operator supplies is kept for their reproducibility and never recorded;
+the CLI warns that the release is only as private as that number is secret.
+
+Two consequences were measured and fixed:
+
+- The evaluators and attacks pass their seed to NumPy's legacy generator and scikit-learn, which
+  reject seeds of 2³² or more, so every mechanism crashed under a 63-bit seed. They draw no DP
+  noise and now receive `seed % 2**32`, which is unchanged for every research seed.
+- With x64 off, `jax.random.PRNGKey` keeps only the low 32 bits: 2⁴⁰ + 7 and 2⁴⁰ + 2³³ + 7 gave the
+  identical key. DP-VAE now folds the high words into the key, and a seed below 2³² keeps exactly
+  the key it had.
+
+**Residual, not fixed.** Every mechanism draws its per-measurement noise seeds as
+`rng.integers(0, 2**31 - 1)` from a full-entropy generator. Recovering one such 31-bit sub-seed by
+brute force needs the noisy measurement it produced, and no artefact publishes one. Widening
+the sub-seeds would change every committed result, so it is recorded rather than done.
+
+**Separate open issue found by the new tests.** For DP-VAE, `run_sweep`'s differential accountant
+refuses the release. `dp_accounting` composes to ε = 0.94 and autodp to 2.45 at 900 rows, and to 9.50
+at 3000 rows, identically with seeds 3 and 2⁶³ − 1. It is independent of D2–D5. It is pinned as a
+strict expected failure in `tests/test_release_boundary.py` and has not been investigated yet.
 
 ## Tests that must hold (each with a negative control)
 

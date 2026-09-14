@@ -96,6 +96,11 @@ MIRRORED_FIELDS: Dict[str, str] = {
     "dp:domainSource": "domain_source",
     "dp:ledgerHash": "ledger_hash",
     "dp:inputFingerprint": "input_fingerprint",
+    # Why `dp:numRows` is a public number, and that the evaluation figures are NOT covered by the
+    # proved epsilon. A record that showed the numbers without these would overstate them.
+    # docs/design/PUBLIC_RELEASE_BOUNDARY.md, D2 and D4.
+    "dp:releaseRowsSource": "release_rows_source",
+    "dp:evaluationPrivacy": "evaluation_privacy",
 }
 
 # The official Croissant JSON-LD @context, reproduced verbatim from `mlcroissant`'s
@@ -332,18 +337,19 @@ def to_croissant(
         "citeAs": _CITATION,
         "citation": _CITATION,
         # ---- PROV-O provenance ------------------------------------------------------------
-        # Croissant's documented chain-of-custody route. `wasDerivedFrom` carries the input
-        # fingerprint rather than the input itself: the point of the release is that the
-        # source table is not shipped.
+        # Croissant's documented chain-of-custody route. It carries the input fingerprint rather
+        # than the input itself: the point of the release is that the source table is not
+        # shipped. The fingerprint is an HMAC under a curator secret, never a plain hash, and the
+        # run seed is absent on purpose -- either one would let a reader who knows every other
+        # record test for the remaining one (PUBLIC_RELEASE_BOUNDARY.md, D3 and D5).
         "prov:wasGeneratedBy": {
             "@type": "prov:Activity",
             "prov:used": {
                 "@type": "prov:Entity",
-                "dp:inputFingerprintSha256": d.get("input_fingerprint"),
+                "dp:inputFingerprintHmacSha256": d.get("input_fingerprint"),
             },
             "dp:mechanism": mechanism,
             "dp:mechanismAvailable": d.get("mechanism_available"),
-            "dp:seed": d.get("seed"),
             "dp:numRows": d.get("num_rows"),
         },
     }

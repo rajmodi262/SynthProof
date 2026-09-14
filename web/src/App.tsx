@@ -28,7 +28,8 @@ const DEFAULT_CONFIG: RunRequest = {
   mechanism: 'pairwise',
   target_eps: 1.0,
   delta: 1e-5,
-  seed: 0,
+  // No seed: the API then draws a secret one. A seed anyone can guess replays the release.
+  seed: null,
   num_canaries: 60,
   rows: 2000,
 }

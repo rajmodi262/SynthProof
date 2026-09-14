@@ -176,6 +176,7 @@ def run_cell(
     return_artifacts: bool = False,
     separate_utility_fit: bool = True,
     auditor_kind: str = "one_run",
+    release_rows: Optional[int] = None,
 ) -> Dict[str, Any]:
     """Runs one (mechanism, epsilon, seed) configuration and returns raw measurements.
 
@@ -199,6 +200,11 @@ def run_cell(
             Setting this False restores the single-fit behaviour and reinstates the
             contamination; it exists for ablation and for halving the cost of a smoke test,
             and the choice is reported back as `utility_source`.
+        release_rows: Rows in each synthetic release. It must be PUBLIC: under add/remove-one the
+            exact row count is private, so a release sized from the table leaks it
+            (docs/design/PUBLIC_RELEASE_BOUNDARY.md, D2). None keeps `len(fit_df)`, which is
+            public only when the table size and `holdout_frac` are protocol constants fixed
+            before the data is read -- true of the research grids, and of nothing else.
     """
     if mechanism not in MECHANISMS:
         raise KeyError(f"Unknown mechanism {mechanism!r}. Known: {sorted(MECHANISMS)}")
@@ -212,6 +218,13 @@ def run_cell(
     fit_df = dataset.df.iloc[idx[n_hold:]].reset_index(drop=True)
     fit_ds = TabularDataset(fit_df, name=dataset.name, schema=dataset.schema)
     emit("split", {"fit_rows": len(fit_df), "holdout_rows": len(holdout_df)})
+    if release_rows is not None and (int(release_rows) != release_rows or release_rows < 1):
+        raise ValueError(f"release_rows must be a positive integer, got {release_rows!r}.")
+    num_release = len(fit_df) if release_rows is None else int(release_rows)
+    # The evaluators and attacks hand their seed to NumPy's legacy generator and to scikit-learn,
+    # which accept only 32 bits. They draw no DP noise, so reducing the seed costs no privacy, and
+    # every seed below 2**32 -- all the research grids use -- is unchanged.
+    eval_seed = seed % (2**32)
 
     plan = BudgetPlan.split(target_eps, delta=delta, profile_frac=0.1)
     acc = Accountant(budget_eps=target_eps * 1.02, budget_delta=delta)
@@ -267,7 +280,7 @@ def run_cell(
         )
         generator = MECHANISMS[mechanism](seed=seed)
         generator.fit(source, prof, accountant, target_eps=plan.synthesis_eps)
-        return generator.generate(num_samples=len(fit_df)), prof
+        return generator.generate(num_samples=num_release), prof
 
     # ---------------------------------------------------------------- audit release
     # Fitted on the canary-augmented table, because an audit needs planted canaries to
@@ -367,12 +380,14 @@ def run_cell(
     # comparison describe the same population.
     reference_df = fit_ds.df
 
-    util = UtilityEvaluator(target_col=target_col, seed=seed).evaluate(reference_df, util_synth)
+    util = UtilityEvaluator(target_col=target_col, seed=eval_seed).evaluate(
+        reference_df, util_synth
+    )
     emit("utility", {"tstr_f1": float(util.tstr_macro_f1), "trtr_f1": float(util.trtr_macro_f1)})
 
     # The MIA runs against the AUDIT release. It asks whether training membership is
     # recoverable, which is a question about the release that actually contained the members.
-    mia = DistanceMIABaseline(seed=seed, max_records=400).evaluate(
+    mia = DistanceMIABaseline(seed=eval_seed, max_records=400).evaluate(
         audit_synth, train_df=fit_ds.df, test_df=holdout_df
     )
     emit(
@@ -387,7 +402,7 @@ def run_cell(
     # A second, structurally different adversary. The two fail differently -- the baseline is
     # a raw proximity heuristic, DOMIAS divides by a reference density to remove the
     # typicality confound -- so both are reported rather than one standing in for the other.
-    domias = DOMIAS(seed=seed, max_records=400).evaluate(
+    domias = DOMIAS(seed=eval_seed, max_records=400).evaluate(
         audit_synth, train_df=fit_ds.df, test_df=holdout_df
     )
     emit(
@@ -399,7 +414,7 @@ def run_cell(
     # is the one risk of the EDPB's three that a release can fail outright rather than by
     # degree, so it is cheap and worth running on every cell. Scored against the AUDIT release
     # for the same reason the MIA is -- that is the release that contained the members.
-    singling = ExactMatchRiskEvaluator(seed=seed, max_records=400).evaluate(
+    singling = ExactMatchRiskEvaluator(seed=eval_seed, max_records=400).evaluate(
         audit_synth, target_df=fit_ds.df
     )
     emit(
@@ -419,7 +434,7 @@ def run_cell(
     # Reported as absent rather than skipped silently, the same rule the second accountant
     # follows: an absent check must never look like a passed one.
     try:
-        linkability = LinkabilityEvaluator(seed=seed, max_records=400).evaluate(
+        linkability = LinkabilityEvaluator(seed=eval_seed, max_records=400).evaluate(
             audit_synth, target_df=fit_ds.df
         )
         emit(
@@ -438,9 +453,9 @@ def run_cell(
     # mostly measures imputability; `leakage_vs_conditional` is the number that isolates what
     # the release itself contributed. Uses the canary-free release, because this asks what a
     # recipient of the published table can infer.
-    attr = AttributeInferenceAttack(target_column=target_col, seed=seed, max_records=400).evaluate(
-        util_synth, target_df=fit_ds.df, reference_df=reference_df
-    )
+    attr = AttributeInferenceAttack(
+        target_column=target_col, seed=eval_seed, max_records=400
+    ).evaluate(util_synth, target_df=fit_ds.df, reference_df=reference_df)
     emit(
         "attack_attribute_inference",
         {

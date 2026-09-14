@@ -1,0 +1,35 @@
+[
+  {
+    "mechanism": "independent",
+    "trials": 5,
+    "eps": 1.0,
+    "n": 1000,
+    "output_rows": 900,
+    "replay_D_matches": 5,
+    "replay_Dprime_matches": 0,
+    "unknown_seed_matches": 0,
+    "seconds": 0.7
+  },
+  {
+    "mechanism": "pairwise",
+    "trials": 5,
+    "eps": 1.0,
+    "n": 1000,
+    "output_rows": 900,
+    "replay_D_matches": 5,
+    "replay_Dprime_matches": 0,
+    "unknown_seed_matches": 0,
+    "seconds": 0.7
+  },
+  {
+    "mechanism": "aim",
+    "trials": 5,
+    "eps": 1.0,
+    "n": 1000,
+    "output_rows": 900,
+    "replay_D_matches": 0,
+    "replay_Dprime_matches": 0,
+    "unknown_seed_matches": 0,
+    "seconds": 6.9
+  }
+]

@@ -116,7 +116,7 @@ individuals.
 > synthetic output — six of two thousand at epsilon 1, thirteen at epsilon 8. The 'synthetic'
 > data contained real patient identifiers.
 >
-> The check reads only the declared schema and the row count — never the data. A check that
+> The check reads only the declared schema and the public release size — never the data. A check that
 > reads the data to decide whether the data is safe would be the exact defect it's meant to
 > prevent."
 

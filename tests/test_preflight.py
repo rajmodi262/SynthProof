@@ -199,6 +199,11 @@ def test_a_finding_renders_readably():
 # ------------------------------------------------------------------ end to end
 
 
+# A curator's fingerprint key. Without one the sheet carries no fingerprint at all: an unkeyed
+# hash of the table is a membership test (docs/design/PUBLIC_RELEASE_BOUNDARY.md, D3).
+_KEY = b"" * 32
+
+
 def _toy(n=3000, seed=0):
     rng = np.random.default_rng(seed)
     df = pd.DataFrame(
@@ -234,7 +239,12 @@ def test_the_sheet_records_how_the_domain_was_obtained():
     """The single most important disclosure: a reader cannot otherwise tell a release with a
     public domain from one whose bounds were read out of the sensitive table."""
     sheet = FrontierEngine(seed=0).run_sweep(
-        _toy(), eps_grid=[1.0], mechanism="independent", num_canaries=10, domain_source="declared"
+        _toy(),
+        eps_grid=[1.0],
+        mechanism="independent",
+        num_canaries=10,
+        domain_source="declared",
+        fingerprint_key=_KEY,
     )
     assert sheet.domain_source == "declared"
     assert sheet.unit_of_privacy == "add/remove-one-record"
@@ -245,15 +255,16 @@ def test_the_sheet_records_how_the_domain_was_obtained():
 
 def test_the_fingerprint_distinguishes_different_inputs():
     """Without it, two releases of different data look interchangeable, and a repeat release of
-    the SAME data cannot be detected — the first thing a budget filter would need."""
+    the SAME data cannot be detected — the first thing a budget filter would need. Keyed, so only
+    the key holder can compute it."""
     a = FrontierEngine(seed=0).run_sweep(
-        _toy(seed=1), eps_grid=[1.0], mechanism="independent", num_canaries=10
+        _toy(seed=1), eps_grid=[1.0], mechanism="independent", num_canaries=10, fingerprint_key=_KEY
     )
     b = FrontierEngine(seed=0).run_sweep(
-        _toy(seed=2), eps_grid=[1.0], mechanism="independent", num_canaries=10
+        _toy(seed=2), eps_grid=[1.0], mechanism="independent", num_canaries=10, fingerprint_key=_KEY
     )
     same = FrontierEngine(seed=0).run_sweep(
-        _toy(seed=1), eps_grid=[1.0], mechanism="independent", num_canaries=10
+        _toy(seed=1), eps_grid=[1.0], mechanism="independent", num_canaries=10, fingerprint_key=_KEY
     )
     assert a.input_fingerprint != b.input_fingerprint
     assert a.input_fingerprint == same.input_fingerprint

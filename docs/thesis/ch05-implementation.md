@@ -47,7 +47,7 @@ synthproof/
   cli.py        run · verify · croissant · demo · keygen · mechanisms · infer-schema · audit-power
 ```
 
-This alignment ensures strict separation of concerns. The `data/preflight.py` module inspects solely metadata (row counts, column cardinality) without touching record values. `data/profiler.py` charges privacy budget explicitly before discovering categorical domains. The mechanism generators in `generators/` receive pre-partitioned privacy budgets from `accounting/calibration.py`, and all outputs are committed through `ledger/ledger.py` before release artefacts are emitted by `frontier/certificate.py`.
+This alignment ensures strict separation of concerns. The `data/preflight.py` module inspects solely metadata (the public release size, column cardinality) without touching record values. `data/profiler.py` charges privacy budget explicitly before discovering categorical domains. The mechanism generators in `generators/` receive pre-partitioned privacy budgets from `accounting/calibration.py`, and all outputs are committed through `ledger/ledger.py` before release artefacts are emitted by `frontier/certificate.py`.
 
 ---
 
