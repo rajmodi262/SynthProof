@@ -1,0 +1,6 @@
+# Gitleaks ignore list for historical findings
+# Historical false positives in commit 8e3cba4 where mock key fingerprints were used;
+# replaced with zero-entropy mock (0000000000000000) in commit 328765c.
+8e3cba4c30614457f9e472270925804dbb68ab35:web/src/components/components.test.tsx:generic-api-key:151
+8e3cba4c30614457f9e472270925804dbb68ab35:web/src/components/components.test.tsx:generic-api-key:174
+8e3cba4c30614457f9e472270925804dbb68ab35:web/src/components/components.test.tsx:generic-api-key:199
