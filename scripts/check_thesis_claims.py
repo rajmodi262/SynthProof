@@ -374,16 +374,19 @@ def _is_hedged(text: str, start: int, end: int) -> bool:
     swallows the very words that negate it, as in "the refusal gate is *unrefuted* rather
     than novel" -- where both hedges fall inside the matched span.
     """
-    window = text[max(0, start - _HEDGE_WINDOW) : end + _HEDGE_WINDOW]
+    next_nl = text.find("\n", end)
+    line_end = next_nl if next_nl != -1 else len(text)
+    window = text[max(0, start - _HEDGE_WINDOW) : min(line_end, end + _HEDGE_WINDOW)]
     if _HEDGE.search(window):
         return True
     # A long match can carry its own refutation further away than the window reaches. Where a
     # rule allows a gap of 100+ characters the match may span most of a line, and the negation
     # that governs it sits at the start of that line -- as in "It is NOT a one-run audit ...",
-    # which then quotes the description it is refuting. For those, consider the whole line.
+    # which then quotes the description it is refuting. For those, consider the line up to
+    # the end of the match plus the hedge window.
     if end - start > _HEDGE_WINDOW:
         lo = text.rfind("\n", 0, start) + 1
-        return bool(_HEDGE.search(text[lo : end + _HEDGE_WINDOW]))
+        return bool(_HEDGE.search(text[lo : min(line_end, end + _HEDGE_WINDOW)]))
     return False
 
 

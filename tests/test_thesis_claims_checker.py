@@ -584,3 +584,53 @@ def test_clique_confound_heading_plus_sentence_evading_form(tmp_path):
         "synthesis fidelity.\n"
     )
     assert "clique-confound-as-finding" in labels(check(_write(tmp_path, text)))
+
+
+def test_clique_confound_negative_control_results_row(tmp_path):
+    """Negative control A: The 'Selection ablation' row from results/RESULTS.md must NOT trip."""
+    text = (
+        '| **Selection ablation** (was "the clique-selection confound") | '
+        "❌ **RETRACTED 2026-08-25**, and re-run as a replication with a selection-deleted "
+        "control arm. The reading it rested on is refuted by our own ablation: measuring helps "
+        "in proportion to TRUE dependence (r = −0.898), so AIM's advantage is the mechanism "
+        "working as designed, not an artefact of which pair the metric happens to score. The "
+        "phenomenon itself was already published three times — AIM's own paper "
+        "(arXiv:2201.12677 §5, Fig 2c), Ganev, Xu & De Cristofaro (CCS 2024 §5.3), and Chen, "
+        "Gong & Wang (arXiv:2511.13893 §6.3) | [`SELECTION_ABLATION.md`](SELECTION_ABLATION.md) · "
+        "[`clique_confound.json`](clique_confound.json) |\n"
+    )
+    assert "clique-confound-as-finding" not in labels(check(_write(tmp_path, text)))
+
+
+def test_clique_confound_negative_control_retraction_sentence(tmp_path):
+    """Negative control B: Explicit retraction statement must NOT trip."""
+    text = "The clique-selection confound was retracted on 2026-08-25 after our ablation refuted it.\n"
+    assert "clique-confound-as-finding" not in labels(check(_write(tmp_path, text)))
+
+
+def test_is_hedged_distant_hedge_on_same_line_does_not_blind_checker(tmp_path):
+    """_is_hedged test 1: a dead claim on a long line where an incidental hedge word appears
+    far down the line (>_HEDGE_WINDOW chars past match end) must STILL be flagged.
+
+    On the base checker, _line_of(text, start) searched the entire line to the newline, so any
+    incidental word like 'rather than' 100+ chars later falsely blinded the gate.
+    """
+    text = (
+        "We show that evaluating marginal-based synthesizers is a clique-selection confound "
+        "in existing benchmarks across multiple experimental settings and configurations "
+        "rather than a robust property of synthetic data generation algorithms.\n"
+    )
+    assert "clique-confound-as-finding" in labels(check(_write(tmp_path, text)))
+
+
+def test_is_hedged_guard_against_blindness_next_line_hedge(tmp_path):
+    """_is_hedged test 2: dead claim on line 1 followed by hedge on line 2 must STILL be flagged.
+
+    Guards against hedge window crossing newlines to falsely blind an unhedged dead claim.
+    """
+    text = (
+        "We show that evaluating marginal-based dp synthesizers is a clique-selection confound.\n"
+        "This was retracted on 2026-08-25.\n"
+    )
+    assert "clique-confound-as-finding" in labels(check(_write(tmp_path, text)))
+

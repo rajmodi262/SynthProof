@@ -137,7 +137,7 @@ suite expanded (28 unit/integration tests + 10 Playwright e2e specs).
 | 6.2 | `CONTRIBUTIONS.md` matching what the git history shows | ✅ **DONE** | `d4767fc` (outer) · Measured before writing: **140 + 10 commits, one human author**, and **135 of 140 (96%) carry `Co-Authored-By: Claude Opus 5`**. 0 commits from the other three members. Both facts published with the reproducing command. Deliberately does **not** invent a four-way split — one row per member for them to complete, each requiring third-party-checkable evidence. Flags the institutional AI declaration as an **outstanding action** |
 | 6.3 | Rehearse the three questions you would least like | ✅ **DONE** | `docs/defence/REHEARSAL.md` · Three questions, each with the honest answer, **the answer that loses the room**, and the follow-up to assume. Q1 the disqualified auditor · Q2 authorship — **which the defence pack did not answer at all** and is checkable in 10 s by running `git log` · Q3 novelty. Linked from DEFENCE.md §9 |
 
-**Gate 6:** nothing in the room is being seen for the first time.
+**Gate 6:** nothing in the room is being presented without prior rehearsal.
 
 ---
 
