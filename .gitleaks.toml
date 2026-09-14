@@ -29,5 +29,5 @@ regex = '''(?i)(?:key|api|token|secret|client|passwd|password|auth|access)(?:[0-
 keywords = ["key", "api", "token", "secret", "client", "passwd", "password", "auth", "access"]
 
   [rules.allowlist]
-  description = "Self-verifying capsules embed a PUBLIC key and signature; test fixtures in components.test.tsx mock key_fingerprint."
-  paths = ['''demo_capsules/.*\.html''', '''web/src/components/components\.test\.tsx''']
+  description = "Self-verifying capsules embed a PUBLIC key and a signature, by design."
+  paths = ['''demo_capsules/.*\.html''']
