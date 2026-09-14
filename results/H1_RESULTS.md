@@ -109,7 +109,7 @@ downward trend, not a monotone one.
 
 ### 3.3 AIM wins on both metrics, and does it at a lower spend
 
-AIM has the lowest correlation error at ε = 8 (**0.0078**, an order of magnitude below the
+AIM achieves the minimum correlation error on Adult at ε = 8 (**0.0078**, an order of magnitude below the
 baseline) and the best downstream utility throughout (TSTR **0.540** at ε = 1, **0.505** at
 ε = 8, against a TRTR ceiling of 0.660).
 
@@ -211,7 +211,7 @@ earlier documents reported it in good faith.
 
 ## 5. Why the reduced grid also gave the wrong ordering
 
-The 3-seed × 2-ε run reported **pairwise** as the best structure mechanism. On the full
+The 3-seed × 2-ε run reported **pairwise** as leading on structure. On the full
 protocol it is **AIM**, by a factor of 3.6 at ε = 8.
 
 Nothing was fixed in between — the difference is sampling. AIM's per-seed variance is high
