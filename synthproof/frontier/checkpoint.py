@@ -29,7 +29,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-CHECKPOINT_VERSION = 1
+# Bumped 1 -> 2 on 2026-09-14 for the D1 fix (research/11_selection_accounting.md).
+# Checkpoints are keyed by CONFIGURATION, and fixing AIM/fixed_workload's use of the exact row
+# count changed their outputs without changing any configuration -- so every cached AIM cell
+# would otherwise have been reloaded and the defective numbers silently 'reproduced'.
+CHECKPOINT_VERSION = 2
 
 
 def config_hash(config: Dict[str, Any]) -> str:

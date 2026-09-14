@@ -327,7 +327,19 @@ class AIMGenerator(BaseGenerator):
         rng = np.random.default_rng(self.seed)
 
         # `.records` is an int, not a frame — `.to_dict()` is the supported accessor.
-        coded = pd.DataFrame(self._model.synthetic_data(rows=num_samples).to_dict())
+        # private-pgm's `synthetic_data` draws from NumPy's GLOBAL random generator
+        # (`np.random.choice`, `np.random.rand`, `np.random.shuffle`), so without this every
+        # AIM-family release was irreproducible and its results could not be pinned in the
+        # manifest. It is seeded locally from the generator's seed and the caller's global state
+        # is restored afterwards. Sampling is post-processing of the private model, so a
+        # public seed costs no privacy.
+        saved_state = np.random.get_state()
+        if self.seed is not None:
+            np.random.seed(int(self.seed) % (2**32))
+        try:
+            coded = pd.DataFrame(self._model.synthetic_data(rows=num_samples).to_dict())
+        finally:
+            np.random.set_state(saved_state)
 
         data = {}
         for col in self.columns:

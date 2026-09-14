@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from synthproof.frontier.checkpoint import (
+    CHECKPOINT_VERSION,
     CellRecord,
     GridCheckpoint,
     config_hash,
@@ -155,4 +156,6 @@ def test_saved_cell_records_its_configuration_and_seed(tmp_path):
     assert data["config"] == cfg
     assert data["completed"] is True
     assert data["metrics"]["proved_eps"] == 6.5
-    assert data["version"] == 1
+    # The current constant, not a literal: a version bump is exactly when a stale cache must be
+    # rejected, and pinning 1 here made the bump for the D1 fix fail a test about traceability.
+    assert data["version"] == CHECKPOINT_VERSION

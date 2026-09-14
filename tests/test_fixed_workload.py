@@ -131,24 +131,38 @@ def test_all_budget_goes_to_measurement():
     assert g.meas_sigma_ > 0
 
 
-def test_sampling_is_NOT_reproducible_and_that_is_recorded():
-    """KNOWN LIMITATION, pinned so it cannot be forgotten or quietly claimed away.
+def test_sampling_is_reproducible_from_the_seed():
+    """Formerly `test_sampling_is_NOT_reproducible_and_that_is_recorded`, and it asked for this.
 
-    `mbi`'s `synthetic_data` draws from unseeded randomness, so calling `generate` twice on
-    the SAME fitted model returns different tables. This is inherited from `AIMGenerator` and
-    predates the control arm -- it is a property of the private-PGM sampler, not of anything
-    here. It matters because it means an AIM-family release is not bit-reproducible from a
-    seed, which the reproducibility discussion (ch06 s6.6) must state alongside the fact that
-    `make reproduce` re-aggregates committed checkpoints rather than re-fitting.
+    That test pinned a known limitation: `mbi`'s `synthetic_data` drew from unseeded randomness,
+    so `generate` twice on one fitted model returned different tables and no AIM-family result
+    could be pinned in the manifest. Its docstring said that if the sampler could be seeded, the
+    right response was to seed it and turn the assertion into equality -- not to delete it.
 
-    If a future `mbi` gains a seeded sampler this test will fail, and the right response is to
-    seed it and turn this into an equality assertion -- not to delete the test.
+    It could be: the sampler draws from NumPy's GLOBAL generator, so `AIMGenerator.generate` now
+    seeds that locally and restores the caller's state (2026-09-14, alongside the D1 fix).
     """
     _, _, g = _fit(FixedWorkloadGenerator, seed=3)
-    assert not g.generate(50).equals(g.generate(50)), (
-        "mbi's sampler appears to be seeded now; make generate deterministic and assert "
-        "equality here instead of inequality"
-    )
+    assert g.generate(50).equals(g.generate(50))
+
+
+def test_a_fresh_fit_and_sample_from_the_same_seed_is_bit_identical():
+    """The claim that matters for the manifest: re-running a release reproduces it exactly."""
+    _, _, a = _fit(FixedWorkloadGenerator, seed=3)
+    _, _, b = _fit(FixedWorkloadGenerator, seed=3)
+    assert a.generate(80).equals(b.generate(80))
+
+
+def test_seeding_the_sampler_does_not_disturb_the_callers_global_rng():
+    """Seeding NumPy's global generator must not leak into code that relies on it elsewhere."""
+    import numpy as np
+
+    _, _, g = _fit(FixedWorkloadGenerator, seed=3)
+    np.random.seed(12345)
+    expected = np.random.rand(3)
+    np.random.seed(12345)
+    g.generate(20)
+    assert np.array_equal(np.random.rand(3), expected)
 
 
 def test_the_fitted_workload_IS_reproducible():
