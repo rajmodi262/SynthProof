@@ -566,18 +566,35 @@ def test_accounting_types_validation():
 def test_generators_base_abstract():
     from synthproof.generators.base import BaseGenerator
 
+    # 1. BaseGenerator cannot be instantiated directly because it is abstract
+    with pytest.raises(TypeError, match="Can't instantiate abstract class BaseGenerator"):
+        BaseGenerator()
+
+    # 2. Subclass missing abstract methods also cannot be instantiated
+    class MissingGenerate(BaseGenerator):
+        def fit(self, dataset, profile, accountant, target_eps):
+            pass
+
+    with pytest.raises(TypeError, match="Can't instantiate abstract class MissingGenerate"):
+        MissingGenerate()
+
+    # 3. Concrete subclass inherits base attributes and methods
     class DummyGenerator(BaseGenerator):
         def fit(self, dataset, domain, budget, delta=1e-5):
             super().fit(dataset, domain, budget, delta)
+            self.is_fitted = True
             return self
 
         def generate(self, num_samples: int):
             super().generate(num_samples)
             return None
 
-    gen = DummyGenerator()
-    gen.fit(None, None, None)
-    gen.generate(5)
+    gen = DummyGenerator(seed=123)
+    assert gen.seed == 123
+    assert gen.is_fitted is False
+    assert gen.fit(None, None, None) is gen
+    assert gen.is_fitted is True
+    assert gen.generate(5) is None
 
 
 def test_cli_branches_extra(tmp_path):
