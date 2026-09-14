@@ -55,9 +55,9 @@ def test_artifacts_missing_key_and_croissant_export(client):
 
 
 def test_artifacts_verify_certificate_full(client, tmp_path):
+    from synthproof.audit.ceiling import recompute_ceiling
     from synthproof.frontier.certificate import PrivacyDataSheet
     from synthproof.ledger import signing
-    from synthproof.audit.ceiling import recompute_ceiling
 
     exact_ceiling = recompute_ceiling("one_run", 30, 0.05)
 
