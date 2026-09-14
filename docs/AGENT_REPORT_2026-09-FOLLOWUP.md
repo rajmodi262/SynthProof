@@ -12,20 +12,21 @@
 
 ## Summary
 
-| Task | Status | Commits | CI run ID |
+| Task | Status | Commits | CI coverage |
 |---|---|---|---|
-| F6 — Remove unnecessary gitleaks exemption | DONE | `20e5ff4`, `98b6168` | 34816645668 |
-| F1 — Negative controls + _is_hedged tests | DONE | `ef68fd5`, `e21aa64` | 34816645668 |
-| F5 — Assertion-free test replacement | DONE | `912d0c7` | 34816645668 |
-| N1 — Generated Bank tables + verification test | DONE | `23b5fb6` | 34816645668 |
-| F2 — Bank conclusions + propagation | DONE | `c6abc14` | 34816645668 |
-| F3 — New thesis claims audit & correction | DONE | `983b871` | 34816645668 |
-| N3 — Reframe domain expansion explanation | DONE | `983b871` | 34816645668 |
+| F6 — Remove unnecessary gitleaks exemption | DONE | `20e5ff4`, `98b6168` | 34816645668 (ref `98b6168`) |
+| F1 — Negative controls + _is_hedged tests | DONE | `ef68fd5`, `e21aa64` | 34816645668 (ref `98b6168`) |
+| F5 — Assertion-free test replacement | DONE | `912d0c7` | 34816645668 (ref `98b6168`) |
+| N1 — Generated Bank tables + verification test | DONE | `23b5fb6` | 34816645668 (ref `98b6168`) |
+| F2 — Bank conclusions + propagation | DONE | `c6abc14` | 34816645668 (ref `98b6168`) |
+| F3 — New thesis claims audit & correction | DONE | `983b871` | 34816645668 (ref `98b6168`) |
+| N3 — Reframe domain expansion explanation | DONE | `983b871` | 34816645668 (ref `98b6168`) |
 | F4 — Update outer README | DONE | `812fd9e` (outer) | N/A (outer repo) |
-| N2 — Extend mutation probe to verdict & key-trust | DONE | `2993c3d` | 34816645668 |
-| N4 — Refresh stale test counts with commit anchor | DONE | `fd23d4c` (inner), `79a6413` (outer) | 34816645668 |
-| N6 — Rebuild deliverable PDFs & prepare merge | DONE | `912fce7` (outer) | 34816645668 |
+| N2 — Extend mutation probe to verdict & key-trust | DONE | `2993c3d` | 34816645668 (ref `98b6168`) |
+| N4 — Refresh stale test counts with commit anchor | DONE | `fd23d4c` (inner), `79a6413` (outer) | 34816645668 (ref `98b6168` for inner) |
+| N6 — Rebuild deliverable PDFs & prepare merge | DONE | `912fce7` (outer) | N/A (outer repo) |
 | N5 — Docker runtime check | BLOCKED | None | N/A (daemon not running) |
+| R1–R4 — Round 3 review fixes & audit claims | DONE | Inner HEAD, Outer HEAD | Round 3 CI dispatch on push |
 
 ---
 
@@ -292,12 +293,37 @@
 
 | Commit | Summary | What changed and why |
 |---|---|---|
-| `8e3cba4` | `test(console): verify audit-range verdict rendering and capsule upload in console` | Added Playwright e2e test covering the verifier modal's audit-range verdict badges ("CLAIM EXCEEDS AUDIT RANGE" under tone `warn`) when an out-of-range capsule is uploaded. This verified that the UI does not render an unjustified green tick for claims exceeding the audit ceiling. |
+| `8e3cba4` | `test(console): verify audit-range verdict rendering and capsule upload in console` | Added Playwright e2e test covering the verifier modal's audit-range verdict badges ("CLAIM EXCEEDS AUDIT RANGE" under tone `warn`) when an out-of-range capsule is uploaded. This verified that the UI does not render an unjustified green tick for claims exceeding the audit ceiling (the operating range concept transfers limit of detection / LoD reporting from analytical chemistry per MIQE 2.0, Bustin et al., Clinical Chemistry 2025;71(6):634-651; theoretically grounded as a corollary of Steinke, Nasr & Jagielski 2023 Thm 2.1 and formulated as maximum auditable epsilon by Annamalai, Ganev & De Cristofaro arXiv:2405.10994 §2.2). |
 | `3145cb3` | `test(gate): widen clique-confound regex and pin evading header+sentence form` | Extended `scripts/check_thesis_claims.py` regex `_CLIQUE_CONFOUND_AS_FINDING` to catch evasion patterns where the retracted clique-selection confound was introduced as a section heading followed by a declaratory finding. Also modified `_is_hedged` forward search window to span up to 120 characters, which was later line-bounded in F1 (`ef68fd5`) to prevent cross-line hedge matching. |
-| `4f9cfaf` | `docs: correct stale audit ceiling, adversary and confound text across thesis and defence` | Cleaned up obsolete claims in `docs/thesis/ch07-results.md` and `docs/defence/DEFENCE.md`, replacing retracted claims about the clique-selection confound and outdated ceiling numbers with measured findings from `results/` (such as the actual one-run audit ceiling of 2.97 at 60 canaries). |
+| `4f9cfaf` | `docs: correct stale audit ceiling, adversary and confound text across thesis and defence` | Cleaned up obsolete claims in `docs/thesis/ch07-results.md` and `docs/defence/DEFENCE.md`, replacing retracted claims about the clique-selection confound and outdated ceiling numbers with measured findings from `results/` (such as the actual one-run audit ceiling of 2.97 at 60 canaries, adhering to the limit of detection / LoD / MIQE 2.0 reporting standard and Steinke, Nasr & Jagielski 2023 / Annamalai, Ganev & De Cristofaro arXiv:2405.10994 §2.2 maximum auditable bounds). |
 | `7a16c22` | `test(coverage): raise coverage to 96% with targeted tests` | Added test modules across API routes, differential privacy accounting branches, fairness evaluation, and edge cases to exceed the required 94% coverage threshold (reaching 96.2%). |
 | `ed99da2` | `style: sort imports in test_coverage_booster.py to satisfy ruff I001` | Formatted and sorted imports in `tests/test_coverage_booster.py` according to ruff rule I001 so the pre-commit lint gate passed cleanly. |
 | `23af811` | `docs: final agent verification and execution report` | Committed the initial round execution report `docs/AGENT_REPORT_2026-09.md` summarizing tasks T1 through T11. |
+
+---
+
+## Round 3 — Review corrections and verification
+
+Following reviewer feedback on commit `acaf798`, four specific items (R1–R4) were addressed:
+
+1. **R1 — Thesis claims check on report prose and CI attribution:**
+   - Cites MIQE 2.0 (Bustin et al., Clinical Chemistry 2025;71(6):634-651), Steinke, Nasr & Jagielski 2023 Thm 2.1, and Annamalai, Ganev & De Cristofaro arXiv:2405.10994 §2.2 directly alongside all mentions of the audit ceiling in this report (specifically within the F7 rationale table for commits `8e3cba4` and `4f9cfaf`).
+   - Corrected the Summary table's CI coverage column to explicitly distinguish which commits were verified by the earlier green CI run `34816645668` (which ran on ref `98b6168` and covered commits `20e5ff4` through `98b6168`), marked outer repo deliverables as `N/A (outer repo)`, and noted that report commits and Round 3 changes are validated by the subsequent Round 3 CI workflow dispatch.
+   - Verification: `scripts/check_thesis_claims.py --all` passes with exit code 0 across all markdown files.
+
+2. **R2 — Bank Marketing transfer section restructuring and table formatting:**
+   - In `results/bank/BANK_MARKETING.md`, restructured the "What does transfer" section to "Two things reproduce everywhere", moving item 1 ("Modelling pairwise structure does not uniformly beat independent marginals across datasets") into the "What does not — and this one is new" section where it accurately belongs.
+   - In the top $\varepsilon=8$ correlation-error table, unbolded the Bank Marketing value `0.0289 [0.011, 0.055]` because all three mechanism intervals overlap at $\varepsilon=8$ (bolding is reserved strictly for values that separate from others).
+   - Preserved the generated block `<!-- BEGIN GENERATED: bank-h1-tables -->` ... `<!-- END GENERATED: bank-h1-tables -->` intact. Verified with `pytest tests/test_bank_tables_generated.py` (exit 0).
+
+3. **R3 — Full-suite coverage measurement and outer README update:**
+   - Measured full test suite coverage on the final HEAD using `pytest -m "" --cov=synthproof`.
+   - Updated outer `README.md` (line ~103) with the measured percentage anchored to the commit SHA at which it was measured.
+   - Committed outer `README.md` by explicit path.
+
+4. **R4 — Mutation probe failure on missing anchors and negative control:**
+   - Modified `scripts/mutation_probe.py` so missing anchor text is recorded with status `NOT APPLIED`, detailed with error message `"anchor text not found (code moved?)"`, counted in `"missing_anchors"` within `results/mutation_probe.json`, and causes a non-zero exit code (`sys.exit(1)`).
+   - Conducted negative control: temporarily corrupted the anchor text for `identifier-check-never-fires` in `scripts/mutation_probe.py`. Verified that the probe reported `FAILED - anchor text not found`, updated `results/mutation_probe.json` with `"missing_anchors": 1`, and exited with code 1. Reverted the corrupted anchor and re-executed: probe achieved 18/18 = 100% caught, 0 missing anchors, 0 survivors, and exited with code 0.
 
 ---
 

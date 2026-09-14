@@ -99,7 +99,7 @@ Correlation error at ε = 8 — lower is better. Bracketed figures are 95% boots
 |---|---:|---|---|---|
 | **Adult** | +0.1034 | 0.0947 [0.082, 0.107] | 0.0283 [0.013, 0.052] | **0.0078 [0.003, 0.013]** |
 | **ACSIncome** | +0.0721 | 0.0535 [0.047, 0.060] | **0.0202 [0.008, 0.038]** | 0.0626 [0.043, 0.075] |
-| **Bank Marketing** | +0.0604 | 0.0416 [0.029, 0.052] | **0.0289 [0.011, 0.055]** | 0.0489 [0.038, 0.059] |
+| **Bank Marketing** | +0.0604 | 0.0416 [0.029, 0.052] | 0.0289 [0.011, 0.055] | 0.0489 [0.038, 0.059] |
 
 On Adult, AIM is **12× better than independent marginals** with non-overlapping intervals —
 the result H1 was built on. It does not reproduce:
@@ -117,7 +117,15 @@ them — the one the project started with.**
 
 ## What does transfer
 
-Three things reproduce everywhere, and they are the claims worth keeping:
+Two things reproduce everywhere, and they are the claims worth keeping:
+
+1. **Every TSTR score sits below TRTR, on every dataset and every mechanism.** The utility
+   cost of the privacy guarantee is real and it transfers.
+2. **The audit reads far below the proved ε everywhere.** Bank's audited values are 0.000–0.058
+   against proved 0.385–7.341, consistent with the census runs and with the ceiling being
+   instrumental rather than dataset-specific.
+
+## What does not — and this one is new
 
 1. **Modelling pairwise structure does not uniformly beat independent marginals across datasets.**
    On Adult and ACSIncome, pairwise separated from independent on structure at ε = 8 (0.0283 vs 0.0947
@@ -125,15 +133,7 @@ Three things reproduce everywhere, and they are the claims worth keeping:
    Marketing at ε = 8** in the full grid (0.0289 [0.0107, 0.0550] vs 0.0416 [0.0294, 0.0523], overlapping).
    Across the Bank grid, pairwise separates from independent only at ε = 0.5 and ε = 2.0; at ε = 1.0, 4.0,
    and 8.0 their intervals overlap.
-2. **Every TSTR score sits below TRTR, on every dataset and every mechanism.** The utility
-   cost of the privacy guarantee is real and it transfers.
-3. **The audit reads far below the proved ε everywhere.** Bank's audited values are 0.000–0.058
-   against proved 0.385–7.341, consistent with the census runs and with the ceiling being
-   instrumental rather than dataset-specific.
-
-## What does not — and this one is new
-
-**The utility ordering breaks here for the first time.** TSTR F1 at ε = 8:
+2. **The utility ordering breaks here for the first time.** TSTR F1 at ε = 8:
 
 | Dataset | TRTR | independent | pairwise | aim | Ordering |
 |---|---:|---:|---:|---:|---|

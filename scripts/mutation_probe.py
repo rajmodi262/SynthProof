@@ -363,8 +363,18 @@ def main():
             old = old.replace("\n", "\r\n")
             new = new.replace("\n", "\r\n")
         if old not in original:
-            results.append({"id": m.id, "status": "NOT APPLIED", "danger": m.danger})
-            print(f"  {m.id:<36} SKIPPED - anchor text not found (code moved?)")
+            results.append(
+                {
+                    "id": m.id,
+                    "status": "NOT APPLIED",
+                    "path": m.path,
+                    "danger": m.danger,
+                    "tests": m.tests,
+                    "equivalent": m.equivalent,
+                    "error": "anchor text not found (code moved?)",
+                }
+            )
+            print(f"  {m.id:<36} FAILED - anchor text not found (code moved?)")
             continue
         try:
             path.write_bytes(original.replace(old, new, 1).encode("utf-8"))
@@ -396,6 +406,7 @@ def main():
     caught = [r for r in results if r["status"] == "caught"]
     equivalent = [r for r in results if r["status"] == "equivalent"]
     survivors = [r for r in results if r["status"] == "SURVIVED"]
+    missing_anchors = [r for r in results if r["status"] == "NOT APPLIED"]
     # Equivalent mutants are excluded from the denominator — standard practice, and here every
     # exclusion carries a justification that was checked by hand. Note the ordering above: a
     # mutation marked equivalent that turns out to be CAUGHT is still reported as caught, so
@@ -407,12 +418,17 @@ def main():
     print(f"MUTATION SCORE: {len(caught)}/{denom} = {score:.0%}")
     print(f"  ({len(equivalent)} verified-equivalent mutants excluded from the denominator)")
     print("=" * 70)
+    if missing_anchors:
+        print("\nMissing anchors — code moved or anchor text out of date:\n")
+        for r in missing_anchors:
+            print(f"  {r['id']}  ({r['path']})")
+            print(f"     {r['danger']}\n")
     if survivors:
         print("\nSurvivors — each is a line that can be wrong with the suite still green:\n")
         for r in survivors:
             print(f"  {r['id']}  ({r['path']})")
             print(f"     {r['danger']}\n")
-    else:
+    elif not missing_anchors:
         print("\nEvery non-equivalent mutation was caught.")
     if equivalent:
         print("Excluded as equivalent, with how each was checked:\n")
@@ -424,6 +440,7 @@ def main():
         "score": score,
         "caught": len(caught),
         "survived": len(survivors),
+        "missing_anchors": len(missing_anchors),
         "equivalent_excluded": len(equivalent),
         "denominator": denom,
         "elapsed_seconds": round(time.time() - t0, 1),
@@ -432,6 +449,9 @@ def main():
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print(f"wrote {args.out}")
+
+    if missing_anchors or survivors:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

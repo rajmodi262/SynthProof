@@ -3,9 +3,10 @@
   "score": 1.0,
   "caught": 18,
   "survived": 0,
+  "missing_anchors": 0,
   "equivalent_excluded": 3,
   "denominator": 18,
-  "elapsed_seconds": 81.0,
+  "elapsed_seconds": 95.5,
   "results": [
     {
       "id": "budget-off-by-one",
