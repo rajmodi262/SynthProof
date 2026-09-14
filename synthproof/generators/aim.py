@@ -199,7 +199,6 @@ class AIMGenerator(BaseGenerator):
         shapes = tuple(len(self.levels_[c]) for c in self.columns)
         domain = Domain(tuple(self.columns), shapes)
         data = Dataset(coded, domain)
-        n = len(coded)
 
         candidates = [(a, b) for i, a in enumerate(self.columns) for b in self.columns[i + 1 :]]
         rounds = min(self.rounds, len(candidates))
@@ -248,7 +247,15 @@ class AIMGenerator(BaseGenerator):
         remaining = list(candidates)
         for r in range(rounds):
             model = estimation.MirrorDescent().estimate(
-                domain, measurements, known_total=n, iters=150
+                # known_total=None: the model's total is private-pgm's minimum-variance estimate
+                # from the NOISY measurements, never the exact row count. With known_total=n one
+                # record moved a selection score by up to 1.71 against the sensitivity-1 charge,
+                # and the fit read n with no charge at all. See
+                # research/11_selection_accounting.md.
+                domain,
+                measurements,
+                known_total=None,
+                iters=150,
             )
 
             # MODEL-SIZE BOUND. Inference cost is exponential in the junction tree's
@@ -308,7 +315,7 @@ class AIMGenerator(BaseGenerator):
             self.measured_cliques_.append(clique)
 
         self._model = estimation.MirrorDescent().estimate(
-            domain, measurements, known_total=n, iters=400
+            domain, measurements, known_total=None, iters=400  # see the note in the rounds loop
         )
         self.is_fitted = True
 

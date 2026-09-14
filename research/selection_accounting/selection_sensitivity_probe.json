@@ -1,0 +1,71 @@
+[
+  {
+    "n": 10,
+    "shapes": [
+      2,
+      2,
+      2,
+      2
+    ],
+    "sigma": 1.0,
+    "trials": 40,
+    "variants": {
+      "known_total=n (current code)": {
+        "max_abs_delta_score": 1.708516,
+        "trials_with_mixed_sign_shifts": 35,
+        "p99_abs_delta": 1.557855
+      },
+      "known_total=None (private-pgm default)": {
+        "max_abs_delta_score": 1.0,
+        "trials_with_mixed_sign_shifts": 32,
+        "p99_abs_delta": 1.0
+      }
+    }
+  },
+  {
+    "n": 50,
+    "shapes": [
+      2,
+      3,
+      2,
+      3
+    ],
+    "sigma": 2.0,
+    "trials": 40,
+    "variants": {
+      "known_total=n (current code)": {
+        "max_abs_delta_score": 1.515774,
+        "trials_with_mixed_sign_shifts": 36,
+        "p99_abs_delta": 1.362589
+      },
+      "known_total=None (private-pgm default)": {
+        "max_abs_delta_score": 1.0,
+        "trials_with_mixed_sign_shifts": 33,
+        "p99_abs_delta": 1.0
+      }
+    }
+  },
+  {
+    "n": 200,
+    "shapes": [
+      3,
+      3,
+      3,
+      2
+    ],
+    "sigma": 4.0,
+    "trials": 40,
+    "variants": {
+      "known_total=n (current code)": {
+        "max_abs_delta_score": 1.341776,
+        "trials_with_mixed_sign_shifts": 39,
+        "p99_abs_delta": 1.337021
+      },
+      "known_total=None (private-pgm default)": {
+        "max_abs_delta_score": 1.0,
+        "trials_with_mixed_sign_shifts": 39,
+        "p99_abs_delta": 1.0
+      }
+    }
+  }
+]
