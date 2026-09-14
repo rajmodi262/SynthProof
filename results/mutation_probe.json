@@ -1,11 +1,11 @@
 {
   "kind": "targeted mutation probe (curated list, not a general sweep)",
   "score": 1.0,
-  "caught": 10,
+  "caught": 18,
   "survived": 0,
   "equivalent_excluded": 3,
-  "denominator": 10,
-  "elapsed_seconds": 76.7,
+  "denominator": 18,
+  "elapsed_seconds": 81.0,
   "results": [
     {
       "id": "budget-off-by-one",
@@ -103,8 +103,14 @@
     },
     {
       "id": "empty-domain-guesses-again",
-      "status": "NOT APPLIED",
-      "danger": "The empty-domain fallback would again return a data-derived category rather than the public domain \u2014 the exact critical defect fixed earlier in this project."
+      "status": "caught",
+      "path": "synthproof/data/profiler.py",
+      "danger": "The empty-domain fallback would again return a data-derived category rather than the public domain \u2014 the exact critical defect fixed earlier in this project.",
+      "tests": [
+        "tests/test_profiler_soundness.py",
+        "tests/test_data.py"
+      ],
+      "equivalent": ""
     },
     {
       "id": "identifier-check-never-fires",
@@ -156,6 +162,86 @@
       "tests": [
         "tests/test_steinke.py",
         "tests/test_subgroup_audit.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "range-proved-not-audited",
+      "status": "caught",
+      "path": "synthproof/audit/ceiling.py",
+      "danger": "The range check would compare the audited epsilon against the ceiling instead of the proved epsilon, restoring the flaw where an uncertified claim is reported in-range.",
+      "tests": [
+        "tests/test_range_verdict.py",
+        "tests/test_capsule.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "ceiling-mismatch-disabled",
+      "status": "caught",
+      "path": "synthproof/audit/ceiling.py",
+      "danger": "Fabricated or mismatched ceilings would go undetected, allowing invalid demo sheets to pass.",
+      "tests": [
+        "tests/test_range_verdict.py",
+        "tests/test_capsule.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "ceiling-mismatch-tolerance-loosened",
+      "status": "caught",
+      "path": "synthproof/audit/ceiling.py",
+      "danger": "The ceiling mismatch tolerance would be loosened by 1000x, allowing tampered or drifted ceilings to escape detection.",
+      "tests": [
+        "tests/test_range_verdict.py",
+        "tests/test_capsule.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "audit-exceeds-proof-not-flagged",
+      "status": "caught",
+      "path": "synthproof/audit/ceiling.py",
+      "danger": "An audit exceeding the proved upper bound would not be flagged as a contradiction, allowing mathematically impossible releases to pass.",
+      "tests": [
+        "tests/test_range_verdict.py",
+        "tests/test_capsule.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "embedded-key-trusted",
+      "status": "caught",
+      "path": "synthproof/capsule/generator.py",
+      "danger": "A capsule verified against its embedded key would be reported as publisher-authenticated, recreating the self-signed key trust vulnerability.",
+      "tests": [
+        "tests/test_verify_key_trust.py",
+        "tests/test_capsule.py",
+        "tests/test_cli_commands.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "key-source-swapped",
+      "status": "caught",
+      "path": "synthproof/capsule/generator.py",
+      "danger": "The reported key source would be inverted, reporting externally-supplied keys as embedded.",
+      "tests": [
+        "tests/test_verify_key_trust.py",
+        "tests/test_capsule.py",
+        "tests/test_cli_commands.py"
+      ],
+      "equivalent": ""
+    },
+    {
+      "id": "fingerprint-truncated",
+      "status": "caught",
+      "path": "synthproof/capsule/generator.py",
+      "danger": "The key fingerprint would be truncated to 8 characters instead of 16, increasing collision risk and violating the fingerprint specification.",
+      "tests": [
+        "tests/test_verify_key_trust.py",
+        "tests/test_capsule.py",
+        "tests/test_cli_commands.py"
       ],
       "equivalent": ""
     }

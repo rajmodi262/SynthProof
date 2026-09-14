@@ -47,6 +47,15 @@ PROFILER_TESTS = ["tests/test_profiler_soundness.py", "tests/test_data.py"]
 PREFLIGHT_TESTS = ["tests/test_preflight.py"]
 LEDGER_TESTS = ["tests/test_ledger_adversarial.py", "tests/test_ledger.py"]
 AUDIT_TESTS = ["tests/test_steinke.py", "tests/test_subgroup_audit.py"]
+RANGE_VERDICT_TESTS = [
+    "tests/test_range_verdict.py",
+    "tests/test_capsule.py",
+]
+KEY_TRUST_TESTS = [
+    "tests/test_verify_key_trust.py",
+    "tests/test_capsule.py",
+    "tests/test_cli_commands.py",
+]
 
 
 @dataclass(frozen=True)
@@ -147,8 +156,8 @@ MUTATIONS: List[Mutation] = [
     Mutation(
         "category-threshold-weakened",
         "synthproof/data/profiler.py",
-        "threshold = self.category_threshold_factor * noise_scale * np.sqrt(2.0)",
-        "threshold = 0.1 * noise_scale * np.sqrt(2.0)",
+        "        return 3.0 * noise_scale * float(np.sqrt(2.0))",
+        "        return 0.1 * noise_scale * float(np.sqrt(2.0))",
         "Rare categories would survive suppression, leaking values held by very few people. "
         "This is the family the un-noised-mode defect belonged to.",
         PROFILER_TESTS,
@@ -222,6 +231,71 @@ MUTATIONS: List[Mutation] = [
         "epsilon of 0 would look like meaningful evidence of no leakage.",
         AUDIT_TESTS,
     ),
+    # ---------------------------------------------------------------- audit range verdict
+    Mutation(
+        "range-proved-not-audited",
+        "synthproof/audit/ceiling.py",
+        "if proved > ceiling + _TOL:",
+        "if (audited or 0.0) > ceiling + _TOL:",
+        "The range check would compare the audited epsilon against the ceiling instead of "
+        "the proved epsilon, restoring the flaw where an uncertified claim is reported in-range.",
+        RANGE_VERDICT_TESTS,
+    ),
+    Mutation(
+        "ceiling-mismatch-disabled",
+        "synthproof/audit/ceiling.py",
+        "        recomputed is not None",
+        "        False and recomputed is not None",
+        "Fabricated or mismatched ceilings would go undetected, allowing invalid demo "
+        "sheets to pass.",
+        RANGE_VERDICT_TESTS,
+    ),
+    Mutation(
+        "ceiling-mismatch-tolerance-loosened",
+        "synthproof/audit/ceiling.py",
+        "and not math.isclose(ceiling, recomputed, rel_tol=rel_tol, abs_tol=_TOL)",
+        "and not math.isclose(ceiling, recomputed, rel_tol=rel_tol * 1000, abs_tol=_TOL)",
+        "The ceiling mismatch tolerance would be loosened by 1000x, allowing tampered or drifted "
+        "ceilings to escape detection.",
+        RANGE_VERDICT_TESTS,
+    ),
+    Mutation(
+        "audit-exceeds-proof-not-flagged",
+        "synthproof/audit/ceiling.py",
+        "if proved is not None and audited is not None and audited > proved + _TOL:",
+        "if False and proved is not None and audited is not None and audited > proved + _TOL:",
+        "An audit exceeding the proved upper bound would not be flagged as a contradiction, "
+        "allowing mathematically impossible releases to pass.",
+        RANGE_VERDICT_TESTS,
+    ),
+    # ---------------------------------------------------------------- key trust
+    Mutation(
+        "embedded-key-trusted",
+        "synthproof/capsule/generator.py",
+        "        publisher_authenticated = False",
+        "        publisher_authenticated = True",
+        "A capsule verified against its embedded key would be reported as publisher-authenticated, "
+        "recreating the self-signed key trust vulnerability.",
+        KEY_TRUST_TESTS,
+    ),
+    Mutation(
+        "key-source-swapped",
+        "synthproof/capsule/generator.py",
+        'key_source = "supplied"',
+        'key_source = "embedded"',
+        "The reported key source would be inverted, reporting externally-supplied keys "
+        "as embedded.",
+        KEY_TRUST_TESTS,
+    ),
+    Mutation(
+        "fingerprint-truncated",
+        "synthproof/capsule/generator.py",
+        "    key_fingerprint = hashlib.sha256(raw_pk).hexdigest()[:16]",
+        "    key_fingerprint = hashlib.sha256(raw_pk).hexdigest()[:8]",
+        "The key fingerprint would be truncated to 8 characters instead of 16, increasing "
+        "collision risk and violating the fingerprint specification.",
+        KEY_TRUST_TESTS,
+    ),
 ]
 
 
@@ -283,12 +357,17 @@ def main():
         # its own residue. Bytes in, bytes out.
         original_bytes = path.read_bytes()
         original = original_bytes.decode("utf-8")
-        if m.old not in original:
+        old = m.old
+        new = m.new
+        if old not in original and old.replace("\n", "\r\n") in original:
+            old = old.replace("\n", "\r\n")
+            new = new.replace("\n", "\r\n")
+        if old not in original:
             results.append({"id": m.id, "status": "NOT APPLIED", "danger": m.danger})
             print(f"  {m.id:<36} SKIPPED - anchor text not found (code moved?)")
             continue
         try:
-            path.write_bytes(original.replace(m.old, m.new, 1).encode("utf-8"))
+            path.write_bytes(original.replace(old, new, 1).encode("utf-8"))
             caught = not run_tests(m.tests)
         finally:
             path.write_bytes(original_bytes)

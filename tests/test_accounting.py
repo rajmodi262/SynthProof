@@ -37,6 +37,19 @@ def test_budget_exceeded_raises():
     assert "exceeds remaining" in str(exc_info.value)
 
 
+def test_budget_exceeded_by_small_margin_raises():
+    """A charge exceeding budget by only ~2% must be refused deterministically.
+
+    Guards against mutant weakening the check (e.g. budget * 1.05).
+    """
+    acc = Accountant(budget_eps=1.0, budget_delta=1e-5)
+    slightly_over_spec = MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=3.974)
+    assert 1.0 < acc.dry_run(slightly_over_spec) < 1.05
+
+    with pytest.raises(BudgetExceededError):
+        acc.charge(slightly_over_spec)
+
+
 def test_dry_run_does_not_mutate_state(fresh_accountant, standard_gaussian_spec):
     initial_total = fresh_accountant.total()
     initial_spends_len = len(fresh_accountant.spends)

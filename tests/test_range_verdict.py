@@ -132,3 +132,14 @@ def test_no_verdict_ever_calls_a_release_safe():
     for v in cases:
         assert "safe" not in v.label.lower() and "safe" not in v.to_dict()
         assert "Bounded under MIQE" not in v.explanation
+
+
+def test_tight_ceiling_mismatch_is_caught():
+    """A ceiling that is off by only 100 ppm (0.01%) must still be caught.
+
+    Loosening rel_tol from 1e-6 to 1e-3 allows subtle ceiling drift or tampering to escape.
+    """
+    tampered = H1_CEILING * 1.0001
+    v = _one_run(1.0, 0.0, tampered, 60)
+    assert v.code == "CEILING_MISMATCH"
+    assert v.tone == "fail"
