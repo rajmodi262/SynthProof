@@ -66,11 +66,9 @@ jobs:
         run: mypy
 
       - name: Test with coverage
-        # Raised 80 -> 90 on 2026-08-23. Measured 92% on 2026-09-12 (738 passed, 1
-        # skipped) -- the comment here previously said 94%, which was never re-checked
-        # after the suite grew. The gate rises to 94 in task 3.2 of docs/ROAD_TO_TEN.md,
-        # once the CLI and API modules are brought up from 78% and 80%.
-        run: pytest --cov=synthproof --cov-report=term-missing --cov-fail-under=90
+        # Raised 80 -> 90 on 2026-08-23. Measured 96% on 2026-09-14 (901 passed, 1
+        # skipped). Raised to 94 in task T4 / row 3.2 of docs/ROAD_TO_TEN.md.
+        run: pytest --cov=synthproof --cov-report=term-missing --cov-fail-under=94
 
       # The two gates below are specific to this project's discipline, and until now both
       # were manual. On 2026-09-12 both were failing in the committed tree -- which is the
