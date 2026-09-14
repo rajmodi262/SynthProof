@@ -1,5 +1,6 @@
 # SynthProof — Synthetic Data That Ships With Its Proof
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22746911.svg)](https://doi.org/10.5281/zenodo.22746911)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![Status: research prototype](https://img.shields.io/badge/status-research%20prototype-orange.svg)](docs/ROAD_TO_TEN.md)
