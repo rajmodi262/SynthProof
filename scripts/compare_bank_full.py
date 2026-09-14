@@ -1,72 +1,178 @@
-"""Compare H1 results across Adult, ACS, and Bank Marketing.
+"""Generate and compare H1 results across Adult, ACSIncome, and Bank Marketing.
 
-Reads the three result files:
-  results/h1_all_families.json
-  results/acs/h1_all_families.json
-  results/bank/h1_all_families.json
-and formats the cross-dataset comparison tables at epsilon = 8.
+Outputs for every epsilon in the grid (0.5, 1.0, 2.0, 4.0, 8.0) and all three datasets:
+- correlation error and TSTR F1, mean [lo, hi] to 4 decimals;
+- for each mechanism pair, SEPARATED or overlap computed from intervals;
+- TRTR baseline F1.
+
+Can write generated tables directly into results/bank/BANK_MARKETING.md between
+markers via the `--write` flag.
 """
 
+from __future__ import annotations
+
+import argparse
 import json
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+RESULTS = ROOT / "results"
+BANK_MD = RESULTS / "bank" / "BANK_MARKETING.md"
 
-def load_cell(json_path: Path, mechanism: str, target_eps: float = 8.0) -> dict:
-    with open(json_path, encoding="utf-8") as f:
-        data = json.load(f)
-    for c in data.get("cells", []):
-        if c.get("mechanism") == mechanism and abs(c.get("target_eps", 0) - target_eps) < 1e-4:
-            return c
-    raise ValueError(f"Cell for {mechanism} at eps={target_eps} not found in {json_path}")
+BEGIN_MARKER = "<!-- BEGIN GENERATED: bank-h1-tables -->"
+END_MARKER = "<!-- END GENERATED: bank-h1-tables -->"
+
+DATASETS = [
+    ("UCI Adult", "results/h1_all_families.json"),
+    ("ACSIncome (California, 2018)", "results/acs/h1_all_families.json"),
+    ("UCI Bank Marketing", "results/bank/h1_all_families.json"),
+]
 
 
-def main():
-    root = Path(__file__).resolve().parents[1]
-    results_dir = root / "results"
+def load_dataset(rel_path: str, root: Path = ROOT) -> dict:
+    target = root / rel_path
+    if not target.exists():
+        raise FileNotFoundError(f"Result file not found: {target}")
+    return json.loads(target.read_text(encoding="utf-8"))
 
-    datasets = [
-        ("Adult", results_dir / "h1_all_families.json"),
-        ("ACSIncome", results_dir / "acs" / "h1_all_families.json"),
-        ("Bank Marketing", results_dir / "bank" / "h1_all_families.json"),
+
+def fmt_ci(block: dict, places: int = 4) -> str:
+    """Format mean with 95% bootstrap CI to fixed decimal places."""
+    return f"{block['mean']:.{places}f} [{block['lo']:.{places}f}, {block['hi']:.{places}f}]"
+
+
+def separation(a: dict, b: dict) -> str:
+    """Return 'SEPARATED' if bootstrap CIs do not overlap, else 'overlap'."""
+    if max(a["lo"], b["lo"]) <= min(a["hi"], b["hi"]):
+        return "overlap"
+    return "SEPARATED"
+
+
+def generate_dataset_table(title: str, data: dict) -> list[str]:
+    lines = [f"### {title}", ""]
+    trtr = data["cells"][0].get("trtr_f1")
+    if trtr:
+        lines.append(f"*TRTR baseline F1: **{fmt_ci(trtr, 4)}**.*")
+        lines.append("")
+
+    lines.append(
+        "| Target ε | Metric | independent [95% CI] | pairwise [95% CI] | aim [95% CI] | "
+        "pw vs ind | aim vs ind | aim vs pw |"
+    )
+    lines.append("|---:|---|---|---|---|---|---|---|")
+
+    for eps in data["eps_grid"]:
+        cells = {c["mechanism"]: c for c in data["cells"] if abs(c["target_eps"] - eps) < 1e-4}
+        for metric_key, metric_label in [
+            ("correlation_error", "Correlation error"),
+            ("tstr_f1", "TSTR macro F1"),
+        ]:
+            ind = cells["independent"][metric_key]
+            pw = cells["pairwise"][metric_key]
+            aim = cells["aim"][metric_key]
+            pw_ind = separation(pw, ind)
+            aim_ind = separation(aim, ind)
+            aim_pw = separation(aim, pw)
+            lines.append(
+                f"| {eps:g} | {metric_label} | {fmt_ci(ind, 4)} | {fmt_ci(pw, 4)} | "
+                f"{fmt_ci(aim, 4)} | {pw_ind} | {aim_ind} | {aim_pw} |"
+            )
+    lines.append("")
+    return lines
+
+
+def generate_cross_dataset_summary(root: Path = ROOT) -> list[str]:
+    lines = [
+        "### Cross-Dataset Comparison at ε = 8",
+        "",
+        "| Dataset | Metric | independent [95% CI] | pairwise [95% CI] | aim [95% CI] | "
+        "pw vs ind | aim vs ind | aim vs pw |",
+        "|---|---|---|---|---|---|---|---|",
     ]
 
-    print("Correlation error at eps = 8 (mean [95% CI]):\n")
-    print(
-        f"{'Dataset':<16} | {'true corr':>9} | {'independent':<25} | {'pairwise':<25} | {'aim':<25}"
+    for label, rel in DATASETS:
+        d = load_dataset(rel, root)
+        cells = {c["mechanism"]: c for c in d["cells"] if abs(c["target_eps"] - 8.0) < 1e-4}
+        for metric_key, metric_label in [
+            ("correlation_error", "Correlation error"),
+            ("tstr_f1", "TSTR macro F1"),
+        ]:
+            ind = cells["independent"][metric_key]
+            pw = cells["pairwise"][metric_key]
+            aim = cells["aim"][metric_key]
+            pw_ind = separation(pw, ind)
+            aim_ind = separation(aim, ind)
+            aim_pw = separation(aim, pw)
+            lines.append(
+                f"| {label} | {metric_label} | {fmt_ci(ind, 4)} | {fmt_ci(pw, 4)} | "
+                f"{fmt_ci(aim, 4)} | {pw_ind} | {aim_ind} | {aim_pw} |"
+            )
+    lines.append("")
+    return lines
+
+
+def generate_bank_tables(root: Path = ROOT) -> str:
+    """Generate the full markdown block with markers and provenance."""
+    lines = [
+        BEGIN_MARKER,
+        "<!-- Provenance: generated by scripts/compare_bank_full.py --write -->",
+        (
+            "<!-- Sources: results/h1_all_families.json, results/acs/h1_all_families.json, "
+            "results/bank/h1_all_families.json -->"
+        ),
+        "",
+    ]
+
+    for label, rel in DATASETS:
+        data = load_dataset(rel, root)
+        lines.extend(generate_dataset_table(label, data))
+
+    lines.extend(generate_cross_dataset_summary(root))
+    lines.append(END_MARKER)
+    return "\n".join(lines)
+
+
+def write_to_file(content: str, target_file: Path = BANK_MD) -> None:
+    if not target_file.exists():
+        raise FileNotFoundError(f"Target markdown file not found: {target_file}")
+    text = target_file.read_text(encoding="utf-8")
+
+    if BEGIN_MARKER in text and END_MARKER in text:
+        start_idx = text.index(BEGIN_MARKER)
+        end_idx = text.index(END_MARKER) + len(END_MARKER)
+        updated = text[:start_idx] + content + text[end_idx:]
+    else:
+        # Insert after initial overview header block (after line 9)
+        insert_marker = "## Why this dataset"
+        if insert_marker in text:
+            updated = text.replace(
+                insert_marker,
+                f"{content}\n\n{insert_marker}",
+                1,
+            )
+        else:
+            updated = f"{text}\n\n{content}\n"
+
+    target_file.write_text(updated, encoding="utf-8")
+    print(f"Updated {target_file}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Generate full grid H1 comparisons for Bank Marketing, Adult, and ACSIncome."
     )
-    print("-" * 115)
+    parser.add_argument(
+        "--write",
+        action="store_true",
+        help=f"Write generated markdown table block directly into {BANK_MD.name}",
+    )
+    args = parser.parse_args()
 
-    for label, path in datasets:
-        with open(path, encoding="utf-8") as f:
-            d = json.load(f)
-        true_corr = d.get("true_correlation", 0.0)
-
-        ind = load_cell(path, "independent", 8.0)["correlation_error"]
-        pw = load_cell(path, "pairwise", 8.0)["correlation_error"]
-        aim = load_cell(path, "aim", 8.0)["correlation_error"]
-
-        ind_str = f"{ind['mean']:.4f} [{ind['lo']:.3f}, {ind['hi']:.3f}]"
-        pw_str = f"{pw['mean']:.4f} [{pw['lo']:.3f}, {pw['hi']:.3f}]"
-        aim_str = f"{aim['mean']:.4f} [{aim['lo']:.3f}, {aim['hi']:.3f}]"
-
-        print(f"{label:<16} | {true_corr:>+9.4f} | {ind_str:<25} | {pw_str:<25} | {aim_str:<25}")
-
-    print("\n" + "=" * 80 + "\n")
-    print("TSTR F1 at eps = 8 (mean):\n")
-    print(f"{'Dataset':<16} | {'TRTR':>8} | {'independent':>11} | {'pairwise':>8} | {'aim':>8}")
-    print("-" * 65)
-
-    for label, path in datasets:
-        ind = load_cell(path, "independent", 8.0)
-        pw = load_cell(path, "pairwise", 8.0)
-        aim = load_cell(path, "aim", 8.0)
-
-        trtr = ind.get("trtr_f1", {}).get("mean", 0.0)
-        ind_f1 = ind["tstr_f1"]["mean"]
-        pw_f1 = pw["tstr_f1"]["mean"]
-        aim_f1 = aim["tstr_f1"]["mean"]
-
-        print(f"{label:<16} | {trtr:>8.4f} | {ind_f1:>11.4f} | {pw_f1:>8.4f} | {aim_f1:>8.4f}")
+    content = generate_bank_tables(ROOT)
+    if args.write:
+        write_to_file(content, BANK_MD)
+    else:
+        print(content)
 
 
 if __name__ == "__main__":
