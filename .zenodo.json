@@ -37,5 +37,5 @@
       "resource_type": "publication-article"
     }
   ],
-  "notes": "Deposit metadata for Zenodo. The DOI is minted by connecting this GitHub repository to Zenodo and publishing a release; that step requires the repository owner's own Zenodo account and is not automatable from the repository. Once minted, add the DOI badge to README.md and the `doi:` field to CITATION.cff."
+  "notes": "Deposit metadata for Zenodo, read on each GitHub Release. First archived release: v1.1.0 (2026-09-14). Concept DOI (all versions): 10.5281/zenodo.22746910. Version DOI for v1.1.0: 10.5281/zenodo.22746911. v1.0.0 was not archived."
 }

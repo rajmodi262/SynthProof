@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **Zenodo DOI minted** from the GitHub Release `v1.1.0`: concept DOI `10.5281/zenodo.22746910` (all
+  versions — cite this) and version DOI `10.5281/zenodo.22746911` (v1.1.0 exactly). This closes the 1.1.0
+  known gap "No Zenodo DOI", which is left as written in the released notes below. The README
+  badge and `CITATION.cff` `doi:` use the concept DOI; `identifiers:` lists both.
+
 ## 1.1.0 — 2026-09-14
 
 Work done after 1.0.0 on branch `gemini/handoff-2026-09`, reviewed commit by commit in three

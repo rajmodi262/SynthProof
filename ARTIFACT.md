@@ -144,6 +144,15 @@ after the dataset is fetched.
 
 ## 7. Archival availability (Zenodo)
 
+> **Done 2026-09-14.** Zenodo archived the GitHub Release **`v1.1.0`**. v1.0.0 has no DOI:
+> no Release was created from that tag before the webhook was enabled.
+> - **Concept DOI `10.5281/zenodo.22746910`** — all versions; always the newest. Cite this in the thesis.
+> - **Version DOI `10.5281/zenodo.22746911`** — v1.1.0 exactly.
+>
+> Both are in `CITATION.cff`; the README badge uses the concept DOI. The steps below are kept
+> as the record of how it was set up. For a future release only step 3 is needed: cut a
+> Release from the new tag, and Zenodo mints a new version DOI under the same concept DOI.
+
 GitHub alone does not satisfy *Artifacts Available*; an archival DOI is required. These steps
 need a browser and must be done by a maintainer:
 

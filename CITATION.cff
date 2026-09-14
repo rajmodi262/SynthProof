@@ -43,11 +43,18 @@ keywords:
 license: MIT
 version: 1.1.0
 date-released: '2026-09-14'
-doi: 10.5281/zenodo.22746911
+doi: 10.5281/zenodo.22746910
 identifiers:
   - type: doi
+    value: 10.5281/zenodo.22746910
+    description: >-
+      Concept DOI for all versions of SynthProof. Always resolves to the
+      newest release. Cite this.
+  - type: doi
     value: 10.5281/zenodo.22746911
-    description: "The Zenodo DOI for SynthProof."
+    description: >-
+      Version DOI for SynthProof v1.1.0 exactly. Cite this when a reader
+      must see the code behind a specific number.
 references:
   - type: article
     title: Privacy Auditing with One (1) Training Run
