@@ -181,9 +181,9 @@ require capabilities that do not exist to be named rather than omitted.
 - **The audit ceiling disqualifies the headline comparison.** At the canary counts used, the
   instrument could not have certified the ε values being claimed. This is the project's main
   finding, not a caveat hidden here. Every sheet now carries a verdict saying so when it applies.
-- **Three datasets, unevenly.** UCI Adult and ACSIncome (CA 2018) carry the full preregistered
-  grid; UCI Bank Marketing carries a reduced grid (2 ε × 3 seeds), marked `reduced_run: true`.
-  The structure-ordering and utility-ordering findings do not all transfer across the three.
+- **Three datasets.** UCI Adult, ACSIncome (CA 2018), and UCI Bank Marketing all carry the
+  full preregistered 5 × 5 grid (75 cells each). The structure-ordering and utility-ordering
+  findings do not all transfer across the three.
 - **LiRA is not implemented**, and is declared absent in every sheet
   (`attacks_not_implemented`). Each release runs six attacks: canary audit, distance MIA,
   DOMIAS, exact-match risk, linkability and attribute inference. A seventh, the marginal-ratio

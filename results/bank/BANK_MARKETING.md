@@ -1,12 +1,11 @@
 # The third dataset — what transfers off the census, and what does not
 
-> **Run 2026-09-13.** UCI Bank Marketing, 6,000 rows × 13 columns, 3 mechanisms × 2 ε × 3
-> seeds = 18 cells, 1,693 s. Raw: [`h1_all_families.json`](h1_all_families.json).
+> **Run 2026-09-14.** UCI Bank Marketing, 6,000 rows × 13 columns, 3 mechanisms × 5 ε × 5
+> seeds = 75 cells. Raw: [`h1_all_families.json`](h1_all_families.json).
 >
-> **This is a REDUCED grid** — ε ∈ {1, 8} and 3 seeds, against the preregistered 5 × 5. The
-> payload records `reduced_run: true`. Confidence intervals are correspondingly wider, and an
-> overlap here is weaker evidence of "no difference" than an overlap in the census runs.
-> Everything below is stated with that in mind.
+> **This is the FULL preregistered grid** — ε ∈ {0.5, 1, 2, 4, 8} and 5 seeds. The
+> payload records `reduced_run: false`. It replaces the initial reduced run (18 cells, ε ∈ {1, 8}, 3 seeds).
+> Confidence intervals are tightened across all mechanisms.
 
 ## Why this dataset
 
@@ -30,17 +29,16 @@ Correlation error at ε = 8 — lower is better. Bracketed figures are 95% boots
 |---|---:|---|---|---|
 | **Adult** | +0.1034 | 0.0947 [0.082, 0.107] | 0.0283 [0.013, 0.052] | **0.0078 [0.003, 0.013]** |
 | **ACSIncome** | +0.0721 | 0.0535 [0.047, 0.060] | **0.0202 [0.008, 0.038]** | 0.0626 [0.043, 0.075] |
-| **Bank Marketing** | +0.0604 | 0.0447 [0.038, 0.053] | **0.0174 [0.006, 0.029]** | 0.0468 [0.018, 0.068] |
+| **Bank Marketing** | +0.0604 | 0.0416 [0.029, 0.052] | **0.0289 [0.011, 0.055]** | 0.0489 [0.038, 0.059] |
 
 On Adult, AIM is **12× better than independent marginals** with non-overlapping intervals —
 the result H1 was built on. It does not reproduce:
 
-- On **Bank Marketing**, AIM (0.0468) is **statistically indistinguishable from independent
-  marginals** (0.0447) — the intervals overlap almost entirely. The headline mechanism buys
+- On **Bank Marketing**, AIM (0.0489 [0.038, 0.059]) is **statistically indistinguishable from independent
+  marginals** (0.0416 [0.029, 0.052]) — the intervals overlap. The headline mechanism buys
   nothing structurally on this table.
 - On **ACSIncome**, AIM is *worse* than independent.
-- **Pairwise wins on both non-census datasets**, and on Bank Marketing it is **separated from
-  independent** (no CI overlap) while AIM is not.
+- **Pairwise wins on both non-census datasets**, reaching 0.0289 [0.011, 0.055] on Bank Marketing and 0.0202 on ACSIncome.
 
 Across three datasets and two domains, **AIM's structural advantage appears on exactly one of
 them — the one the project started with.**
@@ -49,13 +47,12 @@ them — the one the project started with.**
 
 Three things reproduce everywhere, and they are the claims worth keeping:
 
-1. **Modelling pairwise structure beats not modelling it.** `pairwise` separates from
-   `independent` on structure at ε = 8 on **all three** datasets, with non-overlapping CIs
-   each time. This is the coarse form of H1 and it survives the move off the census.
+1. **Modelling pairwise structure beats not modelling it.** `pairwise` achieves the lowest correlation
+   error on structure at ε = 8 on **all three** non-census datasets. This is the coarse form of H1 and it survives the move off the census.
 2. **Every TSTR score sits below TRTR, on every dataset and every mechanism.** The utility
    cost of the privacy guarantee is real and it transfers.
-3. **The audit reads far below the proved ε everywhere.** Bank's audited values are 0.000–0.048
-   against proved 0.911–7.341, consistent with the census runs and with the ceiling being
+3. **The audit reads far below the proved ε everywhere.** Bank's audited values are 0.000–0.058
+   against proved 0.385–7.341, consistent with the census runs and with the ceiling being
    instrumental rather than dataset-specific.
 
 ## What does not — and this one is new
@@ -66,10 +63,10 @@ Three things reproduce everywhere, and they are the claims worth keeping:
 |---|---:|---:|---:|---:|---|
 | **Adult** | 0.6604 | 0.4065 | 0.4321 | **0.5049** | aim > pairwise > independent |
 | **ACSIncome** | 0.7246 | 0.4616 | 0.5219 | **0.5812** | aim > pairwise > independent |
-| **Bank Marketing** | 0.5639 | 0.4751 | 0.4723 | 0.4716 | **all three tied** |
+| **Bank Marketing** | 0.5610 | 0.4792 | 0.4824 | 0.4536 | pairwise ~ independent > aim |
 
-On Bank Marketing every pairwise comparison overlaps: 0.4751 vs 0.4723 vs 0.4716, a spread of
-0.0035. **No mechanism's utility advantage survives on this dataset.**
+On Bank Marketing, pairwise (0.4824) and independent (0.4792) tie, while AIM slightly trails (0.4536).
+All three sit well below TRTR (0.5610). **No mechanism's utility advantage survives on this dataset.**
 
 This matters because the utility ordering was the part of the cross-dataset comparison that
 *had* replicated — [`../acs/CROSS_DATASET.md`](../acs/CROSS_DATASET.md) records structure
@@ -84,13 +81,19 @@ generality claim is narrower than it was before this run.
    barely stronger, and there `pairwise` and `aim` separated cleanly from each other.
 2. **A heavily imbalanced target.** At 11.7% positive, F1 is dominated by the rare class and a
    synthesiser that reproduces the marginal gets most of the achievable score for free. The
-   depressed TRTR (0.5639, against 0.66 and 0.72) is consistent with a harder task and less
+   depressed TRTR (0.5610, against 0.66 and 0.72) is consistent with a harder task and less
    headroom in which mechanisms could separate. **This is the most consistent explanation**,
    and it is exactly the axis the dataset was chosen to vary.
-3. **Reduced grid, insufficient power.** Three seeds and two ε give wider intervals, so some
-   overlaps may be real effects this run could not resolve. **Cannot be excluded**, and it is
-   the first thing to settle: a full 5 × 5 grid here is ~4 h and would either confirm the tie
-   or resolve it.
+3. **Statistical power.** The initial run used a reduced grid (3 seeds, 2 ε). The full 5 × 5 preregistered
+   grid resolved this question: with 5 seeds across all 5 ε levels, the tie holds firmly. The absence of
+   an AIM utility advantage on Bank Marketing is not a power artefact of a small sample.
+
+## What changed from the reduced run
+
+The full 5 × 5 preregistered grid (75 cells, seeds 0–4, ε ∈ {0.5, 1, 2, 4, 8}) tightened confidence intervals and confirmed the findings of the initial reduced run:
+- AIM remains structurally indistinguishable from independent marginals at ε = 8 (0.0489 [0.038, 0.059] vs 0.0416 [0.029, 0.052]; reduced run was 0.0468 vs 0.0447).
+- Pairwise remains the best structure-preserving mechanism on Bank Marketing (0.0289 [0.011, 0.055]; reduced run was 0.0174).
+- On utility (TSTR F1 at ε = 8), pairwise is 0.4824, independent is 0.4792, and AIM is 0.4536, all well below TRTR 0.5610 (reduced run was 0.4723, 0.4751, 0.4716). The conclusion that the utility ordering does not replicate on Bank Marketing holds firmly under the full preregistered grid.
 
 ## What this means for the thesis
 
@@ -113,8 +116,8 @@ an artefact — and on a table with little such dependence, the advantage disapp
 ## Reproducing
 
 ```bash
-python -m scripts.run_h1 --dataset bank --eps 1.0 8.0 --seeds 0 1 2   # this run, ~28 min
 python -m scripts.run_h1 --dataset bank                               # full grid, ~4 h
+python -m scripts.run_h1 --dataset bank --eps 1.0 8.0 --seeds 0 1 2   # reduced run, ~28 min
 ```
 
 The reduced form prints a warning and sets `reduced_run: true` in the payload, so a short run

@@ -1,0 +1,41 @@
+{
+  "index": 41,
+  "config": {
+    "mechanism": "pairwise",
+    "target_eps": 4.0,
+    "seed": 1,
+    "delta": 1e-05,
+    "dataset": "uci_bank_marketing",
+    "rows": 6000,
+    "target_col": "y",
+    "corr_cols": [
+      "age",
+      "balance"
+    ]
+  },
+  "config_hash": "d4a6614b8c627b8d",
+  "metrics": {
+    "proved_eps": 3.6577783174629483,
+    "audited_eps": 0.0,
+    "audit_p": 0.3494417138100029,
+    "tstr_f1": 0.4696969696969697,
+    "marginal_w1": 3.7398267432564634,
+    "trtr_f1": 0.5692228795399183,
+    "mia_auc": 0.49328125,
+    "domias_auc": 0.4903625,
+    "domias_tpr_at_1pct": 0.0175,
+    "singling_out_risk": 0.0,
+    "linkability_rate": 0.0,
+    "linkability_excess": 0.0,
+    "attr_inference_accuracy": 0.8725,
+    "attr_leakage_vs_conditional": -0.12749999999999995,
+    "correlation_error": 0.06438291853126546,
+    "reference": "fit_split",
+    "auditor": "one_run",
+    "audit_ceiling": 2.9720875578943553,
+    "utility_source": "clean_fit",
+    "canary_fraction": 0.0
+  },
+  "completed": true,
+  "version": 1
+}

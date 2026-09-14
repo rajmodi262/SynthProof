@@ -19,7 +19,6 @@ exists to argue against.
 - **`docker compose up` has not been executed.** The Dockerfile was rewritten after static
   review (see below), but no Docker daemon was available to run it.
 - **No Zenodo DOI.** `.zenodo.json` is prepared; minting needs the owner's Zenodo account.
-- **Bank Marketing carries a reduced grid** (2 ε × 3 seeds), recorded as `reduced_run: true`.
 - **Real AIM is not available in the Docker image** — private-pgm installs from git and is not
   a declared dependency.
 - **The thesis's contributions statement is incomplete**: `CONTRIBUTIONS.md` leaves one row per
@@ -55,7 +54,8 @@ exists to argue against.
 
 ### Added
 
-- A third benchmark, **UCI Bank Marketing**, from outside the census.
+- A third benchmark, **UCI Bank Marketing**, from outside the census, with the full preregistered
+  5 × 5 grid (75 cells, 5 ε × 5 seeds) confirming that AIM's structural advantage does not transfer.
 - A second adversary, the **marginal-ratio (ζ) attack**, which reaches AUC 0.59 where the
   nearest-neighbour baseline sits at chance.
 - `scripts/setup_demo.py`, so the rehearsed demo can actually be run.
