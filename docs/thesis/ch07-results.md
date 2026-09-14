@@ -78,7 +78,7 @@ However, on the higher-cardinality, sparse ACSIncome benchmark, H1 fails to repl
 
 Furthermore, on ACSIncome, AIM displays a non-monotonic utility curve: as privacy budget increases from $\varepsilon = 0.5$ to $\varepsilon = 8.0$, AIM's TSTR macro F1 paradoxically *declines* from $0.704 \text{ [0.695, 0.713]}$ to $0.581 \text{ [0.539, 0.629]}$. 
 
-We diagnose the exact mechanism responsible for this inversion: **privacy-budgeted domain expansion**. Under strict differential privacy, domain profiling must spend privacy budget to discover active category levels. At low $\varepsilon = 0.5$, the profiler suppresses rare categories, retaining only 3 levels for occupation (`OCCP`) and 3 levels for relationship (`RELP`). At higher $\varepsilon = 8.0$, the profiler admits 23 occupation levels and 14 relationship levels. Because AIM operates with a bounded clique allowance under Private-PGM, expanding the contingency table domain dilutes the per-measurement noise budget across exponentially larger state spaces. Consequently, the fixed clique budget captures a smaller proportion of the joint distribution, degrading utility on sparse tabular domains.
+One candidate explanation, not tested here, is **privacy-budgeted domain expansion**. Under strict differential privacy, domain profiling must spend privacy budget to discover active category levels. At low $\varepsilon = 0.5$, the profiler suppresses rare categories, retaining only 3 levels for occupation (`OCCP`) and 3 levels for relationship (`RELP`). At higher $\varepsilon = 8.0$, the profiler admits 23 occupation levels and 14 relationship levels. If expanding the contingency table domain dilutes the per-measurement noise budget across larger state spaces, Private-PGM's fixed clique budget may capture a smaller proportion of the joint distribution, potentially degrading utility on sparse tabular domains.
 
 ---
 
@@ -108,7 +108,7 @@ In AIM, privacy budget is partitioned between candidate selection (identifying i
 
 We verified that model-size limits did not cause this variation: `skipped_cliques_` is empty at both $\varepsilon = 0.5$ and $\varepsilon = 8.0$, with exactly 17 total cliques measured across both runs. 
 
-We emphasize the bounded nature of this replication: as established by our fixed-workload ablation (`results/SELECTION_ABLATION.md`), AIM's relative advantage on Adult ($11.9\times$ vs no-dependence baseline) shrinking on ACSIncome ($2.3\times$) reflects differences in underlying correlation structure ($0.1034$ on Adult vs $0.0721$ on ACSIncome), not a failure of synthesis. As Chen, Gong & Wang (2025) note, on weakly dependent pairs the independent-marginals baseline is a well-specified model. Evaluating marginal-based synthesizers therefore requires accounting for ground-truth attribute dependence rather than attributing performance shifts solely to clique selection.
+We emphasize the bounded nature of this replication: as established by our fixed-workload ablation (`results/SELECTION_ABLATION.md`), the change in AIM's relative advantage on Adult ($11.9\times$ vs no-dependence baseline) shrinking on ACSIncome ($2.3\times$) is consistent with the dependence relationship measured in `results/SELECTION_ABLATION.md` ($r = -0.898$) across underlying correlation structures ($0.1034$ on Adult vs $0.0721$ on ACSIncome). Evaluating marginal-based synthesizers therefore requires accounting for ground-truth attribute dependence rather than attributing performance shifts solely to clique selection.
 
 ---
 
