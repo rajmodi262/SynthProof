@@ -1,5 +1,68 @@
 # Changelog
 
+## 1.1.0 — 2026-09-14
+
+Work done after 1.0.0 on branch `gemini/handoff-2026-09`, reviewed commit by commit in three
+rounds against [`docs/AGENT_HANDOFF.md`](docs/AGENT_HANDOFF.md). The agent reports are
+[`docs/AGENT_REPORT_2026-09.md`](docs/AGENT_REPORT_2026-09.md) and
+[`docs/AGENT_REPORT_2026-09-FOLLOWUP.md`](docs/AGENT_REPORT_2026-09-FOLLOWUP.md).
+
+### Known gaps in this release
+
+- **`docker compose up` has still not been executed.** No Docker daemon was available.
+- **No Zenodo DOI.** Minting needs the owner's Zenodo account.
+- **Real AIM is not available in the Docker image** — private-pgm installs from git.
+- **`CONTRIBUTIONS.md` still awaits one row per team member**, to be written by that member.
+- **No shadow-model membership attack is implemented.** The marginal-ratio adversary uses oracle
+  focal points and is not MAMA-MIA; LiRA remains deliberately unimplemented.
+
+### Closed from the 1.0.0 known gaps
+
+- **One version everywhere is now actually true.** The 1.0.0 notes said the version was stated
+  consistently, but `web/package-lock.json` still recorded the console as 0.2.0. It is 1.1.0
+  with everything else.
+
+- **Coverage gate raised from 90% to 94%**, enforced in CI on Python 3.11, 3.12 and 3.13.
+- **UCI Bank Marketing now carries the full preregistered grid** (5 ε × 5 seeds, 75 cells,
+  `reduced_run: false`).
+
+### Fixed — security
+
+- **Signature verification trusted the key embedded in the file.** Both the capsule verifier and
+  `/api/certificate/verify` fell back to the sheet's own public key and reported success, so a
+  sheet signed with anyone's key verified. Reports now separate a valid signature from an
+  authenticated publisher (`key_source`, `key_fingerprint`, `publisher_authenticated`), the CLI
+  warns when no publisher key was supplied, and a forgery test pins it.
+- **gitleaks exemption narrowed.** A file-wide allowlist for a console test file was removed; the
+  three historical fake fingerprints it had covered are listed individually in `.gitleaksignore`.
+
+### Fixed — honesty of results and documents
+
+- **Bank Marketing conclusions corrected to the full grid.** At ε = 8 no mechanism separates on
+  structure or on utility; pairwise separates from independent on structure only at ε = 0.5 and
+  ε = 2.0. AIM's structural advantage remains specific to UCI Adult. The reduced run had shown a
+  pairwise-vs-independent separation at ε = 8 that the full grid does not.
+- **Bank Marketing tables are generated, not typed**, with per-pair interval-overlap flags, and a
+  test fails if the committed tables drift from the result files.
+- **Thesis corrections**, recorded before and after in
+  [`docs/thesis/CORRECTIONS_2026-09.md`](docs/thesis/CORRECTIONS_2026-09.md): the retracted
+  clique-selection result is no longer listed as contribution 1; an audit ceiling of 2.45 that
+  matched no canary budget is replaced with 2.972 at 60 canaries (the one-run ceiling is a corollary of Steinke, Nasr & Jagielski 2023 Thm 2.1, named the maximum auditable epsilon by Annamalai, Ganev & De Cristofaro, arXiv:2405.10994 §2.2, and reported as a limit per MIQE 2.0); dataset coverage is stated as
+  three datasets; "privacy-budgeted domain expansion" is reframed as an untested candidate
+  explanation; an unsourced literature attribution is removed.
+
+### Fixed — gates and tests
+
+- **Claims checker:** it now catches the heading-plus-sentence form that let the retracted result
+  sit in thesis chapter 1, and its hedge window stops at the end of the line — a hedge word on the
+  next line no longer disarms a claim, and a distant hedge on a long line no longer blinds it. Both
+  behaviours and two negative controls are pinned by tests that fail on the 1.0.0 checker.
+- **Mutation probe** extended to the audit-range verdict and key trust; a mutation whose anchor
+  text is missing now fails the run instead of being skipped. `results/mutation_probe.json`
+  records 18 of 18 caught.
+- Console tests for the verdict's three tones and an end-to-end capsule upload; an
+  assertion-free coverage test replaced with behavioural assertions.
+
 ## 1.0.0 — 2026-09-13
 
 The first tagged release. It is the state of the project after the remediation tracked in
@@ -19,6 +82,9 @@ exists to argue against.
 - **`docker compose up` has not been executed.** The Dockerfile was rewritten after static
   review (see below), but no Docker daemon was available to run it.
 - **No Zenodo DOI.** `.zenodo.json` is prepared; minting needs the owner's Zenodo account.
+- **Bank Marketing carries a reduced grid** (2 ε × 3 seeds), recorded as `reduced_run: true`.
+  *(Restored in 1.1.0: this line was deleted from the released 1.0.0 notes when the full grid
+  landed. Released notes are a record of what was true at the tag; the gap is closed in 1.1.0.)*
 - **Real AIM is not available in the Docker image** — private-pgm installs from git and is not
   a declared dependency.
 - **The thesis's contributions statement is incomplete**: `CONTRIBUTIONS.md` leaves one row per
