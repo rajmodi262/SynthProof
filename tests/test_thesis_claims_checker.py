@@ -604,7 +604,9 @@ def test_clique_confound_negative_control_results_row(tmp_path):
 
 def test_clique_confound_negative_control_retraction_sentence(tmp_path):
     """Negative control B: Explicit retraction statement must NOT trip."""
-    text = "The clique-selection confound was retracted on 2026-08-25 after our ablation refuted it.\n"
+    text = (
+        "The clique-selection confound was retracted on 2026-08-25 after our ablation refuted it.\n"
+    )
     assert "clique-confound-as-finding" not in labels(check(_write(tmp_path, text)))
 
 
@@ -633,4 +635,3 @@ def test_is_hedged_guard_against_blindness_next_line_hedge(tmp_path):
         "This was retracted on 2026-08-25.\n"
     )
     assert "clique-confound-as-finding" in labels(check(_write(tmp_path, text)))
-
