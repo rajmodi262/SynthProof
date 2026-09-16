@@ -8,7 +8,7 @@
 | T1 | Same-dataset comparison on **Adult** vs P7 (Mohapatra) & P8 (AIM) | cheap | ✅ |
 | T2 | Add **`domain_source`** check to `boundary-audit` (turns P4/P5 into a checkable field) | cheap | ✅ |
 | T3 | **Census invariants** worked example — boundary-audit labels "fields outside ε" | cheap | ✅ |
-| T4 | **Audit-power honesty** — state the black-box loose bound + cite P2 (or stronger estimator) | medium | ☐ |
+| T4 | **Audit-power honesty** — state the black-box loose bound + cite P2 (or stronger estimator) | medium | ✅ |
 | T5 | **Scale the case study** beyond public hubs (real DP registries) | medium | ☐ |
 | T6 | Extend `boundary-audit` to more mechanisms / multi-table; propose as Croissant/Dibia extension | big | ☐ |
 
@@ -27,3 +27,10 @@
 - **T4 status (◐):** the loose-bound honesty statement (black-box audits read ε≈0, cite P2) is now
   written across research 18/19/20. Remaining: add one sentence + [P2] cite to `paper/synthproof_ieee.tex`
   §IX, and (optional, medium) trial a GDP/white-box estimator. T5, T6 still ☐.
+- **2026-09-17 run 4 — T4 DONE (stated-bound path).** Added to `paper/synthproof_ieee.tex` §IX: the
+  audited ε=0.000 is explicitly a *black-box loose bound*, with Annamalai et al.~\cite{annamalai2024}
+  (black-box reads ε≈0 even at true ε=4; tight needs white-box/worst-case). ⚠ the compiled
+  `paper/synthproof_ieee.pdf` is now stale — recompile on Overleaf (pdflatex ×2). Optional future:
+  trial a GDP/white-box estimator to get a tighter number. **Remaining: T5 (scale case study — needs
+  DP-registry data), T6 (extend auditor to more mechanisms/multi-table + propose as Croissant/Dibia
+  extension — big).**

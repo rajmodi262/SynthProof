@@ -424,7 +424,11 @@ privacy figure with no stated resolution can pass for safety, a failure the expe
 of~\cite{dibia2026} calls ``privacy theater.'' We borrow the limit-of-detection convention from
 analytical measurement~\cite{miqe2025}, so that an audited $\eps=0.0$ sitting beside a ceiling of
 $2.97$ at $60$ canaries reads as below the instrument's resolution rather than as an absence of
-leakage.
+leakage. We are deliberate that this is a loose bound: our canary audit is a black-box membership
+attack, and Annamalai et al.~\cite{annamalai2024} show that black-box attacks on differentially
+private synthetic-data generators read an empirical $\eps\approx0$ even when the true $\eps$ is as high
+as $4$ (tight estimates need white-box, worst-case auditing). Reporting the ceiling beside the number
+is precisely what keeps a black-box $0.0$ from being read as safety.
 
 \section{Related Work}
 Mechanism-level DP auditing estimates an algorithm's empirical privacy by attacking its outputs or by
