@@ -640,6 +640,78 @@ deployment deliberately ships quantities that are **outside ε (effectively ε=�
 
 ---
 
+## APPENDIX — Key formulas & tables (visually verified from the PDF pages)
+
+Rendered the formula/table-dense pages (not just text) so the equations and exact table values are
+captured. Use these when a viva question needs the precise maths.
+
+**P1 (Stadler).** Privacy gain **PG = Adv_A(R) − Adv_A(S)** (Adv(R)=1 for linkage). Yeom bound:
+**Adv_L ≤ e^ε − 1**, so at ε=0.1 a correct DP release must give **PG ≥ 0.89** — outliers under
+PrivBay/PATEGAN fell below 0.1 (violation). Feature sets: F_Naive, F_Hist, F_Corr. n=m=1000, ref
+l=10,000, 10 shadow models.
+
+**P2 (Annamalai) — the auditing maths.**
+- (ε,δ) empirical bound: **ε_emp = max( ln((1−α−δ)/β), ln((1−β−δ)/α), 0 )** (α=FPR, β=FNR).
+- µ-GDP: **µ_emp = Φ⁻¹(1−α) − Φ⁻¹(β)**; convert via **δ(ε)=Φ(−ε/µ + µ/2) − e^ε·Φ(−ε/µ − µ/2)**.
+- **"Maximum auditable ε"** = the CI (Clopper-Pearson 95%) caps ε_emp even for a perfect adversary →
+  **your audit ceiling.** Rig: 2,000 models to pick the threshold + 2,000 to test; 10,000 total in
+  5-fold CV.
+- **Active white-box (Algorithm 1):** insert a **canary gradient g′** for the target, clip, add
+  N(0,σ²c_p²), RMSProp. Result: **MST ε=4 → ε_emp 3.10 (white-box) vs 0.00 (black-box)**. DCR finds
+  only **7/24** violations vs Querybased **16/24**, and underestimates leakage (AUC≥0.95 it misses).
+
+**P4 (Ganev-domain).** 3 strategies → **extracted-from-data: MIA AUC ≈ 1.0** (DP broken);
+provided or DP-extracted: **≈ 0.5**. GroundHog, Wine (4,898×11), PrivBayes+MST, 4 discretizers,
+200 shadow models, ε=1 preprocessing + ε=1 model, 20 bins.
+
+**P5 (Ganev-discretize) — tables.**
+- Controlled dists (Table 2): Uniform U(0,1); Monotone √U(0,1); Normal N(0,1); Beta Beta(2,14);
+  Mixture 0.5N(2,1)+0.5N(9,1); Imbalanced 0.95N(0,1)+0.05N(10,1).
+- Datasets (Table 3): **Adult 48,842 (6 num/8 cat); Gas 36,733 (12/0); Wine 4,898 (11/0).**
+- Utility inverted-U in #bins; optimizing gives **+9.28–43.54%** (≈30% avg); **PrivTree best**;
+  DP domain extraction drops MIA **100%→≈50%** at ≈4% utility cost. Budget split **10% discretization
+  / 90% modeling**. Scale: ~300k discretizers, ~200k models. 4 settings US1/US2/US3/PS1.
+
+**P6 (SMOTE) — exact attack tables.**
+- Augmented (Table 3, avg): naive distinguish precision **0.01**; MIA AUC **0.68**; **DistinSMOTE
+  1.00 / 1.00**.
+- Synthetic (Table 4, avg): naive DCR **0.16**; MIA AUC **0.93**; **ReconSMOTE precision 1.00,
+  recall 0.85 → 1.0 at imbalance r ≥ 20**.
+- Imbalance ratios r: ecoli 8.6, abalone 9.7, car_eval_34 12, solar_flare_m0 19, car_eval_4 26,
+  yeast_me2 28, mammography 42, abalone_19 130. Training on augmented (vs real) raises MIA **+17%**.
+  Complexity **O(n²d + n(kr)²)**. GroundHog MIA; ~60k models (synthetic) / ~20k (augmented).
+
+**P7 (Mohapatra) — the imputation privacy maths.**
+- Imputation stability (Lemma 4.2): imputing attribute A has **c = m_A + 1** (m_A = #missing in A).
+- Worst case (Thm 4.3): **M∘T is nε-DP** — imputation is very expensive in DP.
+- Ground-truth (Thm 5.2): independent-row missingness ⇒ **M∘M_Φ is (ε̄,δ̄)-DP with ε̄ ≤ ε**;
+  measured amplification **0.1–0.65× the incomplete-data ε** at 10–50% missing.
+- Datasets (Table 1): **Adult 32,561 (5/10); Bank 45,211 (3/14); BR2000 38,000 (3/11); National
+  15,012 (6/14).** ε=1 (PrivBayes/Kamino), ε=3 (GANs). Metrics: 1-way/2-way TVD, downstream F1.
+
+**P8 (AIM) — domain-size table + factors.**
+- Datasets (Table 3): **Adult 48,842 / 15 dims / domain 4×10¹⁶; Salary 135,727 / 9; MSNBC 989,818 /
+  16 / 1×10²⁰; Fire 305,119 / 16 / 4×10¹⁵; NLTCS 21,574 / 16 / 7×10⁴; Titanic 1,304 / 9 / 9×10⁷.**
+- 3 workloads: ALL-3WAY, TARGET (3-way incl. a target attr; Adult=income>50K), SKEWED (weighted).
+- zCDP accounting; **ε ∈ [0.01, 100], δ = 1e-9, 5 trials**, L2 & L_inf error. AIM avg improvement
+  (ALL-3WAY): **1.3× (PrivMRF), 2.6× (MST), 1.5× (MWEM+PGM), 2.2× (PrivBayes+PGM), 5.6× (RAP),
+  2.0× (GEM)**; extreme cases up to **118× (MST)**. Runs on 1 core / 4 GB / 24 h.
+
+**P9 (Census).** zCDP (Bun-Steinke) + **discrete Gaussian** (Canonne et al.). **Invariants** =
+statistics "excluded from the privacy-loss accounting" (state population totals = aggregation only,
+*no noise*; edit constraints, structural zeros "passed to post-processing without noise injection").
+Post-process measurements + invariants → Microdata Detail File. Neighbours differ on one entry.
+
+**P10 (Dibia).** (ε,δ)-DP def; **9 categories** (ε/δ, unit of privacy, utility, mechanism,
+hyperparameters, deployment model, empirical metrics, interpretation, other). "Privacy theater" =
+expert P11's phrase. No signing, no measurement-limit reporting.
+
+**P3 (Cebere).** Re:cord-play = run instrumented mechanism on **neighbouring datasets with identical
+randomness**, compare declared vs measured sensitivity to falsify data-dependent control flow.
+**12 libraries → 13 violations.**
+
+---
+
 ## ✅ Verification status — ALL 11 papers now Claude-verified
 Every paper P1–P11 has been read from its PDF and written up above with the §0 schema and verbatim
 evidence. **The Antigravity batch in `research/deep_analysis/*.md` is superseded and should not be
