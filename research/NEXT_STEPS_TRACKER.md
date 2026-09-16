@@ -5,9 +5,9 @@
 ## Legend of tasks
 | ID | Task | Effort | Status |
 |---|---|---|---|
-| T1 | Same-dataset comparison on **Adult** vs P7 (Mohapatra) & P8 (AIM) | cheap | ◐ |
+| T1 | Same-dataset comparison on **Adult** vs P7 (Mohapatra) & P8 (AIM) | cheap | ✅ |
 | T2 | Add **`domain_source`** check to `boundary-audit` (turns P4/P5 into a checkable field) | cheap | ✅ |
-| T3 | **Census invariants** worked example — boundary-audit labels "fields outside ε" | cheap | ☐ |
+| T3 | **Census invariants** worked example — boundary-audit labels "fields outside ε" | cheap | ✅ |
 | T4 | **Audit-power honesty** — state the black-box loose bound + cite P2 (or stronger estimator) | medium | ☐ |
 | T5 | **Scale the case study** beyond public hubs (real DP registries) | medium | ☐ |
 | T6 | Extend `boundary-audit` to more mechanisms / multi-table; propose as Croissant/Dibia extension | big | ☐ |
@@ -15,3 +15,15 @@
 ## Run log
 - **2026-09-17 run 0** — created tracker; reading `synthproof/audit/boundary.py` + the Privacy Data Sheet to plan T2. Next: T1 comparison + T2 code.
 - **2026-09-17 run 1 — T2 DONE.** Found RB6 `domain_source` check already exists in `boundary.py` and is wired through `certificate.py`/`cli.py`/`croissant.py` and tested. **Real defect fixed:** `api/routes/run.py` shipped `domain_source="SynthProof Autonomous Verification Pipeline"` (a marketing string RB6 can't read) and `contribution_bound="bounded_one"` (should be int `1`). Added `state.domain_source_for(name)` (declared for adult/toy; inferred-nonprivate for demo/uploads, tied to Ganev P4/P5), wired the route to it, fixed contribution_bound. Added regression test `test_api.py::test_domain_source_is_a_valid_boundary_value_not_a_marketing_string`. Verified: ruff+black clean; 36 boundary/cli tests + 1 new test pass. Next: T1 (Adult comparison), T3 (Census example).
+- **2026-09-17 run 2 — T1 DONE.** Wrote `research/19_adult_same_dataset_comparison.md`: our verified
+  Adult utility/privacy grid (AIM 0.0105 vs independent 0.0947 at ε=8 → ~9×, reproduces P8's ordering);
+  quoted P7/P8/P5 Adult numbers with the metric named; honest caveats (our n=6k subsample vs their
+  32k/48k; different metrics; audited ε loose per P2). Differentiator shown with a **live boundary-audit
+  run** on `demo/sheet.json` (5 open channels incl. the new RB6 domain_source). No new heavy runs needed.
+- **2026-09-17 run 3 — T3 DONE.** Wrote `research/20_census_invariants_worked_example.md` with a live
+  boundary-audit demo: Census-style invariants **unlabelled → RB4 LEAK (FAILED)**; **declared outside ε
+  → PASSED**; and RB2 still marks the exact population total UNVERIFIABLE (honest asymmetry). Turns P9's
+  prose-only invariants into a checkable label. Noted a `public_invariants` field as a future extension.
+- **T4 status (◐):** the loose-bound honesty statement (black-box audits read ε≈0, cite P2) is now
+  written across research 18/19/20. Remaining: add one sentence + [P2] cite to `paper/synthproof_ieee.tex`
+  §IX, and (optional, medium) trial a GDP/white-box estimator. T5, T6 still ☐.
