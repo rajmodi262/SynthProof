@@ -380,6 +380,95 @@ domain-DP, Meeus et al. (vulnerable-record identification).
 
 ---
 
+## P5 — Ganev, Annamalai, Mahiou & De Cristofaro, *The Importance of Being Discrete: Measuring the Impact of Discretization in End-to-End DP Synthetic Data* (ACM CCS 2025, arXiv:2504.06923) — CLAUDE VERIFIED
+
+**A. Identity & framing.** UCL / SAS / UC Riverside (Ganev cluster). Type: **preprocessing measurement
+study (utility + privacy)**. Thesis: *discretization (binning continuous columns) is an overlooked
+step that strongly affects both utility and end-to-end DP; the domain/bins are usually inferred from
+the data, which can break DP.*
+
+**B. What they did.** Build DP versions of 3 discretizers (uniform, quantile, k-means) + reimplement
+**PrivTree**; measure across **6 marginal models** (dp-synthpop, PrivBayes, MST, RAP, GEM, **AIM**) on
+**3 datasets + 5 controlled 1-D distributions**; study the optimal bin count; and (RQ4) how domain
+extraction affects privacy. Massive scale: **~300,000 discretizers, ~200,000 models fit.**
+
+**C. How they did it.** Integrate each discretizer into an end-to-end DP pipeline; DP domain bounds via
+Desfontaines/OpenDP; sweep bin counts; utility = how well marginals/distributions are captured;
+privacy via MIAs (incl. GroundHog). DP defined as differing in a single record; ε=1 default.
+
+**D. Datasets.** **Adult (48,842), Gas (36,733), Wine (4,898)** — we have all three — plus **5
+controlled synthetic 1-D distributions** (varying modality/skew). Preprocessing: the paper's whole
+subject — binning strategies + DP domain extraction.
+
+**E. Results & findings.** Utility follows an **inverted-U in #bins**; optimizing discretizer+bins
+improves utility **9.28–43.54%** (≈30% avg) over the default (uniform, 20 bins); **PrivTree best**.
+Crucially (RQ4): **non-private domain/discretization → MIA success ≈ 100%; DP discretization drops it
+to ≈50% (near-random) at ≈4% utility cost.**
+
+**F. Relevance to SynthProof — completes the "preprocessing audit" map you slot into.**
+- **The Ganev cluster has now audited two preprocessing steps — domain extraction (P4) and
+  discretization (P5) — for DP leakage. The missing-data handling step is the one they leave
+  unaudited; that is exactly your imputation audit's contribution.** This is the cleanest way to
+  position your negative result: same subfield, the next unexamined step.
+- Reinforces the boundary thesis: uncharged preprocessing (reading domain/bins from data) breaks DP;
+  your release boundary makes preprocessing provenance a charged/declared/labelled requirement.
+- **Same datasets (Adult/Gas/Wine) and includes AIM** — direct comparability.
+- **What they did NOT do:** ship a signed, checkable artifact; theirs is a utility+leak measurement.
+- **Viva soundbite:** *"Ganev et al. audited discretization and domain extraction as DP-breaking
+  preprocessing steps; we audit the one they didn't — missing-data handling — and put all of it inside
+  a checkable release boundary."*
+
+**G. Citations to chase:** PrivTree [Zhang 2016], AIM/MST/PrivBayes/RAP/GEM, Desfontaines domain-DP,
+their own P4 (domain) and P2 (auditing).
+
+---
+
+## P6 — Ganev, Nazari, Davison, … & De Cristofaro, *SMOTE and Mirrors: Exposing Privacy Leakage from Synthetic Minority Oversampling* (ICLR 2026, arXiv:2510.15083) — CLAUDE VERIFIED
+
+**A. Identity & framing.** SAS / UCL / UC Riverside (Ganev cluster). Type: **privacy attack on a
+preprocessing/oversampling technique**. Thesis: *SMOTE — the near-ubiquitous class-imbalance fix — is
+inherently non-private; standard privacy checks miss the leak, and geometric attacks recover minority
+records almost perfectly.*
+
+**B. What they did.** First systematic privacy study of SMOTE. Show naive checks (distinguishing,
+distance-to-closest-record/DCR) detect nothing; instantiate a real MIA (first time on SMOTE); then
+build two **novel geometric attacks — DistinSMOTE** (real-vs-synthetic in augmented data) and
+**ReconSMOTE** (reconstruct real minority records from synthetic data) — with theoretical guarantees.
+
+**C. How they did it.** Exploit SMOTE's interpolation geometry (a synthetic point lies on a segment
+between two real minority neighbours). Assumptions: access to a single augmented/synthetic dataset +
+knowledge that SMOTE made it. Complexity O(n²d + n(kr)²). Metrics: precision/recall, MIA AUC.
+
+**D. Datasets.** **8 standard imbalanced sets** (ecoli, abalone, car-eval, solar-flare, yeast,
+mammography, …) plus **cardio, churn, higgs, creditcard, miniboone** — we have all of them now.
+Imbalance ratio r and #neighbours k are the key knobs.
+
+**E. Results & findings (Table 1).** Naive distinguish precision **0.01**, naive DCR **0.16** — both
+miss the leak entirely. MIA AUC **0.68** (augmented) / **0.93** (synthetic). **DistinSMOTE precision/
+recall = 1.00**; **ReconSMOTE perfect precision, recall → 1 at imbalance ratio r ≥ 20**. Training a
+classifier on augmented (vs real) data raises MIA AUC by **17%**. Conclusion: SMOTE is fundamentally
+non-private; minority records are most exposed; **DCR is an unreliable privacy metric.**
+
+**F. Relevance to SynthProof — validates your audit methodology and your kNN-imputation risk.**
+- **Direct support for your sanity-gate design.** P6's headline is that *naive privacy metrics
+  underestimate leakage; you need a real MIA and must verify it can see a leak.* That is exactly why
+  your imputation audit **sanity-gates** the auditor (plant a leak, confirm it's caught) before
+  trusting a null. Cite P6 as the reason a bare "no leak" is untrustworthy.
+- **Your kNN imputation arm (A4) is geometrically SMOTE-like** (interpolate/borrow from nearest
+  neighbours). P6 proves that family can leak badly — so your finding that A4 did *not* leak above the
+  charged baseline is a genuine, non-trivial negative (you tested a real, demonstrated risk).
+- **Preprocessing-audit map:** P4 domain, P5 discretization, **P6 oversampling** — your **missing-data
+  handling** is the remaining unaudited step. Together they define the subfield you contribute to.
+- **What they did NOT do:** audit missing-data imputation; no artifact/document-level check.
+- **Datasets:** all present; metric MIA AUC / reconstruction precision.
+- **Viva soundbite:** *"Ganev et al. show SMOTE leaks minority records almost perfectly and that DCR
+  misses it — which is why our imputation audit uses a sanity-gated MIA, not a naive metric, and why a
+  clean result on our SMOTE-like kNN arm actually means something."*
+
+**G. Citations to chase:** SMOTE [Chawla 2002], DCR critiques, Kotelnikov TabDDPM, Shokri MIAs.
+
+---
+
 ## ⚠️ Verification status of the Antigravity batch (`research/deep_analysis/*.md`)
 Antigravity produced P1–P11 files, but a spot-check found **fabrication and errors — do NOT merge
 them unverified**:
