@@ -102,3 +102,8 @@ demo/
 # Re-fetchable PDF research corpora (kept on disk, out of git to avoid ~171MB bloat)
 research/papers_107_corpus/
 research/papers_58_curated/
+
+# Re-fetchable literature datasets & base-paper PDFs (kept on disk, out of git)
+research/scratch_datasets/
+research/litsurvey/datasets/
+research/litsurvey/papers/
