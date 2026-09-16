@@ -156,13 +156,18 @@ This report provides verifiable evidence of the exact experimental datasets used
     6. **yeast me2** (target: ME2, $r=28$, $n=1,484$, $d=8$)
     7. **mammography** (target: minority, $r=42$, $n=11,183$, $d=6$)
     8. **abalone 19** (target: 19, $r=130$, $n=4,177$, $d=10$)
-  - Additional evaluation datasets (Section 6 & Appendix C): **cardio** ($n=2,126$), **churn** ($n=5,000$), **higgs** ($n=98,050$), **creditcard** ($n=96,690$).
+  - Additional evaluation datasets (Section 6 & Appendix C): **cardio** ($n=70,000$, from TabDDPM/Kaggle), **churn** ($n=5,000$, from OpenML), **higgs** ($n=98,050$, from OpenML), **creditcard** ($n=284,807$, from OpenML), **miniboone** ($n=130,064$, from OpenML).
+- **Local Holdings**: All 13 datasets downloaded and extracted to `research\litsurvey\datasets\imbalanced\`:
+  - 8 main benchmarks: `ecoli.csv` (336), `abalone.csv` (4,177), `car_eval_34.csv` (1,728), `solar_flare_m0.csv` (1,389), `car_eval_4.csv` (1,728), `yeast_me2.csv` (1,484), `mammography.csv` (11,183), `abalone_19.csv` (4,177).
+  - 5 secondary benchmarks: `churn.csv` (5,000), `cardio.csv` (70,000), `higgs.csv` (98,050), `creditcard.csv` (284,807), `miniboone.csv` (130,064).
 - **EXACT QUOTE naming the dataset(s)**:
   > *"Datasets. We conduct our main experiments on eight standard imbalanced datasets, each with a binary classification task, obtained from the imblearn library [40] (originally from the UCI ML Repository) and used in prior work [13, 55] These datasets vary significantly in size (336 to 11,183 records), dimensionality (6 to 32 features), imbalance ratios (8.6 to 130), and prediction task (target), as shown in Table 2."*  
   *(Section 5 "Datasets", Page 7)*
+  > *"Namely, we use higgs and miniboone from OpenML [60] as high-dimensional data, and cardio and churn from Kaggle as mixed-type data. These datasets are used in relevant prior work [37]."*  
+  *(Appendix C, Page 17)*
 - **Reported metrics and numbers**:
   - Metric: DistinSMOTE Precision and Recall, ReconSMOTE Precision and Recall, Naive Distinguish precision/recall, and MIA AUC.
-  - Verbatim Quotes & Numbers (Table 3, Page 7):
+  - Verbatim Quotes & Numbers (Table 3, Page 7 & Tables 5-6, Page 17):
     - Table 3: *"The attack achieves perfect precision on all datasets... DistinSMOTE achieves Precision = 1.00 ± 0.00 and Recall = 1.00 ± 0.00 across all datasets."*
     - Section 5.1 (Page 8): *"Looking at Table 3 (fourth column), the average AUC is 0.68, with half of the datasets exceeding 0.7, which indicates substantial privacy leakage."*
 - **Overlap verdict**: **NO overlap** (does not use Adult, Bank, or ACS).
