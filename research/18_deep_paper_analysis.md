@@ -6,10 +6,39 @@
 > `research/litsurvey/literature surveys/`. Standing honesty rules apply: quotes are from the paper;
 > where a number is the paper's, it is marked; inferences are labelled `INFERENCE:`.
 >
-> **Status:** P7 and P8 done here as Claude's verified deep-reads (the quality bar + cross-check
-> anchor). P1, P2, P4, P5, P6, P9, P10, P11 are being produced by Antigravity with the schema in
-> §0; Claude verifies and merges them into this file. **Never trust an Antigravity row until a
-> quote is checked against the PDF.**
+> **Status: COMPLETE — all 11 papers (P1–P11) are Claude-verified deep-reads** (read from the PDFs,
+> §0 schema, verbatim evidence). The earlier Antigravity batch (`research/deep_analysis/*.md`) is
+> superseded — it fabricated P3 and got P1/P2 wrong. This file is authoritative.
+
+---
+
+## MASTER SYNTHESIS — the survey at a glance
+
+| # | Paper (short) | Type | Datasets (overlap ✅) | What they did NOT do → OUR opening |
+|---|---|---|---|---|
+| P1 | Stadler, *Groundhog Day* (USENIX'22) | attack + framework | Adult✅, Texas | proved synth leaks + DP-impls read domain from data; no signed/checkable artifact → **precursor to D1** |
+| P2 | Annamalai, *Tight Auditing* (USENIX'24) | mechanism audit | Adult✅, SF Fire, worst-case | audits the mechanism (needs code/worst-case); no document audit → **grounds our ceiling; black-box audits read ε≈0** |
+| P3 | Cebere, *Grey-Box Auditing* (PoPETs'26) | library audit | none (synthetic probes) | audits library code, not the shipped release → **same "neighbours+fixed randomness" as our seed-replay** |
+| P4 | Ganev, *Domain Extraction* (ICLR'25) | preprocessing audit | Wine✅ | domain-from-data breaks DP; no artifact field for it → **validates our domain-source rule (=D1)** |
+| P5 | Ganev, *Discretization* (CCS'25) | preprocessing audit | Adult✅, Gas✅, Wine✅ | audits discretization; no checkable release → **maps preprocessing subfield we slot into** |
+| P6 | Ganev, *SMOTE and Mirrors* (ICLR'26) | attack on oversampling | 8 imbalanced✅ + cardio/higgs/… | naive metrics miss leaks (need MIA) → **validates our sanity-gate; our kNN arm is SMOTE-like** |
+| P7 | Mohapatra, *Missing Data* (VLDB'24) | mechanism + privacy analysis | **Adult✅ + Bank✅**, BR2000, National | asks "does missingness hurt utility/help privacy"; never audits membership → **THE base for our imputation audit** |
+| P8 | McKenna, *AIM* (VLDB'22) | mechanism (we USE it) | Adult✅, salary, msnbc, fire, nltcs, titanic | ships a model, no signed/boundary check → **our generator; where D1 lives** |
+| P9 | Abowd, *Census TopDown* (HDSR'22) | production deployment | Census (restricted) | ships invariants outside ε, documented in prose only → **real case study; we make it machine-checkable** |
+| P10 | Dibia, *DP Privacy Label* (PoPETs'26) | interview + standard | none (12 experts) | label has no signing, no measurement-limit reporting ("privacy theater") → **★ LEAD: we sign it + report the ceiling** |
+| P11 | Song, *Mental Models* (CSCW'24) | interview study | none (5 devs+17 analysts) | diagnoses blind trust, builds no tool → **★ PREMISE: why an automatic checker is needed** |
+
+**Cross-cutting themes (the spine of your literature survey + gaps):**
+1. **"Reading structure from the private data breaks DP"** appears in **P1, P2, P4, P5, P11** — a whole
+   cluster of the exact bug your **D1 fix + domain-source rule** address. This is your single strongest
+   "what they missed, we do" thread.
+2. **Preprocessing is a leak surface** — P4 (domain), P5 (discretization), P6 (SMOTE) audit three
+   steps; **missing-data handling is the unaudited one = your imputation audit.**
+3. **Naive privacy metrics / black-box audits underestimate leakage** (P2, P6) — justifies your
+   **sanity-gated** auditor and your honesty that audited ε=0.000 is *loose*, not "safe."
+4. **The field converged on WHAT to disclose (P10) but not on making it CHECKABLE** — no signing (P10),
+   no operating-range reporting (P10), documented only in prose (P9), and practitioners don't verify
+   (P11). **That gap — signed + machine-checkable + limit-reporting — is SynthProof.**
 
 ---
 
@@ -469,7 +498,155 @@ non-private; minority records are most exposed; **DCR is an unreliable privacy m
 
 ---
 
-## ⚠️ Verification status of the Antigravity batch (`research/deep_analysis/*.md`)
+## P10 — Dibia, Lu, Bhattacharjee, Near & Feng, *"We Need a Standard": Toward an Expert-Informed Privacy Label for Differential Privacy* (PoPETs 2026, arXiv:2507.15997) — CLAUDE VERIFIED — **★ LEAD POSITIONING PAPER**
+
+**A. Identity & framing.** University of Vermont (Joseph Near's group). Type: **qualitative interview
+study + standards proposal**. Thesis: *real DP deployments under-disclose their guarantees, causing
+misunderstanding even among experts; the field needs a standardized "privacy label for DP."*
+
+**B. What they did.** Semi-structured interviews with **12 DP experts (P01–P12)**; RQ1 = which
+parameters to disclose, RQ2 = how to present them. Output: an **expert-informed prototype DP label**
+(aimed at technical users, not end-users).
+
+**C. How they did it.** Purposive expert sampling across academia/industry/government; qualitative
+coding of interviews to build consensus; a two-layer prototype label.
+
+**D. Datasets.** **None** — it's an interview study. "Data" = the 12 experts' transcripts.
+
+**E. Results & findings.** **Nine key parameter categories (Table 1):** (1) privacy parameters (ε,δ),
+(2) **unit of privacy**, (3) utility information, (4) mechanism used, (5) algorithm hyperparameters,
+(6) deployment model, (7) **empirical privacy metrics**, (8) privacy interpretation/semantics,
+(9) other parameters. Strong consensus on ε/δ/unit-of-privacy; limited consensus on "normal ranges."
+**The "privacy theater" finding (verbatim):** expert **P11** warned that empirical metrics "focus on
+average-case performance, potentially downplaying worst-case attack scenarios" — *"Even if all of your
+per-attribute privacy budgets are big, every theoretical guarantee you can provide is almost trivial.
+Then you need empirical attacks to show that you did something useful."*
+
+**F. Relevance to SynthProof — this is the paper you LEAD with; you fill its two open gaps.**
+- **Field-for-field overlap with your Privacy Data Sheet:** their 9 categories ≈ your PDS fields
+  (ε/δ, unit_of_privacy/contribution_bound, evaluation, mechanism, hyperparameters, deployment model,
+  audited ε/attacks, plain-statement/membership-odds, domain/fingerprint). This is your strongest
+  external validation that you built the right artifact — an expert panel converged on your field set.
+- **Gap 1 they leave open — NO signing/attestation.** Their label is a human-facing prototype; verified
+  no cryptographic signing is proposed. **You add Ed25519 signing + machine-checkability
+  (`boundary-audit`, Croissant).**
+- **Gap 2 they leave open — NO way to report an empirical metric's LIMITS.** Their own expert (P11)
+  names this hazard as "privacy theater," but the proposal has no mechanism. **Your `audit_ceiling` /
+  operating-range reporting is exactly that mechanism** — you found it the hard way (audited ε=0.000
+  vs ceiling 2.97). Quote P11 directly in your intro.
+- **One category to make sure you carry: "deployment model"** (Dibia 4.1.6) — confirm your PDS has it.
+- **What they did NOT do:** sign, make machine-checkable, or report measurement limits — your three
+  contributions map onto exactly these.
+- **Viva soundbite:** *"Dibia et al. asked 12 experts what a DP release should disclose and got almost
+  exactly our Privacy Data Sheet — but their label isn't signed, isn't machine-checkable, and, as their
+  own expert warned, has no way to flag 'privacy theater'. We sign it, make a linter check it, and
+  report the audit's operating range."*
+
+**G. Citations to chase:** Dwork et al. Epsilon Registry, Desfontaines deployments list, Oblivious/
+OpenDP registry, Cummings et al. (DP communication), Kelley et al. (privacy nutrition labels).
+
+---
+
+## P11 — Song, Sarathy, Shoemate & Vadhan, *"I inherently just trust that it works": Investigating Mental Models of Open-Source Libraries for DP* (CSCW 2024, arXiv:2410.09721) — CLAUDE VERIFIED — **★ THE PREMISE**
+
+**A. Identity & framing.** Harvard / Northeastern (the **OpenDP** team). Type: **qualitative HCI /
+mental-models study**. Thesis: *there is a gap between how DP-library developers think and how users
+think; users trust the libraries implicitly, so the libraries struggle to keep implementations
+rigorous while staying usable.*
+
+**B. What they did.** Two-stage study: **formative interviews with 5 DP-library developers** +
+**user studies with 17 data analysts** (little DP-programming experience), on **Diffprivlib** and
+**OpenDP**. Analyse developer conceptual models vs user mental models; give library-design
+recommendations.
+
+**C. How they did it.** Qualitative coding of interviews + task-based user studies (analysts asked to
+compute DP statistics and reason about the results).
+
+**D. Datasets.** **None** — interview/user study; "data" = 5 developers + 17 analysts.
+
+**E. Results & findings.** The title says it: analysts **"inherently just trust that it works"** — they
+do **not verify** DP guarantees. Two concrete implementation traps they surface: (1) **bounds** — a DP
+mean without user-specified bounds: Diffprivlib emits a *privacy warning* (and uses data-derived
+bounds → a leak), while OpenDP throws a *type error* forcing the user to supply them (Fig 1);
+(2) a **`nanmean` sensitivity flaw** — Diffprivlib's DP nanmean ignores nulls when averaging but uses
+the **total count including nulls** for sensitivity, so the noise is miscalibrated.
+
+**F. Relevance to SynthProof — the missing premise under your whole project.**
+- **This is the citation that justifies the project's existence.** If practitioners don't verify and
+  trust implicitly, then a release resting on one library rests on its unexamined bugs → you need an
+  automatic, data-blind checker (`boundary-audit`) and a second accountant (differential accounting).
+  Use P11 in your intro's motivation (pairs with P2/P3 which show the bugs are real).
+- **Their "bounds from data" trap = the domain problem again** (D1/P4) — a fourth independent sighting
+  of "reading structure from the private data breaks DP."
+- **Their `nanmean`/null-handling bug ties to YOUR missing-data audit.** A DP statistic that mishandles
+  nulls miscalibrates sensitivity — the preprocessing-boundary hazard your imputation work audits.
+  Nice, concrete bridge between P11 and your Section on imputation.
+- **What they did NOT do:** build any tool — it's a diagnosis of blind trust. Your signed sheet +
+  linter is the response.
+- **Viva soundbite:** *"Song et al. found data analysts 'inherently just trust that it works' and never
+  verify DP — that blind trust, plus the real library bugs others document, is exactly why we ship a
+  signed, machine-checkable Privacy Data Sheet instead of asking anyone to take the release on faith."*
+
+**G. Citations to chase:** OpenDP, Diffprivlib, Tumult Analytics; Cummings et al. (DP communication);
+Dwork Epsilon Registry.
+
+---
+
+## P9 — Abowd et al., *The 2020 Census Disclosure Avoidance System TopDown Algorithm* (Harvard Data Science Review 2022, arXiv:2204.08986) — CLAUDE VERIFIED — **★ REAL-DEPLOYMENT CASE STUDY**
+
+**A. Identity & framing.** U.S. Census Bureau + Duke / Penn State / Tumult Labs. Type: **production DP
+systems paper** (a real, nationwide deployment). Thesis: describe the maths + testing of the TopDown
+Algorithm (TDA) that applied DP to the entire 2020 US Census.
+
+**B. What they did.** TDA ingests the edited 2020 Census, produces **noisy "measurements"** under
+**zero-Concentrated DP (zCDP)** with **discrete Gaussian** noise, then **post-processes the
+measurements together with "invariants"** to output a Microdata Detail File (one record per person and
+housing unit) → the redistricting summary file. Replaces the pre-2020 record-swapping method.
+
+**C. How they did it.** zCDP accounting (Bun-Steinke; implies (ε,δ)-DP) + discrete Gaussian (Canonne
+et al.); noisy measurements over a nationwide geographic spine; post-processing (NNLS / integer
+programming) to nonnegative, consistent microdata. Neighbours differ on a single entry. Justify DP
+over suppression: non-degradation under post-processing, bounded composition, resistance to
+Dinur–Nissim reconstruction.
+
+**D. Datasets.** The confidential **2020 Census Edited File** (~331M records) and 2010 CEF/HDF
+demonstration data; **Title-13 restricted — not obtainable** (our litsurvey marks P9 RESTRICTED).
+Role: the sensitive input; not reproducible outside a federal RDC.
+
+**E. Results & findings.** **Invariants** are "statistics that the Census Bureau has determined, as a
+matter of policy, to **exclude from the privacy-loss accounting**" — e.g. **state population totals**
+(aggregation only, *no noise*), plus housing/MAF operational constraints, edit constraints and
+structural zeros, all "passed to post-processing without noise injection." So a real, high-stakes
+deployment deliberately ships quantities that are **outside ε (effectively ε=∞)**.
+
+**F. Relevance to SynthProof — your canonical case study, with an honest nuance.**
+- **Invariants ARE the release boundary in production.** The Census ships exact state totals + structural
+  constraints outside the DP budget — the textbook real example of "the released artifact contains
+  quantities ε doesn't cover." Lead your case-study section (research/16) with it.
+- **Honest nuance (keep it):** the Census *declares* its invariants in prose/policy — so they are a
+  *declared* out-of-ε quantity (rule #2 of your boundary), **not a hidden leak.** Your contribution is
+  that this disclosure is **prose, not a machine-checkable field** — no standard expresses "which
+  fields are outside ε" so a validator can enforce it. That's precisely the P5–P11 gap in your
+  standards table (§15) and what `boundary-audit` + the PDS add.
+- **No same-dataset comparison** (data is Title-13 restricted) — qualitative case study only; do not
+  claim to have run on Census data.
+- zCDP/discrete-Gaussian is the same accounting family your AIM path uses.
+- **Viva soundbite:** *"The 2020 Census is the proof this matters at scale: it publishes state totals
+  and structural constraints outside the privacy budget. They document that in prose as policy — we
+  make 'which fields are outside ε' a signed, machine-checkable field instead."*
+
+**G. Citations to chase:** Bun & Steinke (zCDP), Canonne et al. (discrete Gaussian), Dinur & Nissim
+(reconstruction), JASON report, Ashmead/Kifer TDA papers.
+
+---
+
+## ✅ Verification status — ALL 11 papers now Claude-verified
+Every paper P1–P11 has been read from its PDF and written up above with the §0 schema and verbatim
+evidence. **The Antigravity batch in `research/deep_analysis/*.md` is superseded and should not be
+used** — it contained a full fabrication (P3), a wrong dataset count (P1), and a mischaracterisation
+(P2). This file (`18_deep_paper_analysis.md`) is the authoritative deep analysis.
+
+## ⚠️ (historical) Antigravity batch errors found during verification (`research/deep_analysis/*.md`)
 Antigravity produced P1–P11 files, but a spot-check found **fabrication and errors — do NOT merge
 them unverified**:
 - **P3 — FABRICATED** (Antigravity described a nonexistent "multi-table relational DP" paper; the
