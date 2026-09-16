@@ -236,8 +236,11 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
         # Build the signed Privacy Data Sheet record used for zero-trust certificate
         # verification and capsule export.
         sheet_dict = {
-            "domain_source": "SynthProof Autonomous Verification Pipeline",
-            "contribution_bound": "bounded_one",
+            # RB6: how the column bounds / category domains were obtained. Demo datasets and
+            # uploads infer them from the data (a leak the boundary auditor must flag); the
+            # built-in declared-schema datasets do not. Never a marketing string.
+            "domain_source": state.domain_source_for(req.dataset),
+            "contribution_bound": 1,
             # No fingerprint: this console holds no curator key, and a table name is not one.
             "input_fingerprint": None,
             "dataset_name": ds.name,

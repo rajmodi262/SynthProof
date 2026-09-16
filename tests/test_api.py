@@ -559,3 +559,29 @@ def test_no_console_asset_reaches_out_to_a_third_party():
         stripped = re.sub(r"<!--.*?-->", "", text, flags=re.S)
         external = re.findall(r'(?:href|src)\s*=\s*["\'](https?://[^"\']+)', stripped)
         assert not external, f"{html.name} loads external assets: {external}"
+
+
+def test_domain_source_is_a_valid_boundary_value_not_a_marketing_string():
+    """Regression: the run route once shipped domain_source="SynthProof ... Pipeline", a
+    string RB6 cannot interpret. The value must be one the boundary auditor recognises, and
+    it must honestly reflect how the schema was obtained (declared vs inferred-nonprivate)."""
+    from synthproof.api import state
+    from synthproof.audit.boundary import audit_sheet
+
+    valid = {"declared", "codebook", "charged", "inferred-nonprivate"}
+    assert state.domain_source_for("adult") == "declared"
+    assert state.domain_source_for("toy") == "declared"
+    for name in ("adult", "toy", "does-not-exist"):
+        assert state.domain_source_for(name) in valid
+
+    # A declared domain_source must not raise an RB6 open/unverifiable-for-absent finding.
+    rb6 = [f for f in audit_sheet({"domain_source": "declared"}).findings if f.code == "RB6"]
+    assert rb6 == []
+    # The old bogus value would have been flagged (unrecognised -> unverifiable), proving the
+    # auditor would have caught the regression.
+    rb6_bad = [
+        f
+        for f in audit_sheet({"domain_source": "SynthProof Autonomous Verification Pipeline"}).findings
+        if f.code == "RB6"
+    ]
+    assert rb6_bad and rb6_bad[0].severity != "note"

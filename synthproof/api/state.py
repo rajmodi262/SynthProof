@@ -231,6 +231,22 @@ def _load_dataset(name: str, rows: int, seed: int = 0) -> TabularDataset:
     return ds
 
 
+def domain_source_for(name: str) -> str:
+    """How this dataset's column bounds / category domains were obtained.
+
+    This is the value the release-boundary RB6 check reads (`boundary.py::_domain`), and the
+    honest answer matters: Ganev et al. (arXiv:2504.08254, 2504.06923) show that reading the
+    data domain from the input breaks end-to-end DP. Demo datasets and uploads are built with
+    ``Schema.infer_nonprivate`` -- their bounds come straight from the sensitive data, so they
+    are ``inferred-nonprivate`` (an open channel the auditor must flag). The built-in ``toy``
+    and ``adult`` datasets ship declared/public schemas.
+    """
+    _init_demo_datasets()
+    if name in _UPLOADS or name in _DEMO_DATASETS:
+        return "inferred-nonprivate"
+    return "declared"
+
+
 def _describe(ds: TabularDataset) -> dict:
     return {
         "name": ds.name,
