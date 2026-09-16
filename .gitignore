@@ -106,4 +106,6 @@ research/papers_58_curated/
 # Re-fetchable literature datasets & base-paper PDFs (kept on disk, out of git)
 research/scratch_datasets/
 research/litsurvey/datasets/
-research/litsurvey/papers/
+research/litsurvey/literature surveys/
+
+research/litsurvey/literature with datasets/
