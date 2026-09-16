@@ -9,8 +9,12 @@
 | T2 | Add **`domain_source`** check to `boundary-audit` (turns P4/P5 into a checkable field) | cheap | ✅ |
 | T3 | **Census invariants** worked example — boundary-audit labels "fields outside ε" | cheap | ✅ |
 | T4 | **Audit-power honesty** — state the black-box loose bound + cite P2 (or stronger estimator) | medium | ✅ |
-| T5 | **Scale the case study** beyond public hubs (real DP registries) | medium | ☐ |
-| T6 | Extend `boundary-audit` to more mechanisms / multi-table; propose as Croissant/Dibia extension | big | ☐ |
+| T5 | **Scale the case study** beyond public hubs (real DP registries) | medium | ✅ |
+| T6 | Extend `boundary-audit` to more mechanisms / multi-table; propose as Croissant/Dibia extension | big | ◐ scoped |
+| T6a | New RB checks (public_invariants, discretization_source, amplification) | cheap | ☐ |
+| T6b | Formal signed+checkable DP-release label spec (Croissant/Dibia extension) | medium | ☐ |
+| T6c | More generators (MST/PrivBayes) emitting boundary-clean sheets | medium | ☐ |
+| T6d | Multi-table / relational release boundary | BIG (research) | ☐ future/Paper 2 |
 
 ## Run log
 - **2026-09-17 run 0** — created tracker; reading `synthproof/audit/boundary.py` + the Privacy Data Sheet to plan T2. Next: T1 comparison + T2 code.
@@ -34,3 +38,12 @@
   trial a GDP/white-box estimator to get a tighter number. **Remaining: T5 (scale case study — needs
   DP-registry data), T6 (extend auditor to more mechanisms/multi-table + propose as Croissant/Dibia
   extension — big).**
+- **2026-09-17 run 5 — T5 DONE.** Fetched Damien Desfontaines' real-world DP registry (the one P10
+  cites) and audited **12 flagship real deployments** (Apple, Facebook, Google, LinkedIn, Microsoft,
+  US Census ×2, Wikimedia, Israel MoH synthetic births) against P1–P11 → `research/21`. Result:
+  ε 12/12, mechanism 12/12, unit-of-privacy 11/12, δ 6/12; **P10 tamper-evidence 0/12, P11
+  machine-checkable 0/12, all artefact-safety P5–P9 ≈0**. Corroborates HF 0/286 from the
+  best-documented end. Honest caveats recorded (query vs synthetic release types; registry-summary basis).
+- **2026-09-17 run 6 — T6 SCOPED** → `research/22_T6_scope.md`: T6a new RB checks (cheap, first),
+  T6b formal signed+checkable Croissant/Dibia label spec (medium), T6c more generators (compute),
+  T6d multi-table (BIG → Future/Paper 2). **Awaiting approval: do T6a+T6b now, defer T6c, mark T6d future?**
