@@ -1,6 +1,6 @@
 # Literature Survey — with datasets used (verified 2026-09-16)
 
-> Every dataset below was checked against the paper's own PDF (in `research/scratch_datasets/`),
+> Every dataset below was checked against the paper's own PDF (in `research/litsurvey/papers/`),
 > not taken on trust. Rows marked ✔verified were confirmed by reading the paper's dataset section
 > today; the rest are from the fetched text and keyword scan (consistent, but re-read the exact
 > quote before quoting a number). Two corrections were made vs the first automated pass: P5 does
