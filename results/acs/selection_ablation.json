@@ -25,47 +25,47 @@
     "AGEP|WKHP": {
       "true_corr": 0.07207986920920266,
       "abs_true_corr": 0.07207986920920266,
-      "err_when_measured": 0.02550684985321984,
-      "err_when_not_measured": 0.06947363413798748,
-      "effect": -0.043966784284767635,
-      "relative_effect": -0.6328556844664478,
+      "err_when_measured": 0.02641411896958395,
+      "err_when_not_measured": 0.07098747934139038,
+      "effect": -0.044573360371806425,
+      "relative_effect": -0.627904537326165,
       "n_measured": 25,
       "n_not_measured": 50
     },
     "AGEP|SCHL": {
       "true_corr": 0.0076542185176550585,
       "abs_true_corr": 0.0076542185176550585,
-      "err_when_measured": 0.015486896668716691,
-      "err_when_not_measured": 0.011056077553706096,
-      "effect": 0.004430819115010596,
-      "relative_effect": 0.40075868620561056,
+      "err_when_measured": 0.014794139051099657,
+      "err_when_not_measured": 0.012915820154987047,
+      "effect": 0.0018783188961126098,
+      "relative_effect": 0.14542776792903506,
       "n_measured": 25,
       "n_not_measured": 50
     },
     "WKHP|SCHL": {
       "true_corr": 0.045700205534620786,
       "abs_true_corr": 0.045700205534620786,
-      "err_when_measured": 0.02054114126188087,
-      "err_when_not_measured": 0.04377220711312744,
-      "effect": -0.02323106585124657,
-      "relative_effect": -0.5307263988586833,
+      "err_when_measured": 0.019861425597108583,
+      "err_when_not_measured": 0.045000553874289785,
+      "effect": -0.025139128277181202,
+      "relative_effect": -0.5586404191247959,
       "n_measured": 25,
       "n_not_measured": 50
     }
   },
-  "corr_abs_true_vs_effect": -0.9997638668042982,
-  "corr_abs_true_vs_relative_effect": -0.9461543836764809,
+  "corr_abs_true_vs_effect": -0.9999480340585041,
+  "corr_abs_true_vs_relative_effect": -0.943285536853351,
   "pairs_where_measuring_helped": 2,
   "pairs_compared": 3,
   "verdict": "DEPENDENCE EXPLAINS IT. Measuring helps markedly more on strongly dependent pairs (corr = -1.000). AIM selects the dependent pairs, so its advantage on them is the mechanism working as designed, NOT an artefact of selection. The rival explanation of Chen, Gong & Wang (arXiv:2511.13893) stands and the project's confound reading must be withdrawn.",
-  "elapsed_seconds": 64.0,
+  "elapsed_seconds": 104.5,
   "observations": [
     {
       "measured": "none",
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 0,
-      "corr_err": 0.07366798037026297,
+      "corr_err": 0.06950010602880316,
       "was_measured": false
     },
     {
@@ -73,7 +73,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 0,
-      "corr_err": 0.0024689427737892167,
+      "corr_err": 0.013911491834834918,
       "was_measured": false
     },
     {
@@ -81,7 +81,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 0,
-      "corr_err": 0.05484829950144426,
+      "corr_err": 0.02453934887512208,
       "was_measured": false
     },
     {
@@ -89,7 +89,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 1,
-      "corr_err": 0.05710345442476481,
+      "corr_err": 0.07658561509249359,
       "was_measured": false
     },
     {
@@ -97,7 +97,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 1,
-      "corr_err": 0.004404679868935385,
+      "corr_err": 0.010199328646860243,
       "was_measured": false
     },
     {
@@ -105,7 +105,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 1,
-      "corr_err": 0.06409838839851004,
+      "corr_err": 0.05291438559611726,
       "was_measured": false
     },
     {
@@ -113,7 +113,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 2,
-      "corr_err": 0.06915963081966174,
+      "corr_err": 0.0645659285271779,
       "was_measured": false
     },
     {
@@ -121,7 +121,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 2,
-      "corr_err": 0.0037136799608198543,
+      "corr_err": 0.014175341375937133,
       "was_measured": false
     },
     {
@@ -129,7 +129,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 2,
-      "corr_err": 0.05886327920728213,
+      "corr_err": 0.03778761132046014,
       "was_measured": false
     },
     {
@@ -137,7 +137,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 3,
-      "corr_err": 0.0941528801669107,
+      "corr_err": 0.06927254551606032,
       "was_measured": false
     },
     {
@@ -145,7 +145,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 3,
-      "corr_err": 0.02362620233995105,
+      "corr_err": 0.013656276289013374,
       "was_measured": false
     },
     {
@@ -153,7 +153,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 3,
-      "corr_err": 0.039583167003700265,
+      "corr_err": 0.052371288067749704,
       "was_measured": false
     },
     {
@@ -161,7 +161,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 4,
-      "corr_err": 0.06464701554986678,
+      "corr_err": 0.05878638129152823,
       "was_measured": false
     },
     {
@@ -169,7 +169,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 4,
-      "corr_err": 0.0061880719233200245,
+      "corr_err": 0.00804408439344641,
       "was_measured": false
     },
     {
@@ -177,7 +177,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 4,
-      "corr_err": 0.05173373240470078,
+      "corr_err": 0.036619779382178336,
       "was_measured": false
     },
     {
@@ -185,7 +185,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 0,
-      "corr_err": 0.0756633348131258,
+      "corr_err": 0.07908323540205615,
       "was_measured": false
     },
     {
@@ -193,7 +193,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 0,
-      "corr_err": 0.01615808806267452,
+      "corr_err": 0.018460477111797283,
       "was_measured": false
     },
     {
@@ -201,7 +201,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 0,
-      "corr_err": 0.039931957375697755,
+      "corr_err": 0.039380022492853405,
       "was_measured": false
     },
     {
@@ -209,7 +209,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 1,
-      "corr_err": 0.06190611670332811,
+      "corr_err": 0.05593839897924961,
       "was_measured": false
     },
     {
@@ -217,7 +217,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 1,
-      "corr_err": 0.018581925369929753,
+      "corr_err": 0.006667030408989316,
       "was_measured": false
     },
     {
@@ -225,7 +225,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 1,
-      "corr_err": 0.02903084726635762,
+      "corr_err": 0.0524029237407566,
       "was_measured": false
     },
     {
@@ -233,7 +233,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 2,
-      "corr_err": 0.059336909259147363,
+      "corr_err": 0.0619309162297262,
       "was_measured": false
     },
     {
@@ -241,7 +241,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 2,
-      "corr_err": 0.013868623643828928,
+      "corr_err": 0.007215421558660807,
       "was_measured": false
     },
     {
@@ -249,7 +249,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 2,
-      "corr_err": 0.05929476412087786,
+      "corr_err": 0.0269490894840103,
       "was_measured": false
     },
     {
@@ -257,7 +257,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 3,
-      "corr_err": 0.08292979922686596,
+      "corr_err": 0.08695694360759317,
       "was_measured": false
     },
     {
@@ -265,7 +265,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 3,
-      "corr_err": 0.012328050394922484,
+      "corr_err": 0.008271180662472436,
       "was_measured": false
     },
     {
@@ -273,7 +273,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 3,
-      "corr_err": 0.020613587189434155,
+      "corr_err": 0.05779459226330117,
       "was_measured": false
     },
     {
@@ -281,7 +281,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 4,
-      "corr_err": 0.07490328497772364,
+      "corr_err": 0.07381651052973189,
       "was_measured": false
     },
     {
@@ -289,7 +289,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 4,
-      "corr_err": 0.00979874292038417,
+      "corr_err": 0.009361617854040119,
       "was_measured": false
     },
     {
@@ -297,7 +297,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 4,
-      "corr_err": 0.03487384498999847,
+      "corr_err": 0.02860432146486972,
       "was_measured": false
     },
     {
@@ -305,7 +305,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 0,
-      "corr_err": 0.0925979348647773,
+      "corr_err": 0.064956898020491,
       "was_measured": false
     },
     {
@@ -313,7 +313,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 0,
-      "corr_err": 0.0076504332025039605,
+      "corr_err": 0.03014349093018145,
       "was_measured": false
     },
     {
@@ -321,7 +321,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 0,
-      "corr_err": 0.03914008627294705,
+      "corr_err": 0.0348966540784963,
       "was_measured": false
     },
     {
@@ -329,7 +329,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 1,
-      "corr_err": 0.09062369335950618,
+      "corr_err": 0.12414178545615856,
       "was_measured": false
     },
     {
@@ -337,7 +337,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 1,
-      "corr_err": 0.01954770706068655,
+      "corr_err": 0.014480481370469655,
       "was_measured": false
     },
     {
@@ -345,7 +345,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 1,
-      "corr_err": 0.057479385590577546,
+      "corr_err": 0.006305159765000012,
       "was_measured": false
     },
     {
@@ -353,7 +353,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 2,
-      "corr_err": 0.07224279449719385,
+      "corr_err": 0.08266003280364195,
       "was_measured": false
     },
     {
@@ -361,7 +361,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 2,
-      "corr_err": 0.006461605088211237,
+      "corr_err": 0.003182850874051197,
       "was_measured": false
     },
     {
@@ -369,7 +369,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 2,
-      "corr_err": 0.05028927632127014,
+      "corr_err": 0.05773290876243038,
       "was_measured": false
     },
     {
@@ -377,7 +377,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 3,
-      "corr_err": 0.047417990707864704,
+      "corr_err": 0.07822562997187507,
       "was_measured": false
     },
     {
@@ -385,7 +385,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 3,
-      "corr_err": 0.0021226990877036547,
+      "corr_err": 0.010065870557379156,
       "was_measured": false
     },
     {
@@ -393,7 +393,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 3,
-      "corr_err": 0.0737495101815622,
+      "corr_err": 0.04734162761537972,
       "was_measured": false
     },
     {
@@ -401,7 +401,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 4,
-      "corr_err": 0.06421251836799115,
+      "corr_err": 0.0782881874323784,
       "was_measured": false
     },
     {
@@ -409,7 +409,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 4,
-      "corr_err": 0.015638918768140758,
+      "corr_err": 0.015012941353622572,
       "was_measured": false
     },
     {
@@ -417,7 +417,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 4,
-      "corr_err": 0.03309105931051472,
+      "corr_err": 0.041943687519296564,
       "was_measured": false
     },
     {
@@ -425,7 +425,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 0,
-      "corr_err": 0.08728061951072692,
+      "corr_err": 0.08602714986760578,
       "was_measured": false
     },
     {
@@ -433,7 +433,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 0,
-      "corr_err": 0.0007819502626330074,
+      "corr_err": 0.00636320533263214,
       "was_measured": false
     },
     {
@@ -441,7 +441,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 0,
-      "corr_err": 0.043416026515782684,
+      "corr_err": 0.061815747572846025,
       "was_measured": false
     },
     {
@@ -449,7 +449,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 1,
-      "corr_err": 0.07175664615140874,
+      "corr_err": 0.0457893948038963,
       "was_measured": false
     },
     {
@@ -457,7 +457,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 1,
-      "corr_err": 0.006187111245897169,
+      "corr_err": 0.02801031957150669,
       "was_measured": false
     },
     {
@@ -465,7 +465,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 1,
-      "corr_err": 0.0486358859276904,
+      "corr_err": 0.04509621188955126,
       "was_measured": false
     },
     {
@@ -473,7 +473,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 2,
-      "corr_err": 0.053790347217145484,
+      "corr_err": 0.08824341982685129,
       "was_measured": false
     },
     {
@@ -481,7 +481,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 2,
-      "corr_err": 0.02832813908244853,
+      "corr_err": 0.03026098254254065,
       "was_measured": false
     },
     {
@@ -489,7 +489,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 2,
-      "corr_err": 0.027151018972704534,
+      "corr_err": 0.021749960859763818,
       "was_measured": false
     },
     {
@@ -497,7 +497,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 3,
-      "corr_err": 0.06927626051688221,
+      "corr_err": 0.08314857253550201,
       "was_measured": false
     },
     {
@@ -505,7 +505,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 3,
-      "corr_err": 0.012205025696616665,
+      "corr_err": 0.0034640712083886666,
       "was_measured": false
     },
     {
@@ -513,7 +513,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 3,
-      "corr_err": 0.05867804791612409,
+      "corr_err": 0.05653472389426913,
       "was_measured": false
     },
     {
@@ -521,7 +521,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 4,
-      "corr_err": 0.06582786768492462,
+      "corr_err": 0.050757794936446235,
       "was_measured": false
     },
     {
@@ -529,7 +529,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 4,
-      "corr_err": 0.0388889196851209,
+      "corr_err": 0.006284453204562073,
       "was_measured": false
     },
     {
@@ -537,7 +537,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 4,
-      "corr_err": 0.03028089994217476,
+      "corr_err": 0.07086710333688223,
       "was_measured": false
     },
     {
@@ -545,7 +545,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 0,
-      "corr_err": 0.0735207919575425,
+      "corr_err": 0.061029248904701364,
       "was_measured": false
     },
     {
@@ -553,7 +553,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 0,
-      "corr_err": 0.016309349053005295,
+      "corr_err": 0.006570004299466223,
       "was_measured": false
     },
     {
@@ -561,7 +561,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 0,
-      "corr_err": 0.04809268696796051,
+      "corr_err": 0.031941201656032786,
       "was_measured": false
     },
     {
@@ -569,7 +569,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 1,
-      "corr_err": 0.08305087571755497,
+      "corr_err": 0.07766228950842907,
       "was_measured": false
     },
     {
@@ -577,7 +577,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 1,
-      "corr_err": 0.007078719850489218,
+      "corr_err": 0.0013772063573178912,
       "was_measured": false
     },
     {
@@ -585,7 +585,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 1,
-      "corr_err": 0.03579089143400743,
+      "corr_err": 0.023300214994450695,
       "was_measured": false
     },
     {
@@ -593,7 +593,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 2,
-      "corr_err": 0.05640316272832793,
+      "corr_err": 0.05017908013411404,
       "was_measured": false
     },
     {
@@ -601,7 +601,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 2,
-      "corr_err": 0.0010236726245060933,
+      "corr_err": 0.007357477758282653,
       "was_measured": false
     },
     {
@@ -609,7 +609,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 2,
-      "corr_err": 0.04780993670624843,
+      "corr_err": 0.032491447568034015,
       "was_measured": false
     },
     {
@@ -617,7 +617,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 3,
-      "corr_err": 0.08009081909919422,
+      "corr_err": 0.07252061683037822,
       "was_measured": false
     },
     {
@@ -625,7 +625,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 3,
-      "corr_err": 0.002103199120179016,
+      "corr_err": 0.009557974472216218,
       "was_measured": false
     },
     {
@@ -633,7 +633,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 3,
-      "corr_err": 0.07249958196432017,
+      "corr_err": 0.03326807087068738,
       "was_measured": false
     },
     {
@@ -641,7 +641,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 4,
-      "corr_err": 0.07511605265210207,
+      "corr_err": 0.08053501796706407,
       "was_measured": false
     },
     {
@@ -649,7 +649,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 4,
-      "corr_err": 0.002664314763699452,
+      "corr_err": 0.016385883046008617,
       "was_measured": false
     },
     {
@@ -657,7 +657,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 4,
-      "corr_err": 0.03305750436734537,
+      "corr_err": 0.02127794727755437,
       "was_measured": false
     },
     {
@@ -665,7 +665,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 0,
-      "corr_err": 0.06672545226022054,
+      "corr_err": 0.06603196705892109,
       "was_measured": true
     },
     {
@@ -673,7 +673,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 0,
-      "corr_err": 0.02284806781181722,
+      "corr_err": 0.0026954770081551605,
       "was_measured": false
     },
     {
@@ -681,7 +681,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 0,
-      "corr_err": 0.029976165075750412,
+      "corr_err": 0.07011160297722799,
       "was_measured": false
     },
     {
@@ -689,7 +689,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 1,
-      "corr_err": 0.04999726405888205,
+      "corr_err": 0.048940990537994125,
       "was_measured": true
     },
     {
@@ -697,7 +697,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 1,
-      "corr_err": 0.0067685235530575115,
+      "corr_err": 0.002375146392504933,
       "was_measured": false
     },
     {
@@ -705,7 +705,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 1,
-      "corr_err": 0.05139127470119946,
+      "corr_err": 0.050014951692057816,
       "was_measured": false
     },
     {
@@ -713,7 +713,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 2,
-      "corr_err": 0.04757814662688531,
+      "corr_err": 0.04608431183308326,
       "was_measured": true
     },
     {
@@ -721,7 +721,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 2,
-      "corr_err": 0.008740825912338034,
+      "corr_err": 0.004444693642670957,
       "was_measured": false
     },
     {
@@ -729,7 +729,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 2,
-      "corr_err": 0.02549118152080538,
+      "corr_err": 0.05600594574700392,
       "was_measured": false
     },
     {
@@ -737,7 +737,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 3,
-      "corr_err": 0.023069299450590684,
+      "corr_err": 0.022774428861603052,
       "was_measured": true
     },
     {
@@ -745,7 +745,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 3,
-      "corr_err": 0.001798705250990712,
+      "corr_err": 0.017692284390822606,
       "was_measured": false
     },
     {
@@ -753,7 +753,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 3,
-      "corr_err": 0.04896112388791355,
+      "corr_err": 0.04489020248225966,
       "was_measured": false
     },
     {
@@ -761,7 +761,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 4,
-      "corr_err": 0.02991291103463213,
+      "corr_err": 0.024466927615610326,
       "was_measured": true
     },
     {
@@ -769,7 +769,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 4,
-      "corr_err": 0.007855862097489421,
+      "corr_err": 0.006877960977305217,
       "was_measured": false
     },
     {
@@ -777,7 +777,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 4,
-      "corr_err": 0.04271287912892061,
+      "corr_err": 0.05125087270184867,
       "was_measured": false
     },
     {
@@ -785,7 +785,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 0,
-      "corr_err": 0.009561691837062666,
+      "corr_err": 0.007954768499908366,
       "was_measured": true
     },
     {
@@ -793,7 +793,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 0,
-      "corr_err": 0.02144613649679942,
+      "corr_err": 0.021133984901043786,
       "was_measured": false
     },
     {
@@ -801,7 +801,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 0,
-      "corr_err": 0.03895591060141163,
+      "corr_err": 0.06674456639699614,
       "was_measured": false
     },
     {
@@ -809,7 +809,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 1,
-      "corr_err": 0.03848912496297839,
+      "corr_err": 0.04076130515892627,
       "was_measured": true
     },
     {
@@ -817,7 +817,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 1,
-      "corr_err": 0.003021691787802935,
+      "corr_err": 0.032483157543839264,
       "was_measured": false
     },
     {
@@ -825,7 +825,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 1,
-      "corr_err": 0.04523616639860941,
+      "corr_err": 0.024618529128796376,
       "was_measured": false
     },
     {
@@ -833,7 +833,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 2,
-      "corr_err": 0.04508471957246883,
+      "corr_err": 0.04529166656372707,
       "was_measured": true
     },
     {
@@ -841,7 +841,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 2,
-      "corr_err": 0.008352454504351795,
+      "corr_err": 0.007709880335900907,
       "was_measured": false
     },
     {
@@ -849,7 +849,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 2,
-      "corr_err": 0.049603883440499,
+      "corr_err": 0.029146062955418814,
       "was_measured": false
     },
     {
@@ -857,7 +857,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 3,
-      "corr_err": 0.007569413677112766,
+      "corr_err": 0.00775217916432798,
       "was_measured": true
     },
     {
@@ -865,7 +865,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 3,
-      "corr_err": 0.03229417315730781,
+      "corr_err": 0.011330325899039633,
       "was_measured": false
     },
     {
@@ -873,7 +873,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 3,
-      "corr_err": 0.03494578027193641,
+      "corr_err": 0.05588060286223013,
       "was_measured": false
     },
     {
@@ -881,7 +881,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 4,
-      "corr_err": 0.024181003284077518,
+      "corr_err": 0.020547871890579522,
       "was_measured": true
     },
     {
@@ -889,7 +889,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 4,
-      "corr_err": 0.001580302839690951,
+      "corr_err": 0.004290038046895312,
       "was_measured": false
     },
     {
@@ -897,7 +897,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 4,
-      "corr_err": 0.037034689272984866,
+      "corr_err": 0.045536151222737686,
       "was_measured": false
     },
     {
@@ -905,7 +905,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 0,
-      "corr_err": 0.022114278408234475,
+      "corr_err": 0.02163274096229091,
       "was_measured": true
     },
     {
@@ -913,7 +913,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 0,
-      "corr_err": 0.010395013179500472,
+      "corr_err": 0.020149861137245675,
       "was_measured": false
     },
     {
@@ -921,7 +921,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 0,
-      "corr_err": 0.058614886331154414,
+      "corr_err": 0.03648103509189031,
       "was_measured": false
     },
     {
@@ -929,7 +929,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 1,
-      "corr_err": 0.033218494641605034,
+      "corr_err": 0.028677768718276,
       "was_measured": true
     },
     {
@@ -937,7 +937,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 1,
-      "corr_err": 0.013160605676407694,
+      "corr_err": 0.005157512417553984,
       "was_measured": false
     },
     {
@@ -945,7 +945,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 1,
-      "corr_err": 0.036899494340058805,
+      "corr_err": 0.08286721267195132,
       "was_measured": false
     },
     {
@@ -953,7 +953,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 2,
-      "corr_err": 0.0027213671719137633,
+      "corr_err": 0.006456965744098125,
       "was_measured": true
     },
     {
@@ -961,7 +961,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 2,
-      "corr_err": 0.021648147791647775,
+      "corr_err": 0.0017365539670914434,
       "was_measured": false
     },
     {
@@ -969,7 +969,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 2,
-      "corr_err": 0.046928962261316355,
+      "corr_err": 0.03126714282582275,
       "was_measured": false
     },
     {
@@ -977,7 +977,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 3,
-      "corr_err": 0.028848398751082818,
+      "corr_err": 0.02990926211425303,
       "was_measured": true
     },
     {
@@ -985,7 +985,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 3,
-      "corr_err": 0.022152239127905864,
+      "corr_err": 0.012132786223231813,
       "was_measured": false
     },
     {
@@ -993,7 +993,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 3,
-      "corr_err": 0.049954708673442386,
+      "corr_err": 0.044216304058945846,
       "was_measured": false
     },
     {
@@ -1001,7 +1001,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 4,
-      "corr_err": 0.0030142120501623487,
+      "corr_err": 0.009280454708894811,
       "was_measured": true
     },
     {
@@ -1009,7 +1009,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 4,
-      "corr_err": 0.005324254323182566,
+      "corr_err": 0.010736446324399608,
       "was_measured": false
     },
     {
@@ -1017,7 +1017,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 4,
-      "corr_err": 0.045971705896552834,
+      "corr_err": 0.05661288255467449,
       "was_measured": false
     },
     {
@@ -1025,7 +1025,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 0,
-      "corr_err": 0.008334411706457434,
+      "corr_err": 0.011168913611425663,
       "was_measured": true
     },
     {
@@ -1033,7 +1033,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 0,
-      "corr_err": 0.006172757751219357,
+      "corr_err": 0.01452453273781939,
       "was_measured": false
     },
     {
@@ -1041,7 +1041,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 0,
-      "corr_err": 0.0466598434421624,
+      "corr_err": 0.019581035884644448,
       "was_measured": false
     },
     {
@@ -1049,7 +1049,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 1,
-      "corr_err": 0.024111958359529118,
+      "corr_err": 0.02396590880330489,
       "was_measured": true
     },
     {
@@ -1057,7 +1057,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 1,
-      "corr_err": 0.027145165273649716,
+      "corr_err": 0.033272605601094685,
       "was_measured": false
     },
     {
@@ -1065,7 +1065,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 1,
-      "corr_err": 0.04317088850837516,
+      "corr_err": 0.035674913124121826,
       "was_measured": false
     },
     {
@@ -1073,7 +1073,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 2,
-      "corr_err": 0.015732348185353864,
+      "corr_err": 0.018834473193553317,
       "was_measured": true
     },
     {
@@ -1081,7 +1081,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 2,
-      "corr_err": 0.010333149645596161,
+      "corr_err": 0.00804469000754211,
       "was_measured": false
     },
     {
@@ -1089,7 +1089,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 2,
-      "corr_err": 0.041572757018367726,
+      "corr_err": 0.04507948616977873,
       "was_measured": false
     },
     {
@@ -1097,7 +1097,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 3,
-      "corr_err": 0.017477104413000114,
+      "corr_err": 0.025192778647695008,
       "was_measured": true
     },
     {
@@ -1105,7 +1105,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 3,
-      "corr_err": 0.023049521935736686,
+      "corr_err": 0.032204919412365245,
       "was_measured": false
     },
     {
@@ -1113,7 +1113,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 3,
-      "corr_err": 0.04890736992836561,
+      "corr_err": 0.04961840444626381,
       "was_measured": false
     },
     {
@@ -1121,7 +1121,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 4,
-      "corr_err": 0.016762798108022628,
+      "corr_err": 0.020066166720408826,
       "was_measured": true
     },
     {
@@ -1129,7 +1129,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 4,
-      "corr_err": 0.0009218701761664633,
+      "corr_err": 0.006725426536230605,
       "was_measured": false
     },
     {
@@ -1137,7 +1137,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 4,
-      "corr_err": 0.0537836562128477,
+      "corr_err": 0.03964359932123961,
       "was_measured": false
     },
     {
@@ -1145,7 +1145,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 0,
-      "corr_err": 0.030683511747310488,
+      "corr_err": 0.03163086708988781,
       "was_measured": true
     },
     {
@@ -1153,7 +1153,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 0,
-      "corr_err": 0.008565338546275749,
+      "corr_err": 0.015725751058290004,
       "was_measured": false
     },
     {
@@ -1161,7 +1161,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 0,
-      "corr_err": 0.03133688422777393,
+      "corr_err": 0.04023940376930569,
       "was_measured": false
     },
     {
@@ -1169,7 +1169,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 1,
-      "corr_err": 0.027307572814202166,
+      "corr_err": 0.029025151259889415,
       "was_measured": true
     },
     {
@@ -1177,7 +1177,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 1,
-      "corr_err": 0.009041356326818014,
+      "corr_err": 0.015061457865542903,
       "was_measured": false
     },
     {
@@ -1185,7 +1185,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 1,
-      "corr_err": 0.0434757131461798,
+      "corr_err": 0.03699025687241568,
       "was_measured": false
     },
     {
@@ -1193,7 +1193,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 2,
-      "corr_err": 0.028975841680722758,
+      "corr_err": 0.03327245529721247,
       "was_measured": true
     },
     {
@@ -1201,7 +1201,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 2,
-      "corr_err": 0.0017691904690729909,
+      "corr_err": 0.01390786043622282,
       "was_measured": false
     },
     {
@@ -1209,7 +1209,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 2,
-      "corr_err": 0.04788584286467135,
+      "corr_err": 0.06130669448733203,
       "was_measured": false
     },
     {
@@ -1217,7 +1217,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 3,
-      "corr_err": 0.02421170014178403,
+      "corr_err": 0.025418334297420103,
       "was_measured": true
     },
     {
@@ -1225,7 +1225,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 3,
-      "corr_err": 0.013669839210007449,
+      "corr_err": 0.014310118598471592,
       "was_measured": false
     },
     {
@@ -1233,7 +1233,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 3,
-      "corr_err": 0.041225973147450606,
+      "corr_err": 0.04713550798693549,
       "was_measured": false
     },
     {
@@ -1241,7 +1241,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 4,
-      "corr_err": 0.011988221386204048,
+      "corr_err": 0.01521431588630745,
       "was_measured": true
     },
     {
@@ -1249,7 +1249,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 4,
-      "corr_err": 0.0002746940550212209,
+      "corr_err": 0.005640211737907255,
       "was_measured": false
     },
     {
@@ -1257,7 +1257,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 4,
-      "corr_err": 0.03910325781399317,
+      "corr_err": 0.06335224569543706,
       "was_measured": false
     },
     {
@@ -1265,7 +1265,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 0,
-      "corr_err": 0.061377608719789555,
+      "corr_err": 0.07365180696958382,
       "was_measured": false
     },
     {
@@ -1273,7 +1273,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 0,
-      "corr_err": 0.029295892930802436,
+      "corr_err": 0.028467938020229993,
       "was_measured": true
     },
     {
@@ -1281,7 +1281,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 0,
-      "corr_err": 0.03786051169510885,
+      "corr_err": 0.057359620853017705,
       "was_measured": false
     },
     {
@@ -1289,7 +1289,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 1,
-      "corr_err": 0.038573977949455884,
+      "corr_err": 0.07200953495918028,
       "was_measured": false
     },
     {
@@ -1297,7 +1297,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 1,
-      "corr_err": 0.008491445189762817,
+      "corr_err": 0.00925698952906651,
       "was_measured": true
     },
     {
@@ -1305,7 +1305,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 1,
-      "corr_err": 0.02698480853870527,
+      "corr_err": 0.040261873524958844,
       "was_measured": false
     },
     {
@@ -1313,7 +1313,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 2,
-      "corr_err": 0.08593693266697865,
+      "corr_err": 0.07644049406207672,
       "was_measured": false
     },
     {
@@ -1321,7 +1321,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 2,
-      "corr_err": 0.04638739361679324,
+      "corr_err": 0.04763985566041111,
       "was_measured": true
     },
     {
@@ -1329,7 +1329,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 2,
-      "corr_err": 0.04292104534372948,
+      "corr_err": 0.04844838817440757,
       "was_measured": false
     },
     {
@@ -1337,7 +1337,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 3,
-      "corr_err": 0.05974145865750782,
+      "corr_err": 0.062310104668755875,
       "was_measured": false
     },
     {
@@ -1345,7 +1345,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 3,
-      "corr_err": 0.07183865611492822,
+      "corr_err": 0.07219587540529243,
       "was_measured": true
     },
     {
@@ -1353,7 +1353,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 3,
-      "corr_err": 0.03674091620568189,
+      "corr_err": 0.039371113783872924,
       "was_measured": false
     },
     {
@@ -1361,7 +1361,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 4,
-      "corr_err": 0.06770177535049407,
+      "corr_err": 0.07952171806527483,
       "was_measured": false
     },
     {
@@ -1369,7 +1369,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 4,
-      "corr_err": 0.03423943847359884,
+      "corr_err": 0.037423072357624126,
       "was_measured": true
     },
     {
@@ -1377,7 +1377,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 4,
-      "corr_err": 0.028125635398469587,
+      "corr_err": 0.049771012665600654,
       "was_measured": false
     },
     {
@@ -1385,7 +1385,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 0,
-      "corr_err": 0.07168064206641599,
+      "corr_err": 0.07055882062546534,
       "was_measured": false
     },
     {
@@ -1393,7 +1393,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 0,
-      "corr_err": 0.021359457502947893,
+      "corr_err": 0.019640505849360664,
       "was_measured": true
     },
     {
@@ -1401,7 +1401,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 0,
-      "corr_err": 0.04178062887498867,
+      "corr_err": 0.038178285056337136,
       "was_measured": false
     },
     {
@@ -1409,7 +1409,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 1,
-      "corr_err": 0.07370208003021098,
+      "corr_err": 0.07002475509573226,
       "was_measured": false
     },
     {
@@ -1417,7 +1417,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 1,
-      "corr_err": 0.0023595280488552537,
+      "corr_err": 0.004953374178310904,
       "was_measured": true
     },
     {
@@ -1425,7 +1425,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 1,
-      "corr_err": 0.044151777954807694,
+      "corr_err": 0.04438946764724425,
       "was_measured": false
     },
     {
@@ -1433,7 +1433,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 2,
-      "corr_err": 0.06854395275980374,
+      "corr_err": 0.08491506068230091,
       "was_measured": false
     },
     {
@@ -1441,7 +1441,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 2,
-      "corr_err": 0.021335558553179798,
+      "corr_err": 0.023150884324492627,
       "was_measured": true
     },
     {
@@ -1449,7 +1449,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 2,
-      "corr_err": 0.04731269744420792,
+      "corr_err": 0.03038978726909209,
       "was_measured": false
     },
     {
@@ -1457,7 +1457,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 3,
-      "corr_err": 0.06509750512625752,
+      "corr_err": 0.08965151915594485,
       "was_measured": false
     },
     {
@@ -1465,7 +1465,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 3,
-      "corr_err": 0.005338892909885739,
+      "corr_err": 0.0010274751969983932,
       "was_measured": true
     },
     {
@@ -1473,7 +1473,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 3,
-      "corr_err": 0.045294024056294846,
+      "corr_err": 0.07561915507098638,
       "was_measured": false
     },
     {
@@ -1481,7 +1481,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 4,
-      "corr_err": 0.06323433887310297,
+      "corr_err": 0.05971028854747674,
       "was_measured": false
     },
     {
@@ -1489,7 +1489,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 4,
-      "corr_err": 0.01662002788216299,
+      "corr_err": 0.014410217957684103,
       "was_measured": true
     },
     {
@@ -1497,7 +1497,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 4,
-      "corr_err": 0.05407542519267902,
+      "corr_err": 0.026625694539590166,
       "was_measured": false
     },
     {
@@ -1505,7 +1505,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 0,
-      "corr_err": 0.061819048359821896,
+      "corr_err": 0.049252036433196124,
       "was_measured": false
     },
     {
@@ -1513,7 +1513,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 0,
-      "corr_err": 0.008667443615062179,
+      "corr_err": 0.009721145178241596,
       "was_measured": true
     },
     {
@@ -1521,7 +1521,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 0,
-      "corr_err": 0.03315619351118387,
+      "corr_err": 0.026341193291328037,
       "was_measured": false
     },
     {
@@ -1529,7 +1529,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 1,
-      "corr_err": 0.05737665103602346,
+      "corr_err": 0.07585698869196958,
       "was_measured": false
     },
     {
@@ -1537,7 +1537,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 1,
-      "corr_err": 0.0015313678255435715,
+      "corr_err": 0.002165822879524497,
       "was_measured": true
     },
     {
@@ -1545,7 +1545,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 1,
-      "corr_err": 0.05125882639107384,
+      "corr_err": 0.04209347080045547,
       "was_measured": false
     },
     {
@@ -1553,7 +1553,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 2,
-      "corr_err": 0.08133274352202562,
+      "corr_err": 0.06527576807119229,
       "was_measured": false
     },
     {
@@ -1561,7 +1561,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 2,
-      "corr_err": 0.01855975385959789,
+      "corr_err": 0.01797121754607913,
       "was_measured": true
     },
     {
@@ -1569,7 +1569,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 2,
-      "corr_err": 0.047699213716318176,
+      "corr_err": 0.041450515270397156,
       "was_measured": false
     },
     {
@@ -1577,7 +1577,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 3,
-      "corr_err": 0.07320414228850233,
+      "corr_err": 0.08035404893649903,
       "was_measured": false
     },
     {
@@ -1585,7 +1585,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 3,
-      "corr_err": 0.009425998224811154,
+      "corr_err": 0.013407646531523248,
       "was_measured": true
     },
     {
@@ -1593,7 +1593,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 3,
-      "corr_err": 0.06143491174629839,
+      "corr_err": 0.046009014477126936,
       "was_measured": false
     },
     {
@@ -1601,7 +1601,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 4,
-      "corr_err": 0.07038382478846752,
+      "corr_err": 0.08733451106145045,
       "was_measured": false
     },
     {
@@ -1609,7 +1609,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 4,
-      "corr_err": 0.01437501372619391,
+      "corr_err": 0.013634693759113633,
       "was_measured": true
     },
     {
@@ -1617,7 +1617,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 4,
-      "corr_err": 0.05596055421273708,
+      "corr_err": 0.008102470541539876,
       "was_measured": false
     },
     {
@@ -1625,7 +1625,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 0,
-      "corr_err": 0.05533810908225968,
+      "corr_err": 0.0926119324929158,
       "was_measured": false
     },
     {
@@ -1633,7 +1633,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 0,
-      "corr_err": 0.0019573914515382436,
+      "corr_err": 0.005147972607970664,
       "was_measured": true
     },
     {
@@ -1641,7 +1641,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 0,
-      "corr_err": 0.04547031064694013,
+      "corr_err": 0.051088221079352174,
       "was_measured": false
     },
     {
@@ -1649,7 +1649,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 1,
-      "corr_err": 0.0558099874993226,
+      "corr_err": 0.08773730124101677,
       "was_measured": false
     },
     {
@@ -1657,7 +1657,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 1,
-      "corr_err": 0.004868356825904395,
+      "corr_err": 0.0022595876457430367,
       "was_measured": true
     },
     {
@@ -1665,7 +1665,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 1,
-      "corr_err": 0.024323185915164365,
+      "corr_err": 0.034979458782665354,
       "was_measured": false
     },
     {
@@ -1673,7 +1673,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 2,
-      "corr_err": 0.06889358520193462,
+      "corr_err": 0.0763467275034732,
       "was_measured": false
     },
     {
@@ -1681,7 +1681,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 2,
-      "corr_err": 0.012489082710673286,
+      "corr_err": 0.008100518902198367,
       "was_measured": true
     },
     {
@@ -1689,7 +1689,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 2,
-      "corr_err": 0.036728604666117076,
+      "corr_err": 0.045624208188164816,
       "was_measured": false
     },
     {
@@ -1697,7 +1697,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 3,
-      "corr_err": 0.06653594674355975,
+      "corr_err": 0.06797173632836655,
       "was_measured": false
     },
     {
@@ -1705,7 +1705,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 3,
-      "corr_err": 0.011193119102169318,
+      "corr_err": 0.009432076625871401,
       "was_measured": true
     },
     {
@@ -1713,7 +1713,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 3,
-      "corr_err": 0.06018734753244319,
+      "corr_err": 0.06216624770160879,
       "was_measured": false
     },
     {
@@ -1721,7 +1721,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 4,
-      "corr_err": 0.06847115604922722,
+      "corr_err": 0.07305186134547413,
       "was_measured": false
     },
     {
@@ -1729,7 +1729,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 4,
-      "corr_err": 0.010667395099901238,
+      "corr_err": 0.008694790395334672,
       "was_measured": true
     },
     {
@@ -1737,7 +1737,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 4,
-      "corr_err": 0.03647034263069183,
+      "corr_err": 0.040212596116155803,
       "was_measured": false
     },
     {
@@ -1745,7 +1745,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 0,
-      "corr_err": 0.06950515527566846,
+      "corr_err": 0.0764809755860551,
       "was_measured": false
     },
     {
@@ -1753,7 +1753,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 0,
-      "corr_err": 0.0019260213227690736,
+      "corr_err": 0.0010071206240624027,
       "was_measured": true
     },
     {
@@ -1761,7 +1761,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 0,
-      "corr_err": 0.05135210130267155,
+      "corr_err": 0.04224615398247589,
       "was_measured": false
     },
     {
@@ -1769,7 +1769,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 1,
-      "corr_err": 0.08674345157500156,
+      "corr_err": 0.058992249183564376,
       "was_measured": false
     },
     {
@@ -1777,7 +1777,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 1,
-      "corr_err": 0.0073656422826949616,
+      "corr_err": 0.0019102340743471198,
       "was_measured": true
     },
     {
@@ -1785,7 +1785,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 1,
-      "corr_err": 0.06705551597300405,
+      "corr_err": 0.04198343479747887,
       "was_measured": false
     },
     {
@@ -1793,7 +1793,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 2,
-      "corr_err": 0.07062170740444461,
+      "corr_err": 0.05999287780424754,
       "was_measured": false
     },
     {
@@ -1801,7 +1801,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 2,
-      "corr_err": 0.0040775295241282684,
+      "corr_err": 0.0007125152536392723,
       "was_measured": true
     },
     {
@@ -1809,7 +1809,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 2,
-      "corr_err": 0.04148004563596969,
+      "corr_err": 0.04028576005152679,
       "was_measured": false
     },
     {
@@ -1817,7 +1817,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 3,
-      "corr_err": 0.09917199030983653,
+      "corr_err": 0.08547413150591227,
       "was_measured": false
     },
     {
@@ -1825,7 +1825,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 3,
-      "corr_err": 0.008483060355551925,
+      "corr_err": 0.008094976230528392,
       "was_measured": true
     },
     {
@@ -1833,7 +1833,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 3,
-      "corr_err": 0.036974707186872346,
+      "corr_err": 0.04333754665719393,
       "was_measured": false
     },
     {
@@ -1841,7 +1841,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 4,
-      "corr_err": 0.07022605996769049,
+      "corr_err": 0.07579518718945083,
       "was_measured": false
     },
     {
@@ -1849,7 +1849,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 4,
-      "corr_err": 0.014318949568460696,
+      "corr_err": 0.009426969543843172,
       "was_measured": true
     },
     {
@@ -1857,7 +1857,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 4,
-      "corr_err": 0.05401002577147039,
+      "corr_err": 0.04942739026457528,
       "was_measured": false
     },
     {
@@ -1865,7 +1865,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 0,
-      "corr_err": 0.07608107903658946,
+      "corr_err": 0.09534231555051786,
       "was_measured": false
     },
     {
@@ -1873,7 +1873,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 0,
-      "corr_err": 0.009224778765462658,
+      "corr_err": 0.00412837401674504,
       "was_measured": false
     },
     {
@@ -1881,7 +1881,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 0,
-      "corr_err": 0.050426000963284874,
+      "corr_err": 0.045137680095891815,
       "was_measured": true
     },
     {
@@ -1889,7 +1889,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 1,
-      "corr_err": 0.07056541693762883,
+      "corr_err": 0.07700469537157945,
       "was_measured": false
     },
     {
@@ -1897,7 +1897,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 1,
-      "corr_err": 0.0013700529713550147,
+      "corr_err": 0.011790985580602998,
       "was_measured": false
     },
     {
@@ -1905,7 +1905,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 1,
-      "corr_err": 0.048497942111865075,
+      "corr_err": 0.04790199685408185,
       "was_measured": true
     },
     {
@@ -1913,7 +1913,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 2,
-      "corr_err": 0.07701228737971906,
+      "corr_err": 0.05046327623722567,
       "was_measured": false
     },
     {
@@ -1921,7 +1921,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 2,
-      "corr_err": 0.015834587908417172,
+      "corr_err": 0.011106676193090501,
       "was_measured": false
     },
     {
@@ -1929,7 +1929,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 2,
-      "corr_err": 0.07264547428159283,
+      "corr_err": 0.07117610969817638,
       "was_measured": true
     },
     {
@@ -1937,7 +1937,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 3,
-      "corr_err": 0.08915687324256454,
+      "corr_err": 0.06150242895092896,
       "was_measured": false
     },
     {
@@ -1945,7 +1945,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 3,
-      "corr_err": 0.006067355390851725,
+      "corr_err": 0.006614852895268297,
       "was_measured": false
     },
     {
@@ -1953,7 +1953,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 3,
-      "corr_err": 0.06685381924287997,
+      "corr_err": 0.07230019880127138,
       "was_measured": true
     },
     {
@@ -1961,7 +1961,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 0.5,
       "seed": 4,
-      "corr_err": 0.05840241371130862,
+      "corr_err": 0.05466497509478195,
       "was_measured": false
     },
     {
@@ -1969,7 +1969,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 0.5,
       "seed": 4,
-      "corr_err": 0.008125536494711011,
+      "corr_err": 0.018054881943691613,
       "was_measured": false
     },
     {
@@ -1977,7 +1977,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 0.5,
       "seed": 4,
-      "corr_err": 0.036577280043327554,
+      "corr_err": 0.03306605805705906,
       "was_measured": true
     },
     {
@@ -1985,7 +1985,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 0,
-      "corr_err": 0.0645925883199683,
+      "corr_err": 0.08262787900856067,
       "was_measured": false
     },
     {
@@ -1993,7 +1993,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 0,
-      "corr_err": 0.007417295622905802,
+      "corr_err": 0.004370990000536538,
       "was_measured": false
     },
     {
@@ -2001,7 +2001,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 0,
-      "corr_err": 0.020267750722964203,
+      "corr_err": 0.016693341304297768,
       "was_measured": true
     },
     {
@@ -2009,7 +2009,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 1,
-      "corr_err": 0.06935342599417726,
+      "corr_err": 0.06777791368387258,
       "was_measured": false
     },
     {
@@ -2017,7 +2017,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 1,
-      "corr_err": 0.00403518333861815,
+      "corr_err": 0.00915369166966286,
       "was_measured": false
     },
     {
@@ -2025,7 +2025,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 1,
-      "corr_err": 0.018740161904214098,
+      "corr_err": 0.01404884816216432,
       "was_measured": true
     },
     {
@@ -2033,7 +2033,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 2,
-      "corr_err": 0.060722667241338416,
+      "corr_err": 0.05928997910230247,
       "was_measured": false
     },
     {
@@ -2041,7 +2041,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 2,
-      "corr_err": 0.012106194530266344,
+      "corr_err": 0.013834165206947753,
       "was_measured": false
     },
     {
@@ -2049,7 +2049,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 2,
-      "corr_err": 0.03706694441283212,
+      "corr_err": 0.04569343562713431,
       "was_measured": true
     },
     {
@@ -2057,7 +2057,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 3,
-      "corr_err": 0.059016555763119996,
+      "corr_err": 0.05632609636090466,
       "was_measured": false
     },
     {
@@ -2065,7 +2065,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 3,
-      "corr_err": 0.0011107196825846603,
+      "corr_err": 0.008159406630035101,
       "was_measured": false
     },
     {
@@ -2073,7 +2073,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 3,
-      "corr_err": 0.010534067713743517,
+      "corr_err": 0.010136532063204348,
       "was_measured": true
     },
     {
@@ -2081,7 +2081,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 1.0,
       "seed": 4,
-      "corr_err": 0.0809292317109569,
+      "corr_err": 0.06922866679214339,
       "was_measured": false
     },
     {
@@ -2089,7 +2089,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 1.0,
       "seed": 4,
-      "corr_err": 0.016888769149805354,
+      "corr_err": 0.03414380613761415,
       "was_measured": false
     },
     {
@@ -2097,7 +2097,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 1.0,
       "seed": 4,
-      "corr_err": 0.022426634989824556,
+      "corr_err": 0.01952900993450267,
       "was_measured": true
     },
     {
@@ -2105,7 +2105,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 0,
-      "corr_err": 0.045019652970459983,
+      "corr_err": 0.05402692783827829,
       "was_measured": false
     },
     {
@@ -2113,7 +2113,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 0,
-      "corr_err": 0.011041309588610389,
+      "corr_err": 0.028127963973873276,
       "was_measured": false
     },
     {
@@ -2121,7 +2121,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 0,
-      "corr_err": 0.01932400392128923,
+      "corr_err": 0.021064107439965132,
       "was_measured": true
     },
     {
@@ -2129,7 +2129,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 1,
-      "corr_err": 0.06325225382096102,
+      "corr_err": 0.0770046798081189,
       "was_measured": false
     },
     {
@@ -2137,7 +2137,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 1,
-      "corr_err": 0.02629722786588828,
+      "corr_err": 0.0029975346304959034,
       "was_measured": false
     },
     {
@@ -2145,7 +2145,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 1,
-      "corr_err": 0.015633448886251608,
+      "corr_err": 0.012151534729388354,
       "was_measured": true
     },
     {
@@ -2153,7 +2153,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 2,
-      "corr_err": 0.0846525734989921,
+      "corr_err": 0.08785522638707421,
       "was_measured": false
     },
     {
@@ -2161,7 +2161,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 2,
-      "corr_err": 0.0019130421771271682,
+      "corr_err": 0.006537721974348355,
       "was_measured": false
     },
     {
@@ -2169,7 +2169,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 2,
-      "corr_err": 0.016822647062793603,
+      "corr_err": 0.011199639321506118,
       "was_measured": true
     },
     {
@@ -2177,7 +2177,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 3,
-      "corr_err": 0.06941900247844848,
+      "corr_err": 0.05382252778085682,
       "was_measured": false
     },
     {
@@ -2185,7 +2185,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 3,
-      "corr_err": 0.0060377672588508595,
+      "corr_err": 0.020293386750231346,
       "was_measured": false
     },
     {
@@ -2193,7 +2193,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 3,
-      "corr_err": 0.004701921062938728,
+      "corr_err": 0.00014343808718957074,
       "was_measured": true
     },
     {
@@ -2201,7 +2201,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 2.0,
       "seed": 4,
-      "corr_err": 0.07672665058058793,
+      "corr_err": 0.07907411947404865,
       "was_measured": false
     },
     {
@@ -2209,7 +2209,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 2.0,
       "seed": 4,
-      "corr_err": 0.011481820097919551,
+      "corr_err": 0.013519157606156986,
       "was_measured": false
     },
     {
@@ -2217,7 +2217,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 2.0,
       "seed": 4,
-      "corr_err": 0.008275089206754599,
+      "corr_err": 0.00555395604039563,
       "was_measured": true
     },
     {
@@ -2225,7 +2225,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 0,
-      "corr_err": 0.07622274897692344,
+      "corr_err": 0.057272509863283715,
       "was_measured": false
     },
     {
@@ -2233,7 +2233,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 0,
-      "corr_err": 0.012300984701047287,
+      "corr_err": 0.015206581332784115,
       "was_measured": false
     },
     {
@@ -2241,7 +2241,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 0,
-      "corr_err": 0.0058027292450470724,
+      "corr_err": 0.006790027744320831,
       "was_measured": true
     },
     {
@@ -2249,7 +2249,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 1,
-      "corr_err": 0.07921476545334498,
+      "corr_err": 0.09214672610828047,
       "was_measured": false
     },
     {
@@ -2257,7 +2257,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 1,
-      "corr_err": 0.002250334973565777,
+      "corr_err": 0.0019650174415846555,
       "was_measured": false
     },
     {
@@ -2265,7 +2265,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 1,
-      "corr_err": 0.013648468116756775,
+      "corr_err": 0.012575133178326654,
       "was_measured": true
     },
     {
@@ -2273,7 +2273,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 2,
-      "corr_err": 0.08350154825767672,
+      "corr_err": 0.06876523585291275,
       "was_measured": false
     },
     {
@@ -2281,7 +2281,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 2,
-      "corr_err": 0.006942066655080714,
+      "corr_err": 0.015933053649925196,
       "was_measured": false
     },
     {
@@ -2289,7 +2289,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 2,
-      "corr_err": 0.012268217862042914,
+      "corr_err": 0.006051209544138979,
       "was_measured": true
     },
     {
@@ -2297,7 +2297,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 3,
-      "corr_err": 0.08418718519613928,
+      "corr_err": 0.06615669791503909,
       "was_measured": false
     },
     {
@@ -2305,7 +2305,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 3,
-      "corr_err": 0.017693932436535525,
+      "corr_err": 0.024026631073404907,
       "was_measured": false
     },
     {
@@ -2313,7 +2313,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 3,
-      "corr_err": 0.0003407736666475314,
+      "corr_err": 0.001954068454640051,
       "was_measured": true
     },
     {
@@ -2321,7 +2321,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 4.0,
       "seed": 4,
-      "corr_err": 0.08287916718701525,
+      "corr_err": 0.0564590262692163,
       "was_measured": false
     },
     {
@@ -2329,7 +2329,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 4.0,
       "seed": 4,
-      "corr_err": 0.008336998144087171,
+      "corr_err": 0.007151235438253134,
       "was_measured": false
     },
     {
@@ -2337,7 +2337,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 4.0,
       "seed": 4,
-      "corr_err": 0.0036033669331438506,
+      "corr_err": 0.00319112025801134,
       "was_measured": true
     },
     {
@@ -2345,7 +2345,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 0,
-      "corr_err": 0.05347495962825031,
+      "corr_err": 0.04389996084617809,
       "was_measured": false
     },
     {
@@ -2353,7 +2353,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 0,
-      "corr_err": 0.016988194993379863,
+      "corr_err": 0.018962220004993372,
       "was_measured": false
     },
     {
@@ -2361,7 +2361,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 0,
-      "corr_err": 0.0024249712987195193,
+      "corr_err": 0.007290803452350211,
       "was_measured": true
     },
     {
@@ -2369,7 +2369,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 1,
-      "corr_err": 0.05663704080184266,
+      "corr_err": 0.0651703705830767,
       "was_measured": false
     },
     {
@@ -2377,7 +2377,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 1,
-      "corr_err": 0.027478339411608352,
+      "corr_err": 0.024445561487577348,
       "was_measured": false
     },
     {
@@ -2385,7 +2385,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 1,
-      "corr_err": 0.012047958326283949,
+      "corr_err": 0.010739730169812355,
       "was_measured": true
     },
     {
@@ -2393,7 +2393,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 2,
-      "corr_err": 0.059412615731892875,
+      "corr_err": 0.0764326432614264,
       "was_measured": false
     },
     {
@@ -2401,7 +2401,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 2,
-      "corr_err": 0.01806091545753291,
+      "corr_err": 0.004623497041099078,
       "was_measured": false
     },
     {
@@ -2409,7 +2409,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 2,
-      "corr_err": 0.009250988844463452,
+      "corr_err": 0.007981371865403132,
       "was_measured": true
     },
     {
@@ -2417,7 +2417,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 3,
-      "corr_err": 0.05706791187362374,
+      "corr_err": 0.07936376641505243,
       "was_measured": false
     },
     {
@@ -2425,7 +2425,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 3,
-      "corr_err": 0.00750950017951057,
+      "corr_err": 0.011537237654685131,
       "was_measured": false
     },
     {
@@ -2433,7 +2433,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 3,
-      "corr_err": 0.0014287028450611708,
+      "corr_err": 0.004661872076519309,
       "was_measured": true
     },
     {
@@ -2441,7 +2441,7 @@
       "evaluated": "AGEP|WKHP",
       "target_eps": 8.0,
       "seed": 4,
-      "corr_err": 0.08515725980203981,
+      "corr_err": 0.06637288630728196,
       "was_measured": false
     },
     {
@@ -2449,7 +2449,7 @@
       "evaluated": "AGEP|SCHL",
       "target_eps": 8.0,
       "seed": 4,
-      "corr_err": 0.007961082989728488,
+      "corr_err": 0.008742694216557725,
       "was_measured": false
     },
     {
@@ -2457,7 +2457,7 @@
       "evaluated": "WKHP|SCHL",
       "target_eps": 8.0,
       "seed": 4,
-      "corr_err": 0.0039191678822989365,
+      "corr_err": 0.009504416967962982,
       "was_measured": true
     }
   ]

@@ -29,9 +29,16 @@ class TabularDataset:
     numerical_cols: List[str]
     categorical_cols: List[str]
 
-    def __init__(self, df: pd.DataFrame, name: str = "dataset", schema: Optional[Schema] = None):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        name: str = "dataset",
+        schema: Optional[Schema] = None,
+        preserve_missing: bool = False,
+    ):
         self.name = name
         self.schema = schema
+        self.preserve_missing = preserve_missing
 
         if schema is not None:
             missing = [c for c in schema.names if c not in df.columns]
@@ -58,20 +65,30 @@ class TabularDataset:
             if spec.kind == NUMERICAL:
                 # Clipping to a PUBLIC range is what bounds sensitivity. Clipping against
                 # data-derived bounds instead would leak the true extremes.
-                self.df[spec.name] = (
-                    pd.to_numeric(self.df[spec.name], errors="coerce")
-                    .fillna(spec.lower)
-                    .clip(lower=spec.lower, upper=spec.upper)
-                )
+                num = pd.to_numeric(self.df[spec.name], errors="coerce")
+                if not self.preserve_missing:
+                    num = num.fillna(spec.lower)
+                self.df[spec.name] = num.clip(lower=spec.lower, upper=spec.upper)
             else:
-                self.df[spec.name] = self.df[spec.name].astype(str)
-                if spec.categories is not None:
-                    allowed = set(map(str, spec.categories))
-                    # Values outside the declared domain go to a sentinel rather than
-                    # silently widening the domain the release commits to.
+                if self.preserve_missing:
+                    is_na = self.df[spec.name].isna()
                     self.df[spec.name] = self.df[spec.name].where(
-                        self.df[spec.name].isin(allowed), other="__OTHER__"
+                        is_na, self.df[spec.name].astype(str)
                     )
+                    if spec.categories is not None:
+                        allowed = set(map(str, spec.categories))
+                        self.df[spec.name] = self.df[spec.name].where(
+                            is_na | self.df[spec.name].isin(allowed), other="__OTHER__"
+                        )
+                else:
+                    self.df[spec.name] = self.df[spec.name].astype(str)
+                    if spec.categories is not None:
+                        allowed = set(map(str, spec.categories))
+                        # Values outside the declared domain go to a sentinel rather than
+                        # silently widening the domain the release commits to.
+                        self.df[spec.name] = self.df[spec.name].where(
+                            self.df[spec.name].isin(allowed), other="__OTHER__"
+                        )
 
     def _classify_columns(self) -> None:
         """Fallback classification when no schema is supplied."""

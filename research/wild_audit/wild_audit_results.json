@@ -1,0 +1,1006 @@
+{
+  "total_datasets_audited": 73,
+  "seed_leak_count": 22,
+  "seed_leak_percentage": 30.14,
+  "exact_count_leak_count": 38,
+  "exact_count_leak_percentage": 52.05,
+  "hash_leak_count": 0,
+  "unlabelled_split_count": 11,
+  "datasets_with_fatal_leaks": 22,
+  "fatal_leak_percentage": 30.14,
+  "detailed_results": [
+    {
+      "repo_id": "parinzee/seed-free-synthetic-instruct-thai-v1",
+      "downloads": 64,
+      "likes": 3,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "airesearch/wangchanx-seed-free-synthetic-instruct-thai-120k",
+      "downloads": 51,
+      "likes": 3,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 636862793"
+        }
+      ]
+    },
+    {
+      "repo_id": "pacozaa/seed-free-synthetic-instruct-thai-v1-chatml",
+      "downloads": 7,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 33188707"
+        }
+      ]
+    },
+    {
+      "repo_id": "sacrificialpancakes/synthetic_demographics_seed",
+      "downloads": 20,
+      "likes": 3,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['in repo title']"
+        }
+      ]
+    },
+    {
+      "repo_id": "ostapeno/med_wrap1666058_seed_4.72e07_synthetic_5.71e07",
+      "downloads": 19,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['4.72e07', '4']"
+        }
+      ]
+    },
+    {
+      "repo_id": "ostapeno/med_wrap1666058_seed_1.89e08_synthetic_2.27e08",
+      "downloads": 14,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['1', '1.89e08']"
+        }
+      ]
+    },
+    {
+      "repo_id": "lhpku20010120/AAIR_synthetic_seed",
+      "downloads": 15,
+      "likes": 0,
+      "has_readme": false,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['in repo title']"
+        },
+        {
+          "code": "UNLABELLED_EVALUATION_SPLIT",
+          "severity": "MEDIUM",
+          "evidence": "No clear train/test/holdout split specified in metadata card"
+        }
+      ]
+    },
+    {
+      "repo_id": "davidberenstein1957/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 8,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        }
+      ]
+    },
+    {
+      "repo_id": "uplimit/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 49,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11067"
+        }
+      ]
+    },
+    {
+      "repo_id": "uplimit/uplimit-synthetic-data-week-1-with-seed-evol",
+      "downloads": 21,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11087"
+        }
+      ]
+    },
+    {
+      "repo_id": "uonyeka/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 31,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11095"
+        }
+      ]
+    },
+    {
+      "repo_id": "marotosg/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 19,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11101"
+        }
+      ]
+    },
+    {
+      "repo_id": "85danf/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 14,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 10993"
+        }
+      ]
+    },
+    {
+      "repo_id": "jsimon-pfpt/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 16,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11093"
+        }
+      ]
+    },
+    {
+      "repo_id": "landedmover/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 5,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11109"
+        }
+      ]
+    },
+    {
+      "repo_id": "Tiamz/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 25,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11193"
+        }
+      ]
+    },
+    {
+      "repo_id": "isabei/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 18,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11239"
+        }
+      ]
+    },
+    {
+      "repo_id": "sooney/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 4,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11121"
+        }
+      ]
+    },
+    {
+      "repo_id": "akattamuri/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 9,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11117"
+        }
+      ]
+    },
+    {
+      "repo_id": "ndhananj/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 19,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 2097767"
+        }
+      ]
+    },
+    {
+      "repo_id": "eliasprost/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 33,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 1685014"
+        }
+      ]
+    },
+    {
+      "repo_id": "johnmccabe/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 10,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11137"
+        }
+      ]
+    },
+    {
+      "repo_id": "rutvima/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 11,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 116833"
+        }
+      ]
+    },
+    {
+      "repo_id": "mimartin1234/uplimit-synthetic-data-week-1-with-seed",
+      "downloads": 4,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 2,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['with-seed']"
+        },
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 56132"
+        }
+      ]
+    },
+    {
+      "repo_id": "6StringNinja/synthetic-incidents-seed",
+      "downloads": 3,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXPOSED_PRNG_SEED",
+          "severity": "FATAL",
+          "evidence": "Found random seeds published: ['in repo title']"
+        }
+      ]
+    },
+    {
+      "repo_id": "umairafzal92/tabular-synthetic-data",
+      "downloads": 9,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "UNLABELLED_EVALUATION_SPLIT",
+          "severity": "MEDIUM",
+          "evidence": "No clear train/test/holdout split specified in metadata card"
+        }
+      ]
+    },
+    {
+      "repo_id": "MachineLearningLM/machinelearninglm-scm-synthetic-tabularml",
+      "downloads": 817,
+      "likes": 4,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "ESHMO-AI-2047/machinelearninglm-scm-synthetic-tabularml",
+      "downloads": 3,
+      "likes": 0,
+      "has_readme": false,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "UNLABELLED_EVALUATION_SPLIT",
+          "severity": "MEDIUM",
+          "evidence": "No clear train/test/holdout split specified in metadata card"
+        }
+      ]
+    },
+    {
+      "repo_id": "deprem-private/intent_test_v13_anonymized",
+      "downloads": 16,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 588460"
+        }
+      ]
+    },
+    {
+      "repo_id": "deprem-private/intent_train_v13_anonymized",
+      "downloads": 19,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 2367324"
+        }
+      ]
+    },
+    {
+      "repo_id": "davidberenstein1957/uplimit-synthetic-data-week-1-basic",
+      "downloads": 8,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "uplimit/uplimit-synthetic-data-week-1-basic",
+      "downloads": 7,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 1526"
+        }
+      ]
+    },
+    {
+      "repo_id": "uplimit/uplimit-synthetic-data-week-1-with-multi-turn",
+      "downloads": 13,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 2489"
+        }
+      ]
+    },
+    {
+      "repo_id": "uplimit/uplimit-synthetic-data-week-1-filtered",
+      "downloads": 11,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "uonyeka/uplimit-synthetic-data-week-1-basic",
+      "downloads": 20,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 1574"
+        }
+      ]
+    },
+    {
+      "repo_id": "uonyeka/uplimit-synthetic-data-week-1-with-evol",
+      "downloads": 19,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 10751"
+        }
+      ]
+    },
+    {
+      "repo_id": "uonyeka/uplimit-synthetic-data-week-1-with-multi-turn",
+      "downloads": 19,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 2280"
+        }
+      ]
+    },
+    {
+      "repo_id": "marotosg/uplimit-synthetic-data-week-1-basic",
+      "downloads": 11,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 2784"
+        }
+      ]
+    },
+    {
+      "repo_id": "marotosg/uplimit-synthetic-data-week-1-with-evol",
+      "downloads": 15,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11147"
+        }
+      ]
+    },
+    {
+      "repo_id": "marotosg/uplimit-synthetic-data-week-1-filtered",
+      "downloads": 7,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "ssavchev/uplimit-synthetic-data-week-1-basic",
+      "downloads": 4,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 2076"
+        }
+      ]
+    },
+    {
+      "repo_id": "ssavchev/uplimit-synthetic-data-week-1-with-evol",
+      "downloads": 29,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 44131"
+        }
+      ]
+    },
+    {
+      "repo_id": "85danf/uplimit-synthetic-data-week-1-basic",
+      "downloads": 12,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 1680"
+        }
+      ]
+    },
+    {
+      "repo_id": "85danf/uplimit-synthetic-data-week-1-with-evol",
+      "downloads": 22,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11091"
+        }
+      ]
+    },
+    {
+      "repo_id": "85danf/uplimit-synthetic-data-week-1-with-multi-turn",
+      "downloads": 7,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 2461"
+        }
+      ]
+    },
+    {
+      "repo_id": "jsimon-pfpt/uplimit-synthetic-data-week-1-basic",
+      "downloads": 15,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 8504"
+        }
+      ]
+    },
+    {
+      "repo_id": "jsimon-pfpt/uplimit-synthetic-data-week-1-with-evol",
+      "downloads": 11,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 11017"
+        }
+      ]
+    },
+    {
+      "repo_id": "boleeproofpoint/uplimit-week-1-synthetic-spam-email-data-filtered-quality",
+      "downloads": 9,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 1864057"
+        }
+      ]
+    },
+    {
+      "repo_id": "petkopetkov/medical-question-answering-synthetic",
+      "downloads": 35,
+      "likes": 3,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "Ezi/Synthetic_medical",
+      "downloads": 5,
+      "likes": 0,
+      "has_readme": false,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "UNLABELLED_EVALUATION_SPLIT",
+          "severity": "MEDIUM",
+          "evidence": "No clear train/test/holdout split specified in metadata card"
+        }
+      ]
+    },
+    {
+      "repo_id": "Ezi/medical_and_legislators_synthetic",
+      "downloads": 3,
+      "likes": 0,
+      "has_readme": false,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "UNLABELLED_EVALUATION_SPLIT",
+          "severity": "MEDIUM",
+          "evidence": "No clear train/test/holdout split specified in metadata card"
+        }
+      ]
+    },
+    {
+      "repo_id": "cp500/synthetic_hebrew_medical_text",
+      "downloads": 25,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 12496549"
+        }
+      ]
+    },
+    {
+      "repo_id": "ayrus08/medicalcoding-synthetic",
+      "downloads": 14,
+      "likes": 4,
+      "has_readme": false,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "UNLABELLED_EVALUATION_SPLIT",
+          "severity": "MEDIUM",
+          "evidence": "No clear train/test/holdout split specified in metadata card"
+        }
+      ]
+    },
+    {
+      "repo_id": "thesven/SyntheticMedicalQA-4336",
+      "downloads": 25,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 8535196"
+        }
+      ]
+    },
+    {
+      "repo_id": "batuhanaktas/turkish_synthetic_medical_multiple_choice_QA",
+      "downloads": 20,
+      "likes": 2,
+      "has_readme": false,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "UNLABELLED_EVALUATION_SPLIT",
+          "severity": "MEDIUM",
+          "evidence": "No clear train/test/holdout split specified in metadata card"
+        }
+      ]
+    },
+    {
+      "repo_id": "wasiqnauman/medical-diagnosis-synthetic",
+      "downloads": 39,
+      "likes": 0,
+      "has_readme": false,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "UNLABELLED_EVALUATION_SPLIT",
+          "severity": "MEDIUM",
+          "evidence": "No clear train/test/holdout split specified in metadata card"
+        }
+      ]
+    },
+    {
+      "repo_id": "OnDeviceMedNotes/synthetic-medical-conversations-deepseek-v3",
+      "downloads": 754,
+      "likes": 35,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "MaziyarPanahi/synthetic-medical-conversations-deepseek-v3-chat",
+      "downloads": 589,
+      "likes": 6,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "EXACT_COUNT_SIDE_CHANNEL",
+          "severity": "HIGH",
+          "evidence": "Exact sample count published without DP count mechanism: 17283575"
+        }
+      ]
+    },
+    {
+      "repo_id": "DopeorNope/medical_qa_200k_ours_synthetic",
+      "downloads": 18,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "II-Vietnam/Medical-MedMCQA-Synthetic",
+      "downloads": 12,
+      "likes": 0,
+      "has_readme": false,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "UNLABELLED_EVALUATION_SPLIT",
+          "severity": "MEDIUM",
+          "evidence": "No clear train/test/holdout split specified in metadata card"
+        }
+      ]
+    },
+    {
+      "repo_id": "II-Vietnam/Medical-MedQA-Synthetic",
+      "downloads": 18,
+      "likes": 0,
+      "has_readme": false,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "UNLABELLED_EVALUATION_SPLIT",
+          "severity": "MEDIUM",
+          "evidence": "No clear train/test/holdout split specified in metadata card"
+        }
+      ]
+    },
+    {
+      "repo_id": "aaarsas/synthetic_medical_data",
+      "downloads": 7,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 1,
+      "findings": [
+        {
+          "code": "UNLABELLED_EVALUATION_SPLIT",
+          "severity": "MEDIUM",
+          "evidence": "No clear train/test/holdout split specified in metadata card"
+        }
+      ]
+    },
+    {
+      "repo_id": "waris-gill/csv-upload-synthetic_datasets_archive_synthetic_medical_test",
+      "downloads": 17,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "waris-gill/csv-upload-synthetic_datasets_archive_synthetic_medical_train1",
+      "downloads": 12,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "waris-gill/csv-upload-synthetic_datasets_archive_synthetic_medical_validation1",
+      "downloads": 14,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "waris-gill/csv-upload-synthetic_datasets_archive_synthetic_semantic_medical_dataset",
+      "downloads": 6,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "waris-gill/csv-upload-synthetic_datasets_archive_synthetic_medical_test1",
+      "downloads": 8,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "waris-gill/csv-upload-synthetic_datasets_archive_synthetic_medical_validation",
+      "downloads": 12,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "waris-gill/csv-upload-synthetic_datasets_archive_synthetic_medical_train",
+      "downloads": 33,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "waris-gill/csv-upload-synthetic_datasets_archive_2synthetic_medical_train",
+      "downloads": 7,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "waris-gill/csv-upload-synthetic_datasets_archive_2synthetic_medical_validation",
+      "downloads": 11,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "waris-gill/csv-upload-synthetic_datasets_archive_2synthetic_medical_test",
+      "downloads": 8,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    },
+    {
+      "repo_id": "waris-gill/csv-upload-synthetic_datasets_temp_google-gemma-3-27b-it-synthetic_medical_test",
+      "downloads": 8,
+      "likes": 0,
+      "has_readme": true,
+      "findings_count": 0,
+      "findings": []
+    }
+  ]
+}

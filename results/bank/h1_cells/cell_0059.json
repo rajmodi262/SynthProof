@@ -16,20 +16,20 @@
   "config_hash": "f4862df8c03834dc",
   "metrics": {
     "proved_eps": 0.7772161562285358,
-    "audited_eps": 0.0,
-    "audit_p": 0.12253041651147285,
-    "tstr_f1": 0.47334399346783246,
-    "marginal_w1": 2.1874196572486153,
+    "audited_eps": 0.008224175881724185,
+    "audit_p": 0.04623049053646187,
+    "tstr_f1": 0.467005076142132,
+    "marginal_w1": 2.1785641806483227,
     "trtr_f1": 0.5560253699788583,
-    "mia_auc": 0.493921875,
-    "domias_auc": 0.48206562500000005,
+    "mia_auc": 0.511871875,
+    "domias_auc": 0.47687812499999993,
     "domias_tpr_at_1pct": 0.0025,
     "singling_out_risk": 0.0,
     "linkability_rate": 0.0,
     "linkability_excess": 0.0,
-    "attr_inference_accuracy": 0.8825,
-    "attr_leakage_vs_conditional": -0.1150000000000001,
-    "correlation_error": 0.08973535181108976,
+    "attr_inference_accuracy": 0.8975,
+    "attr_leakage_vs_conditional": -0.10000000000000009,
+    "correlation_error": 0.060831267789568565,
     "reference": "fit_split",
     "auditor": "one_run",
     "audit_ceiling": 2.9720875578943553,
@@ -37,5 +37,5 @@
     "canary_fraction": 0.0
   },
   "completed": true,
-  "version": 1
+  "version": 2
 }

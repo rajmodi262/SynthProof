@@ -122,10 +122,13 @@ Two consequences were measured and fixed:
 brute force needs the noisy measurement it produced, and no artefact publishes one. Widening
 the sub-seeds would change every committed result, so it is recorded rather than done.
 
-**Separate open issue found by the new tests.** For DP-VAE, `run_sweep`'s differential accountant
-refuses the release. `dp_accounting` composes to ε = 0.94 and autodp to 2.45 at 900 rows, and to 9.50
-at 3000 rows, identically with seeds 3 and 2⁶³ − 1. It is independent of D2–D5. It is pinned as a
-strict expected failure in `tests/test_release_boundary.py` and has not been investigated yet.
+**Separate issue found by the new tests, since resolved.** For DP-VAE, `run_sweep`'s differential
+accountant refused the release: `dp_accounting` 0.94 against autodp 2.45 (900 rows) and 9.50 (3000
+rows). The cause was the cross-check, which recomposed Poisson-subsampled steps as full-data
+Gaussians. autodp's own subsampling bound differs from dp_accounting's by −68% to +17% over 40
+configurations, so a release with subsampled charges is now reported as not cross-checked, which
+does not block it. The charged ε was never below dp_accounting's PLD accountant (0 of 40)
+(`research/accountant_crosscheck/README.md`).
 
 ## Tests that must hold (each with a negative control)
 

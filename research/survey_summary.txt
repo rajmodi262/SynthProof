@@ -1,0 +1,777 @@
+
+=======================================================
+CLUSTER: C1_tabular_synthesis
+=======================================================
+1. "Synthetic data generation for tabular health records: A systematic review" (2022)
+   Authors: Mikel Hernandez, Gorka Epelde, Ane Alberdi et al.
+   Venue: Neurocomputing
+   Citations: 282
+   URL: https://doi.org/10.1016/j.neucom.2022.04.053
+   Abstract: ...
+
+2. "Harnessing the power of synthetic data in healthcare: innovation, application, and privacy" (2023)
+   Authors: Mauro Giuffrè, Dennis Shung
+   Venue: npj Digital Medicine
+   Citations: 388
+   URL: https://doi.org/10.1038/s41746-023-00927-3
+   Abstract: Data-driven decision-making in modern healthcare underpins innovation and predictive analytics in public health and clinical research. Synthetic data has shown promise in finance a...
+
+3. "Secure, privacy-preserving and federated machine learning in medical imaging" (2020)
+   Authors: Georgios Kaissis, Marcus R. Makowski, Daniel Rückert et al.
+   Venue: Nature Machine Intelligence
+   Citations: 1469
+   URL: https://doi.org/10.1038/s42256-020-0186-1
+   Abstract: The broad application of artificial intelligence techniques in medicine is currently hindered by limited dataset availability for algorithm training and validation, due to the abse...
+
+4. "CTAB-GAN+: enhancing tabular data synthesis" (2024)
+   Authors: Zilong Zhao, Aditya Kunar, Robert Birke et al.
+   Venue: Frontiers in Big Data
+   Citations: 111
+   URL: https://doi.org/10.3389/fdata.2023.1296508
+   Abstract: The usage of synthetic data is gaining momentum in part due to the unavailability of original data due to privacy and legal considerations and in part due to its utility as an augm...
+
+5. "Differential Privacy as a Mutual Information Constraint" (2016)
+   Authors: Paul Cuff, Lanqing Yu
+   Venue: https://doi.org/10.1145/2976749.2978308
+   Citations: 192
+   URL: https://doi.org/10.1145/2976749.2978308
+   Abstract: Differential privacy is a precise mathematical constraint meant to ensure privacy of individual pieces of information in a database even while queries are being answered about the ...
+
+6. "Privacy-preserving artificial intelligence in healthcare: Techniques and applications" (2023)
+   Authors: Nazish Khalid, Adnan Qayyum, Muhammad Bilal et al.
+   Venue: Computers in Biology and Medicine
+   Citations: 572
+   URL: https://doi.org/10.1016/j.compbiomed.2023.106848
+   Abstract: There has been an increasing interest in translating artificial intelligence (AI) research into clinically-validated applications to improve the performance, capacity, and efficacy...
+
+7. "Advances and Open Problems in Federated Learning" (2020)
+   Authors: Peter Kairouz, H. Brendan McMahan, Brendan Avent et al.
+   Venue: Foundations and Trends® in Machine Learning
+   Citations: 5451
+   URL: https://doi.org/10.1561/2200000083
+   Abstract: Federated learning (FL) is a machine learning setting where many clients (e.g., mobile devices or whole organizations) collaboratively train a model under the orchestration of a ce...
+
+8. "PrivKV: Key-Value Data Collection with Local Differential Privacy" (2019)
+   Authors: Qingqing Ye, Haibo Hu, Xiaofeng Meng et al.
+   Venue: https://doi.org/10.1109/sp.2019.00018
+   Citations: 177
+   URL: https://doi.org/10.1109/sp.2019.00018
+   Abstract: Local differential privacy (LDP), where each user perturbs her data locally before sending to an untrusted data collector, is a new and promising technique for privacy-preserving d...
+
+9. "PrivBayes" (2017)
+   Authors: Jun Zhang, Graham Cormode, Cecilia M. Procopiuc et al.
+   Venue: ACM Transactions on Database Systems
+   Citations: 396
+   URL: https://doi.org/10.1145/3134428
+   Abstract: Privacy-preserving data publishing is an important problem that has been the focus of extensive study. The state-of-the-art solution for this problem is differential privacy, which...
+
+10. "Generation and evaluation of synthetic patient data" (2020)
+   Authors: André Gonçalves, Priyadip Ray, Braden Soper et al.
+   Venue: BMC Medical Research Methodology
+   Citations: 409
+   URL: https://doi.org/10.1186/s12874-020-00977-1
+   Abstract: BACKGROUND: Machine learning (ML) has made a significant impact in medicine and cancer research; however, its impact in these areas has been undeniably slower and more limited than...
+
+11. "Comparative Study of Differentially Private Data Synthesis Methods" (2020)
+   Authors: Claire McKay Bowen, Fang Liu
+   Venue: Statistical Science
+   Citations: 54
+   URL: https://doi.org/10.1214/19-sts742
+   Abstract: When sharing data among researchers or releasing data for public use, there is a risk of exposing sensitive information of individuals in the data set. Data synthesis is a statisti...
+
+12. "PATE-GAN: Generating Synthetic Data with Differential Privacy Guarantees" (2018)
+   Authors: James Jordon, Jinsung Yoon, Mihaela van der Schaar
+   Venue: International Conference on Learning Representations
+   Citations: 286
+   URL: https://openreview.net/pdf?id=S1zk9iRqF7
+   Abstract: ...
+
+13. "Differentially private synthetic medical data generation using convolutional GANs" (2021)
+   Authors: Amirsina Torfi, Edward A. Fox, Chandan K. Reddy
+   Venue: Information Sciences
+   Citations: 146
+   URL: https://doi.org/10.1016/j.ins.2021.12.018
+   Abstract: ...
+
+14. "Real-valued (Medical) Time Series Generation with Recurrent Conditional\n GANs" (2017)
+   Authors: Cristóbal Esteban, Stephanie L. Hyland, Gunnar Rätsch
+   Venue: arXiv (Cornell University)
+   Citations: 388
+   URL: https://doi.org/10.48550/arxiv.1706.02633
+   Abstract: Generative Adversarial Networks (GANs) have shown remarkable success as a\nframework for training models to produce realistic-looking data. In this work,\nwe propose a Recurrent GA...
+
+15. "On the Differential Privacy of Bayesian Inference" (2016)
+   Authors: Zuhe Zhang, Benjamin I. P. Rubinstein, Christos Dimitrakakis
+   Venue: Proceedings of the AAAI Conference on Artificial Intelligence
+   Citations: 41
+   URL: https://doi.org/10.1609/aaai.v30i1.10254
+   Abstract: We study how to communicate findings of Bayesian inference to third parties, while preserving the strong guarantee of differential privacy. Our main contributions are four differen...
+
+16. "Winning the NIST Contest: A scalable and general approach to differentially private synthetic data" (2021)
+   Authors: Ryan McKenna, Gerome Miklau, Daniel Sheldon
+   Venue: Journal of Privacy and Confidentiality
+   Citations: 66
+   URL: https://doi.org/10.29012/jpc.778
+   Abstract: We propose a general approach for differentially private synthetic data generation, that consists of three steps: (1) select a collection of low-dimensional marginals, (2) measure ...
+
+17. "A Survey on Interdependent Privacy" (2019)
+   Authors: Mathias Humbert, Benjamin Trubert, Kévin Huguenin
+   Venue: ACM Computing Surveys
+   Citations: 92
+   URL: https://doi.org/10.1145/3360498
+   Abstract: The privacy of individuals does not only depend on their own actions and data but may also be affected by the privacy decisions and by the data shared by other individuals. This in...
+
+18. "PrivLava: Synthesizing Relational Data with Foreign Keys under Differential Privacy" (2023)
+   Authors: Kuntai Cai, Xiaokui Xiao, Graham Cormode
+   Venue: Proceedings of the ACM on Management of Data
+   Citations: 25
+   URL: https://doi.org/10.1145/3589287
+   Abstract: Answering database queries while preserving privacy is an important problem that has attracted considerable research attention in recent years. A canonical approach to this problem...
+
+19. "TabDDPM: Modelling Tabular Data with Diffusion Models" (2022)
+   Authors: Akim Kotelnikov, Dmitry Baranchuk, Ivan Rubachev et al.
+   Venue: arXiv (Cornell University)
+   Citations: 68
+   URL: https://doi.org/10.48550/arxiv.2209.15421
+   Abstract: Denoising diffusion probabilistic models are currently becoming the leading paradigm of generative modeling for many important data modalities. Being the most prevalent in the comp...
+
+20. "Anonymization Techniques for Privacy Preserving Data Publishing: A Comprehensive Survey" (2020)
+   Authors: Abdul Majeed, Sungchang Lee
+   Venue: IEEE Access
+   Citations: 284
+   URL: https://doi.org/10.1109/access.2020.3045700
+   Abstract: Anonymization is a practical solution for preserving user’s privacy in data publishing. Data owners such as hospitals, banks, social network (SN) service providers, and insurance c...
+
+
+=======================================================
+CLUSTER: C2_empirical_auditing
+=======================================================
+1. "Information Security in Big Data: Privacy and Data Mining" (2014)
+   Authors: Lei Xu, Chunxiao Jiang, Jian Wang et al.
+   Venue: IEEE Access
+   Citations: 631
+   URL: https://doi.org/10.1109/access.2014.2362522
+   Abstract: The growing popularity and development of data mining technologies bring serious threat to the security of individual,'s sensitive information. An emerging research topic in data m...
+
+2. "Local and Central Differential Privacy for Robustness and Privacy in Federated Learning" (2022)
+   Authors: Mohammad Naseri, Jamie Hayes, Emiliano De Cristofaro
+   Venue: https://doi.org/10.14722/ndss.2022.23054
+   Citations: 148
+   URL: https://doi.org/10.14722/ndss.2022.23054
+   Abstract: Federated Learning (FL) allows multiple participants to train machine learning models collaboratively by keeping their datasets local while only exchanging model updates.Alas, this...
+
+3. "Privacy at Scale" (2018)
+   Authors: Graham Cormode, Somesh Jha, Tejas Kulkarni et al.
+   Venue: https://doi.org/10.1145/3183713.3197390
+   Citations: 247
+   URL: https://doi.org/10.1145/3183713.3197390
+   Abstract: Local differential privacy (LDP), where users randomly perturb their inputs to provide plausible deniability of their data without the need for a trusted party, has been adopted re...
+
+4. "Efficient Privacy-Preserving Machine Learning for Blockchain Network" (2019)
+   Authors: Hyunil Kim, Seung-Hyun Kim, Jung Yeon Hwang et al.
+   Venue: IEEE Access
+   Citations: 147
+   URL: https://doi.org/10.1109/access.2019.2940052
+   Abstract: A blockchain as a trustworthy and secure decentralized and distributed network has been emerged for many applications such as in banking, finance, insurance, healthcare and busines...
+
+5. "How to DP-fy ML: A Practical Guide to Machine Learning with Differential Privacy" (2023)
+   Authors: Natalia Ponomareva, Hussein Hazimeh, А.В. Куракин et al.
+   Venue: Journal of Artificial Intelligence Research
+   Citations: 156
+   URL: https://doi.org/10.1613/jair.1.14649
+   Abstract: Machine Learning (ML) models are ubiquitous in real-world applications and are a constant focus of research. Modern ML models have become more complex, deeper, and harder to reason...
+
+6. "Survey: Leakage and Privacy at Inference Time" (2022)
+   Authors: Marija Jegorova, Chaitanya Kaul, Charlie Mayor et al.
+   Venue: IEEE Transactions on Pattern Analysis and Machine Intelligence
+   Citations: 71
+   URL: https://doi.org/10.1109/tpami.2022.3229593
+   Abstract: Leakage of data from publicly available Machine Learning (ML) models is an area of growing significance since commercial and government applications of ML can draw on multiple sour...
+
+7. "An Empirical Analysis of the Commercial VPN Ecosystem" (2018)
+   Authors: Mohammad Taha Khan, Joe DeBlasio, Geoffrey M. Voelker et al.
+   Venue: https://doi.org/10.1145/3278532.3278570
+   Citations: 83
+   URL: https://doi.org/10.1145/3278532.3278570
+   Abstract: Global Internet users increasingly rely on virtual private network (VPN) services to preserve their privacy, circumvent censorship, and access geo-filtered content. Due to their ow...
+
+8. "Privacy–Enhancing Face Biometrics: A Comprehensive Survey" (2021)
+   Authors: Blaž Meden, Peter Rot, Philipp Terhörst et al.
+   Venue: IEEE Transactions on Information Forensics and Security
+   Citations: 204
+   URL: https://doi.org/10.1109/tifs.2021.3096024
+   Abstract: Biometric recognition technology has made significant advances over the last decade and is now used across a number of services and applications. However, this widespread deploymen...
+
+9. "Privacy Policies across the Ages: Content of Privacy Policies 1996–2021" (2023)
+   Authors: Isabel Wagner
+   Venue: ACM Transactions on Privacy and Security
+   Citations: 50
+   URL: https://doi.org/10.1145/3590152
+   Abstract: It is well known that most users do not read privacy policies but almost always tick the box to agree with them. While the length and readability of privacy policies have been well...
+
+10. "Federated Deep Learning for Cyber Security in the Internet of Things: Concepts, Applications, and Experimental Analysis" (2021)
+   Authors: Mohamed Amine Ferrag, Othmane Friha, Λέανδρος Μαγλαράς et al.
+   Venue: IEEE Access
+   Citations: 333
+   URL: https://doi.org/10.1109/access.2021.3118642
+   Abstract: In this article, we present a comprehensive study with an experimental analysis of federated deep learning approaches for cyber security in the Internet of Things (IoT) application...
+
+11. "Privacy Auditing in Differential Private Machine Learning: The Current Trends" (2025)
+   Authors: Ivars Namatēvs, Kaspars Sudars, Artūrs Ņikuļins et al.
+   Venue: Applied Sciences
+   Citations: 8
+   URL: https://doi.org/10.3390/app15020647
+   Abstract: Differential privacy has recently gained prominence, especially in the context of private machine learning. While the definition of differential privacy makes it possible to provab...
+
+12. "The Elusive Pursuit of Reproducing PATE-GAN: Benchmarking, Auditing, Debugging" (2024)
+   Authors: Georgi Ganev, Meenatchi Sundaram Muthu Selva Annamalai, Emiliano De Cristofaro
+   Venue: arXiv (Cornell University)
+   Citations: 3
+   URL: https://doi.org/10.48550/arxiv.2406.13985
+   Abstract: Synthetic data created by differentially private (DP) generative models is increasingly used in real-world settings. In this context, PATE-GAN has emerged as one of the most popula...
+
+13. "AI-big data analytics for building automation and management systems: a survey, actual challenges and future perspectives" (2022)
+   Authors: Yassine Himeur, Mariam Elnour, Fodil Fadli et al.
+   Venue: Artificial Intelligence Review
+   Citations: 526
+   URL: https://doi.org/10.1007/s10462-022-10286-2
+   Abstract: In theory, building automation and management systems (BAMSs) can provide all the components and functionalities required for analyzing and operating buildings. However, in reality...
+
+14. "Outcome measures for adult critical care: a systematic review." (2000)
+   Authors: Hayes, Black, Jenkinson et al.
+   Venue: Health Technology Assessment
+   Citations: 415
+   URL: https://doi.org/10.3310/hta4240
+   Abstract: OBJECTIVES: 1. To identify generic and disease specific measures of impairment, functional status and health-related quality of life that have been used in adult critical care (int...
+
+15. "Membership Inference Attacks on Machine Learning: A Survey" (2022)
+   Authors: Hongsheng Hu, Zoran Salčić, Lichao Sun et al.
+   Venue: ACM Computing Surveys
+   Citations: 532
+   URL: https://doi.org/10.1145/3523273
+   Abstract: Machine learning (ML) models have been widely applied to various applications, including image classification, text generation, audio recognition, and graph data analysis. However,...
+
+16. "Machine Learning with Membership Privacy using Adversarial Regularization" (2018)
+   Authors: Milad Nasr, Reza Shokri, Amir Houmansadr
+   Venue: https://doi.org/10.1145/3243734.3243855
+   Citations: 441
+   URL: https://doi.org/10.1145/3243734.3243855
+   Abstract: Machine learning models leak significant amount of information about their training sets, through their predictions. This is a serious privacy concern for the users of machine lear...
+
+17. "Enhanced Membership Inference Attacks against Machine Learning Models" (2022)
+   Authors: Jiayuan Ye, Aadyaa Maddi, Sasi Kumar Murakonda et al.
+   Venue: Proceedings of the 2022 ACM SIGSAC Conference on Computer and Communications Security
+   Citations: 170
+   URL: https://doi.org/10.1145/3548606.3560675
+   Abstract: How much does a machine learning algorithm leak about its training data, and why? Membership inference attacks are used as an auditing tool to quantify this leakage. In this paper,...
+
+18. "Membership Inference Attacks From First Principles" (2021)
+   Authors: Nicholas Carlini, Steve Chien, Milad Nasr et al.
+   Venue: arXiv (Cornell University)
+   Citations: 30
+   URL: https://doi.org/10.48550/arxiv.2112.03570
+   Abstract: A membership inference attack allows an adversary to query a trained machine learning model to predict whether or not a particular example was contained in the model's training dat...
+
+
+=======================================================
+CLUSTER: C3_privacy_labels_metadata
+=======================================================
+1. "``We Need a Standard'': Toward an Expert–Informed Privacy Label for Differential Privacy" (2026)
+   Authors: Onyinye Dibia, Mengyi Lu, Prianka Bhattacharjee et al.
+   Venue: Proceedings on Privacy Enhancing Technologies
+   Citations: 1
+   URL: https://doi.org/10.56553/popets-2026-0004
+   Abstract: The increasing adoption of differential privacy (DP) leads to public-facing DP deployments by both government agencies and companies. However, real-world DP deployments often do no...
+
+2. "Findings of the Association for Computational Linguistics: ACL 2023" (2023)
+   Authors: Unknown
+   Venue: https://doi.org/10.18653/v1/2023.findings-acl
+   Citations: 210
+   URL: https://doi.org/10.18653/v1/2023.findings-acl
+   Abstract: Demo chairs: Alan Ritter, Danushka Bollegala, and Ruihong Huang, who managed demo submissions and accepted 58 demos that will be presented in the main conference.• Student research...
+
+3. "Generative Artificial Intelligence in Anatomic Pathology" (2025)
+   Authors: Victor Brodsky, Ehsan Ullah, Andrey Bychkov et al.
+   Venue: Archives of Pathology & Laboratory Medicine
+   Citations: 42
+   URL: https://doi.org/10.5858/arpa.2024-0215-ra
+   Abstract: CONTEXT.—: Generative artificial intelligence (AI) has emerged as a transformative force in various fields, including anatomic pathology, where it offers the potential to significa...
+
+4. "ADHD and Technology Research – Investigated by Neurodivergent Readers" (2022)
+   Authors: Katta Spiel, Eva Hornecker, Anna Williams et al.
+   Venue: CHI Conference on Human Factors in Computing Systems
+   Citations: 137
+   URL: https://doi.org/10.1145/3491102.3517592
+   Abstract: Technology research for neurodivergent conditions is largely shaped by research aims which privilege neuro-normative outcomes. As such, there is an epistemic imbalance in meaning m...
+
+5. "Croissant: A Metadata Format for ML-Ready Datasets" (2024)
+   Authors: Mubashara Akhtar, Omar Benjelloun, Costanza Conforti et al.
+   Venue: https://doi.org/10.1145/3650203.3663326
+   Citations: 18
+   URL: https://doi.org/10.1145/3650203.3663326
+   Abstract: Data is a critical resource for Machine Learning (ML), yet working with data remains a key friction point. This paper introduces Croissant, a metadata format for datasets that simp...
+
+6. "Reproducibility in machine‐learning‐based research: Overview, barriers, and drivers" (2025)
+   Authors: Harald Semmelrock, Tony Ross‐Hellauer, Simone Kopeinik et al.
+   Venue: AI Magazine
+   Citations: 67
+   URL: https://doi.org/10.1002/aaai.70002
+   Abstract: Abstract Many research fields are currently reckoning with issues of poor levels of reproducibility. Some label it a “crisis,” and research employing or building machine learning (...
+
+7. "The Impact of Modern AI in Metadata Management" (2025)
+   Authors: Wenli Yang, Rui Fu, Muhammad Bilal Amin et al.
+   Venue: Human-Centric Intelligent Systems
+   Citations: 33
+   URL: https://doi.org/10.1007/s44230-025-00106-5
+   Abstract: Abstract Metadata management plays a critical role in data governance, resource discovery, and decision-making in the data-driven era. While traditional metadata approaches have pr...
+
+8. "Machine Learning-Based Algorithms to Knowledge Extraction from Time Series Data: A Review" (2021)
+   Authors: Giuseppe Ciaburro, Gino Iannace
+   Venue: Data
+   Citations: 48
+   URL: https://doi.org/10.3390/data6060055
+   Abstract: To predict the future behavior of a system, we can exploit the information collected in the past, trying to identify recurring structures in what happened to predict what could hap...
+
+9. "Large language models encode clinical knowledge" (2023)
+   Authors: Karan Singhal, Shekoofeh Azizi, Tao Tu et al.
+   Venue: Nature
+   Citations: 3788
+   URL: https://doi.org/10.1038/s41586-023-06291-2
+   Abstract: Abstract Large language models (LLMs) have demonstrated impressive capabilities, but the bar for clinical applications is high. Attempts to assess the clinical knowledge of models ...
+
+10. "Datasets: A Community Library for Natural Language Processing" (2021)
+   Authors: Quentin Lhoest, A. Villanova del Moral, Yacine Jernite et al.
+   Venue: https://doi.org/10.18653/v1/2021.emnlp-demo.21
+   Citations: 333
+   URL: https://doi.org/10.18653/v1/2021.emnlp-demo.21
+   Abstract: Quentin Lhoest, Albert Villanova del Moral, Yacine Jernite, Abhishek Thakur, Patrick von Platen, Suraj Patil, Julien Chaumond, Mariama Drame, Julien Plu, Lewis Tunstall, Joe Daviso...
+
+11. "Datasheets for Digital Cultural Heritage Datasets" (2023)
+   Authors: Henk Alkemade, Steven Claeyssens, Giovanni Colavizza et al.
+   Venue: Journal of Open Humanities Data
+   Citations: 33
+   URL: https://doi.org/10.5334/johd.124
+   Abstract: Sparked by issues of quality and lack of proper documentation for datasets, the machine learning community has begun developing standardised processes for establishing datasheets f...
+
+12. "MT-Adapted Datasheets for Datasets: Template and Repository" (2020)
+   Authors: Marta R. Costa‐jussà, Roger Creus, Oriol Domingo et al.
+   Venue: arXiv (Cornell University)
+   Citations: 10
+   URL: https://doi.org/10.48550/arxiv.2005.13156
+   Abstract: In this report we are taking the standardized model proposed by Gebru et al. (2018) for documenting the popular machine translation datasets of the EuroParl (Koehn, 2005) and News-...
+
+13. "Overview of the Coupled Model Intercomparison Project Phase 6 (CMIP6) experimental design and organization" (2016)
+   Authors: Veronika Eyring, Sandrine Bony, Gerald A. Meehl et al.
+   Venue: Geoscientific model development
+   Citations: 12364
+   URL: https://doi.org/10.5194/gmd-9-1937-2016
+   Abstract: Abstract. By coordinating the design and distribution of global climate model simulations of the past, current, and future climate, the Coupled Model Intercomparison Project (CMIP)...
+
+14. "Making sense of implementation theories, models and frameworks" (2015)
+   Authors: Per Nilsén
+   Venue: Implementation Science
+   Citations: 4689
+   URL: https://doi.org/10.1186/s13012-015-0242-0
+   Abstract: BACKGROUND: Implementation science has progressed towards increased use of theoretical approaches to provide better understanding and explanation of how and why implementation succ...
+
+15. "PaLM: Scaling Language Modeling with Pathways" (2022)
+   Authors: Aakanksha Chowdhery, Sharan Narang, Jacob Devlin et al.
+   Venue: arXiv (Cornell University)
+   Citations: 2136
+   URL: https://doi.org/10.48550/arxiv.2204.02311
+   Abstract: Large language models have been shown to achieve remarkable performance across a variety of natural language tasks using few-shot learning, which drastically reduces the number of ...
+
+16. "Digital technologies: tensions in privacy and data" (2022)
+   Authors: Sara Quach, Park Thaichon, Kelly D. Martin et al.
+   Venue: Journal of the Academy of Marketing Science
+   Citations: 528
+   URL: https://doi.org/10.1007/s11747-022-00845-y
+   Abstract: Driven by data proliferation, digital technologies have transformed the marketing landscape. In parallel, significant privacy concerns have shaken consumer-firm relationships, prom...
+
+17. "Understanding iOS Privacy Nutrition Labels: An Exploratory Large-Scale Analysis of App Store Data" (2022)
+   Authors: Yucheng Li, Deyuan Chen, Tianshi Li et al.
+   Venue: CHI Conference on Human Factors in Computing Systems Extended Abstracts
+   Citations: 26
+   URL: https://doi.org/10.1145/3491101.3519739
+   Abstract: Since December 2020, the Apple App Store has required all developers to create a privacy label when submitting new apps or app updates. However, there has not been a comprehensive ...
+
+18. "Nudges for Privacy and Security" (2017)
+   Authors: Alessandro Acquisti, Idris Adjerid, Rebecca Balebako et al.
+   Venue: ACM Computing Surveys
+   Citations: 514
+   URL: https://doi.org/10.1145/3054926
+   Abstract: Advancements in information technology often task users with complex and consequential privacy and security decisions. A growing body of research has investigated individuals’ choi...
+
+19. "Understanding Challenges for Developers to Create Accurate Privacy Nutrition Labels" (2022)
+   Authors: Tianshi Li, Kayla Reiman, Yuvraj Agarwal et al.
+   Venue: CHI Conference on Human Factors in Computing Systems
+   Citations: 56
+   URL: https://doi.org/10.1145/3491102.3502012
+   Abstract: Apple announced the introduction of app privacy details to their App Store in December 2020, marking the first ever real-world, large-scale deployment of the privacy nutrition labe...
+
+
+=======================================================
+CLUSTER: C4_verifiable_dp_cryptography
+=======================================================
+1. "A verifiable scheme for differential privacy based on zero-knowledge proofs" (2025)
+   Authors: Jianqi Wei, Yuling Chen, Xiuzhang Yang et al.
+   Venue: Journal of King Saud University - Computer and Information Sciences
+   Citations: 7
+   URL: https://doi.org/10.1007/s44443-025-00028-z
+   Abstract: The protection of personal privacy has become a paramount issue in the field of data science, with its significance continuously rising. Differential privacy technology has garnere...
+
+2. "A Comprehensive Survey of Privacy-preserving Federated Learning" (2021)
+   Authors: Xuefei Yin, Yanming Zhu, Jiankun Hu
+   Venue: ACM Computing Surveys
+   Citations: 623
+   URL: https://doi.org/10.1145/3460427
+   Abstract: The past four years have witnessed the rapid development of federated learning (FL). However, new privacy concerns have also emerged during the aggregation of the distributed inter...
+
+3. "Decentralizing Privacy: Using Blockchain to Protect Personal Data" (2015)
+   Authors: Guy Zyskind, Oz Nathan, Alex Pentland
+   Venue: https://doi.org/10.1109/spw.2015.27
+   Citations: 2571
+   URL: https://doi.org/10.1109/spw.2015.27
+   Abstract: The recent increase in reported incidents of surveillance and security breaches compromising users' privacy call into question the current model, in which third-parties collect and...
+
+4. "Big healthcare data: preserving security and privacy" (2018)
+   Authors: Karim Abouelmehdi, Abderrahim Beni-Hessane, Hayat Khaloufi
+   Venue: Journal Of Big Data
+   Citations: 751
+   URL: https://doi.org/10.1186/s40537-017-0110-7
+   Abstract: Big data has fundamentally changed the way organizations manage, analyze and leverage data in any industry. One of the most promising fields where big data can be applied to make a...
+
+5. "Balancing Privacy and Progress: A Review of Privacy Challenges, Systemic Oversight, and Patient Perceptions in AI-Driven Healthcare" (2024)
+   Authors: S. Williamson, Victor R. Prybutok
+   Venue: Applied Sciences
+   Citations: 547
+   URL: https://doi.org/10.3390/app14020675
+   Abstract: Integrating Artificial Intelligence (AI) in healthcare represents a transformative shift with substantial potential for enhancing patient care. This paper critically examines this ...
+
+6. "Differential Privacy: An Economic Method for Choosing Epsilon" (2014)
+   Authors: Justin Hsu, Marco Gaboardi, Andreas Haeberlen et al.
+   Venue: https://doi.org/10.1109/csf.2014.35
+   Citations: 278
+   URL: https://doi.org/10.1109/csf.2014.35
+   Abstract: Differential privacy is becoming a gold standard notion of privacy; it offers a guaranteed bound on loss of privacy due to release of query results, even under worst-case assumptio...
+
+7. "A survey on the (in)security of trusted execution environments" (2023)
+   Authors: Antonio Muñoz, Rubén Rı́os, Rodrigo Román et al.
+   Venue: Computers & Security
+   Citations: 131
+   URL: https://doi.org/10.1016/j.cose.2023.103180
+   Abstract: As the number of security and privacy attacks continue to grow around the world, there is an ever increasing need to protect our personal devices. As a matter of fact, more and mor...
+
+8. "Laminator: Verifiable ML Property Cards using Hardware-assisted Attestations" (2024)
+   Authors: Vasisht Duddu, Oskari Järvinen, Lachlan J. Gunn et al.
+   Venue: https://doi.org/10.1145/3714393.3726492
+   Citations: 3
+   URL: https://doi.org/10.1145/3714393.3726492
+   Abstract: Regulations increasingly call for various assurances from machine learning (ML) model providers about their training data, training process, and model behavior. For better transpar...
+
+9. "Lamella-heterostructured nanoporous bimetallic iron-cobalt alloy/oxyhydroxide and cerium oxynitride electrodes as stable catalysts for oxygen evolution" (2023)
+   Authors: Shu‐Pei Zeng, Hang Shi, Tianyi Dai et al.
+   Venue: Nature Communications
+   Citations: 187
+   URL: https://doi.org/10.1038/s41467-023-37597-4
+   Abstract: Abstract Developing robust nonprecious-metal electrocatalysts with high activity towards sluggish oxygen-evolution reaction is paramount for large-scale hydrogen production via ele...
+
+10. "DIFFERENTIAL EFFECTS OF PROMPTS AND RECASTS IN FORM-FOCUSED INSTRUCTION" (2004)
+   Authors: Roy Lyster
+   Venue: Studies in Second Language Acquisition
+   Citations: 826
+   URL: https://doi.org/10.1017/s0272263104263021
+   Abstract: Four teachers and their eight classes of 179 fifth-grade (10–11-year-old) students participated in this quasi-experimental classroom study, which investigated the effects of form-f...
+
+11. "Adults are more efficient in creating and transmitting novel signalling systems than children" (2019)
+   Authors: Vera Kempe, Nicolas Gauvrit, A C Gibson et al.
+   Venue: Journal of Language Evolution
+   Citations: 20
+   URL: https://doi.org/10.1093/jole/lzy012
+   Abstract: Abstract Iterated language learning experiments have shown that meaningful and structured signalling systems emerge when there is pressure for signals to be both learnable and expr...
+
+
+=======================================================
+CLUSTER: C5_attacks_reconstruction
+=======================================================
+1. "Synthetic Data -- what, why and how?" (2022)
+   Authors: J.B. Jordon, Łukasz Szpruch, Florimond Houssiau et al.
+   Venue: arXiv (Cornell University)
+   Citations: 109
+   URL: https://doi.org/10.48550/arxiv.2205.03257
+   Abstract: This explainer document aims to provide an overview of the current state of the rapidly expanding work on synthetic data technologies, with a particular focus on privacy. The artic...
+
+2. "Validating a membership disclosure metric for synthetic health data" (2022)
+   Authors: Khaled El Emam, Lucy Mosquera, Xi Fang
+   Venue: JAMIA Open
+   Citations: 39
+   URL: https://doi.org/10.1093/jamiaopen/ooac083
+   Abstract: Background: One of the increasingly accepted methods to evaluate the privacy of synthetic data is by measuring the risk of membership disclosure. This is a measure of the F1 accura...
+
+3. "A Unified Framework for Quantifying Privacy Risk in Synthetic Data" (2023)
+   Authors: M. Giomi, Franziska Boenisch, Christoph Wehmeyer et al.
+   Venue: Proceedings on Privacy Enhancing Technologies
+   Citations: 83
+   URL: https://doi.org/10.56553/popets-2023-0055
+   Abstract: Synthetic data is often presented as a method for sharing sensitive information in a privacy-preserving manner by reproducing the global statistical properties of the original data...
+
+4. "Machine Learning for Synthetic Data Generation: A Review" (2023)
+   Authors: Yingzhou Lu, Chen, Lulu, Zhang, Yuanyuan et al.
+   Venue: arXiv (Cornell University)
+   Citations: 84
+   URL: https://doi.org/10.48550/arxiv.2302.04062
+   Abstract: Machine learning heavily relies on data, but real-world applications often encounter various data-related issues. These include data of poor quality, insufficient data points leadi...
+
+5. "A Survey of Privacy Attacks in Machine Learning" (2023)
+   Authors: María Rigaki, Sebastián García
+   Venue: ACM Computing Surveys
+   Citations: 223
+   URL: https://doi.org/10.1145/3624010
+   Abstract: As machine learning becomes more widely used, the need to study its implications in security and privacy becomes more urgent. Although the body of work in privacy has been steadily...
+
+6. "Membership Inference Attacks against Synthetic Data through Overfitting Detection" (2023)
+   Authors: Boris van Breugel, Hao Sun, Zhaozhi Qian et al.
+   Venue: arXiv (Cornell University)
+   Citations: 25
+   URL: https://doi.org/10.48550/arxiv.2302.12580
+   Abstract: Data is the foundation of most science. Unfortunately, sharing data can be obstructed by the risk of violating data privacy, impeding research in fields like healthcare. Synthetic ...
+
+7. "Synthetic data for privacy-preserving clinical risk prediction" (2024)
+   Authors: Zhaozhi Qian, Thomas Callender, Bogdan Cebere et al.
+   Venue: Scientific Reports
+   Citations: 54
+   URL: https://doi.org/10.1038/s41598-024-72894-y
+   Abstract: Synthetic data promise privacy-preserving data sharing for healthcare research and development. Compared with other privacy-enhancing approaches-such as federated learning-analyses...
+
+8. "Fidelity-agnostic synthetic data generation improves utility while retaining privacy" (2025)
+   Authors: Jim Achterberg, M. Haas, Bram van Dijk et al.
+   Venue: Patterns
+   Citations: 7
+   URL: https://doi.org/10.1016/j.patter.2025.101287
+   Abstract: Synthetic data are a popular method to publish useful datasets in a privacy-aware manner, making them useful across a range of scientific domains involving human subjects. They are...
+
+9. "The Inadequacy of Similarity-based Privacy Metrics: Privacy Attacks against "Truly Anonymous" Synthetic Datasets" (2023)
+   Authors: Georgy Ganev, Emiliano De Cristofaro
+   Venue: arXiv (Cornell University)
+   Citations: 5
+   URL: https://doi.org/10.48550/arxiv.2312.05114
+   Abstract: Generative models producing synthetic data are meant to provide a privacy-friendly approach to releasing data. However, their privacy guarantees are only considered robust when mod...
+
+10. "A scoping review of privacy and utility metrics in medical synthetic data" (2025)
+   Authors: Bayrem Kaabachi, Jérémie Despraz, Thierry Meurers et al.
+   Venue: npj Digital Medicine
+   Citations: 78
+   URL: https://doi.org/10.1038/s41746-024-01359-3
+   Abstract: The use of synthetic data is a promising solution to facilitate the sharing and reuse of health-related data beyond its initial collection while addressing privacy concerns. Howeve...
+
+11. "Anonymization: The imperfect science of using data while preserving privacy" (2024)
+   Authors: Andrea Gadotti, Luc Rocher, Florimond Houssiau et al.
+   Venue: Science Advances
+   Citations: 98
+   URL: https://doi.org/10.1126/sciadv.adn7053
+   Abstract: Information about us, our actions, and our preferences is created at scale through surveys or scientific studies or as a result of our interaction with digital devices such as smar...
+
+12. "Synthetic Data: Methods, Use Cases, and Risks" (2024)
+   Authors: Emiliano De Cristofaro
+   Venue: IEEE Security & Privacy
+   Citations: 9
+   URL: https://doi.org/10.1109/msec.2024.3371505
+   Abstract: Sharing data can endanger the privacy of users and organizations. In this article, I provide an introduction to synthetic data and discuss its use cases, the privacy challenges tha...
+
+
+=======================================================
+CLUSTER: C6_sdc_disclosure_gating
+=======================================================
+1. "Machine learning models in trusted research environments -- understanding operational risks" (2023)
+   Authors: Felix Ritchie, Amy Tilbrook, Christian Cole et al.
+   Venue: International Journal for Population Data Science
+   Citations: 3
+   URL: https://doi.org/10.23889/ijpds.v8i1.2165
+   Abstract: Introduction: Trusted research environments (TREs) provide secure access to very sensitive data for research. All TREs operate manual checks on outputs to ensure there is no residu...
+
+2. "A Multi-Language Toolkit for the Semi-Automated Checking of Research Outputs" (2025)
+   Authors: Richard J. Preen, Maha Albashir, Simon Davy et al.
+   Venue: IEEE Transactions on Privacy
+   Citations: 0
+   URL: https://doi.org/10.1109/tp.2025.3566052
+   Abstract: This article presents a free and open source toolkit that supports the semi-automated checking of research outputs (SACRO) for privacy disclosure within secure data environments. S...
+
+3. "The statbarn: A New Model for Output Statistical Disclosure Control" (2024)
+   Authors: Elizabeth Green, Felix Ritche, Paul White
+   Venue: Lecture notes in computer science
+   Citations: 0
+   URL: https://doi.org/10.1007/978-3-031-69651-0_19
+   Abstract: ...
+
+4. "Security-control methods for statistical databases: a comparative study" (1989)
+   Authors: Nabil R. Adam, John C. Worthmann
+   Venue: ACM Computing Surveys
+   Citations: 970
+   URL: https://doi.org/10.1145/76894.76895
+   Abstract: This paper considers the problem of providing security to statistical databases against disclosure of confidential information. Security-control methods suggested in the literature...
+
+5. "The MIQE Guidelines: Minimum Information for Publication of Quantitative Real-Time PCR Experiments" (2009)
+   Authors: Stephen A. Bustin, Vladimı́r Beneš, Jeremy A. Garson et al.
+   Venue: Clinical Chemistry
+   Citations: 16482
+   URL: https://doi.org/10.1373/clinchem.2008.112797
+   Abstract: BACKGROUND: Currently, a lack of consensus exists on how best to perform and interpret quantitative real-time PCR (qPCR) experiments. The problem is exacerbated by a lack of suffic...
+
+6. "Reliability of Supervised Machine Learning Using Synthetic Data in Health Care: Model to Preserve Privacy for Data Sharing" (2020)
+   Authors: Debbie Rankin, Michaela Black, Raymond Bond et al.
+   Venue: JMIR Medical Informatics
+   Citations: 174
+   URL: https://doi.org/10.2196/18910
+   Abstract: BACKGROUND: The exploitation of synthetic data in health care is at an early stage. Synthetic data could unlock the potential within health care datasets that are too sensitive for...
+
+7. "Trust Region Policy Optimization" (2015)
+   Authors: John Schulman, Sergey Levine, Philipp Moritz et al.
+   Venue: arXiv (Cornell University)
+   Citations: 3119
+   URL: https://doi.org/10.48550/arxiv.1502.05477
+   Abstract: We describe an iterative procedure for optimizing policies, with guaranteed monotonic improvement. By making several approximations to the theoretically-justified procedure, we dev...
+
+8. "Factors influencing adoption of mobile banking by Jordanian bank customers: Extending UTAUT2 with trust" (2017)
+   Authors: Ali Abdallah Alalwan, Yogesh K. Dwivedi, Nripendra P. Rana
+   Venue: International Journal of Information Management
+   Citations: 1594
+   URL: https://doi.org/10.1016/j.ijinfomgt.2017.01.002
+   Abstract: ...
+
+9. "International Agency for Research on Cancer (IARC)" (2018)
+   Authors: Unknown
+   Venue: Palgrave Macmillan UK eBooks
+   Citations: 2818
+   URL: https://doi.org/10.1007/978-1-349-94186-5_629
+   Abstract: 150 Cours Albert Thomas, F-69372 Lyon Cedex 08, France Tel: (33) 4727 384 48 Fax: (33) 4727 380 80 Email: fel@iarc.fr Website: www.iarc.fr Contact: Administrative Assistant IARC Fe...
+
+10. "Artificial Intelligence (AI): Multidisciplinary perspectives on emerging challenges, opportunities, and agenda for research, practice and policy" (2019)
+   Authors: Yogesh K. Dwivedi, Laurie Hughes, Elvira Ismagilova et al.
+   Venue: International Journal of Information Management
+   Citations: 4435
+   URL: https://doi.org/10.1016/j.ijinfomgt.2019.08.002
+   Abstract: As far back as the industrial revolution, significant development in technical innovation has succeeded in transforming numerous manual tasks and processes that had been in existen...
+
+11. "The Digital MIQE Guidelines Update: Minimum Information for Publication of Quantitative Digital PCR Experiments for 2020" (2020)
+   Authors: The dMIQE Group, Alexandra S. Whale, Ward De Spiegelaere et al.
+   Venue: Clinical Chemistry
+   Citations: 533
+   URL: https://doi.org/10.1093/clinchem/hvaa125
+   Abstract: Digital PCR (dPCR) has developed considerably since the publication of the Minimum Information for Publication of Digital PCR Experiments (dMIQE) guidelines in 2013, with advances ...
+
+12. "Reporting the limits of detection and quantification for environmental DNA assays" (2019)
+   Authors: Katy E. Klymus, Christopher M. Merkes, Michael J. Allison et al.
+   Venue: Environmental DNA
+   Citations: 599
+   URL: https://doi.org/10.1002/edn3.29
+   Abstract: Abstract Background Environmental DNA (eDNA) analysis is increasingly being used to detect the presence and relative abundance of rare species, especially invasive or imperiled aqu...
+
+13. "Methods to determine limit of detection and limit of quantification in quantitative real-time PCR (qPCR)" (2017)
+   Authors: Amin Forootan, Robert Sjöback, Jens Björkman et al.
+   Venue: Biomolecular Detection and Quantification
+   Citations: 601
+   URL: https://doi.org/10.1016/j.bdq.2017.04.001
+   Abstract: Quantitative Real-Time Polymerase Chain Reaction, better known as qPCR, is the most sensitive and specific technique we have for the detection of nucleic acids. Even though it has ...
+
+14. "MIQE 2.0: Revision of the Minimum Information for Publication of Quantitative Real-Time PCR Experiments Guidelines" (2025)
+   Authors: Stephen A. Bustin, Jan M. Ruijter, Maurice J.B. van den Hoff et al.
+   Venue: Clinical Chemistry
+   Citations: 242
+   URL: https://doi.org/10.1093/clinchem/hvaf043
+   Abstract: BACKGROUND: In 2009, the Minimum Information for Publication of Quantitative Real-Time PCR Experiments (MIQE) guidelines established standards for the design, execution, and report...
+
+
+=======================================================
+CLUSTER: C7_release_boundary_randomness
+=======================================================
+1. "Differential Privacy with Imperfect Randomness" (2012)
+   Authors: Yevgeniy Dodis, Adriana López-Alt, Ilya Mironov et al.
+   Venue: Lecture notes in computer science
+   Citations: 28
+   URL: https://doi.org/10.1007/978-3-642-32009-5_29
+   Abstract: ...
+
+2. "Privacy with Imperfect Randomness" (2015)
+   Authors: Yevgeniy Dodis, Yanqing Yao
+   Venue: Lecture notes in computer science
+   Citations: 11
+   URL: https://doi.org/10.1007/978-3-662-48000-7_23
+   Abstract: ...
+
+3. "Verified Computational Differential Privacy with Applications to Smart Metering" (2013)
+   Authors: Gilles Barthe, George Danezis, Benjamin Grégoire et al.
+   Venue: https://doi.org/10.1109/csf.2013.26
+   Citations: 72
+   URL: https://doi.org/10.1109/csf.2013.26
+   Abstract: EasyCrypt is a tool-assisted framework for reasoning about probabilistic computations in the presence of adversarial code, whose main application has been the verification of secur...
+
+4. "Randomness Concerns when Deploying Differential Privacy" (2020)
+   Authors: Simson L. Garfinkel, Philip Leclerc
+   Venue: https://doi.org/10.1145/3411497.3420211
+   Citations: 16
+   URL: https://doi.org/10.1145/3411497.3420211
+   Abstract: The U.S. Census Bureau is using differential privacy (DP) to protect confidential respondent data collected for the 2020 Decennial Census of Population & Housing. The Census Bureau...
+
+5. "How to factor 2048 bit RSA integers in 8 hours using 20 million noisy qubits" (2021)
+   Authors: Craig Gidney, Martin Ekerå
+   Venue: Quantum
+   Citations: 707
+   URL: https://doi.org/10.22331/q-2021-04-15-433
+   Abstract: We significantly reduce the cost of factoring integers and computing discrete logarithms in finite fields on a quantum computer by combining techniques from Shor 1994, Griffiths-Ni...
+
+6. "The anatomy, physiology, functional significance and evolution of specialized hearing organs of gerbilline rodents" (1972)
+   Authors: D. M. Lay
+   Venue: Journal of Morphology
+   Citations: 222
+   URL: https://doi.org/10.1002/jmor.1051380103
+   Abstract: Abstract Middle and inner ear anatomy correlates with neurophysiological responses to a wide range of sound frequencies for species of the Gerbillinae representing generalized, int...
+
+7. "RAPPOR" (2014)
+   Authors: Úlfar Erlingsson, Vasyl Pihur, Aleksandra Korolova
+   Venue: https://doi.org/10.1145/2660267.2660348
+   Citations: 1553
+   URL: https://doi.org/10.1145/2660267.2660348
+   Abstract: Randomized Aggregatable Privacy-Preserving Ordinal Response, or RAPPOR, is a technology for crowdsourcing statistics from end-user client software, anonymously, with strong privacy...
+
+8. "A review of soil NO transformation: Associated processes and possible physiological significance on organisms" (2014)
+   Authors: Sergiy Medinets, Ute Skiba, Heinz Rennenberg et al.
+   Venue: Soil Biology and Biochemistry
+   Citations: 224
+   URL: https://doi.org/10.1016/j.soilbio.2014.09.025
+   Abstract: ...
+
+9. "Medical imaging deep learning with differential privacy" (2021)
+   Authors: Alexander Ziller, Dmitrii Usynin, Rickmer Braren et al.
+   Venue: Scientific Reports
+   Citations: 170
+   URL: https://doi.org/10.1038/s41598-021-93030-0
+   Abstract: The successful training of deep learning models for diagnostic deployment in medical imaging applications requires large volumes of data. Such data cannot be procured without consi...
+
+10. "Data Security and Privacy Protection for Cloud Storage: A Survey" (2020)
+   Authors: Pan Yang, Naixue Xiong, Jingli Ren
+   Venue: IEEE Access
+   Citations: 499
+   URL: https://doi.org/10.1109/access.2020.3009876
+   Abstract: The new development trends including Internet of Things (IoT), smart city, enterprises digital transformation and world's digital economy are at the top of the tide. The continuous...
+
+11. "LinkedIn's Audience Engagements API" (2021)
+   Authors: Ryan Rogers, Subbu Subramaniam, Sean Peng et al.
+   Venue: Journal of Privacy and Confidentiality
+   Citations: 29
+   URL: https://doi.org/10.29012/jpc.782
+   Abstract: We present a privacy system that leverages differential privacy to protect LinkedIn members' data while also providing audience engagement insights to enable marketing analytics re...
+
+12. "LinkedIn's Audience Engagements API: A Privacy Preserving Data Analytics System at Scale" (2020)
+   Authors: Ryan Rogers, Subbu Subramaniam, Sean Peng et al.
+   Venue: arXiv (Cornell University)
+   Citations: 28
+   URL: https://doi.org/10.48550/arxiv.2002.05839
+   Abstract: We present a privacy system that leverages differential privacy to protect LinkedIn members' data while also providing audience engagement insights to enable marketing analytics re...
+
+13. "Privacy Champions in Software Teams: Understanding Their Motivations, Strategies, and Challenges" (2021)
+   Authors: Mohammad Tahaei, Alisa Frik, Kami Vaniea
+   Venue: https://doi.org/10.1145/3411764.3445768
+   Citations: 74
+   URL: https://doi.org/10.1145/3411764.3445768
+   Abstract: Software development teams are responsible for making and implementing software design decisions that directly impact end-user privacy, a challenging task to do well. Privacy Champ...
+

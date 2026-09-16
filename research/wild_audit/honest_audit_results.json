@@ -1,0 +1,2808 @@
+{
+  "summary": {
+    "corpus": {
+      "queries": [
+        "synthetic",
+        "synthetic-data",
+        "synthetic tabular",
+        "private",
+        "anonymized",
+        "differential",
+        "privacy",
+        "opendp",
+        "smartnoise",
+        "dp-sgd"
+      ],
+      "repos_examined": 306,
+      "unique_base_datasets_after_fork_dedup": 286
+    },
+    "dp_population": {
+      "base_datasets_mentioning_DP_mechanism": 0,
+      "base_datasets_claiming_DP_with_an_epsilon_value": 0,
+      "repos_claiming_DP_with_an_epsilon_value": 0,
+      "finding": "Hugging Face hosts essentially no genuine differentially private data releases; the DP-release ecosystem (Census DAS, NIST SDNist, OpenDP) is not here."
+    },
+    "seed_publication_prevalence_NOT_breaches": {
+      "unique_base_datasets_publishing_a_seed": 1,
+      "as_fraction_of_unique_bases": 0.0035,
+      "largest_fork_cluster_among_seed_publishers": [
+        [
+          1,
+          "physicalai-worldmodel-synthetic-warehouse-operations-scenes"
+        ]
+      ],
+      "interpretation": "Publishing a seed is the reproducibility norm DP forbids. Among these NON-DP synthetic datasets it is not a privacy breach; it measures how normalized the risky practice is. Fork clusters are collapsed so one tutorial counts once."
+    },
+    "dp_disclosure_completeness_among_DP_claimers": {
+      "n_dp_claiming_repos": 0,
+      "counts": {
+        "states_epsilon": 0,
+        "states_delta": 0,
+        "states_neighbour_relation": 0,
+        "states_mechanism": 0
+      },
+      "note": "Of the (few) repos that state an epsilon, how many also state delta, the mechanism, and the NEIGHBOUR RELATION. An epsilon with no neighbour relation is ambiguous (Dibia et al. PoPETs 2026; our D2). Small n: report as case evidence, not a population statistic."
+    },
+    "limitations": [
+      "Metadata/text only; no data inspected. DP detection is keyword-based.",
+      "Hugging Face only; government/challenge/OpenDP releases are elsewhere.",
+      "Seed prevalence among non-DP data is a norm measurement, not a breach count."
+    ]
+  },
+  "records": [
+    {
+      "repo_id": "gretelai/synthetic_text_to_sql",
+      "base": "synthetic_text_to_sql",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "alan-turing-institute/turing-synthetic-radar-dataset",
+      "base": "turing-synthetic-radar-dataset",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "KempnerInstituteAI/flux.2-dev-synthetic-2M",
+      "base": "flux.2-dev-synthetic-2m",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "microsoft/synthetic-computers-at-scale",
+      "base": "synthetic-computers-at-scale",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "nvidia/PhysicalAI-WorldModel-Synthetic-Warehouse-Operations-Scenes",
+      "base": "physicalai-worldmodel-synthetic-warehouse-operations-scenes",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": true,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "starmpcc/Asclepius-Synthetic-Clinical-Notes",
+      "base": "asclepius-synthetic-clinical-notes",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "google/Synthetic-Persona-Chat",
+      "base": "synthetic-persona-chat",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "projecte-aina/synthetic_dem",
+      "base": "synthetic_dem",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "mazqtpopx/cranfield-synthetic-drone-detection",
+      "base": "cranfield-synthetic-drone-detection",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "argilla/synthetic-text-classification-news",
+      "base": "synthetic-text-classification-news",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "yahyaabd/allstats-semantic-search-synthetic-dataset-v2-mini",
+      "base": "allstats-semantic-search-synthetic-dataset-v2-mini",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "petkopetkov/medical-question-answering-synthetic",
+      "base": "medical-question-answering-synthetic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "okhater/lolv2-synthetic",
+      "base": "lolv2-synthetic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "lime-nlp/Synthetic_Unanswerable_Math",
+      "base": "synthetic_unanswerable_math",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "CLEAR-Global/Chichewa-Synthetic-ASR-Dataset",
+      "base": "chichewa-synthetic-asr-dataset",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "PrimeIntellect/SYNTHETIC-2-SFT-unverified",
+      "base": "synthetic-2-sft-unverified",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "PrimeIntellect/SYNTHETIC-2-SFT-verified",
+      "base": "synthetic-2-sft-verified",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "CJJones/LLM_Electrical_Engineering_Educational_Synthetic_Dialog",
+      "base": "llm_electrical_engineering_educational_synthetic_dialog",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "adiga-ai/circassian-russian_texts_synthetic",
+      "base": "circassian-russian_texts_synthetic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "stanfordmimi/RoentGen-v2-synthetic-dataset",
+      "base": "roentgen-v2-synthetic-dataset",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "geodesic-research/discourse-grounded-misalignment-synthetic-scenario-data",
+      "base": "discourse-grounded-misalignment-synthetic-scenario-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "RinKana/makisu-dataset-synthetic",
+      "base": "makisu-dataset-synthetic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "nvidia/Nemotron-Terminal-Synthetic-Tasks",
+      "base": "nemotron-terminal-synthetic-tasks",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "roma2025/synthetic-table-bench",
+      "base": "synthetic-table-bench",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "tdlhl/MedSSR-Synthetic-43K",
+      "base": "medssr-synthetic-43k",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "nvidia/PhysicalAI-WorldModel-Synthetic-Embodied-Robot-Scenes",
+      "base": "physicalai-worldmodel-synthetic-embodied-robot-scenes",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "nvidia/PhysicalAI-WorldModel-Synthetic-Digital-Human-Scenes",
+      "base": "physicalai-worldmodel-synthetic-digital-human-scenes",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "abhishekjha1008/danish-htr-synthetic",
+      "base": "danish-htr-synthetic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "soumikmahato/plant-health-points-synthetic",
+      "base": "plant-health-points-synthetic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "sigmanova/synthetic_data_for_eeg",
+      "base": "synthetic_data_for_eeg",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "tehnik-tehnolog/bilingual-ocr-ru-en-synthetic",
+      "base": "bilingual-ocr-ru-en-synthetic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "ved1245/synthetic-manuscript-dataset",
+      "base": "synthetic-manuscript-dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "ContextReq/Synthetic-Dataset-Childrens-Stories",
+      "base": "synthetic-dataset-childrens-stories",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "aseifert/pie-synthetic",
+      "base": "pie-synthetic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "laion/relaion-synthetic-115m",
+      "base": "relaion-synthetic-115m",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "myvision/filtered_synthetic",
+      "base": "filtered_synthetic",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "myvision/yuanchuan-synthetic-dataset-final",
+      "base": "yuanchuan-synthetic-dataset-final",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "mesolitica/Azure-TTS-Synthetic",
+      "base": "azure-tts-synthetic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "fcossio/synthetic-fibers-medium",
+      "base": "synthetic-fibers-medium",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "HuggingFaceM4/cm4-synthetic-testing",
+      "base": "cm4-synthetic-testing",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "HuggingFaceM4/tmp-pmd-synthetic-testing",
+      "base": "tmp-pmd-synthetic-testing",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "HuggingFaceM4/general-pmd-synthetic-testing",
+      "base": "general-pmd-synthetic-testing",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "irenepap/en-ro2it-synthetic-data",
+      "base": "en-ro2it-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "irenepap/en-fr2it-synthetic-data",
+      "base": "en-fr2it-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "irenepap/en-it-synthetic-data",
+      "base": "en-it-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "irenepap/it-en-synthetic-data",
+      "base": "it-en-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "irenepap/en-it-small-synthetic-data",
+      "base": "en-it-small-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "irenepap/en-ro2it-small-synthetic-data",
+      "base": "en-ro2it-small-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "irenepap/en-fr2it-small-synthetic-data",
+      "base": "en-fr2it-small-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "irenepap/it-en-small-synthetic-data",
+      "base": "it-en-small-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "stas/cm4-synthetic-testing",
+      "base": "cm4-synthetic-testing",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "stas/general-pmd-synthetic-testing",
+      "base": "general-pmd-synthetic-testing",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "AlekseyKorshuk/dalio-synthetic-io",
+      "base": "dalio-synthetic-io",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "AlekseyKorshuk/dalio-synthetic-complete",
+      "base": "dalio-synthetic-complete",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "abtExp/synthetic_license_plates",
+      "base": "synthetic_license_plates",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "dattatreya303/covid-qa-synthetic",
+      "base": "covid-qa-synthetic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "liuyanchen1015/MULTI_VALUE_mnli_synthetic_superlative",
+      "base": "multi_value_mnli_synthetic_superlative",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Dahoas/synthetic-hh-rlhf-prompts",
+      "base": "synthetic-hh-rlhf-prompts",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Dahoas/instruct-synthetic-prompt-responses",
+      "base": "instruct-synthetic-prompt-responses",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Dahoas/sft-gptj-synthetic-prompt-responses",
+      "base": "sft-gptj-synthetic-prompt-responses",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "ahuber/synthetic-classification-data",
+      "base": "synthetic-classification-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Suchinthana/Sinhala_OCR_Dataset_Synthetic",
+      "base": "sinhala_ocr_dataset_synthetic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "cRick/NL-to-LTL-Synthetic-Dataset",
+      "base": "nl-to-ltl-synthetic-dataset",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "LisanneH/Synthetic_Speech_Data_Project",
+      "base": "synthetic_speech_data_project",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "priyank-m/original-copy-dataset-synthetic",
+      "base": "original-copy-dataset-synthetic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "coding-Jay/Synthetic-Datasets-Unity-CV",
+      "base": "synthetic-datasets-unity-cv",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "disham993/Synthetic_Furniture_Dataset",
+      "base": "synthetic_furniture_dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "GenP/Synthetic_Face_Images_Academic_Dataset",
+      "base": "synthetic_face_images_academic_dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "GeneratedPhotos/Synthetic_Face_Images_Academic_Dataset",
+      "base": "synthetic_face_images_academic_dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "din0s/synthetic-beir-data",
+      "base": "synthetic-beir-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "kanarian/synthetic-image-detection-datasets",
+      "base": "synthetic-image-detection-datasets",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "jonasmaltebecker/synthetic_drilling_dataset",
+      "base": "synthetic_drilling_dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "arcee-ai/synthetic-data-gen",
+      "base": "synthetic-data-gen",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "newsmediabias/GPT_synthetic_social_media_data",
+      "base": "gpt_synthetic_social_media_data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "amitraheja82/Market_Mail_Synthetic_DataSet",
+      "base": "market_mail_synthetic_dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "amitraheja82/Market_Mail_Synthetic_DataSet1",
+      "base": "market_mail_synthetic_dataset1",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Arabic-Clip-Archive/ccs_synthetic_ar_1M-Arabic_dataset_1M_translated_jsonl_format",
+      "base": "ccs_synthetic_ar_1m-arabic_dataset_1m_translated_jsonl_format",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "cadaeic/2000-sample-synthetic-recipe-dataset",
+      "base": "2000-sample-synthetic-recipe-dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "yawoayite/OTR-SYNTHETIC-INSTRUCTION-DATASET",
+      "base": "otr-synthetic-instruction-dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "21ksuresh/It-support-synthetic-data",
+      "base": "it-support-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "aakash0017/It-support-synthetic-data",
+      "base": "it-support-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "blankoslo/byggesak-data-synthetic",
+      "base": "byggesak-data-synthetic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Crystalcareai/Synthetic-Weakaura-Dataset",
+      "base": "synthetic-weakaura-dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "ndrushchak/openness_detection_synthetic_dataset",
+      "base": "openness_detection_synthetic_dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "VictorG-028/Small_subset_of_Synthetic_Word_Dataset",
+      "base": "small_subset_of_synthetic_word_dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "aashay96/translated-dataset-synthetic-retrieval-tasks",
+      "base": "translated-dataset-synthetic-retrieval-tasks",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "shreyansh1347/GNHK-Synthetic-OCR-Dataset",
+      "base": "gnhk-synthetic-ocr-dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Rajesh222/mistral_riddles_synthetic_data",
+      "base": "mistral_riddles_synthetic_data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "SebastianBodza/synthetic_RAG_dataset_ger_de_v02",
+      "base": "synthetic_rag_dataset_ger_de",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "51WORLD/DataOne-synthetic-v1.0-sample",
+      "base": "dataone-synthetic-v1.0-sample",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "intvy/hp_laptops_synthetic_reviews_data",
+      "base": "hp_laptops_synthetic_reviews_data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "avsolatorio/doc-topics-synthetic_data",
+      "base": "doc-topics-synthetic_data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "nlplabtdtu/data-synthetic-part-2",
+      "base": "data-synthetic-part",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "wahid028/Law_domain_synthetic_data",
+      "base": "law_domain_synthetic_data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "atlasia/Synthetic-Data-English-Darija",
+      "base": "synthetic-data-english-darija",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "ProGamerGov/synthetic-dataset-1m-dalle3-high-quality-captions",
+      "base": "synthetic-dataset-1m-dalle3-high-quality-captions",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "tomaszj321/syntheticdataset1",
+      "base": "syntheticdataset1",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "tomaszj321/syntheticdataset4",
+      "base": "syntheticdataset4",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "mryannugent/fewshot-synthetic-data",
+      "base": "fewshot-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "mryannugent/cot-synthetic-data",
+      "base": "cot-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "mryannugent/self-synthetic-data",
+      "base": "self-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "mryannugent/knowledge-synthetic-data",
+      "base": "knowledge-synthetic-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "umairafzal92/tabular-synthetic-data",
+      "base": "tabular-synthetic-data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "MachineLearningLM/machinelearninglm-scm-synthetic-tabularml",
+      "base": "machinelearninglm-scm-synthetic-tabularml",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "ESHMO-AI-2047/machinelearninglm-scm-synthetic-tabularml",
+      "base": "machinelearninglm-scm-synthetic-tabularml",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "jabir-khan/hunter-llm-sft-v3-private",
+      "base": "hunter-llm-sft-v3-private",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "adityasuyal/my-private-housing",
+      "base": "my-private-housing",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "zwsjink/private_dataset",
+      "base": "private_dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "sasha/stable-diffusion-flagging-private",
+      "base": "stable-diffusion-flagging-private",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Saruul/private_project",
+      "base": "private_project",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "MohammedNasri/private_common_voice",
+      "base": "private_common_voice",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "deprem-private/intent_test_v13_anonymized",
+      "base": "intent_test_v13_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "deprem-private/intent_train_v13_anonymized",
+      "base": "intent_train_v13_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "edbeeching/prj_gia_dataset_atari_2B_atari_privateye_1111",
+      "base": "prj_gia_dataset_atari_2b_atari_privateye",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "alea31415/umamusume_private",
+      "base": "umamusume_private",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "private-r/uk_pv",
+      "base": "uk_pv",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "sdasdadas/Private",
+      "base": "private",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "nekoknights/Private",
+      "base": "private",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "private-r/wind-kdd-cup-2022",
+      "base": "wind-kdd-cup",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "hf-tiny-model-private/tiny_model_info",
+      "base": "tiny_model_info",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "relbert/analogy_questions_private",
+      "base": "analogy_questions_private",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Eatea/langchain-docs-private",
+      "base": "langchain-docs-private",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "factored/fr-crawler-private",
+      "base": "fr-crawler-private",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "factored/fr-crawler-private-mlm",
+      "base": "fr-crawler-private-mlm",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "ACCC1380/private-model",
+      "base": "private-model",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "happen2/openphysics-beta-privatev1",
+      "base": "openphysics-beta-privatev1",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "caoyq/private_truthful_qa",
+      "base": "private_truthful_qa",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Aaryan333/fer2013_train_publicTest_privateTest",
+      "base": "fer2013_train_publictest_privatetest",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Feanix/Private.Infinity-Grids",
+      "base": "private.infinity-grids",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "vargr/private_instagram",
+      "base": "private_instagram",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Hoseindb/a-private-dataset",
+      "base": "a-private-dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "kfkas/private_processed_demo",
+      "base": "private_processed_demo",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Goekdeniz-Guelmez/Function_Calling_Private_GG",
+      "base": "function_calling_private_gg",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "BSC-LT/aguila7b-private-inference",
+      "base": "aguila7b-private-inference",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard-old/details_HuggingFaceH4__zephyr-7b-alpha_private",
+      "base": "details_huggingfaceh4__zephyr-7b-alpha_private",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "fish-audio-private/hifi-16kh",
+      "base": "hifi-16kh",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "xinyu1205/xinyu_private",
+      "base": "xinyu_private",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "linhtran92/soict_private_test",
+      "base": "soict_private_test",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "linhtran92/soict_private_test_fix",
+      "base": "soict_private_test_fix",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "thanhduycao/soict_private_test",
+      "base": "soict_private_test",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "thanhduycao/soict_private_test_v1",
+      "base": "soict_private_test",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "thanhduycao/soict_private_test_v2",
+      "base": "soict_private_test",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "osbm/semi-private-dataset",
+      "base": "semi-private-dataset",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "jxm/private_prompts",
+      "base": "private_prompts",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "jxm/private_prompts_2",
+      "base": "private_prompts",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "fish-audio-private/playerfm-20000h",
+      "base": "playerfm-20000h",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "cmeraki/hindi_eval_general_mcq_private",
+      "base": "hindi_eval_general_mcq_private",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "cmeraki/hindi_eval_retrieval_private",
+      "base": "hindi_eval_retrieval_private",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "gblazex/models-text-generation-popular-PRIVATE",
+      "base": "models-text-generation-popular-private",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Goekdeniz-Guelmez/MAIN-function_calling_private",
+      "base": "main-function_calling_private",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard-old/details_YouKnwMe__Mistral-7b-instruct-v0.2-private-eds2",
+      "base": "details_youknwme__mistral-7b-instruct-v0.2-private-eds2",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard-old/details_YouKnwMe__Mistral-7b-instruct-v0.2-private-edw2",
+      "base": "details_youknwme__mistral-7b-instruct-v0.2-private-edw2",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard-old/details_YouKnwMe__Direct-sm-private-e1",
+      "base": "details_youknwme__direct-sm-private-e1",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard-old/details_SC44__Mistral-7B-private-spef",
+      "base": "details_sc44__mistral-7b-private-spef",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard-old/details_SC44__Mistral-7B-private-spnf",
+      "base": "details_sc44__mistral-7b-private-spnf",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard-old/details_SC44__Mistral-7B-private-sia",
+      "base": "details_sc44__mistral-7b-private-sia",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard-old/details_SC44__Mistral-7B-private-oia",
+      "base": "details_sc44__mistral-7b-private-oia",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard-old/details_SC99__Mistral-7B-privatemix-base-ia",
+      "base": "details_sc99__mistral-7b-privatemix-base-ia",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard-old/details_SC99__Mistral-7B-privatemix-ia1",
+      "base": "details_sc99__mistral-7b-privatemix-ia1",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard-old/details_SC99__Mistral-7B-privatemix-ia2",
+      "base": "details_sc99__mistral-7b-privatemix-ia2",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard-old/details_SC99__Mistral-7B-privatemix-ia3",
+      "base": "details_sc99__mistral-7b-privatemix-ia3",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard-old/details_YKM12__Mistral-7B-summ-privatev1",
+      "base": "details_ykm12__mistral-7b-summ-privatev1",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "wuwa-ru/private-server",
+      "base": "private-server",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "bigcode/admin_private",
+      "base": "admin_private",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "msharma95/xglue-private",
+      "base": "xglue-private",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "anonymizedauthor/paper_data",
+      "base": "paper_data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "schwepat/anonymized-amazon-dataset",
+      "base": "anonymized-amazon-dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Von-R/verilog_preprocessed_anonymized",
+      "base": "verilog_preprocessed_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "anonymized-acamedia/Small-Transformer-Zoo",
+      "base": "small-transformer-zoo",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_cora_standard_1_public_anonymized",
+      "base": "rw_cora_standard_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_cora_standard_2_public_anonymized",
+      "base": "rw_cora_standard_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_cora_standard_6_public_anonymized",
+      "base": "rw_cora_standard_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_cora_mdlr_1_public_anonymized",
+      "base": "rw_cora_mdlr_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_cora_mdlr_2_public_anonymized",
+      "base": "rw_cora_mdlr_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_cora_mdlr_6_public_anonymized",
+      "base": "rw_cora_mdlr_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "nickl425/anonymized-wikipedia-subset",
+      "base": "anonymized-wikipedia-subset",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "nickl425/anonymized-cleaned-wikipedia-subset",
+      "base": "anonymized-cleaned-wikipedia-subset",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_standard_1_publ_anonymizedic",
+      "base": "rw_roman-empire_standard_1_publ_anonymizedic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_standard_2_public_anonymized",
+      "base": "rw_roman-empire_standard_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_standard_6_public_anonymized",
+      "base": "rw_roman-empire_standard_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_mdlr_1_public_anonymized",
+      "base": "rw_roman-empire_mdlr_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_mdlr_2_public_anonymized",
+      "base": "rw_roman-empire_mdlr_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_mdlr_6_public_anonymized",
+      "base": "rw_roman-empire_mdlr_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_nbw_1_public_anonymized",
+      "base": "rw_roman-empire_nbw_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_nbw_2_public_anonymized",
+      "base": "rw_roman-empire_nbw_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_nbw_6_public_anonymized",
+      "base": "rw_roman-empire_nbw_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_node2vec_1_public_anonymized",
+      "base": "rw_roman-empire_node2vec_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_node2vec_2_public_anonymized",
+      "base": "rw_roman-empire_node2vec_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_node2vec_6_public_anonymized",
+      "base": "rw_roman-empire_node2vec_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_node2vec2_1_public_anonymized",
+      "base": "rw_roman-empire_node2vec2_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_node2vec2_2_public_anonymized",
+      "base": "rw_roman-empire_node2vec2_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_node2vec2_6_public_anonymized",
+      "base": "rw_roman-empire_node2vec2_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_node2vec3_1_public_anonymized",
+      "base": "rw_roman-empire_node2vec3_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_node2vec3_2_public_anonymized",
+      "base": "rw_roman-empire_node2vec3_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_roman-empire_node2vec3_6_public_anonymized",
+      "base": "rw_roman-empire_node2vec3_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_standard_1_publ_anonymizedic",
+      "base": "rw_amazon-ratings_standard_1_publ_anonymizedic",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_standard_2_public_anonymized",
+      "base": "rw_amazon-ratings_standard_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_standard_6_public_anonymized",
+      "base": "rw_amazon-ratings_standard_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_mdlr_1_public_anonymized",
+      "base": "rw_amazon-ratings_mdlr_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_mdlr_2_public_anonymized",
+      "base": "rw_amazon-ratings_mdlr_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_mdlr_6_public_anonymized",
+      "base": "rw_amazon-ratings_mdlr_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_nbw_1_public_anonymized",
+      "base": "rw_amazon-ratings_nbw_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_nbw_2_public_anonymized",
+      "base": "rw_amazon-ratings_nbw_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_nbw_6_public_anonymized",
+      "base": "rw_amazon-ratings_nbw_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_node2vec_1_public_anonymized",
+      "base": "rw_amazon-ratings_node2vec_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_node2vec_2_public_anonymized",
+      "base": "rw_amazon-ratings_node2vec_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_node2vec_6_public_anonymized",
+      "base": "rw_amazon-ratings_node2vec_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_node2vec2_1_public_anonymized",
+      "base": "rw_amazon-ratings_node2vec2_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_node2vec2_2_public_anonymized",
+      "base": "rw_amazon-ratings_node2vec2_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_node2vec2_6_public_anonymized",
+      "base": "rw_amazon-ratings_node2vec2_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_node2vec3_1_public_anonymized",
+      "base": "rw_amazon-ratings_node2vec3_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_node2vec3_2_public_anonymized",
+      "base": "rw_amazon-ratings_node2vec3_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_amazon-ratings_node2vec3_6_public_anonymized",
+      "base": "rw_amazon-ratings_node2vec3_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_cora_node2vec2_1_public_anonymized",
+      "base": "rw_cora_node2vec2_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_cora_node2vec2_2_public_anonymized",
+      "base": "rw_cora_node2vec2_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_cora_node2vec2_6_public_anonymized",
+      "base": "rw_cora_node2vec2_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_cora_node2vec3_1_public_anonymized",
+      "base": "rw_cora_node2vec3_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_cora_node2vec3_2_public_anonymized",
+      "base": "rw_cora_node2vec3_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_cora_node2vec3_6_public_anonymized",
+      "base": "rw_cora_node2vec3_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_pubmed_node2vec2_1_public_anonymized",
+      "base": "rw_pubmed_node2vec2_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_pubmed_node2vec2_2_public_anonymized",
+      "base": "rw_pubmed_node2vec2_2_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_pubmed_node2vec2_6_public_anonymized",
+      "base": "rw_pubmed_node2vec2_6_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yuyeong/rw_pubmed_node2vec3_1_public_anonymized",
+      "base": "rw_pubmed_node2vec3_1_public_anonymized",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "open-llm-leaderboard/Josephgflowers__Differential-Attention-Liquid-Metal-Tinyllama-details",
+      "base": "josephgflowers__differential-attention-liquid-metal-tinyllama-details",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "shuyuej/Differential-Diagnosis-Dataset",
+      "base": "differential-diagnosis-dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "0xZee/dataset-CoT-Differential-Equations-636",
+      "base": "dataset-cot-differential-equations",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "babaka/differential_usv_dataset",
+      "base": "differential_usv_dataset",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "introvoyz041/DifferentialEquationssciml",
+      "base": "differentialequationssciml",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "ethanCSL/4c_differential_cameras_compare",
+      "base": "4c_differential_cameras_compare",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "ClarusC64/diagnostic-scope-differential-control-radiology-v01",
+      "base": "diagnostic-scope-differential-control-radiology",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "ClarusC64/differential-preservation-narrative-v01",
+      "base": "differential-preservation-narrative",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "ClarusC64/clinical-differential-narrative-coherence-scoring-v0.1",
+      "base": "clinical-differential-narrative-coherence-scoring-v0.1",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "ClarusC64/clinical-differential-defense-refutation-mapping-v0.1",
+      "base": "clinical-differential-defense-refutation-mapping-v0.1",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Maitreyajayaraj/acute_multisystem_differential",
+      "base": "acute_multisystem_differential",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Maitreyajayaraj/advanced_clinical_reasoning_with_differential_diagnosis_v2",
+      "base": "advanced_clinical_reasoning_with_differential_diagnosis",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Maitreyajayaraj/advanced_clinical_reasoning_with_differential_diagnosis1",
+      "base": "advanced_clinical_reasoning_with_differential_diagnosis1",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "yusenluo9z/orange_cup_expert_w_reward_differential",
+      "base": "orange_cup_expert_w_reward_differential",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "yusenluo9z/orange_cup_suboptimal_w_reward_differential",
+      "base": "orange_cup_suboptimal_w_reward_differential",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "yusenluo9z/orange_cup_iql_mixed_differential",
+      "base": "orange_cup_iql_mixed_differential",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "khaledhushme/Differential_Diagnosis",
+      "base": "differential_diagnosis",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "perrabyte/DifferentialResponseTheory",
+      "base": "differentialresponsetheory",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "astro-legacy-archive/cobe-dmr-pixelized-differential-data",
+      "base": "cobe-dmr-pixelized-differential-data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "gunkaynar/riboseq-differential-te-data",
+      "base": "riboseq-differential-te-data",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "arjunth2001/online_privacy_qna",
+      "base": "online_privacy_qna",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "ceyda/test-privacy",
+      "base": "test-privacy",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "pile-of-law/eoir_privacy",
+      "base": "eoir_privacy",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppCityTrain",
+      "base": "ppcitytrain",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppCityVal",
+      "base": "ppcityval",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/cityUnlTrain",
+      "base": "cityunltrain",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/cityUnlVal",
+      "base": "cityunlval",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppRegionTrain",
+      "base": "ppregiontrain",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppRegionVal",
+      "base": "ppregionval",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppZipVal",
+      "base": "ppzipval",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppZipTrain",
+      "base": "ppziptrain",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppLngVal",
+      "base": "pplngval",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppLngTrain",
+      "base": "pplngtrain",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppLatVal",
+      "base": "pplatval",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppLatTrain",
+      "base": "pplattrain",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppAllVal",
+      "base": "ppallval",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppAllTrain",
+      "base": "ppalltrain",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppCityTest",
+      "base": "ppcitytest",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppZipTest",
+      "base": "ppziptest",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppLatTest",
+      "base": "pplattest",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppLngTest",
+      "base": "pplngtest",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppAllTest",
+      "base": "ppalltest",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "privacy-tech-lab/ppRegionTest",
+      "base": "ppregiontest",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "alzoubi36/privacy_qa",
+      "base": "privacy_qa",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "gyr66/privacy_detection",
+      "base": "privacy_detection",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "wildercb/PrivacyEngineeringManifestoTxt",
+      "base": "privacyengineeringmanifestotxt",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "sjsq/PrivacyPolicy",
+      "base": "privacypolicy",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Isotonic/universal_privacy",
+      "base": "universal_privacy",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "wildercb/PrivacyTextBooks1.2",
+      "base": "privacytextbooks1.2",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Bjanota11/bonito_privacy_qa_sft_data",
+      "base": "bonito_privacy_qa_sft_data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "camilo4bai/bonito_privacy_qa_sft_data",
+      "base": "bonito_privacy_qa_sft_data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "fahernandez/bonito_privacy_qa_sft_data",
+      "base": "bonito_privacy_qa_sft_data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "placidoccampos/bonito_privacy_qa_sft_data",
+      "base": "bonito_privacy_qa_sft_data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "camilo4bai/bonito_privacy_qa_sft_data_t4",
+      "base": "bonito_privacy_qa_sft_data_t4",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "jsalasmoreira/bonito_privacy_qa_sft_data",
+      "base": "bonito_privacy_qa_sft_data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "jmonsa13/bonito_privacy_qa_sft_data",
+      "base": "bonito_privacy_qa_sft_data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "asahikuroki222/bonito_privacy_qa_sft_data",
+      "base": "bonito_privacy_qa_sft_data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "marcovnr/bonito_privacy_qa_sft_data",
+      "base": "bonito_privacy_qa_sft_data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "allancasado04/bonito_privacy_qa_sft_data",
+      "base": "bonito_privacy_qa_sft_data",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "mani-a-i/privacy_laws_text_comphrehension",
+      "base": "privacy_laws_text_comphrehension",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "RohithJ/Privacy",
+      "base": "privacy",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "RohithJ/Privacy_policy_dataset",
+      "base": "privacy_policy_dataset",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "mani-a-i/privacy_laws_text_comphrehension2",
+      "base": "privacy_laws_text_comphrehension2",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "mani-a-i/privacy_laws_text_comphrehension3",
+      "base": "privacy_laws_text_comphrehension3",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Yumingze/Privacy_Analysis_Dataset",
+      "base": "privacy_analysis_dataset",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "SALT-NLP/PrivacyLens",
+      "base": "privacylens",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Lots-of-LoRAs/task683_online_privacy_policy_text_purpose_answer_generation",
+      "base": "task683_online_privacy_policy_text_purpose_answer_generation",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "plncmm/achs-privacy-medical",
+      "base": "achs-privacy-medical",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Gopher-Lab/bankless_ROLLUP_Under_Attack_-_Crypto_Freedom__Privacy",
+      "base": "bankless_rollup_under_attack_-_crypto_freedom__privacy",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Gopher-Lab/laurashin_Erik_Voorhees_New_Venture_Why_AI_Desperately_Needs_Privacy_and_Uncensorability_-_Ep__6",
+      "base": "laurashin_erik_voorhees_new_venture_why_ai_desperately_needs_privacy_and_uncensorability_-_ep_",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Gopher-Lab/laurashin_Could_This_Vitalik-Backed_Protocol_Bring_Privacy_to_a_Regulated_Crypto_World_-_Ep__542",
+      "base": "laurashin_could_this_vitalik-backed_protocol_bring_privacy_to_a_regulated_crypto_world_-_ep_",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "fanyin3639/test_test_privacy",
+      "base": "test_test_privacy",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "fanyin3639/test_test_privacy_severity",
+      "base": "test_test_privacy_severity",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "fanyin3639/test_test_privacy_level2",
+      "base": "test_test_privacy_level2",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "wjwilliam/PrivacyBenchmark",
+      "base": "privacybenchmark",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "paoloitaliani/privacyqa_new",
+      "base": "privacyqa_new",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "prasannadhungana8848/Privacy-policies-User-Consent-manager",
+      "base": "privacy-policies-user-consent-manager",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "rexologue/GrandMaster-Injected-Privacy",
+      "base": "grandmaster-injected-privacy",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "bwang0911/privacy_qa",
+      "base": "privacy_qa",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "wildercb/privacy_analysis_DPO",
+      "base": "privacy_analysis_dpo",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "Gunulhona/open_dpo_merged",
+      "base": "open_dpo_merged",
+      "has_readme": true,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "adalberto-temp/open-dpo-magpie",
+      "base": "open-dpo-magpie",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    },
+    {
+      "repo_id": "adalberto-temp/open-dpo-magpie-v2",
+      "base": "open-dpo-magpie",
+      "has_readme": false,
+      "claims_dp_with_epsilon": false,
+      "mentions_dp": false,
+      "publishes_seed": false,
+      "disclosure": {}
+    }
+  ]
+}

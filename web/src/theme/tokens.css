@@ -1,0 +1,124 @@
+/* Brass, Ivory & Ink Precision Scientific Instrument Design System */
+
+:root {
+  --paper: #F4F1EA;
+  --paper-2: #EDE8DD;
+  --card: #FBFAF6;
+  --ink: #1A1712;
+  --muted: #6B6053;
+  --faint: #9A8F7E;
+  --line: #DED6C7;
+  --brass: #8A5A2B;
+  --brass-deep: #5E3A18;
+  --seal: #7C2D2A;
+  --seal-bg: #F3E4E1;
+  --verify: #3F6B4E;
+  --verify-bg: #E4EFE6;
+
+  /* RGB channels for Tailwind opacity modifiers */
+  --seal-rgb: 124, 45, 42;
+  --verify-rgb: 63, 107, 78;
+  --brass-rgb: 138, 90, 43;
+  --ink-rgb: 26, 23, 18;
+  --muted-rgb: 107, 96, 83;
+  --faint-rgb: 154, 143, 126;
+  --line-rgb: 222, 214, 199;
+
+  /* Elevations */
+  --shadow-e0: none;
+  --shadow-e1: 0 1px 2px rgba(40, 30, 15, 0.06), 0 6px 16px -10px rgba(40, 30, 15, 0.20);
+  --shadow-e2: 0 2px 4px rgba(40, 30, 15, 0.10), 0 18px 40px -18px rgba(40, 30, 15, 0.34);
+  --shadow-inset: inset 0 1px 3px rgba(40, 30, 15, 0.14), inset 0 0 0 1px var(--line);
+  --shadow-brass: inset 0 1px 0 rgba(255, 244, 222, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #17140F;
+    --paper-2: #1E1A13;
+    --card: #221D16;
+    --ink: #F3EEE4;
+    --muted: #A9A08F;
+    --faint: #7A7060;
+    --line: #3A3227;
+    --brass: #C08A4E;
+    --brass-deep: #8A5A2B;
+    --seal: #C4635C;
+    --seal-bg: #2A1714;
+    --verify: #7FB08C;
+    --verify-bg: #12241A;
+
+    --seal-rgb: 196, 99, 92;
+    --verify-rgb: 127, 176, 140;
+    --brass-rgb: 192, 138, 78;
+    --ink-rgb: 243, 238, 228;
+    --muted-rgb: 169, 160, 143;
+    --faint-rgb: 122, 112, 96;
+    --line-rgb: 58, 50, 39;
+
+    --shadow-e1: 0 1px 3px rgba(0, 0, 0, 0.3), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+    --shadow-e2: 0 4px 12px rgba(0, 0, 0, 0.4), 0 24px 48px -12px rgba(0, 0, 0, 0.7);
+    --shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 0 0 1px var(--line);
+    --shadow-brass: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+}
+
+:root[data-theme="dark"],
+.dark {
+  --paper: #17140F;
+  --paper-2: #1E1A13;
+  --card: #221D16;
+  --ink: #F3EEE4;
+  --muted: #A9A08F;
+  --faint: #7A7060;
+  --line: #3A3227;
+  --brass: #C08A4E;
+  --brass-deep: #8A5A2B;
+  --seal: #C4635C;
+  --seal-bg: #2A1714;
+  --verify: #7FB08C;
+  --verify-bg: #12241A;
+
+  --seal-rgb: 196, 99, 92;
+  --verify-rgb: 127, 176, 140;
+  --brass-rgb: 192, 138, 78;
+  --ink-rgb: 243, 238, 228;
+  --muted-rgb: 169, 160, 143;
+  --faint-rgb: 122, 112, 96;
+  --line-rgb: 58, 50, 39;
+
+  --shadow-e1: 0 1px 3px rgba(0, 0, 0, 0.3), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  --shadow-e2: 0 4px 12px rgba(0, 0, 0, 0.4), 0 24px 48px -12px rgba(0, 0, 0, 0.7);
+  --shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 0 0 1px var(--line);
+  --shadow-brass: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+:root[data-theme="light"] {
+  --paper: #F4F1EA;
+  --paper-2: #EDE8DD;
+  --card: #FBFAF6;
+  --ink: #1A1712;
+  --muted: #6B6053;
+  --faint: #9A8F7E;
+  --line: #DED6C7;
+  --brass: #8A5A2B;
+  --brass-deep: #5E3A18;
+  --seal: #7C2D2A;
+  --seal-bg: #F3E4E1;
+  --verify: #3F6B4E;
+  --verify-bg: #E4EFE6;
+
+  --seal-rgb: 124, 45, 42;
+  --verify-rgb: 63, 107, 78;
+  --brass-rgb: 138, 90, 43;
+  --ink-rgb: 26, 23, 18;
+  --muted-rgb: 107, 96, 83;
+  --faint-rgb: 154, 143, 126;
+  --line-rgb: 222, 214, 199;
+
+  --shadow-e0: none;
+  --shadow-e1: 0 1px 2px rgba(40, 30, 15, 0.06), 0 6px 16px -10px rgba(40, 30, 15, 0.20);
+  --shadow-e2: 0 2px 4px rgba(40, 30, 15, 0.10), 0 18px 40px -18px rgba(40, 30, 15, 0.34);
+  --shadow-inset: inset 0 1px 3px rgba(40, 30, 15, 0.14), inset 0 0 0 1px var(--line);
+  --shadow-brass: inset 0 1px 0 rgba(255, 244, 222, 0.5);
+}

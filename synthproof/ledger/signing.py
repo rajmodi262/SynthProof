@@ -182,7 +182,28 @@ def load_fingerprint_key(key_dir: Optional[Path] = None, create: bool = False) -
     return key
 
 
-# --------------------------------------------------------------------------- sign / verify
+def canonical_sheet_payload(sheet_dict: dict) -> bytes:
+    """Canonical bytes of a data sheet covered by the signature.
+
+    Normalizes whole-number floats to ints (e.g. 1.0 -> 1, 0.0 -> 0) so that JSON
+    roundtripping through JavaScript (where 1.0 and 1 serialize identically as 1)
+    does not alter the canonical byte sequence.
+    """
+    import json
+
+    def _norm(v):
+        if isinstance(v, dict):
+            return {k: _norm(val) for k, val in sorted(v.items())}
+        if isinstance(v, list):
+            return [_norm(val) for val in v]
+        if isinstance(v, float) and v.is_integer():
+            return int(v)
+        return v
+
+    payload = dict(sheet_dict)
+    payload.pop("signature", None)
+    payload.pop("public_key", None)
+    return json.dumps(_norm(payload), sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 
 def sign_datasheet(
@@ -247,13 +268,22 @@ def verify_datasheet(
 
     import json
 
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    canonical_norm = canonical_sheet_payload(payload)
+    canonical_raw = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
-    try:
-        public_key.verify(bytes.fromhex(signature), canonical)
-    except Exception as exc:
+    sig_bytes = bytes.fromhex(signature)
+    verified = False
+    for c in (canonical_norm, canonical_raw):
+        try:
+            public_key.verify(sig_bytes, c)
+            verified = True
+            break
+        except Exception:
+            continue
+
+    if not verified:
         raise SignatureError(
             "Signature does not verify. Either the sheet was altered after signing, or it "
             "was not signed by this key."
-        ) from exc
+        )
     return True

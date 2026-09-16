@@ -268,13 +268,11 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
             "attacks_not_implemented": NOT_IMPLEMENTED_ATTACKS,
         }
         try:
-            import json as _json
+            from synthproof.ledger.signing import canonical_sheet_payload, public_key_hex
 
-            payload_bytes = _json.dumps(sheet_dict, sort_keys=True, separators=(",", ":")).encode(
-                "utf-8"
-            )
+            payload_bytes = canonical_sheet_payload(sheet_dict)
             sheet_dict["signature"] = state.GLOBAL_LEDGER._private_key.sign(payload_bytes).hex()
-            sheet_dict["public_key"] = state.GLOBAL_LEDGER._public_key.public_bytes_raw().hex()
+            sheet_dict["public_key"] = public_key_hex(state.GLOBAL_LEDGER._public_key)
         except Exception:
             pass
 

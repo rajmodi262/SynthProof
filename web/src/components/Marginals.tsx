@@ -1,130 +1,159 @@
+import { useMemo } from 'react'
+import { EChart } from './charts/EChart'
 import type { Histogram } from '@/types'
+import type { EChartsOption } from 'echarts'
 
-/**
- * Real vs synthetic marginals, drawn on shared bin edges.
- *
- * Shared edges are the whole point: two histograms binned independently cannot be compared,
- * and independent binning is a common way for a fidelity chart to flatter a generator. The
- * server computes both from one set of edges fitted on the real column.
- */
-function Spark({ hist, name }: { hist: Histogram; name: string }) {
-  const w = 240
-  const h = 56
-
-  // The payload is trusted nowhere else, so it is not trusted here either. Two failures
-  // were possible: an empty `real` array made `Math.max(...[])` return -Infinity and
-  // emitted NaN path coordinates (a blank chart, or a React crash); and mismatched array
-  // lengths silently plotted two series against different x-scales, which looks like a
-  // fidelity result but compares nothing.
+function HistogramSpark({ hist, name }: { hist: Histogram; name: string }) {
   const real = Array.isArray(hist.real) ? hist.real : []
   const synthetic = Array.isArray(hist.synthetic) ? hist.synthetic : []
-  const n = real.length
+  const edges = Array.isArray(hist.edges) ? hist.edges : []
 
-  if (!n || synthetic.length !== n || !Array.isArray(hist.edges) || hist.edges.length < 2) {
+  const labels = useMemo(() => {
+    if (edges.length < 2) return []
+    return edges.slice(0, -1).map((e, idx) => {
+      const next = edges[idx + 1]
+      return `${Math.round(e)}-${Math.round(next)}`
+    })
+  }, [edges])
+
+  const option: EChartsOption = useMemo(() => {
+    return {
+      grid: {
+        left: 2,
+        right: 2,
+        top: 6,
+        bottom: 18,
+        containLabel: false,
+      },
+      tooltip: {
+        trigger: 'axis',
+        textStyle: {
+          fontFamily: 'Geist Mono, monospace',
+          fontSize: 11,
+          color: '#1A1712',
+        },
+        backgroundColor: '#FBFAF6',
+        borderColor: '#DED6C7',
+        borderWidth: 1,
+        padding: [4, 8],
+      },
+      xAxis: {
+        type: 'category',
+        data: labels,
+        axisLine: { lineStyle: { color: '#DED6C7' } },
+        axisTick: { show: false },
+        axisLabel: {
+          show: true,
+          interval: 'auto',
+          fontSize: 8,
+          color: '#9A8F7E',
+          fontFamily: 'Geist Mono, monospace',
+        },
+      },
+      yAxis: {
+        type: 'value',
+        show: false,
+      },
+      series: [
+        {
+          name: 'Real',
+          type: 'bar',
+          data: real,
+          barGap: '-100%',
+          itemStyle: {
+            color: 'transparent',
+            borderColor: '#1A1712',
+            borderWidth: 1,
+          },
+          z: 2,
+        },
+        {
+          name: 'Synthetic',
+          type: 'bar',
+          data: synthetic,
+          itemStyle: {
+            color: 'rgba(138, 90, 43, 0.45)', // Brass 45% fill
+            borderColor: '#8A5A2B',
+            borderWidth: 1,
+          },
+          z: 1,
+        },
+      ],
+    }
+  }, [labels, real, synthetic])
+
+  if (!real.length || synthetic.length !== real.length) {
     return (
-      <div>
-        <span className="font-mono text-[11px] text-graphite-soft dark:text-bone">{name}</span>
-        <p className="mt-1 font-mono text-[10px] text-graphite-faint">
-          histogram unavailable for this column
-        </p>
+      <div className="py-2">
+        <span className="font-mono text-[11px] font-medium text-ink">{name}</span>
+        <p className="font-mono text-[10px] text-faint">histogram unavailable</p>
       </div>
     )
   }
 
-  const peak = Math.max(...real, ...synthetic, 1e-9)
-
-  const path = (vals: number[]) =>
-    vals
-      .map((v, i) => {
-        const x = (i / Math.max(1, n - 1)) * w
-        const y = h - (v / peak) * h
-        return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`
-      })
-      .join(' ')
-
-  const area = (vals: number[]) => `${path(vals)} L${w},${h} L0,${h} Z`
-
   return (
-    <div>
-      <div className="mb-1 flex items-baseline justify-between">
-        <span className="font-mono text-[11px] text-graphite-soft dark:text-bone">{name}</span>
-        <span className="font-mono text-[10px] text-graphite-faint">
-          {hist.edges[0].toFixed(0)} – {hist.edges[hist.edges.length - 1].toFixed(0)}
+    <div className="rounded-lg border border-line/70 bg-paper-2/40 p-2">
+      <div className="mb-1 flex items-baseline justify-between font-mono text-[11px]">
+        <span className="font-medium text-ink">{name}</span>
+        <span className="text-[10px] text-faint">
+          {edges[0]?.toFixed(0)} → {edges[edges.length - 1]?.toFixed(0)}
         </span>
       </div>
-      <svg
-        viewBox={`0 0 ${w} ${h}`}
-        className="h-14 w-full"
-        preserveAspectRatio="none"
-        role="img"
-        aria-label={`Distribution of ${name}, real versus synthetic`}
-      >
-        <path d={area(real)} className="fill-proved/15" />
-        <path d={path(real)} className="stroke-proved" fill="none" strokeWidth="1.5" />
-        <path
-          d={path(synthetic)}
-          className="stroke-audited"
-          fill="none"
-          strokeWidth="1.5"
-          strokeDasharray="3 2"
-        />
-      </svg>
-
-      {/* Values outside the real column's range are dropped by the binning, so a curve can
-          legitimately sum to less than 1. Saying so beats letting it read as a shortfall. */}
-      {typeof hist.synthetic_out_of_range === 'number' &&
-        hist.synthetic_out_of_range > 0.005 && (
-          <p className="mt-0.5 font-mono text-[10px] text-audited">
-            {(hist.synthetic_out_of_range * 100).toFixed(1)}% of synthetic values fall
-            outside the real range
-          </p>
-        )}
+      <div className="h-16 w-full">
+        <EChart option={option} className="h-full w-full" />
+      </div>
+      {typeof hist.synthetic_out_of_range === 'number' && hist.synthetic_out_of_range > 0.005 && (
+        <p className="mt-0.5 font-mono text-[9px] text-brass">
+          {(hist.synthetic_out_of_range * 100).toFixed(1)}% outside real range
+        </p>
+      )}
     </div>
   )
 }
 
-export function Marginals({ histograms }: { histograms: Record<string, Histogram> }) {
-  const entries = Object.entries(histograms)
+export function Marginals({
+  histograms,
+  maxColumns = 3,
+  onOpenExplainer,
+}: {
+  histograms: Record<string, Histogram>
+  maxColumns?: number
+  onOpenExplainer?: () => void
+}) {
+  const entries = Object.entries(histograms).slice(0, maxColumns)
   if (!entries.length) return null
 
   return (
-    <section className="panel p-5">
-      <header className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+    <div className="relative rounded-xl border border-line bg-card p-4 shadow-e0">
+      <div className="mb-3 flex items-center justify-between">
         <div>
-          <h3 className="font-display text-xl">Marginal fidelity</h3>
-          <p className="mt-0.5 text-[12px] text-graphite-faint">
-            Per-column distributions on shared bin edges.
-          </p>
+          <div className="flex items-center gap-1.5">
+            <span className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-faint">
+              STATISTICAL FIDELITY
+            </span>
+            <span className="font-sans text-xs font-semibold text-ink">Marginal Distributions</span>
+          </div>
+          <p className="mt-0.5 font-sans text-[11px] text-muted">Real (outline) vs Synthetic (brass)</p>
         </div>
-        <div className="flex items-center gap-4 font-mono text-[10px] text-graphite-faint">
-          <span className="flex items-center gap-1.5">
-            <svg width="16" height="2" aria-hidden="true">
-              <line x1="0" y1="1" x2="16" y2="1" className="stroke-proved" strokeWidth="2" />
+        {onOpenExplainer && (
+          <button
+            type="button"
+            onClick={onOpenExplainer}
+            title="Statistical fidelity and utility definition"
+            className="text-faint hover:text-brass"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            real
-          </span>
-          <span className="flex items-center gap-1.5">
-            <svg width="16" height="2" aria-hidden="true">
-              <line
-                x1="0"
-                y1="1"
-                x2="16"
-                y2="1"
-                className="stroke-audited"
-                strokeWidth="2"
-                strokeDasharray="3 2"
-              />
-            </svg>
-            synthetic
-          </span>
-        </div>
-      </header>
+          </button>
+        )}
+      </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="space-y-2.5">
         {entries.map(([name, hist]) => (
-          <Spark key={name} hist={hist} name={name} />
+          <HistogramSpark key={name} name={name} hist={hist} />
         ))}
       </div>
-    </section>
+    </div>
   )
 }

@@ -67,7 +67,8 @@ export function VerifierModal({
         parsed = JSON.parse(jsonText)
       }
 
-      const res = await api.verifyCertificate(parsed, pk || pubKeyOverride || undefined)
+      const res = await api.verifyCertificate(parsed, pk || pubKeyOverride || parsed.public_key || undefined)
+
       setResult(res)
 
       // Also generate Croissant 1.1 if not already loaded
@@ -217,24 +218,24 @@ export function VerifierModal({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="relative flex max-h-[90vh] w-full max-w-4xl flex-col rounded-lg border border-bone-edge bg-[#FAF9F6] shadow-2xl dark:border-stage-line dark:bg-stage-deep"
+        className="relative flex max-h-[90vh] w-full max-w-4xl flex-col rounded-2xl border border-line bg-card/95 text-ink shadow-2xl backdrop-blur-xl"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-bone-edge p-5 dark:border-stage-line">
+        <div className="flex items-center justify-between border-b border-line p-5">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-proved/10 font-mono text-xs text-proved dark:bg-proved/20 dark:text-proved-lift">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full border border-brass/30 bg-brass/10 font-mono text-xs text-brass">
                 🛡️
               </span>
-              <h2 className="font-display text-xl tracking-tight">Zero-Trust Certificate Verifier</h2>
+              <h2 className="font-display text-2xl tracking-tight text-ink">Zero-Trust Certificate Verifier</h2>
             </div>
-            <p className="mt-1 text-xs text-graphite-faint">
+            <p className="mt-1 text-xs text-muted">
               Independent Ed25519 cryptographic signature, Croissant 1.1 metadata & MIQE 2.0 LoD validator.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-md p-1.5 text-graphite-faint hover:bg-bone-edge/50 hover:text-graphite dark:hover:bg-stage-line dark:hover:text-bone"
+            className="rounded-lg p-1.5 text-muted hover:bg-paper-2 hover:text-ink transition-colors font-mono"
           >
             ✕
           </button>
@@ -243,7 +244,7 @@ export function VerifierModal({
         {/* Content Body */}
         <div className="thin-scroll flex-1 overflow-y-auto p-6 space-y-6">
           {/* Controls Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-bone-edge bg-bone/30 p-3 dark:border-stage-line dark:bg-stage/40">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-paper-2/60 p-3 shadow-xs">
             <div className="flex items-center gap-2">
               <label className="btn-secondary cursor-pointer !px-3 !py-1.5 !text-xs">
                 📁 Upload Sheet / Capsule (.html, .json)
@@ -256,7 +257,7 @@ export function VerifierModal({
               </label>
               {initialSheet && (
                 <button
-                  className="btn-ghost !px-3 !py-1.5 !text-xs"
+                  className="btn-ghost !px-3 !py-1.5 !text-xs text-muted hover:text-ink"
                   onClick={() => {
                     setJsonText(JSON.stringify(initialSheet, null, 2))
                     if (initialSheet.public_key) setPubKeyOverride(initialSheet.public_key)
@@ -277,7 +278,7 @@ export function VerifierModal({
                 {loading ? 'Verifying...' : '⚡ Verify Certificate'}
               </button>
               <button
-                className="btn-secondary !px-4 !py-1.5 !text-xs !border-signal-ok/50 !text-signal-ok hover:!bg-signal-ok/10"
+                className="btn-secondary !px-4 !py-1.5 !text-xs !border-verify/50 !text-verify hover:!bg-verify/10"
                 onClick={handleExportCapsule}
                 disabled={exporting || !jsonText.trim()}
               >
@@ -299,22 +300,22 @@ export function VerifierModal({
                   className={`rounded-md border p-4 ${
                     result.signature_valid
                       ? result.publisher_authenticated
-                        ? 'border-signal-ok/50 bg-signal-ok/[0.04]'
-                        : 'border-signal-warn/50 bg-signal-warn/[0.04]'
-                      : 'border-signal-bad/50 bg-signal-bad/[0.04]'
+                        ? 'border-verify/50 bg-verify/[0.06]'
+                        : 'border-brass/50 bg-brass/[0.06]'
+                      : 'border-seal/50 bg-seal/[0.06]'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-semibold uppercase tracking-wider text-graphite dark:text-bone">
+                    <span className="font-mono text-xs font-semibold uppercase tracking-wider text-ink">
                       Ed25519 Signature
                     </span>
                     <span
                       className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${
                         result.signature_valid
                           ? result.publisher_authenticated
-                            ? 'bg-signal-ok/20 text-signal-ok'
-                            : 'bg-signal-warn/20 text-signal-warn'
-                          : 'bg-signal-bad/20 text-signal-bad'
+                            ? 'bg-verify/20 text-verify'
+                            : 'bg-brass/20 text-brass'
+                          : 'bg-seal/20 text-seal'
                       }`}
                     >
                       {result.signature_valid
@@ -325,7 +326,7 @@ export function VerifierModal({
                     </span>
                   </div>
 
-                  <p className="mt-2 text-xs text-graphite-soft dark:text-bone/80">
+                  <p className="mt-2 text-xs text-muted leading-relaxed">
                     {result.signature_valid
                       ? result.publisher_authenticated
                         ? 'Mathematical proof that this sheet has not been tampered with and was signed by the registered authority.'
@@ -333,23 +334,23 @@ export function VerifierModal({
                       : result.error || 'The cryptographic signature does not verify against this payload.'}
                   </p>
 
-                  <div className="mt-3 space-y-1 font-mono text-[11px] text-graphite-faint">
+                  <div className="mt-3 space-y-1 font-mono text-[11px] text-muted border-t border-line/50 pt-2">
                     <div>
                       Dataset:{' '}
-                      <span className="text-graphite dark:text-bone">
+                      <span className="text-ink font-semibold">
                         {result.details.dataset_name || 'N/A'}
                       </span>{' '}
                       ({result.details.num_rows || 0} rows)
                     </div>
                     <div>
                       Mechanism:{' '}
-                      <span className="text-graphite dark:text-bone">
+                      <span className="text-ink font-semibold">
                         {result.details.mechanism || 'N/A'}
                       </span>
                     </div>
                     <div className="truncate">
                       Ledger Head:{' '}
-                      <span className="text-graphite dark:text-bone">
+                      <span className="text-ink font-semibold">
                         {result.details.ledger_hash || 'N/A'}
                       </span>
                     </div>
@@ -359,7 +360,7 @@ export function VerifierModal({
                 {/* Audit range: could this audit have certified this claim? */}
                 <div className={`rounded-md border p-4 ${RANGE_BOX[result.range_tone]}`}>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-semibold uppercase tracking-wider text-graphite dark:text-bone">
+                    <span className="font-mono text-xs font-semibold uppercase tracking-wider text-ink">
                       Audit range
                     </span>
                     <span
@@ -371,26 +372,26 @@ export function VerifierModal({
                     </span>
                   </div>
 
-                  <p className="mt-2 text-xs text-graphite-soft dark:text-bone/80">
+                  <p className="mt-2 text-xs text-muted leading-relaxed">
                     {result.range_explanation}
                   </p>
 
                   <div className="mt-3 grid grid-cols-3 gap-2 text-center font-mono text-xs">
-                    <div className="rounded bg-bone-edge/30 p-2 dark:bg-stage-line/30">
-                      <div className="text-[10px] text-graphite-faint">Proved ε</div>
-                      <div className="mt-0.5 font-bold text-proved dark:text-proved-lift">
+                    <div className="rounded-lg bg-paper-2 p-2 border border-line/50">
+                      <div className="text-[10px] text-muted">Proved ε</div>
+                      <div className="mt-0.5 font-bold text-ink">
                         {result.details.proved_eps?.toFixed(3) ?? 'N/A'}
                       </div>
                     </div>
-                    <div className="rounded bg-bone-edge/30 p-2 dark:bg-stage-line/30">
-                      <div className="text-[10px] text-graphite-faint">Audited ε̂</div>
-                      <div className="mt-0.5 font-bold text-audited dark:text-audited-lift">
+                    <div className="rounded-lg bg-paper-2 p-2 border border-line/50">
+                      <div className="text-[10px] text-muted">Audited ε̂</div>
+                      <div className="mt-0.5 font-bold text-brass">
                         {result.details.audited_eps?.toFixed(3) ?? 'N/A'}
                       </div>
                     </div>
-                    <div className="rounded bg-bone-edge/30 p-2 dark:bg-stage-line/30">
-                      <div className="text-[10px] text-graphite-faint">Ceiling (m)</div>
-                      <div className="mt-0.5 font-bold text-graphite dark:text-bone">
+                    <div className="rounded-lg bg-paper-2 p-2 border border-line/50">
+                      <div className="text-[10px] text-muted">Ceiling (m)</div>
+                      <div className="mt-0.5 font-bold text-ink">
                         {result.details.audit_ceiling?.toFixed(3) ?? 'N/A'}
                       </div>
                     </div>
@@ -401,14 +402,14 @@ export function VerifierModal({
           </AnimatePresence>
 
           {/* Tab Switcher */}
-          <div className="flex items-center justify-between border-b border-bone-edge pb-2 dark:border-stage-line">
+          <div className="flex items-center justify-between border-b border-line pb-2">
             <div className="flex gap-2">
               <button
                 onClick={() => setActiveTab('sheet')}
                 className={`px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider transition-colors ${
                   activeTab === 'sheet'
-                    ? 'border-b-2 border-proved text-proved dark:text-proved-lift'
-                    : 'text-graphite-faint hover:text-graphite dark:hover:text-bone'
+                    ? 'border-b-2 border-brass text-brass font-bold'
+                    : 'text-muted hover:text-ink'
                 }`}
               >
                 Privacy Data Sheet
@@ -417,8 +418,8 @@ export function VerifierModal({
                 onClick={() => setActiveTab('croissant')}
                 className={`px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider transition-colors ${
                   activeTab === 'croissant'
-                    ? 'border-b-2 border-proved text-proved dark:text-proved-lift'
-                    : 'text-graphite-faint hover:text-graphite dark:hover:text-bone'
+                    ? 'border-b-2 border-brass text-brass font-bold'
+                    : 'text-muted hover:text-ink'
                 }`}
               >
                 MLCommons Croissant 1.1 JSON-LD
@@ -428,7 +429,7 @@ export function VerifierModal({
             {activeTab === 'croissant' && croissantText && (
               <button
                 onClick={copyCroissant}
-                className="btn-ghost !px-2.5 !py-1 !text-2xs"
+                className="btn-ghost !px-2.5 !py-1 !text-2xs text-brass hover:text-ink"
               >
                 {copiedCroissant ? '✓ Copied!' : '📋 Copy JSON-LD'}
               </button>
@@ -443,12 +444,12 @@ export function VerifierModal({
                 value={jsonText}
                 onChange={(e) => setJsonText(e.target.value)}
                 placeholder='Paste PrivacyDataSheet JSON here, or click "Load Current Run Sheet"...'
-                className="w-full rounded-md border border-bone-edge bg-bone-deep/50 p-3 font-mono text-xs leading-relaxed text-graphite focus:border-proved focus:outline-none dark:border-stage-line dark:bg-stage-deep dark:text-bone"
+                className="w-full rounded-xl border border-line bg-paper-2 p-3 font-mono text-xs leading-relaxed text-ink focus:border-brass focus:outline-none"
               />
             </div>
           ) : (
             <div className="space-y-2">
-              <pre className="thin-scroll max-h-72 overflow-auto rounded-md border border-bone-edge bg-bone-deep/50 p-3 font-mono text-xs leading-relaxed text-graphite dark:border-stage-line dark:bg-stage-deep dark:text-bone">
+              <pre className="thin-scroll max-h-72 overflow-auto rounded-xl border border-line bg-paper-2 p-3 font-mono text-xs leading-relaxed text-ink">
                 {croissantText || 'Run a release or verify a Privacy Data Sheet to view Croissant 1.1 JSON-LD specification.'}
               </pre>
             </div>
@@ -456,7 +457,7 @@ export function VerifierModal({
 
           {/* Optional Public Key Override */}
           <div className="space-y-1">
-            <label className="font-mono text-xs text-graphite-faint">
+            <label className="font-mono text-xs text-muted">
               Expected Public Key (Hex 64-char) — Leave blank to verify against sheet's embedded key:
             </label>
             <input
@@ -464,17 +465,17 @@ export function VerifierModal({
               value={pubKeyOverride}
               onChange={(e) => setPubKeyOverride(e.target.value)}
               placeholder="e.g. 7f9a8b1c..."
-              className="w-full rounded-md border border-bone-edge bg-bone-deep/50 px-3 py-1.5 font-mono text-xs text-graphite focus:border-proved focus:outline-none dark:border-stage-line dark:bg-stage-deep dark:text-bone"
+              className="w-full rounded-xl border border-line bg-paper-2 px-3 py-1.5 font-mono text-xs text-ink focus:border-brass focus:outline-none"
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-bone-edge p-4 dark:border-stage-line">
-          <span className="font-mono text-[11px] text-graphite-faint">
+        <div className="flex items-center justify-between border-t border-line p-4">
+          <span className="font-mono text-[11px] text-muted">
             🔒 Fully offline-capable WebCrypto verification. No secret data ever leaves your browser.
           </span>
-          <button className="btn-ghost !px-4 !py-1.5 !text-xs" onClick={onClose}>
+          <button className="btn-ghost !px-4 !py-1.5 !text-xs text-muted hover:text-ink" onClick={onClose}>
             Close
           </button>
         </div>

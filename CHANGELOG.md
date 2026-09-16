@@ -43,12 +43,18 @@ change below is checked against is
 Every fix is pinned by `tests/test_release_boundary.py`. Each fix was reverted in turn, and the
 test that should catch it failed 7 of 7 times.
 
-### Open
+### Fixed — accounting cross-check
 
-- **DP-VAE: the two accountants disagree.** `dp_accounting` 0.94 against autodp 2.45 at 900 rows and
-  9.50 at 3000, independent of the seed, so `run_sweep` refuses the release. Pinned as a strict
-  expected failure; not yet investigated. DP-VAE numbers from `run_cell`, which does not run the
-  cross-check, should not be quoted until it is resolved.
+- **The differential accountant refused correct DP-SGD releases.** `cross_check_spends` rebuilt each
+  charge in autodp without its `sampling_rate`, recomposing DP-VAE's 200 subsampled steps as
+  full-data Gaussians. autodp reported 2.45 and 9.50 against dp_accounting's 0.94 at 900 and 3000
+  rows, and `run_sweep` refused every DP-VAE release. Adding autodp's Poisson amplification did not
+  make it a check: over 40 configurations its bound differed from ours by −68% to +17%, a
+  different theorem rather than a second implementation. A release with a subsampled charge is now
+  reported **`unsupported`**: not blocked, and not called agreement. The charged ε was never below
+  dp_accounting's PLD accountant in 40 of 40 configurations, and that check is pinned in
+  `tests/test_differential_accounting.py`
+  ([`research/accountant_crosscheck/`](research/accountant_crosscheck/README.md)).
 
 - **Zenodo DOI minted** from the GitHub Release `v1.1.0`: concept DOI `10.5281/zenodo.22746910` (all
   versions — cite this) and version DOI `10.5281/zenodo.22746911` (v1.1.0 exactly). This closes the 1.1.0

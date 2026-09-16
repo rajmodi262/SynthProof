@@ -72,23 +72,8 @@ def verify_certificate_endpoint(req: CertificateVerifyRequest):
         "details": {},
     }
 
+    # 1. Extract details and calculate audit range from sheet
     try:
-        # Check signature
-        if pubkey:
-            pk = signing.public_key_from_hex(pubkey)
-            raw_pk = pk.public_bytes(
-                encoding=signing.serialization.Encoding.Raw,
-                format=signing.serialization.PublicFormat.Raw,
-            )
-            results["key_fingerprint"] = hashlib.sha256(raw_pk).hexdigest()[:16]
-            signing.verify_datasheet(sheet, public_key=pk)
-            results["signature_valid"] = True
-            results["publisher_authenticated"] = publisher_authenticated
-        else:
-            results["error"] = "Missing public key for verification."
-
-        # Could this audit have certified this claim? One verdict, shared with the capsule
-        # and the CLI -- see synthproof/audit/ceiling.py for why the old inline check was wrong.
         from synthproof.audit.ceiling import range_verdict
 
         audit_ceiling = float(sheet.get("audit_ceiling") or 0.0)
@@ -117,6 +102,23 @@ def verify_certificate_endpoint(req: CertificateVerifyRequest):
             "num_rows": sheet.get("num_rows"),
             "ledger_hash": sheet.get("ledger_hash"),
         }
+    except Exception:
+        pass
+
+    # 2. Check cryptographic signature
+    try:
+        if pubkey:
+            pk = signing.public_key_from_hex(pubkey)
+            raw_pk = pk.public_bytes(
+                encoding=signing.serialization.Encoding.Raw,
+                format=signing.serialization.PublicFormat.Raw,
+            )
+            results["key_fingerprint"] = hashlib.sha256(raw_pk).hexdigest()[:16]
+            signing.verify_datasheet(sheet, public_key=pk)
+            results["signature_valid"] = True
+            results["publisher_authenticated"] = publisher_authenticated
+        else:
+            results["error"] = "Missing public key for verification."
     except Exception as e:
         results["error"] = str(e)
 

@@ -1,0 +1,56 @@
+[
+  {
+    "n": 900,
+    "charges": [
+      {
+        "name": "laplace",
+        "noise_multiplier": 20.439331,
+        "sampling_rate": null,
+        "steps": 1
+      },
+      {
+        "name": "laplace",
+        "noise_multiplier": 20.439331,
+        "sampling_rate": null,
+        "steps": 1
+      },
+      {
+        "name": "gaussian",
+        "noise_multiplier": 18.042053,
+        "sampling_rate": 0.28444444444444444,
+        "steps": 200
+      }
+    ],
+    "dp_accounting_eps": 0.939791,
+    "autodp_as_crosscheck_does_eps": 3.597449,
+    "autodp_with_poisson_subsampling_eps": 0.939791,
+    "rel_diff_subsampled": 0.0
+  },
+  {
+    "n": 3000,
+    "charges": [
+      {
+        "name": "laplace",
+        "noise_multiplier": 20.439331,
+        "sampling_rate": null,
+        "steps": 1
+      },
+      {
+        "name": "laplace",
+        "noise_multiplier": 20.439331,
+        "sampling_rate": null,
+        "steps": 1
+      },
+      {
+        "name": "gaussian",
+        "noise_multiplier": 5.549316,
+        "sampling_rate": 0.08533333333333333,
+        "steps": 200
+      }
+    ],
+    "dp_accounting_eps": 0.939759,
+    "autodp_as_crosscheck_does_eps": 14.481192,
+    "autodp_with_poisson_subsampling_eps": 0.939724,
+    "rel_diff_subsampled": 3.7e-05
+  }
+]

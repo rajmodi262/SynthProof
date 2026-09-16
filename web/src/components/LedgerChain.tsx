@@ -30,13 +30,17 @@ const ATTACK_OPTIONS: { type: AttackType; label: string; icon: string; blurb: st
   },
 ]
 
+interface LedgerChainProps {
+  ledger: LedgerState | null
+  onRefresh: () => void
+  onOpenBlockExplainer?: (index: number) => void
+}
+
 export function LedgerChain({
   ledger,
   onRefresh,
-}: {
-  ledger: LedgerState | null
-  onRefresh: () => void
-}) {
+  onOpenBlockExplainer,
+}: LedgerChainProps) {
   const [selectedAttack, setSelectedAttack] = useState<AttackType>('modify_eps')
   const [attackResult, setAttackResult] = useState<TamperResult | null>(null)
   const [breakFrom, setBreakFrom] = useState<number | null>(null)
@@ -76,65 +80,84 @@ export function LedgerChain({
     }
   }
 
+  const currentAttackOpt = ATTACK_OPTIONS.find((o) => o.type === selectedAttack)
+
   return (
-    <section className="panel p-5">
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <section className="rounded-xl border border-line bg-card p-6 shadow-e0">
+      {/* Header with section title, measured divider, and live seal chip */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2">
-            <h3 className="font-display text-xl">Privacy Budget Ledger</h3>
-            <span className="rounded-full bg-proved/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-proved dark:bg-proved/20 dark:text-proved-lift">
-              RED-TEAM STUDIO
+          <div className="flex items-center gap-2.5">
+            <h3 className="font-display text-2xl text-ink">The Ledger</h3>
+            <span className="rounded-full border border-brass/30 bg-brass/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-brass">
+              IMMUTABLE CHAIN
             </span>
           </div>
-          <p className="mt-0.5 text-[12px] text-graphite-faint">
-            Every release charged, hash-chained, and Ed25519-signed. Test multi-vector adversarial attacks.
+          <p className="mt-1 font-sans text-xs text-muted">
+            Every release charged, SHA-256 hash-chained, and Ed25519-signed. Tamper-evident spine with live attack simulation.
           </p>
         </div>
+
         <div className="flex items-center gap-2">
+          {/* Status badge - required for component tests */}
           <span
-            className={`flex items-center gap-1.5 rounded-sm border px-2.5 py-1 font-mono text-2xs uppercase tracking-[0.1em] ${
+            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider ${
               verified === null
-                ? 'border-bone-edge text-graphite-faint dark:border-stage-line'
+                ? 'border-line text-faint bg-paper-2'
                 : verified
-                  ? 'border-signal-ok/40 bg-signal-ok/[0.06] text-signal-ok'
-                  : 'border-signal-bad/50 bg-signal-bad/10 text-signal-bad'
+                ? 'border-verify/40 bg-verify-bg text-verify'
+                : 'border-seal/50 bg-seal-bg text-seal'
             }`}
           >
             <span
-              className={`h-1.5 w-1.5 rounded-full ${
+              className={`h-2 w-2 rounded-full ${
                 verified === null
-                  ? 'bg-graphite-faint'
+                  ? 'bg-faint'
                   : verified
-                    ? 'bg-signal-ok'
-                    : 'bg-signal-bad animate-ping'
+                  ? 'bg-verify'
+                  : 'bg-seal animate-ping'
               }`}
             />
-            {verified === null ? 'not checked' : verified ? 'chain integrity: verified' : 'attack detected: chain broken'}
+            {verified === null
+              ? 'not checked'
+              : verified
+              ? 'chain integrity: verified'
+              : 'attack detected: chain broken'}
           </span>
+
           {entries.length > 0 && (
-            <button className="btn-ghost !px-2.5 !py-1 !text-xs" onClick={reset} disabled={busy}>
+            <button
+              onClick={reset}
+              disabled={busy}
+              className="btn-verify !px-3 !py-1 !text-xs"
+            >
               Reset Chain
             </button>
           )}
         </div>
-      </header>
+      </div>
 
-      {/* Red-Team Attack Simulator Toolbar */}
+      {/* Measured divider */}
+      <div className="measured-divider my-4" />
+
+      {/* Tamper Studio Control Strip */}
       {entries.length > 0 && (
-        <div className="mb-4 rounded-md border border-signal-bad/30 bg-signal-bad/[0.03] p-3">
+        <div className="mb-5 rounded-lg border border-line bg-paper-2/60 p-3.5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="font-mono text-xs font-semibold text-graphite dark:text-bone">
-              Adversarial Attack Simulator:
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-muted">
+                Adversarial Attack Simulator:
+              </span>
+            </div>
             <div className="flex flex-wrap gap-1.5">
               {ATTACK_OPTIONS.map((opt) => (
                 <button
                   key={opt.type}
                   onClick={() => setSelectedAttack(opt.type)}
-                  className={`flex items-center gap-1 rounded px-2 py-1 font-mono text-[11px] transition-colors ${
+                  className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 font-mono text-[11px] font-medium transition-all ${
                     selectedAttack === opt.type
-                      ? 'bg-signal-bad text-white shadow-xs'
-                      : 'border border-bone-edge bg-bone/40 text-graphite-faint hover:text-graphite dark:border-stage-line dark:bg-stage/40 dark:hover:text-bone'
+                      ? 'border border-seal bg-seal text-white shadow-xs'
+                      : 'border border-line bg-card text-muted hover:border-seal/60 hover:text-seal'
                   }`}
                 >
                   <span>{opt.icon}</span>
@@ -143,174 +166,156 @@ export function LedgerChain({
               ))}
             </div>
           </div>
-          <div className="mt-2 flex items-center justify-between">
-            <p className="text-[11px] text-graphite-faint">
-              {ATTACK_OPTIONS.find((o) => o.type === selectedAttack)?.blurb}
+
+          <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 border-t border-line/50 pt-2">
+            <p className="max-w-2xl font-sans text-xs text-muted">
+              {currentAttackOpt?.blurb}
             </p>
             <button
               onClick={() => executeAttack()}
               disabled={busy}
-              className="btn-primary !border-signal-bad !bg-signal-bad !px-3 !py-1 !text-xs !text-white hover:!bg-signal-bad/90"
+              className="btn-seal !bg-seal !text-white hover:!bg-[#943834] !px-3.5 !py-1.5 !text-xs font-semibold shadow-xs"
             >
-              {busy ? 'Simulating Attack...' : `Launch ${ATTACK_OPTIONS.find((o) => o.type === selectedAttack)?.icon} Attack`}
+              {busy
+                ? 'Simulating Attack...'
+                : `Launch ${currentAttackOpt?.icon} Attack`}
             </button>
           </div>
         </div>
       )}
 
-      {/* Live Adversarial Telemetry Banner */}
+      {/* Attack Results Banner */}
       <AnimatePresence>
         {attackResult && !attackResult.verified && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mb-4 overflow-hidden rounded-md border border-signal-bad bg-signal-bad/[0.08] p-3 text-xs"
+            className="mb-5 overflow-hidden rounded-lg border border-seal bg-seal-bg/70 p-3.5 text-xs"
           >
             <div className="flex items-center justify-between">
-              <span className="font-mono font-bold uppercase tracking-wider text-signal-bad">
+              <span className="font-mono font-bold uppercase tracking-wider text-seal">
                 🚨 Cryptographic Attack Intercepted
               </span>
-              <span className="font-mono text-[11px] text-signal-bad">
+              <span className="font-mono text-[11px] font-semibold text-seal">
                 Invalidated {attackResult.broken_count} downstream block(s)
               </span>
             </div>
-            <p className="mt-1 font-medium text-graphite dark:text-bone">
+            <p className="mt-1 font-sans font-medium text-ink">
               {attackResult.attack_description}
             </p>
             {attackResult.reason && (
-              <div className="mt-2 rounded bg-black/10 p-2 font-mono text-[11px] text-signal-bad dark:bg-black/30">
+              <div className="mt-2 rounded bg-seal/10 p-2 font-mono text-[11px] text-seal">
                 <strong>Failure Cause:</strong> {attackResult.reason}
               </div>
             )}
-            <p className="mt-2 text-[11px] text-graphite-faint">
+            <p className="mt-1.5 font-sans text-xs text-muted">
               {attackResult.explanation}
             </p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {entries.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-x-6 gap-y-1 border-y border-bone-edge py-2 dark:border-stage-line">
-          <span className="font-mono text-[11px] text-graphite-faint">
-            releases <span className="tnum text-graphite dark:text-bone">{ledger?.count}</span>
-          </span>
-          <span className="font-mono text-[11px] text-graphite-faint">
-            cumulative ε{' '}
-            <span className="tnum text-proved dark:text-proved-lift">
-              {ledger?.total_eps_spent.toFixed(3)}
-            </span>
-          </span>
-          <span className="truncate font-mono text-[11px] text-graphite-faint">
-            head <span className="text-graphite dark:text-bone">{ledger?.head.slice(0, 20)}…</span>
-          </span>
-        </div>
-      )}
-
       {error && (
         <p
           role="alert"
-          className="mb-3 rounded-sm border-l-2 border-signal-bad bg-signal-bad/[0.07] p-2.5 font-mono text-[11px] text-signal-bad"
+          className="mb-4 rounded-md border-l-2 border-seal bg-seal-bg/40 p-2.5 font-mono text-[11px] text-seal"
         >
           {error}
         </p>
       )}
 
+      {/* Horizontal Block Spine (2.5D visual chain) */}
       {!entries.length ? (
-        <p className="py-6 text-center font-mono text-[11px] text-graphite-faint">
-          No spends recorded. Run a release to append the first block.
-        </p>
+        <div className="well flex h-32 items-center justify-center p-6 text-center font-mono text-xs text-muted">
+          No entries recorded. Run a release to append the first cryptographic block.
+        </div>
       ) : (
-        <ol className="thin-scroll max-h-80 space-y-2.5 overflow-y-auto pr-1">
-          {entries.map((e, i) => {
-            const broken = breakFrom !== null && i >= breakFrom
-            const isOrigin = i === breakFrom
-            return (
-              <motion.li
-                key={e.entry_id}
-                layout
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`group relative rounded-md border p-3 transition-all ${
-                  broken
-                    ? isOrigin
-                      ? 'border-signal-bad bg-signal-bad/[0.12] shadow-sm shadow-signal-bad/20 animate-pulse'
-                      : 'border-signal-bad/50 bg-signal-bad/[0.05]'
-                    : 'border-bone-edge/80 bg-white/50 hover:border-proved/40 dark:border-stage-line dark:bg-stage-deep/50'
-                }`}
-              >
-                {/* Visual cryptographic connector between blocks */}
-                {i > 0 && (
-                  <div className="absolute -top-3 left-6 flex h-3 items-center">
-                    <span className={`h-full w-0.5 ${broken ? 'bg-signal-bad dashed' : 'bg-proved/40'}`} />
-                  </div>
-                )}
+        <div className="well thin-scroll overflow-x-auto p-4">
+          <div className="flex items-center gap-3">
+            {entries.map((e, i) => {
+              const isIllustrative = e.run_id?.startsWith('illustrative-') ?? false
+              const isBroken = breakFrom !== null && i >= breakFrom
+              const isOrigin = i === breakFrom
 
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className={`flex h-5 w-5 items-center justify-center rounded-full font-mono text-[10px] font-bold ${
-                      broken ? 'bg-signal-bad text-white' : 'bg-proved/20 text-proved dark:text-proved-lift'
-                    }`}>
-                      {i + 1}
-                    </span>
-                    <span className="truncate font-sans text-[13px] font-medium text-graphite dark:text-bone">
-                      {e.run_id}
-                    </span>
-                  </div>
-                  <span className="tnum font-mono text-xs font-semibold text-proved dark:text-proved-lift">
-                    ε {e.eps_spent.toFixed(3)}
-                  </span>
-                </div>
-
-                <div className="mt-2 flex flex-wrap items-center gap-2 font-mono text-[10px] text-graphite-faint">
-                  <span className="rounded bg-stage-line/30 px-1 py-0.5">
-                    Parent: {e.prev_hash ? e.prev_hash.slice(0, 10) : 'GENESIS'}…
-                  </span>
-                  <span className="text-graphite-faint/60">⚡</span>
-                  <span className={`rounded px-1 py-0.5 ${broken ? 'bg-signal-bad/20 text-signal-bad font-semibold' : 'bg-stage-line/30 text-graphite-soft dark:text-bone'}`}>
-                    Hash: {e.hash.slice(0, 12)}…
-                  </span>
-                  <span className="ml-auto text-[9px] text-graphite-faint">
-                    Seed: {e.seed}
-                  </span>
-                </div>
-
-                <AnimatePresence>
-                  {broken && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="mt-2 rounded bg-signal-bad/10 p-1.5 font-mono text-[10px] text-signal-bad"
+              return (
+                <div key={e.entry_id} className="flex items-center">
+                  {/* Connector link glyph between blocks */}
+                  {i > 0 && (
+                    <div
+                      className={`flex w-6 items-center justify-center transition-all ${
+                        isBroken ? 'text-seal -translate-y-0.5' : 'text-brass'
+                      }`}
+                      title={isBroken ? 'Cryptographic hash chain severed' : 'SHA-256 link valid'}
                     >
-                      {isOrigin
-                        ? `💥 [DIRECT TARGET] ${attackResult?.attack_type || 'manipulated'} — SHA-256 mismatch severing chain`
-                        : '⛓️ [PROPAGATED BREAK] Downstream cryptographic verification failed due to corrupted ancestor'}
-                    </motion.div>
+                      <span className={`text-base font-bold ${isBroken ? 'animate-bounce' : ''}`}>
+                        {isBroken ? '⚡' : '⛓️'}
+                      </span>
+                    </div>
                   )}
-                </AnimatePresence>
 
-                {!broken && (
+                  {/* Individual Block Card */}
                   <button
-                    onClick={() => executeAttack(e.entry_id, i)}
-                    disabled={busy}
-                    aria-label={`Execute attack on ledger block ${i + 1}`}
-                    className="absolute right-2.5 top-2.5 rounded border border-bone-edge/80 bg-white/90 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider text-graphite-faint opacity-0 shadow-xs transition-all hover:border-signal-bad hover:bg-signal-bad hover:text-white focus-visible:opacity-100 group-hover:opacity-100 dark:border-stage-line dark:bg-stage-deep dark:hover:bg-signal-bad"
+                    type="button"
+                    onClick={() => onOpenBlockExplainer?.(i)}
+                    className={`group relative flex h-28 w-44 shrink-0 flex-col justify-between rounded-lg border p-3 text-left transition-all duration-150 focus:outline-none ${
+                      isBroken
+                        ? isOrigin
+                          ? 'border-seal bg-seal-bg ring-1 ring-seal shadow-e1'
+                          : 'border-seal/60 bg-seal-bg/40'
+                        : isIllustrative
+                        ? 'border-line/70 bg-card/60 opacity-80 hover:opacity-100 hover:border-brass/50'
+                        : 'border-line bg-card shadow-e0 hover:-translate-y-0.5 hover:border-brass hover:shadow-e1'
+                    }`}
                   >
-                    🎯 Inject Attack
+                    {/* Illustrative Ribbon or Block Index */}
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] font-semibold text-faint">
+                        #{i + 1}
+                      </span>
+                      {isIllustrative ? (
+                        <span className="rounded bg-paper-2 px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-wider text-muted border border-line">
+                          ILLUSTRATIVE
+                        </span>
+                      ) : (
+                        <span className="font-mono text-[10px] font-semibold text-brass">
+                          ε {e.eps_spent.toFixed(3)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Mechanism & Run ID */}
+                    <div>
+                      <div className="truncate font-sans text-xs font-semibold text-ink">
+                        {e.mechanism_name}
+                      </div>
+                      <div className="truncate font-mono text-[10px] text-muted" title={e.run_id}>
+                        {e.run_id}
+                      </div>
+                    </div>
+
+                    {/* Hashes */}
+                    <div className="border-t border-line/60 pt-1 flex items-center justify-between font-mono text-[9px] text-faint">
+                      <span>Hash: {e.hash.slice(0, 8)}…</span>
+                      <span className="text-brass group-hover:underline">Math →</span>
+                    </div>
                   </button>
-                )}
-              </motion.li>
-            )
-          })}
-        </ol>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       )}
 
-      <p className="mt-4 border-t border-bone-edge pt-3 text-[11px] leading-relaxed text-graphite-faint dark:border-stage-line">
-        SynthProof uses SHA-256 Merkle chaining and signed checkpoint heads (<span className="font-mono">ledger_head</span>).
-        Select an attack mode above to see how tampering with spends, truncating history, or corrupting signatures is
-        immediately detected by independent zero-trust auditors.
-      </p>
+      {/* Footer explanation */}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-muted">
+        <span>
+          Total Releases: <strong className="text-ink font-sans">{ledger?.count ?? 0}</strong> · Total Spent: <strong className="text-brass">Σε {ledger?.total_eps_spent.toFixed(2) ?? '0.00'}</strong>
+        </span>
+        <span className="text-faint">
+          Tip Hash: {ledger?.head ? ledger.head.slice(0, 24) + '…' : '—'}
+        </span>
+      </div>
     </section>
   )
 }

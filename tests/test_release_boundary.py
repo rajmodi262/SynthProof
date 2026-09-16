@@ -237,14 +237,11 @@ def test_every_mechanism_runs_with_a_full_width_seed(mechanism):
     assert res["proved_eps"] > 0
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="OPEN (2026-09-14): for DP-VAE the two accountants disagree -- dp_accounting 0.94 vs "
-    "autodp 2.45 at 900 rows and 9.50 at 3000, with seeds 3 and 2**63-1 alike -- so run_sweep "
-    "refuses the release. Not caused by the release-boundary change; under investigation. Strict, "
-    "so resolving it fails this marker and forces the finding to be written up.",
-)
 def test_a_dpvae_release_passes_the_differential_accountant():
+    """REGRESSION. The cross-check recomposed DP-SGD without Poisson subsampling, so autodp
+    reported 2.45-9.50 against a correct 0.94 and `run_sweep` refused every DP-VAE release. A
+    subsampled release is now reported as not cross-checked, which does not block it.
+    research/accountant_crosscheck/README.md."""
     from synthproof.accounting.differential import AccountantDisagreement
 
     try:

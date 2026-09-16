@@ -98,31 +98,31 @@ export function GuidedTourModal({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="relative flex max-h-[90vh] w-full max-w-3xl flex-col rounded-lg border border-bone-edge bg-[#FAF9F6] shadow-2xl dark:border-stage-line dark:bg-stage-deep"
+        className="relative flex max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl border border-line bg-card/95 text-ink shadow-2xl backdrop-blur-xl"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-bone-edge p-5 dark:border-stage-line">
+        <div className="flex items-center justify-between border-b border-line p-5">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-proved/15 text-sm">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full border border-brass/30 bg-brass/10 text-sm">
                 🎯
               </span>
-              <h2 className="font-display text-2xl tracking-tight">SynthProof Prototype Guided Tour</h2>
+              <h2 className="font-display text-2xl tracking-tight text-ink">SynthProof Prototype Guided Tour</h2>
             </div>
-            <p className="mt-1 text-xs text-graphite-faint">
+            <p className="mt-1 text-xs text-muted">
               An interactive walkthrough demonstrating the full differential privacy & cryptographic verification system.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-md p-1.5 text-graphite-faint hover:bg-bone-edge/50 hover:text-graphite dark:hover:bg-stage-line dark:hover:text-bone"
+            className="rounded-lg p-1.5 text-muted hover:bg-paper-2 hover:text-ink transition-colors font-mono"
           >
             ✕
           </button>
         </div>
 
         {/* Stepper Dots Bar */}
-        <div className="flex items-center justify-between border-b border-bone-edge/60 bg-bone/20 px-6 py-2.5 dark:border-stage-line/60 dark:bg-stage/20">
+        <div className="flex items-center justify-between border-b border-line/60 bg-paper-2/40 px-6 py-2.5">
           <div className="flex items-center gap-2">
             {TOUR_STEPS.map((s, idx) => (
               <button
@@ -130,10 +130,10 @@ export function GuidedTourModal({
                 onClick={() => setCurrentStepIdx(idx)}
                 className={`flex h-6 items-center gap-1.5 rounded-full px-2.5 font-mono text-[10px] font-semibold transition-colors ${
                   idx === currentStepIdx
-                    ? 'bg-proved text-white shadow-xs'
+                    ? 'bg-brass text-white shadow-xs'
                     : idx < currentStepIdx
-                      ? 'bg-signal-ok/20 text-signal-ok hover:bg-signal-ok/30'
-                      : 'bg-bone-edge text-graphite-faint hover:text-graphite dark:bg-stage-line dark:hover:text-bone'
+                      ? 'bg-verify/20 text-verify hover:bg-verify/30'
+                      : 'bg-card border border-line text-muted hover:text-ink'
                 }`}
               >
                 <span>{s.step}</span>
@@ -141,7 +141,7 @@ export function GuidedTourModal({
               </button>
             ))}
           </div>
-          <span className="font-mono text-2xs text-graphite-faint">
+          <span className="font-mono text-xs text-muted">
             Step {currentStepIdx + 1} of {TOUR_STEPS.length}
           </span>
         </div>
@@ -158,7 +158,7 @@ export function GuidedTourModal({
               className="space-y-4"
             >
               <div className="flex items-center gap-2">
-                <span className="rounded bg-proved/15 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-proved dark:text-proved-lift">
+                <span className="rounded border border-brass/40 bg-brass/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-brass">
                   {step.badge}
                 </span>
               </div>
@@ -166,24 +166,24 @@ export function GuidedTourModal({
               <div className="flex items-start gap-3">
                 <span className="text-3xl">{step.icon}</span>
                 <div>
-                  <h3 className="font-display text-xl tracking-tight text-graphite dark:text-bone">
+                  <h3 className="font-display text-xl tracking-tight text-ink">
                     {step.title}
                   </h3>
-                  <p className="mt-1.5 text-xs leading-relaxed text-graphite-soft dark:text-bone/80">
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted">
                     {step.description}
                   </p>
                 </div>
               </div>
 
               {/* Highlights Box */}
-              <div className="rounded-md border border-bone-edge bg-bone-deep/40 p-4 dark:border-stage-line dark:bg-stage/40">
-                <h4 className="font-mono text-2xs font-semibold uppercase tracking-wider text-graphite-faint">
+              <div className="rounded-xl border border-line bg-paper-2/50 p-4 shadow-xs">
+                <h4 className="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted">
                   Key Technical Capabilities
                 </h4>
                 <ul className="mt-2 space-y-2">
                   {step.highlights.map((h, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-graphite dark:text-bone">
-                      <span className="mt-0.5 text-proved dark:text-proved-lift">✦</span>
+                    <li key={i} className="flex items-start gap-2 text-xs text-ink">
+                      <span className="mt-0.5 text-brass">✦</span>
                       <span>{h}</span>
                     </li>
                   ))}
@@ -191,16 +191,16 @@ export function GuidedTourModal({
               </div>
 
               {/* Call to Action Banner */}
-              <div className="rounded-md border border-signal-ok/30 bg-signal-ok/[0.04] p-3 text-xs">
-                <span className="font-mono font-bold text-signal-ok">How to try it: </span>
-                <span className="text-graphite dark:text-bone">{step.callToAction}</span>
+              <div className="rounded-xl border border-verify/30 bg-verify/[0.04] p-3 text-xs">
+                <span className="font-mono font-bold text-verify">How to try it: </span>
+                <span className="text-ink">{step.callToAction}</span>
               </div>
             </motion.div>
           </AnimatePresence>
         </div>
 
         {/* Footer Navigation */}
-        <div className="flex items-center justify-between border-t border-bone-edge p-4 dark:border-stage-line">
+        <div className="flex items-center justify-between border-t border-line p-4">
           <button
             onClick={() => setCurrentStepIdx((i) => Math.max(0, i - 1))}
             disabled={currentStepIdx === 0}
@@ -216,7 +216,7 @@ export function GuidedTourModal({
                   onClose()
                   onOpenVerifier()
                 }}
-                className="btn-primary !border-proved !bg-proved !px-3 !py-1.5 !text-xs !text-white"
+                className="btn-primary !border-brass !bg-brass !px-3 !py-1.5 !text-xs !text-white"
               >
                 🛡️ Open Zero-Trust Verifier
               </button>
@@ -232,7 +232,7 @@ export function GuidedTourModal({
             ) : (
               <button
                 onClick={onClose}
-                className="btn-ghost !px-3 !py-1.5 !text-xs"
+                className="btn-ghost !px-3 !py-1.5 !text-xs text-muted hover:text-ink"
               >
                 Done / Explore Console
               </button>

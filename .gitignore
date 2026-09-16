@@ -98,3 +98,7 @@ web/.cache/
 # demo fixtures and keys, rebuildable with `python -m scripts.setup_demo`
 demo/
 .demo_*.log
+
+# Re-fetchable PDF research corpora (kept on disk, out of git to avoid ~171MB bloat)
+research/papers_107_corpus/
+research/papers_58_curated/

@@ -228,12 +228,12 @@ class PrivacyDataSheet:
         """Canonical bytes covered by the signature.
 
         Everything except the signature itself and the public key, serialised with sorted
-        keys so the same sheet always produces the same bytes.
+        keys and normalized whole floats so the same sheet always produces the same bytes
+        even when roundtripped across JavaScript and Python runtimes.
         """
-        d = self.to_dict()
-        d.pop("signature", None)
-        d.pop("public_key", None)
-        return json.dumps(d, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        from synthproof.ledger.signing import canonical_sheet_payload
+
+        return canonical_sheet_payload(self.to_dict())
 
 
 # What differential privacy does NOT cover. Stated in the sheet because a reader who sees only

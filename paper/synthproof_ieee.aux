@@ -1,0 +1,94 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{stadler2022,annamalai2024}
+\citation{dwork2014,dwork2006}
+\citation{dwork2014,dodis2012,garfinkel2020}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{section.1}\protected@file@percent }
+\citation{dwork2014,dwork2006}
+\citation{croissant}
+\citation{dibia2026}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Background and Threat Model}{2}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Differential privacy over internal randomness}{2}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}The release artefact and the adversary}{2}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}The Release Boundary}{2}{section.3}\protected@file@percent }
+\newlabel{sec:boundary}{{III}{2}{The Release Boundary}{section.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Seed replay: exact-match count over 15 releases ($\varepsilon {=}1.0$).}}{2}{table.1}\protected@file@percent }
+\newlabel{tab:replay}{{I}{2}{Seed replay: exact-match count over 15 releases ($\eps {=}1.0$)}{table.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {IV}The Seed-Replay Vulnerability}{2}{section.4}\protected@file@percent }
+\newlabel{sec:seed}{{IV}{2}{The Seed-Replay Vulnerability}{section.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {IV-}0a}Measurement}{2}{paragraph.4.0.0.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {IV-}0b}Fix}{2}{paragraph.4.0.0.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {V}Standards Gap Analysis}{2}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VI}\texttt  {\relax \fontsize  {9}{10pt}\selectfont  boundary-audit}: A Static, Data-Blind Linter}{2}{section.6}\protected@file@percent }
+\citation{abowd2022}
+\citation{ganev_domain}
+\citation{ganev_discrete}
+\citation{ganev_smote}
+\citation{mohapatra2024}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces The pipeline brackets the mechanism. Differential privacy accounts only for the mechanism (centre), yet a real deployment can leak in two unaccounted places: the preprocessing step before it and the released artefact after it. This paper audits both.}}{3}{figure.1}\protected@file@percent }
+\newlabel{fig:pipeline}{{1}{3}{The pipeline brackets the mechanism. Differential privacy accounts only for the mechanism (centre), yet a real deployment can leak in two unaccounted places: the preprocessing step before it and the released artefact after it. This paper audits both}{figure.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Seed replay. Holding the published seed $s$, the adversary rebuilds the release for both candidate tables; exactly one reproduces $R$, deciding membership with no statistical uncertainty.}}{3}{figure.2}\protected@file@percent }
+\newlabel{fig:replay}{{2}{3}{Seed replay. Holding the published seed $s$, the adversary rebuilds the release for both candidate tables; exactly one reproduces $R$, deciding membership with no statistical uncertainty}{figure.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Can the standard express the property? Y/\,$\sim $\,/N.}}{3}{table.2}\protected@file@percent }
+\newlabel{tab:gap}{{II}{3}{Can the standard express the property? Y/\,$\sim $\,/N}{table.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {VI-}0a}The asymmetry principle}{3}{paragraph.6.0.0.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Real DP releases: parameters documented vs.\ artefact safety.}}{3}{table.3}\protected@file@percent }
+\newlabel{tab:cases}{{III}{3}{Real DP releases: parameters documented vs.\ artefact safety}{table.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Case Study: Real DP Releases}{3}{section.7}\protected@file@percent }
+\newlabel{sec:cases}{{VII}{3}{Case Study: Real DP Releases}{section.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VIII}Auditing Before the Mechanism: Missing-Data Handling}{3}{section.8}\protected@file@percent }
+\newlabel{sec:imp}{{VIII}{3}{Auditing Before the Mechanism: Missing-Data Handling}{section.8}{}}
+\citation{dibia2026}
+\citation{miqe2025}
+\citation{annamalai2024,cebere2026}
+\citation{stadler2022}
+\citation{croissant}
+\citation{gebru2021}
+\citation{mitchell2019}
+\citation{dibia2026}
+\citation{garfinkel2020,mironov2012}
+\citation{ganev_domain,ganev_discrete,ganev_smote}
+\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Missing-data audit: categorical-aware MIA AUC (member vs.\ non-member), UCI Adult, native missingness, $\varepsilon {=}1$, $8$ seeds. All arms overlap; none reaches the verbatim-leak level.}}{4}{table.4}\protected@file@percent }
+\newlabel{tab:imp}{{IV}{4}{Missing-data audit: categorical-aware MIA AUC (member vs.\ non-member), UCI Adult, native missingness, $\eps {=}1$, $8$ seeds. All arms overlap; none reaches the verbatim-leak level}{table.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {VIII-}0a}Design}{4}{paragraph.8.0.0.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {VIII-}0b}The instrument can see a leak}{4}{paragraph.8.0.0.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {VIII-}0c}Result}{4}{paragraph.8.0.0.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {VIII-}0d}Honest scope}{4}{paragraph.8.0.0.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Missing-data audit (Independent, $\varepsilon {=}1$, native). Every handling arm (A4c $=$ A4 DP-charged) sits at the private-null floor, far below the level at which the sanity-gated auditor resolves a verbatim leak. Uncharged arms do not exceed their charged counterparts.}}{4}{figure.3}\protected@file@percent }
+\newlabel{fig:imp}{{3}{4}{Missing-data audit (Independent, $\eps {=}1$, native). Every handling arm (A4c $=$ A4 DP-charged) sits at the private-null floor, far below the level at which the sanity-gated auditor resolves a verbatim leak. Uncharged arms do not exceed their charged counterparts}{figure.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {IX}The Signed Privacy Data Sheet}{4}{section.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {X}Related Work}{4}{section.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {XI}Positioning and Novelty}{4}{section.11}\protected@file@percent }
+\newlabel{sec:novelty}{{XI}{4}{Positioning and Novelty}{section.11}{}}
+\citation{annamalai2024,cebere2026}
+\citation{stadler2022}
+\citation{croissant,gebru2021}
+\citation{dibia2026}
+\citation{ganev_domain,ganev_smote}
+\bibcite{dwork2014}{1}
+\bibcite{dwork2006}{2}
+\bibcite{dodis2012}{3}
+\bibcite{garfinkel2020}{4}
+\bibcite{mironov2012}{5}
+\bibcite{dibia2026}{6}
+\bibcite{croissant}{7}
+\bibcite{gebru2021}{8}
+\bibcite{mitchell2019}{9}
+\bibcite{stadler2022}{10}
+\bibcite{annamalai2024}{11}
+\bibcite{cebere2026}{12}
+\bibcite{abowd2022}{13}
+\bibcite{miqe2025}{14}
+\bibcite{ganev_domain}{15}
+\bibcite{ganev_discrete}{16}
+\bibcite{ganev_smote}{17}
+\bibcite{mohapatra2024}{18}
+\@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces Positioning against adjacent work. ``Blind'' $=$ auditable from the published artefact alone (no data/code); ``M/C'' $=$ machine-checkable; ``Sig.'' $=$ signed/tamper-evident.}}{5}{table.5}\protected@file@percent }
+\newlabel{tab:novelty}{{V}{5}{Positioning against adjacent work. ``Blind'' $=$ auditable from the published artefact alone (no data/code); ``M/C'' $=$ machine-checkable; ``Sig.'' $=$ signed/tamper-evident}{table.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {XII}Limitations}{5}{section.12}\protected@file@percent }
+\newlabel{sec:limits}{{XII}{5}{Limitations}{section.12}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {XIII}Conclusion}{5}{section.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{5}{section*.2}\protected@file@percent }
+\gdef \@abspage@last{5}

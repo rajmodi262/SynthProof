@@ -199,3 +199,65 @@ def test_the_verdict_is_serialisable_and_therefore_signable():
     with pytest.raises(FrozenInstanceError):
         a.verdict = "agree"  # type: ignore[misc]
     assert replace(a, verdict="under_report").blocks_release
+
+
+# --------------------------------------------------------------- Poisson subsampling
+
+
+_SUBSAMPLED = [
+    (1.1, 0.01, 1000),  # a standard DP-SGD setting
+    (5.549316, 0.08533333333333333, 200),  # DP-VAE's own charge at 3000 rows
+    (18.042053, 0.28444444444444444, 200),  # and at 900 rows
+]
+
+
+def _charged(noise_multiplier, q, steps):
+    from synthproof.accounting.accountant import Accountant
+
+    acc = Accountant(budget_eps=1e9, budget_delta=1e-5)
+    acc.charge(
+        MechanismSpec(
+            name="gaussian",
+            sensitivity=1.0,
+            noise_scale=noise_multiplier,
+            sampling_rate=q,
+            steps=steps,
+        )
+    )
+    return acc
+
+
+@pytest.mark.parametrize("noise_multiplier,q,steps", _SUBSAMPLED)
+def test_a_subsampled_release_is_reported_unchecked_never_refused_or_agreed(
+    noise_multiplier, q, steps
+):
+    """REGRESSION, in both directions.
+
+    The cross-check dropped `sampling_rate`, recomposed DP-SGD as full-data Gaussians, and refused
+    correctly accounted DP-VAE releases. Adding autodp's amplification did not rescue it: the two
+    subsampling bounds differ by -68% to +17% across a 40-configuration grid, and the first case
+    here was still refused at a 0.8% gap. So a subsampled release is `unsupported`: never blocking,
+    and never reported as agreement. research/accountant_crosscheck/README.md.
+    """
+    agreement = cross_check_spends(_charged(noise_multiplier, q, steps).spends, 1e-5)
+    assert agreement.verdict == "unsupported", agreement.detail
+    assert not agreement.blocks_release
+    assert "NOT independently" in agreement.detail
+
+
+@pytest.mark.parametrize("noise_multiplier,q,steps", _SUBSAMPLED)
+def test_the_charged_subsampled_epsilon_is_never_below_the_pld_accountant(
+    noise_multiplier, q, steps
+):
+    """What remains checkable once autodp is out. dp_accounting's PLD accountant composes privacy
+    loss distributions rather than Renyi divergences and gives a tighter epsilon; a charged RDP
+    epsilon below it would be an under-report. None of 40 grid configurations was."""
+    from dp_accounting import dp_event
+    from dp_accounting.pld import pld_privacy_accountant
+
+    charged = float(_charged(noise_multiplier, q, steps).spends[-1].computed_eps)
+    pld = pld_privacy_accountant.PLDAccountant()
+    pld.compose(
+        dp_event.PoissonSampledDpEvent(q, dp_event.GaussianDpEvent(noise_multiplier)), steps
+    )
+    assert charged >= float(pld.get_epsilon(1e-5))

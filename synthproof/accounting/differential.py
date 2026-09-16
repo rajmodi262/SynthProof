@@ -245,6 +245,32 @@ def cross_check_spends(
             ),
         )
 
+    # Poisson-subsampled charges are NOT cross-checked, and the verdict says so. Until
+    # 2026-09-14 this function dropped `sampling_rate` and recomposed every DP-SGD step as a
+    # Gaussian on the full data, so autodp reported 3.60 and 14.48 against a correct 0.94 and
+    # DP-VAE releases were refused. Applying autodp's amplification does not make it a check: its
+    # subsampling bound is a different theorem from dp_accounting's, and over a 40-configuration
+    # grid the two differed by -68% to +17%
+    # (research/accountant_crosscheck/subsampled_gaussian_grid.json), so neither a tolerance nor
+    # the direction of a gap means anything. On the same grid the charged epsilon was never below
+    # dp_accounting's PLD accountant (0 of 40), which tests/test_differential_accounting.py pins.
+    subsampled = [s for s in specs if s.sampling_rate is not None and s.sampling_rate < 1.0]
+    if subsampled:
+        return AccountantAgreement(
+            primary="dp_accounting",
+            primary_epsilon=ours,
+            secondary="autodp",
+            secondary_epsilon=None,
+            relative_difference=None,
+            tolerance=tolerance,
+            verdict="unsupported",
+            detail=(
+                f"{len(subsampled)} of {len(specs)} charges are Poisson-subsampled, and autodp "
+                "bounds subsampling with a different theorem, so this release was NOT "
+                "independently cross-checked. The epsilon is unaffected; the assurance is weaker."
+            ),
+        )
+
     try:
         from autodp.transformer_zoo import Composition
     except ImportError:

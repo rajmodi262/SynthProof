@@ -1,28 +1,58 @@
 /** @type {import('tailwindcss').Config} */
 
-// The two accents are not decoration: `proved` is the formal upper bound and `audited` is
-// the empirical lower bound. The distance between them is what this project measures, so
-// the palette encodes the thesis rather than illustrating it.
+function withOpacity(variableName) {
+  return ({ opacityValue }) => {
+    if (opacityValue !== undefined) {
+      return `rgba(var(${variableName}), ${opacityValue})`
+    }
+    return `rgb(var(${variableName}))`
+  }
+}
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
-  darkMode: 'class',
+  darkMode: ['class', '[data-theme="dark"]'],
   theme: {
     extend: {
       colors: {
-        bone: { DEFAULT: '#F0EFEA', deep: '#E4E2DA', edge: '#D2CFC4' },
-        graphite: { DEFAULT: '#22242E', soft: '#4A4D5C', faint: '#7C8093' },
-        stage: { DEFAULT: '#0C0D12', deep: '#07080B', line: '#1F222E' },
-        proved: { DEFAULT: '#4F46E5', lift: '#818CF8', wash: '#EEF2FF' },
-        audited: { DEFAULT: '#D97706', lift: '#FBBF24', wash: '#FFFBEB' },
-        signal: { ok: '#10B981', warn: '#F59E0B', bad: '#EF4444' },
-        cyber: {
-          neon: '#06B6D4',
-          violet: '#8B5CF6',
-          pink: '#EC4899',
-          amber: '#F59E0B',
-          emerald: '#10B981',
-          grid: 'rgba(99, 102, 241, 0.08)',
+        paper: {
+          DEFAULT: 'var(--paper)',
+          2: 'var(--paper-2)',
         },
+        card: {
+          DEFAULT: 'var(--card)',
+        },
+        ink: {
+          DEFAULT: withOpacity('--ink-rgb'),
+        },
+        muted: {
+          DEFAULT: withOpacity('--muted-rgb'),
+        },
+        faint: {
+          DEFAULT: withOpacity('--faint-rgb'),
+        },
+        line: {
+          DEFAULT: withOpacity('--line-rgb'),
+        },
+        brass: {
+          DEFAULT: withOpacity('--brass-rgb'),
+          deep: 'var(--brass-deep)',
+        },
+        seal: {
+          DEFAULT: withOpacity('--seal-rgb'),
+          bg: 'var(--seal-bg)',
+        },
+        verify: {
+          DEFAULT: withOpacity('--verify-rgb'),
+          bg: 'var(--verify-bg)',
+        },
+        // Backward compatibility mappings for test suite and legacy components
+        bone: { DEFAULT: 'var(--paper)', deep: 'var(--paper-2)', edge: 'var(--line)' },
+        graphite: { DEFAULT: withOpacity('--ink-rgb'), soft: withOpacity('--muted-rgb'), faint: withOpacity('--faint-rgb') },
+        stage: { DEFAULT: 'var(--paper-2)', deep: 'var(--paper)', line: 'var(--line)' },
+        proved: { DEFAULT: withOpacity('--brass-rgb'), lift: withOpacity('--brass-rgb'), wash: 'var(--paper-2)' },
+        audited: { DEFAULT: withOpacity('--brass-rgb'), lift: withOpacity('--brass-rgb'), wash: 'var(--paper-2)' },
+        signal: { ok: withOpacity('--verify-rgb'), warn: '#D97706', bad: withOpacity('--seal-rgb') },
       },
       fontFamily: {
         display: ['"Instrument Serif"', 'Georgia', 'serif'],
@@ -32,42 +62,34 @@ export default {
       fontSize: {
         '2xs': ['0.6875rem', { lineHeight: '1rem', letterSpacing: '0.08em' }],
       },
+      borderRadius: {
+        'sm': '4px',
+        'md': '8px',
+        'lg': '12px',
+        'xl': '16px',
+        'pill': '999px',
+      },
       boxShadow: {
-        inset: 'inset 0 1px 3px rgba(0,0,0,0.65), inset 0 0 0 1px rgba(255,255,255,0.06)',
-        panel: '0 4px 20px -2px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.05)',
-        glowProved: '0 0 25px -4px rgba(79, 70, 229, 0.45)',
-        glowAudited: '0 0 25px -4px rgba(217, 119, 6, 0.45)',
-        glowNeon: '0 0 25px -4px rgba(6, 182, 212, 0.45)',
-        glowBad: '0 0 25px -4px rgba(239, 68, 68, 0.45)',
+        e0: 'var(--shadow-e0)',
+        e1: 'var(--shadow-e1)',
+        e2: 'var(--shadow-e2)',
+        inset: 'var(--shadow-inset)',
+        brass: 'var(--shadow-brass)',
       },
-      keyframes: {
-        sweep: { '0%': { transform: 'translateX(-100%)' }, '100%': { transform: 'translateX(300%)' } },
-        blink: { '0%,100%': { opacity: '1' }, '50%': { opacity: '0.25' } },
-        laserScan: {
-          '0%': { transform: 'translateY(-100%)', opacity: '0' },
-          '15%': { opacity: '0.8' },
-          '85%': { opacity: '0.8' },
-          '100%': { transform: 'translateY(100%)', opacity: '0' },
-        },
-        pulseGlow: {
-          '0%, 100%': { opacity: '0.6', transform: 'scale(1)' },
-          '50%': { opacity: '1', transform: 'scale(1.04)' },
-        },
-        glitch: {
-          '0%': { transform: 'translate(0)' },
-          '20%': { transform: 'translate(-2px, 2px)' },
-          '40%': { transform: 'translate(-2px, -2px)' },
-          '60%': { transform: 'translate(2px, 2px)' },
-          '80%': { transform: 'translate(2px, -2px)' },
-          '100%': { transform: 'translate(0)' },
-        },
-      },
-      animation: {
-        sweep: 'sweep 1.6s cubic-bezier(0.4,0,0.2,1) infinite',
-        blink: 'blink 1.4s ease-in-out infinite',
-        laserScan: 'laserScan 3s ease-in-out infinite',
-        pulseGlow: 'pulseGlow 2.5s ease-in-out infinite',
-        glitch: 'glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both',
+      spacing: {
+        '0': '0px',
+        '1': '4px',
+        '2': '8px',
+        '3': '12px',
+        '4': '16px',
+        '5': '20px',
+        '6': '24px',
+        '8': '32px',
+        '10': '40px',
+        '12': '48px',
+        '16': '64px',
+        '20': '80px',
+        '24': '96px',
       },
     },
   },

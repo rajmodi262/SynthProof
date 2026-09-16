@@ -16,20 +16,20 @@
   "config_hash": "3b31f0db82aa077d",
   "metrics": {
     "proved_eps": 0.384903681553028,
-    "audited_eps": 0.008224175881724185,
-    "audit_p": 0.04623049053646187,
+    "audited_eps": 0.0,
+    "audit_p": 0.12253041651147285,
     "tstr_f1": 0.4693619709412508,
-    "marginal_w1": 2.927108126045866,
+    "marginal_w1": 2.952385009379328,
     "trtr_f1": 0.5894659674054024,
-    "mia_auc": 0.50013125,
-    "domias_auc": 0.48771875000000003,
-    "domias_tpr_at_1pct": 0.015,
+    "mia_auc": 0.50784375,
+    "domias_auc": 0.49804375,
+    "domias_tpr_at_1pct": 0.0175,
     "singling_out_risk": 0.0,
     "linkability_rate": 0.0,
     "linkability_excess": 0.0,
     "attr_inference_accuracy": 0.885,
     "attr_leakage_vs_conditional": -0.11499999999999999,
-    "correlation_error": 0.060267383088357024,
+    "correlation_error": 0.04343654842650938,
     "reference": "fit_split",
     "auditor": "one_run",
     "audit_ceiling": 2.9720875578943553,
@@ -37,5 +37,5 @@
     "canary_fraction": 0.0
   },
   "completed": true,
-  "version": 1
+  "version": 2
 }

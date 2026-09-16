@@ -1,15 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { STAGE_ORDER, type StageEvent, type StageName } from '@/types'
 
-/**
- * The pipeline, stage by stage, as the server finishes each one.
- *
- * These arrive over SSE from the real `run_cell` callback, so a stage appears when it has
- * genuinely completed rather than on a timer. That matters here more than it usually would:
- * the argument this project makes is that nothing reads the sensitive table without charging
- * the accountant, and this log is where a viewer can watch that happen.
- */
-
 const STAGE_LABELS: Record<StageName, string> = {
   split: 'Split fit / holdout',
   budget: 'Allocate budget',
@@ -24,15 +15,6 @@ const STAGE_LABELS: Record<StageName, string> = {
   attack_domias: 'Density-ratio attack (DOMIAS)',
 }
 
-/**
- * Whether a stage actually charged the accountant, read from the stage payload.
- *
- * This was a hardcoded `Set(['profile', 'fit'])`. That is a client-side assertion about
- * privacy accounting — the one class of claim this project exists to stop anyone making
- * without evidence. If a future stage started charging, or `profile` stopped, the badge
- * would keep saying whatever the constant said. The server reports `eps_spent`, so the
- * badge is derived from a rise in it rather than from a guess.
- */
 function chargedAmount(e: StageEvent, previousSpend: number): number | null {
   const spend = e.eps_spent
   if (typeof spend !== 'number') return null
@@ -41,9 +23,6 @@ function chargedAmount(e: StageEvent, previousSpend: number): number | null {
 }
 
 function summarise(e: StageEvent): string {
-  // Stage payloads are open-ended (`[key: string]: unknown`), so every field is narrowed
-  // before use rather than trusted. A missing field renders as an em dash instead of
-  // "undefined" leaking into the console.
   const n = (k: string, d = 3): string => {
     const v = e[k]
     return typeof v === 'number' ? v.toFixed(d) : '—'
@@ -92,7 +71,6 @@ export function PipelineLog({
   const seen = new Set(stages.map((s) => s.stage))
   const nextPending = STAGE_ORDER.find((s) => !seen.has(s))
 
-  // Running spend, so each stage's badge reflects what it actually cost.
   let runningSpend = 0
   const charges = stages.map((s) => {
     const delta = chargedAmount(s, runningSpend)
@@ -101,21 +79,24 @@ export function PipelineLog({
   })
 
   return (
-    <div className="display flex h-full flex-col p-5">
-      <div className="mb-4 flex items-center justify-between">
-        <span className="label text-graphite-faint">Pipeline</span>
+    <div className="relative flex h-full flex-col rounded-xl border border-line bg-card p-4 shadow-e0">
+      <div className="mb-3 flex items-center justify-between border-b border-line pb-2">
+        <div className="flex items-center gap-1.5">
+          <span className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-faint">
+            AUDIT TIMELINE
+          </span>
+          <span className="font-sans text-xs font-semibold text-ink">Streamed Execution</span>
+        </div>
         {running && (
-          <span className="flex items-center gap-1.5 font-mono text-2xs uppercase tracking-[0.12em] text-audited-lift">
-            <span className="h-1.5 w-1.5 animate-blink rounded-full bg-audited-lift" />
-            running
+          <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brass font-medium">
+            <span className="h-1.5 w-1.5 rounded-full bg-brass animate-pulse" />
+            Executing
           </span>
         )}
       </div>
 
-      {/* The log updates as the run streams. Without a live region a screen-reader user
-          gets silence for the whole run and then a finished page. */}
       <ol
-        className="thin-scroll flex-1 space-y-0 overflow-y-auto"
+        className="thin-scroll flex-1 space-y-0 overflow-y-auto pr-1"
         aria-live="polite"
         aria-relevant="additions"
         aria-busy={running}
@@ -124,28 +105,28 @@ export function PipelineLog({
           {stages.map((s, i) => (
             <motion.li
               key={`${s.stage}-${i}`}
-              initial={{ opacity: 0, x: -6 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
-              className="border-b border-stage-line/60 py-2.5 last:border-0"
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              className="border-b border-line/50 py-2.5 last:border-0"
             >
               <div className="flex items-baseline gap-2">
-                <span className="tnum font-mono text-2xs text-graphite-faint">
+                <span className="tnum font-mono text-[11px] font-medium text-faint">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <span className="flex-1 font-sans text-[13px] text-bone">
+                <span className="flex-1 font-sans text-xs font-medium text-ink">
                   {STAGE_LABELS[s.stage] ?? s.stage}
                 </span>
                 {charges[i] !== null && (
                   <span
-                    className="tnum rounded-[2px] border border-proved-lift/40 px-1 font-mono text-[9px] uppercase tracking-[0.1em] text-proved-lift"
+                    className="tnum rounded border border-brass/40 bg-brass/10 px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-wider text-brass"
                     title="Increase in composed epsilon attributable to this stage"
                   >
-                    charged +{charges[i]!.toFixed(3)}
+                    +{charges[i]!.toFixed(3)} ε
                   </span>
                 )}
               </div>
-              <p className="mt-0.5 pl-6 font-mono text-[11px] leading-relaxed text-graphite-faint">
+              <p className="mt-0.5 pl-6 font-mono text-[11px] leading-relaxed text-muted">
                 {summarise(s)}
               </p>
             </motion.li>
@@ -154,23 +135,23 @@ export function PipelineLog({
 
         {running && nextPending && (
           <li className="py-2.5">
-            <div className="flex items-baseline gap-2 opacity-45">
-              <span className="tnum font-mono text-2xs text-graphite-faint">
+            <div className="flex items-baseline gap-2 opacity-50">
+              <span className="tnum font-mono text-[11px] text-faint">
                 {String(stages.length + 1).padStart(2, '0')}
               </span>
-              <span className="flex-1 font-sans text-[13px] text-bone">
+              <span className="flex-1 font-sans text-xs text-muted">
                 {STAGE_LABELS[nextPending]}
               </span>
             </div>
-            <div className="mt-2 ml-6 h-px overflow-hidden bg-stage-line">
-              <div className="h-full w-1/3 animate-sweep bg-audited-lift/70" />
+            <div className="mt-1.5 ml-6 h-0.5 overflow-hidden rounded-full bg-paper-2">
+              <div className="h-full w-1/3 animate-pulse bg-brass/80" />
             </div>
           </li>
         )}
 
         {!stages.length && !running && (
-          <li className="py-8 text-center font-mono text-[11px] text-graphite-faint">
-            No run yet. Choose a mechanism and a budget, then run a release.
+          <li className="py-8 text-center font-mono text-[11px] text-faint">
+            No pipeline run recorded. Trigger a release to stream stages.
           </li>
         )}
       </ol>
