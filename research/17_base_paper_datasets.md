@@ -42,6 +42,7 @@ This report provides verifiable evidence of the exact experimental datasets used
     - Section 5.1 (Page 6): *"Each dataset, raw and synthetic, contained $n = m = 1000$ records. The adversary was trained on a reference dataset of $l = 10,000$ records."*
     - Section 5.1 (Page 8): *"Figure 3: Per-record privacy gain for five outlier targets records from the Texas (top row) and Adult (bottom row) datasets under an attack using the $F_{Hist}$ feature set... Two out of the five outliers in the Texas dataset achieve close to no gain ($t_1$ and $t_4$ with $PG < 0.1$). This low gain violates the theoretical guarantee of differential privacy which implies $PG \ge 0.89$ for $\epsilon = 0.1$."*
 - **Overlap verdict**: **SAME as our UCI Adult** (1994 US Census); **NO Bank**; **NO ACS**.
+- **Local Holding & Provenance Caveat**: SynthProof stores `research\litsurvey\datasets\texas\texas.csv` (100,000 records, 18 attributes) fetched from the official EPFL GroundHog repository (`spring-epfl/synthetic_data_release`). This 100,000-record benchmark is a *superset* of the 50,000-record sample used in P1. It is an academic research mirror, not an official DUA license directly from Texas DSHS.
 - **Anything they did NOT do that SynthProof does**: Evaluates empirical privacy gain through shadow models (black-box MIA/linkage) without cryptographic boundary verification, without discretization-leakage auditing at the release boundary, and without verifiable privacy manifests.
 
 ---
@@ -199,6 +200,11 @@ This report provides verifiable evidence of the exact experimental datasets used
     - Section 6.2.1 (Page 13): *"For example, the ground truth Adult dataset when imputed with mode imputation achieves a 1-way TV-distance of 0.05... When 10% MCAR data is introduced, PrivBayes sees 1-way and 2-way metrics experiencing 5-19% impact, and F1-score dropping by 3-11%."*
     - Section 6.2.2 (Page 14): *"Across all datasets, the adaptive recourse method achieves F1-scores of up to 24% higher than the baseline."*
 - **Overlap verdict**: **SAME as our UCI Adult** AND **SAME as our UCI Bank Marketing**; **NO ACS**.
+- **Local Holdings & Provenance Caveats**:
+  - **Adult**: Local file `adult\adult.data` has the exact 32,561 records used in P7 Table 1.
+  - **Bank**: Local file `bank_marketing\bank-full.csv` has the exact 45,211 records used in P7 Table 1.
+  - **BR2000**: Local file `br2000\br2000.csv` has 38,000 records from the Kamino author repository (`cgebest/kamino`). Caveat: this is an academic research mirror, not a direct individual export from IPUMS International.
+  - **National**: Local file `national\national2018.csv` has 27,111 records from the official NIST SDNist repository. Note: P7 evaluated on a 15,012-row subset; our local file is the official NIST parent excerpt.
 - **Anything they did NOT do that SynthProof does**: Solves missing value imputation internal to DP generators; does not perform post-generation release boundary auditing or construct verifiable cryptographic privacy receipts.
 
 ---
