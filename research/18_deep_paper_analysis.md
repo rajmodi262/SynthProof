@@ -222,6 +222,164 @@ Nasr, Steinke).
 
 ---
 
+## P1 — Stadler, Oprisanu & Troncoso, *Synthetic Data – Anonymisation Groundhog Day* (USENIX Security 2022, arXiv:2011.07018) — CLAUDE VERIFIED
+
+**A. Identity & framing.** EPFL/UCL. Type: **empirical privacy attack + evaluation framework**.
+Thesis: *synthetic data is NOT a privacy silver bullet — it either fails to stop inference attacks or
+destroys utility, and its privacy-utility tradeoff is unpredictable.* Gap: prior work measured
+synthetic-data privacy with naive similarity tests and average-case metrics that **underestimate**
+the risk.
+
+**B. What they did (contributions I–IV, ~verbatim).** (I) Non-private generative models do **not**
+protect **outlier** records from linkage; a strategic adversary infers a target's presence with high
+confidence. (II) DP synthetic data protects targets **but at large, unpredictable utility cost**, with
+no transparency about what is preserved/suppressed. (III) **Existing implementations of two DP
+generators (PrivBay, PATEGAN) violate their own formal guarantees** — they patch them. (IV) Release an
+open-source evaluation framework with two attacks. Threat model: adversary sees **only the published
+synthetic dataset** (black-box, no model query) + a reference dataset from the same distribution and
+knows n, m, GM(·). Neighbours: raw dataset with vs. without the target record (a membership game à la
+Yeom).
+
+**C. How they did it.** A **membership/linkability privacy game** (Fig 1) → measure **privacy gain
+PG = Adv(R) − Adv(S)**. Attack = **black-box shadow-model MIA**: train many shadow generators on
+reference sets with/without the target, extract features from the synthetic output, train a
+**Random-Forest** distinguisher. Three feature sets: **F_Naive** (summary stats), **F_Hist**
+(1-way marginals), **F_Corr** (pairwise correlations). Also an **attribute-inference** game
+(regression/RF to predict a hidden sensitive attribute). Generators studied: IndHist, BayNet,
+CTGAN (no DP); **PrivBay, PATEGAN** (DP).
+
+**D. Datasets — deep.** **Adult** and **Texas Hospital Discharge** (inpatient records; they built a
+2013 train / 2014 test split). Both mixed numeric+categorical. Experiment sizes: raw/synthetic
+**n = m = 1000**, adversary reference **l = 10,000**, **10 shadow models**; DP models tested at
+**ε = 0.1** (and ε = 1, 10 in the tradeoff study). Outliers hand-picked (rare categories or values
+outside the 95% quantile). *(Note: their Adult is described as ~45,222 records in the appendix — NOT
+48,842; Antigravity got this wrong.)*
+
+**E. Results & findings.** Privacy gain is **disparate** (outliers stay vulnerable, PG far below 1)
+and **unpredictable** (which records leak varies by model and feature set). Headline: **PrivBay &
+PATEGAN at ε=0.1 gave some outliers PG < 0.1, violating Yeom's bound PG ≥ 0.89 for ε=0.1.** Root
+cause: their implementations **learned attribute metadata (numeric ranges, categorical domains)
+directly from the raw data** — outside the DP guarantee — so a target's rare value shifted the output
+detectably. After patching (metadata supplied as an independent public input), most outliers were
+back within the DP bound. Utility: DP synthetic data cost ~10 accuracy points vs raw even at ε=10.
+
+**F. Relevance to SynthProof — a direct precursor to D1 and to your threat model.**
+- **Their DP-violation IS your D1/domain problem.** "Implementations learn the domain/ranges from
+  private data, breaking DP" is exactly what you found in AIM (`known_total=n`) and what the
+  release-boundary's domain-source rule addresses. Cite P1 as the empirical precedent; your
+  `boundary-audit` + domain-source field is the *systematic* fix they applied ad hoc.
+- **Same threat model:** adversary sees only the shipped synthetic dataset — identical to yours.
+- **Same benchmark (Adult)** → comparison feasible (their MIA advantage vs your MIA-AUC / audited ε).
+- **What they did NOT do:** no signed artifact, no document-only checker, no operating-range report;
+  their fix required a disjoint public dataset most curators don't have — your data-blind boundary
+  approach sidesteps that.
+- **Borrow/cite:** their shadow-model MIA + F_Hist/F_Corr feature sets underpin our membership
+  auditor; their "outliers leak most" motivates canary design.
+- **Viva soundbite:** *"Stadler et al. proved synthetic data leaks membership for outliers and that DP
+  generators silently broke DP by reading the data domain — the exact class of bug our release
+  boundary and D1 fix are built to catch and certify."*
+
+**G. Citations to chase:** Yeom et al. (membership bound), Shokri et al. (shadow models), PrivBayes
+[71], PATE-GAN [32], DataSynthesizer [50].
+
+---
+
+## P2 — Annamalai, Ganev & De Cristofaro, *"What do you want from theory alone?" Experimenting with Tight Auditing of DP Synthetic Data Generation* (USENIX Security 2024, arXiv:2405.10994) — CLAUDE VERIFIED
+
+**A. Identity & framing.** UCL / Hazy / UC Riverside (the Ganev cluster). Type: **empirical DP
+auditing of mechanisms/implementations**. Thesis: *bugs make real DP-SDG leakage higher than the
+theory; audit them by a distinguishing game + MIA, and see how tightly empirical ε can match
+theoretical ε.* Gap: prior black-box, average-case audits give **loose** estimates.
+
+**B. What they did.** First large-scale audit of **6 DP-SDG implementations** — PrivBayes×2
+(DataSynthesizer, Hazy), MST (SmartNoise), DPWGAN×2 (NIST, Synthcity). Craft **implementation-specific
+worst-case datasets**; introduce the **first white-box MIAs against PrivBayes and MST**. DP defined
+both **add/remove (unbounded)** and **edit (bounded)**; audit via the (ε,δ) privacy region and
+**µ-GDP**, with **Clopper-Pearson** CIs.
+
+**C. How they did it.** Distinguishing game on fixed neighbours D/D′; MIA outputs a score; false-pos/
+false-neg rates → empirical **ε_emp** (Eq. 1) or via **µ-GDP** (Eq. 2–3). Threat models escalate:
+**black-box → passive white-box → active white-box** (canary gradients). Key concept: **"maximum
+auditable ε"** — even a perfect adversary is capped by the CI, so a fixed number of trials bounds the
+largest ε you can measure.
+
+**D. Datasets.** **Adult** and **SF Fire** (both overlap our set); plus **hand-crafted worst-case
+tables** designed to maximise leakage. Metric: **ε_emp vs theoretical ε**.
+
+**E. Results & findings.** (1) **Black-box MIAs are severely underpowered** — e.g. **MST at ε=4:
+black-box ε_emp = 0.00 (meaningless) vs white-box ε_emp = 3.10.** (2) Tightness is
+implementation-dependent (PrivBayes/MST need passive white-box; DPWGAN needs active). (3) **DP
+violations in 4 of 6 implementations** (Table 1) — mostly **"learning metadata directly from the
+input"**; plus a **new violation in the NIST DPWGAN (early stopping)** and **PRNG reuse in Synthcity
+DPWGAN**.
+
+**F. Relevance to SynthProof — grounds two of our pillars AND our honesty caveat.**
+- **"Maximum auditable ε" IS our audit ceiling.** This paper is the citation for why we report a
+  ceiling beside ε_audited (also named "maximum auditable epsilon" here). Use it in §IX.
+- **Explains why our audited ε = 0.000 is LOOSE, not "safe".** Our canary auditor is a *black-box*
+  MIA — exactly the class they show yields ε_emp ≈ 0.00 even when true ε = 4. So our bounded-negative
+  and 0.000 must be stated as *black-box-loose*; P2 is the honest citation for that limitation.
+- **Their "metadata learned from input" violations (4/6)** reinforce your D1/domain thesis — a whole
+  cluster of shipped DP tools break DP the same way.
+- **Their DPWGAN "PRNG reuse" violation** rhymes with your D5 seed-replay finding (randomness
+  handling breaks releases).
+- **What they did NOT do:** they audit the *mechanism/implementation* (need code, model internals,
+  worst-case data); you audit the *shipped document* (no data, no code). Complementary layers — cite
+  them as the mechanism-side audit that your artifact-side audit sits beside.
+- **Same benchmark (Adult).** **Viva soundbite:** *"Annamalai et al. show black-box audits of DP
+  synthesizers read ε≈0 even when the true ε is 4 — which is exactly why we report our audited 0.000
+  next to its 2.97 ceiling instead of calling it private, and why we don't overclaim our null."*
+
+**G. Citations to chase:** Nasr et al. (auditing/GDP), Houssiau (threat models), Jagielski/Steinke
+(one-run auditing), MST [43], PrivBayes [75].
+
+---
+
+## P4 — Ganev, Annamalai, Mahiou & De Cristofaro, *Understanding the Impact of Data Domain Extraction on Synthetic Data Privacy* (ICLR 2025 SynthData workshop, arXiv:2504.08254) — CLAUDE VERIFIED
+
+**A. Identity & framing.** UCL / SAS / UC Riverside (Ganev cluster). Type: **preprocessing privacy
+audit**. Thesis: *how you define the data DOMAIN (column min/max, categories) decides whether a
+DP synthesizer is actually private* — and the common practice of reading the domain from the input
+data silently breaks end-to-end DP.
+
+**B. What they did.** Compare **three domain strategies**: (1) **provided** (from public data), (2)
+**extracted directly from input** (no DP — what many libraries do), (3) **extracted with DP**. Across
+2 generators (PrivBayes, MST) and 4 DP discretizers (uniform, quantile, k-means, PrivTree). Threat:
+GroundHog MIA on a worst-case outlier that sits outside the others' domain.
+
+**C. How they did it.** GroundHog shadow-model MIA (Stadler): pick the furthest outlier target,
+train **200 shadow models** with/without it, extract F_naive statistical features from the synthetic
+output, classify, report **AUC**. Settings: ε=1 preprocessing (split domain+discretization), ε=1
+model (δ=1e-5 for MST), 20 bins. Domain-DP via Desfontaines/OpenDP noisy-histogram bounds.
+
+**D. Datasets.** **Wine Quality** (4,898 rows, 11 continuous attributes) — we have it. Role: MIA
+target substrate. (Small on purpose — this is a mechanism/preprocessing probe, not a benchmark sweep.)
+
+**E. Results & findings.** **Extracting the domain from the input → MIA AUC ≈ 1.0 (near-perfect
+attack), regardless of discretizer or model — end-to-end DP is broken.** Provided or DP-extracted
+domain → AUC ≈ random, even at ε up to 100. Striking secondary finding: **GroundHog's success is
+mostly due to domain extraction, not the model itself** (an in-domain outlier stays safe). DP domain
+extraction "could address many previously identified DP vulnerabilities in open-source libraries."
+
+**F. Relevance to SynthProof — the external proof that your domain-source rule matters.**
+- **This is exactly D1 generalised.** Your D1 was AIM using the private row count uncharged; P4 shows
+  the *whole domain* (ranges, categories) read from private data breaks DP across libraries and is
+  often the *dominant* leak. Your **`domain_source` field + release-boundary rule** ("domain must be a
+  public declaration, a charged output, or labelled") is the artifact-level fix P4 argues for.
+- **boundary-audit can check it:** a sheet whose `domain_source` = "extracted from data (uncharged)"
+  is a flaggable leak — a concrete RB check motivated directly by P4.
+- **Same cluster runs P2/P5/P6** — position as complementary: they prove the leak in the mechanism;
+  we make the domain provenance a checkable field in the shipped document.
+- **Dataset:** Wine (we have it); metric MIA AUC → comparison feasible.
+- **Viva soundbite:** *"Ganev et al. show that reading a column's min/max from the private data — which
+  most libraries do — breaks DP and lets an attacker win with AUC≈1; our release boundary forces the
+  domain to be declared or charged, and our linter flags it when it isn't."*
+
+**G. Citations to chase:** GroundHog/Stadler [P1], PrivBayes, MST/Private-PGM [P8], Desfontaines
+domain-DP, Meeus et al. (vulnerable-record identification).
+
+---
+
 ## ⚠️ Verification status of the Antigravity batch (`research/deep_analysis/*.md`)
 Antigravity produced P1–P11 files, but a spot-check found **fabrication and errors — do NOT merge
 them unverified**:
