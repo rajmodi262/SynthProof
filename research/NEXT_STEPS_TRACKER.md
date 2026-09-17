@@ -140,3 +140,18 @@
   caveats recorded (worst-case 11-record replication, NOT a tight audit of AIM/MST as deployed;
   weaker sklearn adversary → under-claims; conservative Clopper-Pearson; loose implied comparator;
   not a novelty claim). The grid's audited_eps still uses Steinke; GDP is complementary. Commit+push.
+- **2026-09-17 run 14 — RB11–RB14 multi-table checks SHIPPED.** Implemented the four relational
+  release-boundary checks designed in T6d, in `synthproof/audit/boundary.py`: **RB11
+  `relational_unit`** (multi-table release with no unit, or `row` over linked tables → LEAK; sound:
+  entity/node/edge), **RB12 `fk_degree_source`** (data-derived foreign-key degree distribution →
+  LEAK; cf. Cebere P3 degree truncation), **RB13 `join_cardinality_source`** (data-derived exact
+  join/per-table counts → LEAK; RB2 lifted to entity neighbour), **RB14 `cross_table_fingerprint`**
+  (unkeyed cross-table hash → LEAK; keyed+named-key → NOTE; RB3 lifted to a linkage test). Fire only
+  on a relational sheet (any of tables/relational_unit/fk_degree_source/join_cardinality_source/
+  cross_table_fingerprint set); single-table sheets untouched (tested). 6 negative-control tests
+  (25 boundary tests total). Live demo: a leaky relational sheet FAILS with RB11–14 leaks; a
+  single-table sheet has no relational findings. Updated `docs/design/MULTITABLE_RELEASE_BOUNDARY.md`
+  (status: checks shipped, generator future) + `DP_RELEASE_LABEL_SPEC.md` (RB1–RB14; RB11–14 rows).
+  **Honest boundary kept:** the CHECKS ship; there is still NO validated multi-table GENERATOR to run
+  them against — that (and the degree-truncation accounting) remains declared future work / Paper 2.
+  ruff+black clean; 33 boundary+label tests pass. Commit + push.

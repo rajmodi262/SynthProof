@@ -148,7 +148,7 @@ def check_boundary(doc: Dict[str, Any]) -> Tuple[str, str, List[Dict[str, str]]]
             f"no leak; {len(unver)} channel(s) rest on producer honesty (unverifiable, reported)",
             findings,
         )
-    return OK, "no open channel found (RB1-RB10 clean)", findings
+    return OK, "no open channel found (RB1-RB14 clean)", findings
 
 
 # --------------------------------------------------------------------------- compose

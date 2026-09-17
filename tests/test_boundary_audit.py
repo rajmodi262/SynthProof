@@ -270,3 +270,64 @@ def test_rb3_self_declared_unkeyed_hash_is_a_leak_regardless_of_legacy():
 def test_rb3_unrecognised_scheme_is_unverifiable():
     bad = _codes({"input_fingerprint": "a" * 64, "fingerprint_scheme": "rot13-magic"})
     assert bad["RB3"].severity == boundary.UNVERIFIABLE
+
+
+# --------------------------------------------------------------------------- multi-table RB11-14
+
+
+def test_single_table_sheet_has_no_relational_findings():
+    """RB11-14 must stay silent on an ordinary single-table sheet (no relational fields set)."""
+    codes = _codes({"num_rows": 6000, "total_proved_eps": 7.0})
+    for c in ("RB11", "RB12", "RB13", "RB14"):
+        assert c not in codes
+
+
+def test_rb11_relational_unit_row_and_missing_are_leaks_entity_is_clean():
+    """RB11: a multi-table release must declare an entity-level unit; 'row' or none is a leak."""
+    missing = _codes({"tables": ["patients", "admissions"]})
+    assert missing["RB11"].severity == boundary.LEAK
+    row = _codes({"tables": ["patients", "admissions"], "relational_unit": "row"})
+    assert row["RB11"].severity == boundary.LEAK
+    ok = _codes({"tables": ["patients", "admissions"], "relational_unit": "entity"})
+    assert "RB11" not in ok  # entity is sound -> no finding
+    weird = _codes({"tables": ["patients"], "relational_unit": "household-ish"})
+    assert weird["RB11"].severity == boundary.UNVERIFIABLE
+
+
+def test_rb12_fk_degree_source():
+    """RB12: a foreign-key degree distribution read off the data (uncharged) is a leak."""
+    leak = _codes({"fk_degree_source": "data-derived"})
+    assert leak["RB12"].severity == boundary.LEAK
+    assert "RB12" not in _codes({"fk_degree_source": "dp-charged"})
+    assert "RB12" not in _codes({"fk_degree_source": "uniform-public"})
+    assert _codes({"fk_degree_source": "mystery"})["RB12"].severity == boundary.UNVERIFIABLE
+    assert "RB12" not in _codes({})
+
+
+def test_rb13_join_cardinality_source():
+    """RB13: exact join/per-table counts read off the data are private under an entity neighbour."""
+    leak = _codes({"join_cardinality_source": "data-derived"})
+    assert leak["RB13"].severity == boundary.LEAK
+    assert "RB13" not in _codes({"join_cardinality_source": "declared"})
+    assert "RB13" not in _codes({"join_cardinality_source": "dp-charged"})
+    assert _codes({"join_cardinality_source": "guess"})["RB13"].severity == boundary.UNVERIFIABLE
+    assert "RB13" not in _codes({})
+
+
+def test_rb14_cross_table_fingerprint_mirrors_rb3():
+    """RB14: a cross-table linkage hash -- keyed+named is bound (note), unkeyed is a leak."""
+    keyed = _codes(
+        {
+            "cross_table_fingerprint": "b" * 64,
+            "cross_table_fingerprint_scheme": "hmac-sha256",
+            "cross_table_fingerprint_key_id": "curator-key-2026",
+        }
+    )
+    assert keyed["RB14"].severity == boundary.NOTE
+    unkeyed = _codes(
+        {"cross_table_fingerprint": "b" * 64, "cross_table_fingerprint_scheme": "sha256"}
+    )
+    assert unkeyed["RB14"].severity == boundary.LEAK
+    no_scheme = _codes({"cross_table_fingerprint": "b" * 64})
+    assert no_scheme["RB14"].severity == boundary.UNVERIFIABLE
+    assert "RB14" not in _codes({})

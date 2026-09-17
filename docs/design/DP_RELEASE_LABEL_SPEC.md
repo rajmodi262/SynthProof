@@ -30,7 +30,7 @@ all document ε and the mechanism, **none is signed, and none is machine-checkab
 
 This spec closes the two gaps by defining the SynthProof label as **the Dibia nine-category label
 plus (a) an Ed25519 signature and (b) an operating-range field**, and — the part no prior label
-has — defining **conformance as passing an executable checker** (`boundary-audit`, RB1–RB10).
+has — defining **conformance as passing an executable checker** (`boundary-audit`, RB1–RB14).
 
 ### The asymmetry principle (governs the whole spec)
 
@@ -54,7 +54,7 @@ implies "conformant ⇒ private" is a misuse of it.
 | **Signature** | An Ed25519 signature over the label's canonical bytes (`synthproof/ledger/signing.py::canonical_sheet_payload`). |
 | **Operating range** | The triple (proved ε, audited ε, audit ceiling) that states what the empirical audit *could* have detected, so a small audited ε is read as a measurement limit, not as reassurance. |
 | **Conformance** | The label passes the checker in §6: signature verifies, operating range is present and coherent, and `boundary-audit` reports **no `leak`**. |
-| **Openable channel** | A property of the artefact that can disclose something ε does not cover (seed, exact row count, unkeyed fingerprint, unlabelled evaluation, etc.). RB1–RB10 in §5. |
+| **Openable channel** | A property of the artefact that can disclose something ε does not cover (seed, exact row count, unkeyed fingerprint, unlabelled evaluation, etc.). RB1–RB14 in §5. |
 
 ## 3. Namespace and format
 
@@ -104,7 +104,7 @@ Coherence rule (checked, not assumed): `audited ε ≤ audit_ceiling`, and if
 `audit_ceiling < proved ε` the audited ε is flagged **uninformative** — it means the instrument
 could not have detected the proved budget, not that nothing leaked.
 
-### 4.3 Boundary-provenance fields (feed RB1–RB10)
+### 4.3 Boundary-provenance fields (feed RB1–RB14)
 
 `seed` (must be absent), `num_rows` + `release_rows_source`, `input_fingerprint`,
 `evaluation` + `evaluation_privacy`, `accountant_agreement`, `domain_source`,
@@ -112,7 +112,7 @@ could not have detected the proved budget, not that nothing leaked.
 `discretization_source`, `privacy_amplification`. Sound values for each are defined by the
 checker in §5.
 
-## 5. Conformance checks (RB1–RB10)
+## 5. Conformance checks (RB1–RB14)
 
 Conformance is defined by the checker in `synthproof/audit/boundary.py`. Each check emits at most
 one finding at severity `leak` (artefact discloses something ε does not cover — **fails
@@ -131,6 +131,16 @@ it one — **does not fail**, but is reported), or `note` (a sound basis is stat
 | RB8 | `public_invariants` | (`unverifiable`) invariant declared outside ε with no stated basis | Census P9 |
 | RB9 | `discretization_source` | bins read from the data (`data-derived`), uncharged | Ganev P5 |
 | RB10 | `privacy_amplification` | amplified (smaller) ε claimed with no stated basis | Mohapatra P7 |
+| RB11 | `relational_unit` | multi-table release with no unit, or `row` over linked tables | T6d / Census P9 |
+| RB12 | `fk_degree_source` | `data-derived` foreign-key degree distribution (uncharged) | T6d / Cebere P3 |
+| RB13 | `join_cardinality_source` | `data-derived` exact join / per-table counts | T6d / RB2 |
+| RB14 | `cross_table_fingerprint` (+`_scheme`,`_key_id`) | scheme unkeyed/`sha256` (linkage membership test) | T6d / RB3 |
+
+RB11–RB14 are the **relational** checks (`docs/design/MULTITABLE_RELEASE_BOUNDARY.md`). They fire
+only on a multi-table sheet (any of `tables`, `relational_unit`, `fk_degree_source`,
+`join_cardinality_source`, `cross_table_fingerprint` set); a single-table release never triggers
+them, so its conformance is effectively RB1–RB10. The checks are shipped; a **validated multi-table
+generator** to run them against is not (declared future work / Paper 2).
 
 Sound (non-flagging) values are enumerated in the checker:
 `release_rows_source ∈ {declared, protocol, dp_count(+charged ε)}`;
@@ -156,7 +166,7 @@ existing pieces and reports a single verdict:
    present-but-untrusted (distinct from missing).
 2. **Operating range** — asserts the §4.2(b) fields are present and coherent
    (`audited ≤ ceiling`; informative-vs-not).
-3. **Boundary** — runs `boundary.audit_release` (RB1–RB10) and requires **no `leak`**.
+3. **Boundary** — runs `boundary.audit_release` (RB1–RB14) and requires **no `leak`**.
 4. **(Croissant, optional)** — points the reader at `scripts/validate_croissant.py`, which runs
    the **official MLCommons validator** in an isolated env; a green there plus a green here is the
    full claim.
@@ -174,7 +184,7 @@ Exit codes are deliberately distinct so an un-run check never reads as a pass:
 > This label **implements the Dibia et al. (2507.15997) nine-category privacy label and makes it
 > checkable.** It adds the two things their own experts flagged as missing — a cryptographic
 > signature and an operating-range field — and, uniquely, defines conformance as passing an
-> executable checker (`boundary-audit`, RB1–RB10) that reads only the artefact. It does not claim
+> executable checker (`boundary-audit`, RB1–RB14) that reads only the artefact. It does not claim
 > to certify privacy: by the asymmetry principle it proves only that openable channels cannot be
 > hidden from a reader who runs the checker.
 
@@ -187,6 +197,8 @@ Exit codes are deliberately distinct so an un-run check never reads as a pass:
 - **The MLCommons validator runs out of band** (`scripts/validate_croissant.py`): `mlcroissant`
   conflicts with the `numpy>=2` that AIM needs, so it lives in a throwaway env. Its exit code 2
   ("not checked") is kept distinct from 0.
-- **Multi-table is out of scope** (T6d): this label describes a single tabular release. The
-  neighbour relation, per-entity contribution over joins, and cross-table channels are declared
-  future work / Paper 2 and must not be described as covered here.
+- **Multi-table: checks shipped, synthesis not** (T6d): the auditor now includes relational checks
+  **RB11–RB14** (relational_unit, fk_degree, join_cardinality, cross_table_fingerprint — see
+  `docs/design/MULTITABLE_RELEASE_BOUNDARY.md`), so a relational label is auditable. But SynthProof
+  still synthesises only single tables — there is no validated multi-table generator — so end-to-end
+  multi-table synthesis remains declared future work / Paper 2 and must not be described as working.
