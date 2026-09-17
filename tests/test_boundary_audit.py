@@ -225,3 +225,48 @@ def test_rb10_amplification_disclosure():
     ok = _codes({"privacy_amplification": {"factor": 0.3, "basis": "poisson-subsampling q=0.01"}})
     assert ok["RB10"].severity == boundary.NOTE
     assert "RB10" not in _codes({})
+
+
+def test_rb3_declared_keyed_scheme_is_verifiable_not_unverifiable():
+    """RB3 improvement (2026-09-17): a declared keyed scheme WITH a named key is checkable
+    accountability (note), not the old blanket 'unverifiable'. This is the whole point -- it
+    moves the common honest case out of unverifiable."""
+    keyed = _codes(
+        {
+            "input_fingerprint": "a" * 64,
+            "fingerprint_scheme": "hmac-sha256",
+            "fingerprint_key_id": "curator-key-2026",
+            "release_rows_source": "declared",
+        }
+    )
+    assert keyed["RB3"].severity == boundary.NOTE
+
+
+def test_rb3_declared_keyed_scheme_without_a_key_is_not_bound():
+    """A keyed scheme with no named key binds nothing -> still unverifiable, never a note."""
+    unbound = _codes(
+        {
+            "input_fingerprint": "a" * 64,
+            "fingerprint_scheme": "hmac-sha256",
+            "release_rows_source": "declared",
+        }
+    )
+    assert unbound["RB3"].severity == boundary.UNVERIFIABLE
+
+
+def test_rb3_self_declared_unkeyed_hash_is_a_leak_regardless_of_legacy():
+    """REINTRODUCE the leak by declaration: a sheet that says its fingerprint is plain sha256 is
+    a self-declared membership test, caught even on a modern (non-legacy) sheet."""
+    declared = _codes(
+        {
+            "input_fingerprint": "a" * 64,
+            "fingerprint_scheme": "sha256",
+            "release_rows_source": "declared",  # NOT legacy; the old heuristic would miss it
+        }
+    )
+    assert declared["RB3"].severity == boundary.LEAK
+
+
+def test_rb3_unrecognised_scheme_is_unverifiable():
+    bad = _codes({"input_fingerprint": "a" * 64, "fingerprint_scheme": "rot13-magic"})
+    assert bad["RB3"].severity == boundary.UNVERIFIABLE

@@ -123,7 +123,7 @@ it one — **does not fail**, but is reported), or `note` (a sound basis is stat
 |---|---|---|---|
 | RB1 | `seed` | the run seed is published (replays the release; measured 15/15) | D1 |
 | RB2 | `num_rows`, `release_rows_source` | count has no public basis, or a "dp_count" with no charged ε | D2 |
-| RB3 | `input_fingerprint` | a 64-hex hash from a producer predating keyed fingerprints | D3 |
+| RB3 | `input_fingerprint`, `fingerprint_scheme`, `fingerprint_key_id` | scheme declared `sha256`/unkeyed (self-declared membership test); else the legacy 64-hex heuristic | D3 |
 | RB4 | `evaluation`, `evaluation_privacy` | real-table measurements published with no outside-ε label | D4 |
 | RB5 | `accountant_agreement` | a second accountant composed to a **larger** ε (`under_report`) | cross-check |
 | RB6 | `domain_source` | domain read from the sensitive table, uncharged (`inferred-nonprivate`) | Ganev P4/P5 |
@@ -136,7 +136,10 @@ Sound (non-flagging) values are enumerated in the checker:
 `release_rows_source ∈ {declared, protocol, dp_count(+charged ε)}`;
 `domain_source ∈ {declared, codebook, charged}`;
 `discretization_source ∈ {uniform-public, dp-charged, declared, not-applicable}`;
-`public_invariants` items each need a `basis`; `privacy_amplification` needs a `basis`.
+`public_invariants` items each need a `basis`; `privacy_amplification` needs a `basis`;
+`fingerprint_scheme = hmac-sha256` **with** a `fingerprint_key_id` is a NOTE (a keyed claim the
+producer is bound to under signature — checkable accountability, not byte-level verification),
+while `fingerprint_scheme ∈ {sha256, unkeyed}` is a self-declared membership test (leak).
 
 For a Croissant record the checker additionally re-audits the **visible layer outside the
 signature**: a `dp:seed` in provenance or a `dp:inputFingerprintSha256` there is a `leak` even if

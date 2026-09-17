@@ -186,10 +186,78 @@ def _row_count(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
     ]
 
 
+_UNKEYED_SCHEMES = ("sha256", "sha-256", "unkeyed", "plain")
+_KEYED_SCHEMES = ("hmac-sha256", "hmac", "hmac-sha-256")
+
+
 def _fingerprint(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
     fp = sheet.get("input_fingerprint")
     if not fp:
         return []
+
+    # A declared scheme is the checkable path (added 2026-09-17). The old heuristic could only
+    # ever say "unverifiable" for a keyed fingerprint, because a plain SHA-256 and an HMAC are
+    # both 64 hex characters. A producer that DECLARES the scheme -- and, in a signed sheet,
+    # binds that declaration under the signature -- turns the guess into something a reader can
+    # act on: a self-declared unkeyed hash is a self-declared membership test (LEAK), and a
+    # declared HMAC with a named key is a claim the producer cannot later repudiate (NOTE).
+    scheme = sheet.get("fingerprint_scheme")
+    if scheme is not None:
+        s = str(scheme).lower()
+        if s in _UNKEYED_SCHEMES:
+            return [
+                BoundaryFinding(
+                    "RB3",
+                    LEAK,
+                    "fingerprint_scheme",
+                    f"The sheet declares its input fingerprint is {scheme!r} -- an unkeyed hash.",
+                    "By the producer's own declaration this is a deterministic function of the "
+                    "input table: a reader who knows every other record hashes both candidate "
+                    "tables and compares. A membership test no epsilon covers.",
+                    "Switch to an HMAC under a curator secret (fingerprint_scheme='hmac-sha256' "
+                    "with a fingerprint_key_id), or omit the fingerprint.",
+                )
+            ]
+        if s in _KEYED_SCHEMES:
+            key_id = sheet.get("fingerprint_key_id")
+            if key_id:
+                return [
+                    BoundaryFinding(
+                        "RB3",
+                        NOTE,
+                        "fingerprint_scheme",
+                        f"The fingerprint is declared {scheme!r} under key {key_id!r}.",
+                        "A keyed fingerprint is not a membership test for a reader without the "
+                        "key. The named key binds the claim: in a signed sheet the producer "
+                        "cannot later deny the fingerprint was keyed, so this is checkable "
+                        "accountability rather than a guess (it does not verify the bytes).",
+                        "None. Keep the key secret; publish only its id/commitment.",
+                    )
+                ]
+            return [
+                BoundaryFinding(
+                    "RB3",
+                    UNVERIFIABLE,
+                    "fingerprint_scheme",
+                    f"The fingerprint is declared {scheme!r} but no fingerprint_key_id is given.",
+                    "A keyed scheme with no named key is not bound to anything -- nothing stops "
+                    "the value being an unkeyed hash relabelled.",
+                    "Publish a fingerprint_key_id (a public identifier or commitment for the "
+                    "secret key), so the keyed claim is bound.",
+                )
+            ]
+        return [
+            BoundaryFinding(
+                "RB3",
+                UNVERIFIABLE,
+                "fingerprint_scheme",
+                f"fingerprint_scheme = {scheme!r} is not a recognised scheme.",
+                "An unrecognised scheme gives no reason to believe the fingerprint is keyed.",
+                "Use 'hmac-sha256' (keyed) or 'sha256' (unkeyed, and a leak).",
+            )
+        ]
+
+    # No declared scheme: fall back to the legacy heuristic.
     legacy = sheet.get("release_rows_source") in (None, "unknown")
     if legacy and isinstance(fp, str) and _HEX64.match(fp):
         return [
@@ -209,10 +277,10 @@ def _fingerprint(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
             "RB3",
             UNVERIFIABLE,
             "input_fingerprint",
-            "An input fingerprint is published.",
+            "An input fingerprint is published with no declared scheme.",
             "A keyed HMAC and a plain SHA-256 look identical from outside. Only the producer's "
             "code decides whether this is a membership test.",
-            "Accept it only from a producer whose fingerprint is documented as keyed.",
+            "Declare fingerprint_scheme ('hmac-sha256' with a fingerprint_key_id), or omit it.",
         )
     ]
 
