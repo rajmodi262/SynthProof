@@ -56,6 +56,17 @@ DATASETS = {
         "checkpoints": "results/bank/h1_cells",
         "label": "UCI Bank Marketing",
     },
+    # The one genuine HEALTHCARE table (Adult/ACS are census, Bank is finance). Task: 30-day
+    # readmission. time_in_hospital x num_medications is the strongest clinical numeric pair
+    # (sicker patients stay longer and take more drugs), the healthcare analogue of the census
+    # age x hours pair.
+    "diabetes": {
+        "target_col": "readmitted",
+        "corr_cols": ("time_in_hospital", "num_medications"),
+        "out": "results/diabetes/h1_all_families.json",
+        "checkpoints": "results/diabetes/h1_cells",
+        "label": "UCI Diabetes 130 (healthcare)",
+    },
 }
 
 # Datasets that carry an H1 grid and deliberately NO H2 study, each with the reason. H2 measures
@@ -68,6 +79,11 @@ H1_ONLY = {
         "Bank Marketing has no sex or race column -- it was chosen precisely because it is not "
         "census-derived -- so there are no protected subgroups for H2 to compare. Splitting on "
         "`marital` or `job` would be a different hypothesis, not a replication of H2."
+    ),
+    "diabetes": (
+        "Diabetes 130 was added for the healthcare utility/privacy comparison (H1). It DOES carry "
+        "gender and race, so an H2 subgroup-leakage study is possible and is declared future work "
+        "-- simply not run yet, so it lives in H1 only for now, recorded here not silently omitted."
     ),
 }
 
@@ -89,6 +105,13 @@ def _load(name: str):
         ds = load_bank_marketing()
         # Same N_ROWS and same seed as the other two, so a difference between datasets is
         # attributable to the data and not to the sample size.
+        ds.df = ds.df.sample(n=N_ROWS, random_state=0).reset_index(drop=True)
+        return ds, None
+    if name == "diabetes":
+        from synthproof.data.datasets import load_diabetes130
+
+        ds = load_diabetes130()
+        # Same N_ROWS and seed as the others so the comparison is about the data, not the size.
         ds.df = ds.df.sample(n=N_ROWS, random_state=0).reset_index(drop=True)
         return ds, None
     raise SystemExit(f"Unknown dataset {name!r}. Choose from {sorted(DATASETS)}.")
@@ -149,9 +172,7 @@ def main():
     unknown = [m for m in requested if m not in MECHANISMS and m in default_mechs]
     mechs = tuple(m for m in requested if m in MECHANISMS)
     if not mechs:
-        raise SystemExit(
-            f"None of {list(requested)} are available. Known: {sorted(MECHANISMS)}."
-        )
+        raise SystemExit(f"None of {list(requested)} are available. Known: {sorted(MECHANISMS)}.")
     print(f"dataset: {cfg['label']}  n={ds.num_rows} x {ds.num_cols}")
     print(f"mechanisms: {mechs}")
     print(f"true corr{cfg['corr_cols']} = {true_corr:.4f}")

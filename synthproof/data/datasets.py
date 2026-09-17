@@ -369,8 +369,103 @@ def load_adult(data_dir: str = DEFAULT_DATA_DIR, schema: Optional[Schema] = None
     return TabularDataset(df, name="uci_adult", schema=schema or adult_schema())
 
 
+# UCI Diabetes 130-US Hospitals, 1999-2008 (Strack et al., 2014; UCI id 296). 101,766
+# de-identified inpatient encounters for diabetic patients. This is the project's ONE genuine
+# healthcare table -- Adult and ACS are census income, Bank is finance -- so it is the dataset
+# the medical framing of the project actually rests on. The task is 30-day readmission, a real
+# clinical prediction problem.
+DIABETES_130 = DatasetSource(
+    name="uci_diabetes_130",
+    url="https://archive.ics.uci.edu/static/public/296/diabetes+130-us+hospitals+for+years+1999-2008.zip",
+    sha256="f82ac129da2ddd2299391ff6fbae3a6a58b3edcf59ac9d7bd480c00fe453112a",
+    filename="diabetes_130.zip",
+)
+
+
+def diabetes130_schema() -> Schema:
+    """Public schema for UCI Diabetes 130.
+
+    Every bound is DECLARED domain knowledge from the dataset's published codebook (Strack et
+    al., 2014, Table 1), not a measurement of this table -- the same rule Adult and Bank follow,
+    and the reason `domain_source` exists on the data sheet. The four integer counts have the
+    ranges the codebook documents (time in hospital 1-14 days; up to 132 lab procedures; up to
+    81 medications; up to 16 diagnoses).
+
+    The 50-column raw table is reduced to a clinically meaningful, low-cardinality release. The
+    excluded columns and why: the two ID columns (`encounter_id`, `patient_nbr`) are identifiers;
+    `weight`, `payer_code` and `medical_specialty` are >40% missing; the three ICD-9 diagnosis
+    codes (`diag_1..3`) have ~700 categories each and would explode the model domain; and the 20+
+    individual drug columns are near-constant. `insulin` and `diabetesMed` are kept as the two
+    medication signals that actually vary and matter clinically.
+    """
+    return Schema(
+        columns=[
+            ColumnSpec("time_in_hospital", NUMERICAL, lower=1.0, upper=14.0),
+            ColumnSpec("num_lab_procedures", NUMERICAL, lower=1.0, upper=132.0),
+            ColumnSpec("num_medications", NUMERICAL, lower=1.0, upper=81.0),
+            ColumnSpec("number_diagnoses", NUMERICAL, lower=1.0, upper=16.0),
+            ColumnSpec(
+                "age",
+                CATEGORICAL,
+                categories=[
+                    "[0-10)",
+                    "[10-20)",
+                    "[20-30)",
+                    "[30-40)",
+                    "[40-50)",
+                    "[50-60)",
+                    "[60-70)",
+                    "[70-80)",
+                    "[80-90)",
+                    "[90-100)",
+                ],
+            ),
+            ColumnSpec("gender", CATEGORICAL, categories=["Female", "Male"]),
+            ColumnSpec(
+                "race",
+                CATEGORICAL,
+                categories=["AfricanAmerican", "Asian", "Caucasian", "Hispanic", "Other"],
+            ),
+            ColumnSpec("insulin", CATEGORICAL, categories=["Down", "No", "Steady", "Up"]),
+            ColumnSpec("diabetesMed", CATEGORICAL, categories=["No", "Yes"]),
+            # The prediction target: readmitted within 30 days. The raw column has three levels
+            # (<30, >30, NO); it is binarised to YES (<30) vs NO (>30 or NO) so the target names
+            # the clinically actionable event -- early readmission -- rather than any return.
+            ColumnSpec("readmitted", CATEGORICAL, categories=["YES", "NO"]),
+        ]
+    )
+
+
+def load_diabetes130(
+    data_dir: str = DEFAULT_DATA_DIR, schema: Optional[Schema] = None
+) -> TabularDataset:
+    """Loads UCI Diabetes 130 as a `TabularDataset` under its public schema.
+
+    Rows with missing values ("?") in a declared column, and the 3 `Unknown/Invalid`-gender
+    rows, are dropped. `readmitted` is binarised to early readmission (<30 days) vs not.
+    """
+    path = fetch(DIABETES_130, data_dir)
+
+    with zipfile.ZipFile(path) as zf:
+        raw = zf.read("diabetic_data.csv")
+
+    df = pd.read_csv(io.BytesIO(raw), na_values=["?"], low_memory=False)
+    # Binarise the target BEFORE narrowing to the schema: early (<30-day) readmission is the
+    # clinically actionable outcome; >30 and NO both mean "not an early readmission".
+    df["readmitted"] = df["readmitted"].map(lambda v: "YES" if v == "<30" else "NO")
+
+    spec = schema or diabetes130_schema()
+    df = df[[c for c in spec.names if c in df.columns]]
+    # Drop the handful of Unknown/Invalid genders and any codebook "?" left in declared columns.
+    df = df.dropna().reset_index(drop=True)
+    df = df[df["gender"].isin(["Female", "Male"])].reset_index(drop=True)
+
+    return TabularDataset(df=df, name="uci_diabetes_130", schema=spec)
+
+
 REGISTRY: Dict[str, Callable[..., TabularDataset]] = {
     "adult": load_adult,
+    "diabetes": load_diabetes130,
 }
 
 

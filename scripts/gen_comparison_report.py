@@ -19,6 +19,11 @@ DATASETS = {
     "adult": (RESULTS / "h1_all_families.json", RESULTS / "h1_mst_adult.json", "UCI Adult"),
     "acs": (RESULTS / "acs/h1_all_families.json", RESULTS / "acs/h1_mst.json", "ACSIncome CA-2018"),
     "bank": (RESULTS / "bank/h1_all_families.json", RESULTS / "bank/h1_mst.json", "UCI Bank Mktg"),
+    "diabetes": (
+        RESULTS / "diabetes/h1_all_families.json",
+        RESULTS / "diabetes/h1_mst.json",
+        "UCI Diabetes 130 · healthcare",
+    ),
 }
 OURS = ("aim", "mst")
 MECH_ORDER = ("independent", "pairwise", "aim", "mst")

@@ -33,6 +33,11 @@ DATASETS = {
         RESULTS / "bank/h1_mst.json",
         "UCI Bank Marketing",
     ),
+    "diabetes": (
+        RESULTS / "diabetes/h1_all_families.json",
+        RESULTS / "diabetes/h1_mst.json",
+        "UCI Diabetes 130 (healthcare)",
+    ),
 }
 
 # Our contribution's two select-measure mechanisms vs the marginal baselines.
@@ -79,9 +84,11 @@ def _merged(name: str) -> Dict[str, object]:
     if base is None:
         return {"label": label, "missing": True}
     by_mech = _cells_by_mech(base)
-    mst_present = mst is not None
-    if mst_present:
+    if mst is not None:
         by_mech.update(_cells_by_mech(mst))
+    # MST may live in a separate file (Adult/ACS/Bank) or already be in the base grid (Diabetes,
+    # run with all four mechanisms at once). Presence is decided by the merged mechanisms.
+    mst_present = "mst" in by_mech
     eps_grid = sorted({float(e) for c in by_mech.values() for e in c})
     trtr = base["cells"][0]["trtr_f1"]["mean"]
     return {

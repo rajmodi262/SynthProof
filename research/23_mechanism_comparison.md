@@ -142,6 +142,52 @@ _At ε=8 on UCI Bank Marketing (n=6000, corr pair ('age', 'balance'), true corr 
 - **Best downstream ML (TSTR F1) by `pairwise`** (0.4824 vs TRTR ceiling 0.5610 = 86% of real-data utility).
 - **Privacy audit:** audited ε = 0.000 for every mechanism — the auditor's ceiling is below the proved ε at this canary budget, so this is a *limit of the instrument*, not evidence of no leakage (the honest headline; see research/18).
 
+## UCI Diabetes 130 (healthcare)
+
+**Correlation error (lower = better)**
+
+| mechanism | ε=0.5 | ε=1 | ε=2 | ε=4 | ε=8 |
+|---|---|---|---|---|---|
+| **independent** | 0.4526 | 0.4529 | 0.4520 | 0.4525 | 0.4513 |
+| **pairwise** | 0.3506 | 0.3551 | 0.3477 | 0.3572 | 0.3838 |
+| **aim** *(ours)* | 0.1546 | 0.1096 | 0.1256 | 0.1176 | 0.1198 |
+| **mst** *(ours)* | 0.1052 | 0.1125 | 0.1088 | 0.1108 | 0.1111 |
+
+**TSTR F1 (TRTR ceiling 0.473)**
+
+| mechanism | ε=0.5 | ε=1 | ε=2 | ε=4 | ε=8 |
+|---|---|---|---|---|---|
+| **independent** | 0.4690 | 0.4760 | 0.4763 | 0.4748 | 0.4745 |
+| **pairwise** | 0.4725 | 0.4815 | 0.4802 | 0.4797 | 0.4721 |
+| **aim** *(ours)* | 0.4712 | 0.4734 | 0.4795 | 0.4732 | 0.4743 |
+| **mst** *(ours)* | 0.4724 | 0.4824 | 0.4710 | 0.4760 | 0.4714 |
+
+**Proved ε (calibration never overspends)**
+
+| mechanism | ε=0.5 | ε=1 | ε=2 | ε=4 | ε=8 |
+|---|---|---|---|---|---|
+| **independent** | 0.4572 | 0.9156 | 1.8357 | 3.6831 | 7.4021 |
+| **pairwise** | 0.4572 | 0.9156 | 1.8357 | 3.6831 | 7.4021 |
+| **aim** *(ours)* | 0.3869 | 0.7820 | 1.5857 | 3.2223 | 6.5923 |
+| **mst** *(ours)* | 0.3771 | 0.7594 | 1.5343 | 3.1128 | 6.3602 |
+
+**Membership-inference AUC (0.5 = chance)**
+
+| mechanism | ε=0.5 | ε=1 | ε=2 | ε=4 | ε=8 |
+|---|---|---|---|---|---|
+| **independent** | 0.4887 | 0.4928 | 0.4927 | 0.4898 | 0.4921 |
+| **pairwise** | 0.5072 | 0.4965 | 0.5026 | 0.5101 | 0.5031 |
+| **aim** *(ours)* | 0.5060 | 0.5031 | 0.5158 | 0.4978 | 0.5038 |
+| **mst** *(ours)* | 0.5009 | 0.5037 | 0.5046 | 0.5004 | 0.4988 |
+
+_At ε=8 on UCI Diabetes 130 (healthcare) (n=6000, corr pair ('time_in_hospital', 'num_medications'), true corr 0.459):_
+
+- **Correlation preserved best by `mst`** (err 0.1111). `mst` leads here.
+- `aim` correlation error 0.1198 is better than the `pairwise` baseline (0.3838).
+- `mst` correlation error 0.1111 is better than the `pairwise` baseline (0.3838).
+- **Best downstream ML (TSTR F1) by `independent`** (0.4745 vs TRTR ceiling 0.4729 = 100% of real-data utility).
+- **Privacy audit:** audited ε = 0.000 for every mechanism — the auditor's ceiling is below the proved ε at this canary budget, so this is a *limit of the instrument*, not evidence of no leakage (the honest headline; see research/18).
+
 ## Cross-dataset summary — best of each metric across ALL ε
 
 > The per-dataset analysis above snapshots ε=8; this table takes the best cell over the whole ε grid, because AIM/MST often peak at ε=1-2 then decline. `*` marks one of ours.
@@ -151,6 +197,7 @@ _At ε=8 on UCI Bank Marketing (n=6000, corr pair ('age', 'balance'), true corr 
 | UCI Adult | aim* @ ε=8 → 0.0105 | mst* @ ε=2 → 0.5554 (84%) |
 | ACSIncome (CA 2018) | pairwise @ ε=8 → 0.0202 | mst* @ ε=2 → 0.6984 (96%) |
 | UCI Bank Marketing | pairwise @ ε=8 → 0.0289 | mst* @ ε=1 → 0.4933 (88%) |
+| UCI Diabetes 130 (healthcare) | mst* @ ε=0.5 → 0.1052 | mst* @ ε=1 → 0.4824 (102%) |
 
 ## Literature anchors (quoted, not recomputed)
 

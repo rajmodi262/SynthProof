@@ -110,3 +110,19 @@
   correlated Bank all mechanisms converge; **audited ε = 0 for every mechanism/dataset**
   (instrument-limited — the honesty is the point). Proved-ε and MIA-AUC shown as context, not
   highlighted as a contest (differences are noise around chance). ruff+black clean. Commit + push.
+- **2026-09-17 run 12 — HEALTHCARE dataset added + full 4-mechanism grid.** The project's datasets
+  were census (Adult, ACS) + finance (Bank) — the "healthcare" the team told the guide about was
+  missing. Added a REAL healthcare table: **UCI Diabetes 130-US Hospitals** (Strack et al. 2014,
+  99,492 clean encounters, 30-day-readmission task), digest-pinned, with `load_diabetes130` +
+  `diabetes130_schema` (10 clinical columns; codebook bounds; ICD/ID/high-missing columns excluded;
+  target binarised to early readmission) + `tests/test_diabetes130.py` (7 tests incl. declared
+  bounds contain raw data). Wired into `run_h1.py` (`--dataset diabetes`, corr pair
+  time_in_hospital×num_medications=0.46) and both comparison generators. Ran the **full 4-mechanism
+  grid** (independent/pairwise/aim/mst × 5 seeds × 5 ε) → `results/diabetes/h1_all_families.json`.
+  **Result — the clearest structural win for our mechanisms:** at ε=8 AIM 0.120 / MST 0.111
+  correlation error vs baselines 0.45/0.38 (~4× better); MST best on BOTH corr and F1 on healthcare
+  (F1 102% of the imbalanced-task TRTR ceiling — synthetic ≈ real). Audited ε=0 for all
+  (instrument-limited, as everywhere). Reports regenerated (now 4 datasets: census×2, finance,
+  healthcare): `research/23_mechanism_comparison.md`, `research/Mechanism-Comparison.{html,pdf}`.
+  Fixed a cosmetic "MST pending" banner (MST lives in the base grid for diabetes). ruff+black clean;
+  guardrail + loader tests pass. All datasets the guide was told about are now genuinely covered.

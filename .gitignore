@@ -73,6 +73,7 @@ results/acs/h2_cells/
 results/mst_cells/
 results/acs/mst_cells/
 results/bank/mst_cells/
+results/diabetes/h1_cells/
 # folktables downloads ACS microdata here; ~200 MB, re-fetchable
 data/acs/
 
