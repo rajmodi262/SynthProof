@@ -196,3 +196,12 @@
   0.1106→0.1091 (ε=2) — modest, consistent, budget always ≤ cap. 3 new tests (no-overspend,
   opt-in-default-off, no-regression); 12 AIM tests pass. Honest: fidelity fix, NOT novelty (AIM as
   published already anneals). ruff+black clean. Commit+push.
+- **2026-09-17 run 18 — CONTRIBUTION REPORT (colourful PDF).** Built `scripts/gen_contribution_report.py`
+  → `research/Contribution-Report.{html,pdf}` (3 pages): (1) hero + quantified problem (0/290 HF,
+  0/12 deployments, blind trust) + 3 contribution pillars (RB1–14 auditor, signed checkable label,
+  gated pipeline) + honest-novelty banner; (2) the **per-paper difference matrix** P1–P11 (what they
+  do / the exact gap / what SynthProof adds — quoted from research/18, Claude-verified) + results
+  charts (4-dataset ML utility reaching real-data ceiling; GDP μ>0 vs canary 0.000); (3) dataset
+  cards + **honesty ledger** (drop 15/15 & recover-original; audited ε=0 instrument-limited;
+  multi-table synthesis not built; generators are integrations) + one-liner. Every number read from
+  committed results; nothing invented. ruff+black clean. Sent to user.
