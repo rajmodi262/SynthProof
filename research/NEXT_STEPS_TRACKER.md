@@ -11,7 +11,7 @@
 | T4 | **Audit-power honesty** — state the black-box loose bound + cite P2 (or stronger estimator) | medium | ✅ |
 | T5 | **Scale the case study** beyond public hubs (real DP registries) | medium | ✅ |
 | T6 | Extend `boundary-audit` to more mechanisms / multi-table; propose as Croissant/Dibia extension | big | ◐ scoped |
-| T6a | New RB checks (public_invariants, discretization_source, amplification) | cheap | ☐ |
+| T6a | New RB checks (public_invariants, discretization_source, amplification) | cheap | ✅ |
 | T6b | Formal signed+checkable DP-release label spec (Croissant/Dibia extension) | medium | ☐ |
 | T6c | More generators (MST/PrivBayes) emitting boundary-clean sheets | medium | ☐ |
 | T6d | Multi-table / relational release boundary | BIG (research) | ☐ future/Paper 2 |

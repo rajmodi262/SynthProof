@@ -332,7 +332,130 @@ def _contribution(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
     ]
 
 
-_CHECKS = (_seed, _row_count, _fingerprint, _evaluation, _cross_check, _domain, _contribution)
+_SOUND_DISCRETIZATION = ("uniform-public", "dp-charged", "declared", "not-applicable")
+
+
+def _public_invariants(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
+    """RB8. Quantities the producer declares as published OUTSIDE epsilon (e.g. the 2020 Census
+    invariants: exact state totals, structural zeros). A declared invariant with a stated basis is
+    a sound outside-epsilon label; one without a basis reads like an uncharged private statistic."""
+    inv = sheet.get("public_invariants")
+    if not inv:
+        return []
+    if isinstance(inv, Mapping):
+        items = [{"name": k, "basis": v} for k, v in inv.items()]
+    elif isinstance(inv, (list, tuple)):
+        items = [x if isinstance(x, Mapping) else {"name": x, "basis": None} for x in inv]
+    else:
+        items = [{"name": str(inv), "basis": None}]
+    missing = [str(i.get("name")) for i in items if not i.get("basis")]
+    if missing:
+        return [
+            BoundaryFinding(
+                "RB8",
+                UNVERIFIABLE,
+                "public_invariants",
+                f"{len(missing)} invariant(s) declared outside epsilon with no stated basis: "
+                f"{', '.join(missing)}.",
+                "A quantity published outside the budget needs a reason (statutory, public "
+                "aggregate, structural zero); without one a reader cannot tell a policy invariant "
+                "from an uncharged private statistic.",
+                "Give each public invariant a basis, e.g. 'statutory' or 'structural-zero'.",
+            )
+        ]
+    names = ", ".join(str(i.get("name")) for i in items)
+    return [
+        BoundaryFinding(
+            "RB8",
+            NOTE,
+            "public_invariants",
+            f"{len(items)} quantity(ies) declared outside epsilon with a stated basis: {names}.",
+            "They are labelled as published outside the budget by policy, so a reader will not "
+            "mistake them for epsilon-covered outputs (cf. the 2020 Census invariants).",
+            "None. The exact values still rest on the declaration; a private count also trips RB2.",
+        )
+    ]
+
+
+def _discretization(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
+    """RB9. How continuous columns were binned. Bins read from the data (quantile, k-means) and not
+    charged release the input distribution outside epsilon (Ganev et al., 2504.06923)."""
+    src = sheet.get("discretization_source")
+    if src is None:
+        return []
+    if src == "data-derived":
+        return [
+            BoundaryFinding(
+                "RB9",
+                LEAK,
+                "discretization_source",
+                "Bin edges were chosen from the sensitive data (e.g. quantile or k-means) and not "
+                "charged.",
+                "Data-derived bins release information about the input distribution outside "
+                "epsilon; reading the binning off the data can break end-to-end DP.",
+                "Use uniform bins over the public domain, or charge the discretiser (PrivTree).",
+            )
+        ]
+    if src in _SOUND_DISCRETIZATION:
+        return []
+    return [
+        BoundaryFinding(
+            "RB9",
+            UNVERIFIABLE,
+            "discretization_source",
+            f"discretization_source = {src!r} is not a recognised basis.",
+            "An unrecognised basis gives no reason to believe the bins were public or charged.",
+            "Use uniform-public, dp-charged, declared, or not-applicable.",
+        )
+    ]
+
+
+def _amplification(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
+    """RB10. If a release claims a smaller epsilon via amplification (subsampling, missingness), the
+    assumption must be stated or the published epsilon is an unverifiable under-estimate (P7)."""
+    amp = sheet.get("privacy_amplification")
+    if not amp:
+        return []
+    basis = amp.get("basis") if isinstance(amp, Mapping) else None
+    factor = amp.get("factor") if isinstance(amp, Mapping) else None
+    if not basis:
+        return [
+            BoundaryFinding(
+                "RB10",
+                LEAK,
+                "privacy_amplification",
+                "The release claims amplified (smaller) epsilon but states no amplification basis.",
+                "An amplification factor with no stated assumption (subsampling rate, MCAR "
+                "missingness) cannot be checked, and a wrong assumption makes the published "
+                "epsilon an under-estimate.",
+                "State the basis and its assumption, e.g. 'poisson-subsampling q=0.01' or "
+                "'mcar-missingness'.",
+            )
+        ]
+    return [
+        BoundaryFinding(
+            "RB10",
+            NOTE,
+            "privacy_amplification",
+            f"Epsilon is amplified (factor {factor}) on a stated basis: {basis}.",
+            "The tighter epsilon rests on the stated assumption, which a reader can check.",
+            "None, provided the assumption holds.",
+        )
+    ]
+
+
+_CHECKS = (
+    _seed,
+    _row_count,
+    _fingerprint,
+    _evaluation,
+    _cross_check,
+    _domain,
+    _contribution,
+    _public_invariants,
+    _discretization,
+    _amplification,
+)
 
 
 # --------------------------------------------------------------------------- entry points

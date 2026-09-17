@@ -189,3 +189,39 @@ def test_the_cli_emits_json(keys, tmp_path):
     payload = json.loads(r.output)
     assert payload["passed"] is True
     assert payload["artefact"] == "privacy-data-sheet"
+
+
+def _codes(sheet):
+    return {f.code: f for f in boundary.audit_sheet(sheet).findings}
+
+
+def test_rb8_public_invariants_declared_vs_undeclared():
+    """RB8: an invariant declared outside epsilon WITH a basis is a sound label (note); WITHOUT a
+    basis it cannot be told from an uncharged private statistic (unverifiable)."""
+    ok = _codes({"public_invariants": [{"name": "state_total", "basis": "statutory"}]})
+    assert "RB8" in ok and ok["RB8"].severity == boundary.NOTE
+    # reintroduce the defect: drop the basis
+    bad = _codes({"public_invariants": ["state_total", "structural_zero"]})
+    assert bad["RB8"].severity == boundary.UNVERIFIABLE
+    # absent -> no RB8 finding at all
+    assert "RB8" not in _codes({"num_rows": 1})
+
+
+def test_rb9_discretization_source():
+    """RB9: bins read from the data (uncharged) are a leak; public/charged bins are sound."""
+    assert "RB9" not in _codes({"discretization_source": "uniform-public"})
+    assert "RB9" not in _codes({"discretization_source": "dp-charged"})
+    leak = _codes({"discretization_source": "data-derived"})
+    assert leak["RB9"].severity == boundary.LEAK
+    unknown = _codes({"discretization_source": "quantile-magic"})
+    assert unknown["RB9"].severity == boundary.UNVERIFIABLE
+    assert "RB9" not in _codes({})  # not stated / not applicable
+
+
+def test_rb10_amplification_disclosure():
+    """RB10: a claimed amplification with no stated basis is a leak; with a basis it is a note."""
+    leak = _codes({"privacy_amplification": {"factor": 0.3}})
+    assert leak["RB10"].severity == boundary.LEAK
+    ok = _codes({"privacy_amplification": {"factor": 0.3, "basis": "poisson-subsampling q=0.01"}})
+    assert ok["RB10"].severity == boundary.NOTE
+    assert "RB10" not in _codes({})
