@@ -13,7 +13,7 @@
 | T6 | Extend `boundary-audit` to more mechanisms / multi-table; propose as Croissant/Dibia extension | big | ◐ scoped |
 | T6a | New RB checks (public_invariants, discretization_source, amplification) | cheap | ✅ |
 | T6b | Formal signed+checkable DP-release label spec (Croissant/Dibia extension) | medium | ✅ |
-| T6c | More generators (MST/PrivBayes) emitting boundary-clean sheets | medium | ☐ |
+| T6c | More generators (MST/PrivBayes) emitting boundary-clean sheets | medium | ✅ (grid run deferred) |
 | T6d | Multi-table / relational release boundary | BIG (research) | ☐ future/Paper 2 |
 
 ## Run log
@@ -64,3 +64,21 @@
   named `boundary-audit` in `cli.py` (the second shadows the first → dead code); flagged as a
   spawn-task chip, not fixed here. Next: T6c (MST/PrivBayes generators, compute-bound), T6d
   (multi-table, Paper 2 / declared future).
+- **2026-09-17 run 9 — T6c DONE (engineering; full grid run deferred).** Added
+  `synthproof/generators/mst.py` — an **MST generator** (McKenna/Miklau/Sheldon, NIST 2018
+  winner): same select-measure-generate family as AIM over private-PGM, but the model class is
+  fixed to a **spanning tree** (d-1 edges chosen Kruskal-style with a union-find no-cycle
+  constraint). It **reuses AIM's exact accounting primitives** — same `Accountant.charge` calls,
+  same Gaussian(sens 1)/Laplace(sens 2) split — so the composed ε is charged through the verified
+  path; the only change is restricting the report-noisy-max argmax to cycle-free candidates, which
+  does not change selection sensitivity. Registered as `mst` behind the mbi guard in
+  `experiment.py`. Tests `tests/test_mst.py` (10; 9 run + 1 skip-without-mbi): spanning-tree
+  property (exactly 2 edges over 3 columns, cycle refused), charges selection+measurement without
+  overspending, preserves correlation, respects schema bounds, degrades to 1-way under a tiny
+  model budget, union-find cycle detection. **Verified live:** `synthproof run --mechanism mst`
+  emits a sheet that **boundary-audit PASSES (0 leaks, exit 0)**, proved ε=3.72 < requested 4.0.
+  ruff+black clean; generators+AIM regression green. Honest deferral: the full **H1 5×5 grid
+  benchmark row** for MST is the compute-bound remainder (deliberate run, extends committed
+  results) — the mechanism is grid-ready but the grid was not run here. PrivBayes not added (MST
+  is the representative second select-measure mechanism; PrivBayes is a different family and a
+  larger add). Next: T6d (multi-table, declared future / Paper 2).

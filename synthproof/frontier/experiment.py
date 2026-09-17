@@ -67,6 +67,14 @@ if mbi_available():
 
     MECHANISMS["fixed_workload"] = FixedWorkloadGenerator
 
+    # MST: the same select-measure-generate family as AIM, but with the model class fixed to a
+    # spanning tree (d-1 edges chosen Kruskal-style) rather than AIM's adaptive, unconstrained
+    # selection. Registered behind the same mbi guard because it shares private-PGM. See
+    # generators/mst.py.
+    from synthproof.generators.mst import MSTGenerator
+
+    MECHANISMS["mst"] = MSTGenerator
+
 
 @dataclass
 class Interval:
