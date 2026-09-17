@@ -113,3 +113,6 @@ research/litsurvey/datasets/
 research/litsurvey/literature surveys/
 
 research/litsurvey/literature with datasets/
+
+# Generated release bundles (contain a generated keypair); regenerate with scripts/build_release.py
+release/

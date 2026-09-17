@@ -155,3 +155,18 @@
   **Honest boundary kept:** the CHECKS ship; there is still NO validated multi-table GENERATOR to run
   them against — that (and the degree-truncation accounting) remains declared future work / Paper 2.
   ruff+black clean; 33 boundary+label tests pass. Commit + push.
+- **2026-09-17 run 15 — Publication Track 3: bulletproof end-to-end release pipeline.** Added
+  `scripts/build_release.py`: one reproducible command that synthesises -> signs (Ed25519) ->
+  emits Croissant, then asserts every gate from the artifacts alone: GATE 1 boundary-audit
+  RB1-RB14 (no leak), GATE 2 DP-release-label conformance (signature+range+boundary), GATE 3
+  signature verifies, GATE 4 (soft) official MLCommons validator. Writes one `release_report.json`
+  with artifact SHA-256s + each gate's verdict; exits nonzero if any hard gate fails. Verified on
+  toy/aim: all 3 hard gates PASS, exit 0. **Integration test** `tests/test_build_release.py` (slow)
+  runs the whole chain on the toy table and asserts all hard gates pass. **Real improvement found +
+  fixed while wiring it:** the pipeline used a keyed HMAC fingerprint but the sheet never DECLARED
+  it, so RB3 stayed "unverifiable". Added `fingerprint_scheme` + `fingerprint_key_id` (a public
+  key commitment via `certificate.fingerprint_key_id`) to the emitted sheet -> RB3 now reads as a
+  checkable NOTE, exercising the RB3 improvement from run 13. 146 certificate/croissant/api/
+  boundary/capsule tests still pass; ruff+black clean; release/ gitignored (contains a keypair).
+  Next: Track 1 (auditor+label hardened into the paper core, with the non-eps-channel prior-art
+  gate), Track 2 (tight GDP audit of the real pipeline).

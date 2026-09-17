@@ -119,6 +119,11 @@ class PrivacyDataSheet:
     # HMAC-SHA-256 of the input table under the curator's secret key, or None without one. An
     # unkeyed hash would be a membership test (PUBLIC_RELEASE_BOUNDARY.md, D3).
     input_fingerprint: Optional[str] = None
+    # How the fingerprint was computed, and a public commitment to the key. Declaring these turns
+    # boundary-audit RB3 from "unverifiable" into a checkable NOTE: a reader sees the fingerprint
+    # is keyed, and a signed sheet binds the producer to that claim.
+    fingerprint_scheme: Optional[str] = None  # "hmac-sha256" when keyed; None when no fingerprint
+    fingerprint_key_id: Optional[str] = None  # commitment to the key, not the key itself
     # Where `num_rows` came from: protocol | declared | dp_count.
     release_rows_source: str = "unknown"
     # Epsilon a dp_count size cost. Already included in total_proved_eps.
@@ -271,6 +276,16 @@ def input_fingerprint(df: pd.DataFrame, key: bytes) -> str:
     """
     content = pd.util.hash_pandas_object(df, index=False).values.tobytes()  # type: ignore[union-attr]  # pandas-stubs: .values is ndarray for our numeric frames
     return hmac.new(key, content, hashlib.sha256).hexdigest()
+
+
+def fingerprint_key_id(key: bytes) -> str:
+    """A PUBLIC commitment to the fingerprint key: SHA-256 of a domain-separated tag plus the key,
+    truncated. It names WHICH secret key the fingerprint is keyed under without revealing the key
+    (SHA-256 is preimage-resistant), so a reader can see the fingerprint is keyed and, in a signed
+    sheet, the producer is bound to that claim -- which is what turns boundary-audit RB3 from
+    "unverifiable" into a checkable NOTE. It is a commitment, not a proof the fingerprint used it.
+    """
+    return hashlib.sha256(b"synthproof-fingerprint-key-commitment\x00" + key).hexdigest()[:16]
 
 
 class FrontierEngine:
@@ -461,6 +476,10 @@ class FrontierEngine:
             domain_source=domain_source,
             contribution_bound=contribution_bound,
             input_fingerprint=fingerprint,
+            fingerprint_scheme=("hmac-sha256" if fingerprint_key is not None else None),
+            fingerprint_key_id=(
+                fingerprint_key_id(fingerprint_key) if fingerprint_key is not None else None
+            ),
             audit_ceiling=(
                 ceiling_for("one_run", num_canaries).value if num_canaries > 1 else None
             ),
