@@ -88,32 +88,31 @@ H1_ONLY = {
 }
 
 
-def _load(name: str):
+def _subsample(ds, rows):
+    """Subsample to `rows` at seed 0, or keep the FULL table when rows is 0/None or >= len."""
+    if rows and 0 < rows < len(ds.df):
+        ds.df = ds.df.sample(n=rows, random_state=0).reset_index(drop=True)
+    return ds
+
+
+def _load(name: str, rows: int = N_ROWS):
     if name == "adult":
         from synthproof.data.datasets import load_adult
 
-        ds = load_adult()
-        ds.df = ds.df.sample(n=N_ROWS, random_state=0).reset_index(drop=True)
-        return ds, None
+        return _subsample(load_adult(), rows), None
     if name == "acs":
         from synthproof.data.acs import load_acs_income
 
-        return load_acs_income(n_rows=N_ROWS, seed=0, download=True)
+        # ACS is loaded already-sampled; 0 asks for the full CA-2018 pool.
+        return load_acs_income(n_rows=(rows or 10**9), seed=0, download=True)
     if name == "bank":
         from synthproof.data.datasets import load_bank_marketing
 
-        ds = load_bank_marketing()
-        # Same N_ROWS and same seed as the other two, so a difference between datasets is
-        # attributable to the data and not to the sample size.
-        ds.df = ds.df.sample(n=N_ROWS, random_state=0).reset_index(drop=True)
-        return ds, None
+        return _subsample(load_bank_marketing(), rows), None
     if name == "diabetes":
         from synthproof.data.datasets import load_diabetes130
 
-        ds = load_diabetes130()
-        # Same N_ROWS and seed as the others so the comparison is about the data, not the size.
-        ds.df = ds.df.sample(n=N_ROWS, random_state=0).reset_index(drop=True)
-        return ds, None
+        return _subsample(load_diabetes130(), rows), None
     raise SystemExit(f"Unknown dataset {name!r}. Choose from {sorted(DATASETS)}.")
 
 
@@ -151,18 +150,26 @@ def main():
         help="checkpoint dir override. Give a distinct dir when running a mechanism subset so its "
         "cells are not mixed with a committed full-grid run.",
     )
+    ap.add_argument(
+        "--rows",
+        type=int,
+        default=N_ROWS,
+        help=f"rows to use (default {N_ROWS}). Pass 0 for the FULL table (every row). Full runs "
+        "are recorded as full_dataset=True in the payload and must use a distinct --out.",
+    )
     args = ap.parse_args()
 
     eps_grid = tuple(args.eps) if args.eps else EPS_GRID
     seeds = tuple(args.seeds) if args.seeds else SEEDS
     reduced = (eps_grid != EPS_GRID) or (seeds != SEEDS)
+    full_dataset = args.rows == 0
 
     cfg = dict(DATASETS[args.dataset])
     if args.out:
         cfg["out"] = args.out
     if args.checkpoints:
         cfg["checkpoints"] = args.checkpoints
-    ds, fingerprint = _load(args.dataset)
+    ds, fingerprint = _load(args.dataset, rows=args.rows)
     a, b = cfg["corr_cols"]
     true_corr = ds.df[a].corr(ds.df[b])
 
@@ -182,6 +189,11 @@ def main():
             "preregistered grid and is recorded as reduced in the output."
         )
     print("utility measured on a SECOND, canary-free fit (contamination fix)")
+    if full_dataset:
+        print(
+            f"FULL-DATASET RUN -- every row (n={ds.num_rows}). Heavier and memory-bound for "
+            "AIM/MST; the model-size bound skips blow-up cliques rather than crashing."
+        )
     if unknown:
         print(
             f"WARNING: {unknown} requested but unavailable (private-pgm needs Python >= 3.11), "
@@ -227,6 +239,7 @@ def main():
         "eps_grid": list(eps_grid),
         "seeds": list(seeds),
         "reduced_run": reduced,
+        "full_dataset": full_dataset,
         "target_col": cfg["target_col"],
         "corr_cols": list(cfg["corr_cols"]),
         "true_correlation": float(true_corr),
