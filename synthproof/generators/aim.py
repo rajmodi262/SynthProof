@@ -125,6 +125,7 @@ class AIMGenerator(BaseGenerator):
         rounds: int = DEFAULT_ROUNDS,
         selection_frac: float = DEFAULT_SELECTION_FRAC,
         max_model_mb: float = DEFAULT_MAX_MODEL_MB,
+        adaptive_budget: bool = False,
     ):
         super().__init__(seed=seed)
         if not (0.0 < selection_frac < 1.0):
@@ -135,6 +136,12 @@ class AIMGenerator(BaseGenerator):
         self.rounds = rounds
         self.selection_frac = selection_frac
         self.max_model_mb = max_model_mb
+        # OPT-IN budget annealing after AIM (McKenna et al. 2022 §4): when a round's measurement is
+        # drowned by noise, HALVE its sigma next round (spend more), concentrating the fixed budget
+        # into the informative marginals instead of spreading it evenly. Default False keeps the
+        # conservative fixed split, so every committed H1 number stays valid. Safety: each spend is
+        # dry-run against the accountant first, so annealing can never exceed the budget.
+        self.adaptive_budget = adaptive_budget
         # Cliques refused by the size bound. Recorded rather than dropped silently: a
         # marginal we declined to measure is a limitation of the run, not a detail.
         self.skipped_cliques_: List[Tuple[str, ...]] = []
@@ -245,6 +252,9 @@ class AIMGenerator(BaseGenerator):
 
         # ---- adaptive rounds
         remaining = list(candidates)
+        # Per-round measurement sigma. In the fixed path it never changes (identical to before).
+        # In the adaptive path it HALVES after a noise-drowned round, per AIM's annealing.
+        round_sigma = meas_sigma
         for r in range(rounds):
             model = estimation.MirrorDescent().estimate(
                 # known_total=None: the model's total is private-pgm's minimum-variance estimate
@@ -291,10 +301,19 @@ class AIMGenerator(BaseGenerator):
                 est_y = np.asarray(model.project(cl).datavector(), dtype=float)
                 scores.append(float(np.abs(true_y - est_y).sum()))
 
-            accountant.charge(
-                MechanismSpec("laplace", sensitivity=2.0, noise_scale=sel_scale, steps=1),
-                run_id=f"aim_select_round_{r}",
-            )
+            sel_spec = MechanismSpec("laplace", sensitivity=2.0, noise_scale=sel_scale, steps=1)
+            meas_spec = MechanismSpec("gaussian", sensitivity=1.0, noise_scale=round_sigma, steps=1)
+            if self.adaptive_budget:
+                # Stop before overspending: if SELECTION plus this round's MEASUREMENT would not
+                # both fit, end the sweep rather than push past the budget. Gate selection here,
+                # and the measurement AFTER selection is charged (below), so the measurement is
+                # checked against the post-selection budget -- checking it here would ignore the
+                # selection spend and let the pair overrun. `dry_run` RETURNS the would-be epsilon
+                # (it does not raise); compare it to the budget. The accountant is the backstop.
+                if accountant.dry_run(sel_spec) > accountant.budget.epsilon:
+                    break
+
+            accountant.charge(sel_spec, run_id=f"aim_select_round_{r}")
             # Report-noisy-max: perturb every score and take the argmax. Equivalent in
             # guarantee to the exponential mechanism, and expressible in our accountant.
             gumbelish = sample_discrete_laplace(
@@ -303,16 +322,28 @@ class AIMGenerator(BaseGenerator):
             pick = int(np.argmax(np.asarray(scores) + gumbelish))
             clique = remaining.pop(pick)
 
+            if self.adaptive_budget and accountant.dry_run(meas_spec) > accountant.budget.epsilon:
+                break  # selection is spent, but the budget is never exceeded
+
             accountant.charge(
-                MechanismSpec("gaussian", sensitivity=1.0, noise_scale=meas_sigma, steps=1),
+                MechanismSpec("gaussian", sensitivity=1.0, noise_scale=round_sigma, steps=1),
                 run_id=f"aim_2way_{clique[0]}__{clique[1]}",
             )
             y = np.asarray(data.project(clique).datavector(), dtype=float)
             noise = sample_discrete_gaussian(
-                sigma=meas_sigma, size=y.size, seed=int(rng.integers(0, 2**31 - 1))
+                sigma=round_sigma, size=y.size, seed=int(rng.integers(0, 2**31 - 1))
             )
-            measurements.append(LinearMeasurement(y + noise, clique, stddev=meas_sigma))
+            measurements.append(LinearMeasurement(y + noise, clique, stddev=round_sigma))
             self.measured_cliques_.append(clique)
+
+            if self.adaptive_budget:
+                # AIM's annealing test: if the signal we were trying to capture (how far the model
+                # was off on this marginal, pre-measurement) is below the noise we just added to
+                # it, the measurement was noise-dominated -- halve sigma next round to get above
+                # the floor. E[L1 of Gaussian noise] = size * sigma * sqrt(2/pi).
+                expected_noise_l1 = float(y.size) * round_sigma * np.sqrt(2.0 / np.pi)
+                if scores[pick] <= expected_noise_l1:
+                    round_sigma = round_sigma / 2.0
 
         self._model = estimation.MirrorDescent().estimate(
             domain, measurements, known_total=None, iters=400  # see the note in the rounds loop

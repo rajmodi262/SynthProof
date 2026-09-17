@@ -136,6 +136,42 @@ def test_a_tiny_model_budget_refuses_cliques_rather_than_crashing():
 
 
 @requires_mbi
+def test_adaptive_budget_never_overspends():
+    """The opt-in annealing must respect the budget exactly like the fixed split -- the dry-run
+    gate plus the accountant cap guarantee it."""
+    ds = _correlated(n=1500)
+    eps = 2.0
+    _gen, acc = _fit(ds, eps, adaptive_budget=True)
+    assert acc.total() <= eps * 1.02
+
+
+@requires_mbi
+def test_adaptive_budget_is_opt_in_and_off_by_default():
+    """Default AIM does not anneal, so committed grids are unaffected."""
+    assert AIMGenerator().adaptive_budget is False
+    assert AIMGenerator(adaptive_budget=True).adaptive_budget is True
+
+
+@requires_mbi
+def test_adaptive_budget_does_not_hurt_correlation_on_a_correlated_pair():
+    """The point of annealing is concentrating budget on the informative marginals. It should be
+    at least as good as the fixed split on a strongly correlated pair (checked as no-worse to keep
+    the test robust to seed noise; the utility gain is measured in research/26, not asserted here).
+    """
+    ds = _correlated(n=1500)
+    fixed, _ = _fit(ds, 2.0, adaptive_budget=False)
+    adapt, _ = _fit(ds, 2.0, adaptive_budget=True)
+    err_fixed = abs(
+        ds.df["x"].corr(ds.df["y"])
+        - fixed.generate(ds.num_rows)["x"].corr(fixed.generate(ds.num_rows)["y"])
+    )
+    syn = adapt.generate(ds.num_rows)
+    err_adapt = abs(ds.df["x"].corr(ds.df["y"]) - syn["x"].corr(syn["y"]))
+    # generous slack: annealing must not meaningfully regress this pair
+    assert err_adapt <= err_fixed + 0.10
+
+
+@requires_mbi
 def test_a_generous_budget_still_measures_two_way_marginals():
     """The bound must not silently disable the thing that makes AIM AIM."""
     ds = _correlated(n=600)

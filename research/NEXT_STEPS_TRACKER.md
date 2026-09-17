@@ -183,3 +183,16 @@
   CLAUDE.md open-questions. Empirical backbone already in hand: 0/286 HF, 0/12 deployments, and a
   pipeline release that passes RB1–14 + MLCommons validator (`build_release.py`). Track 1 framing
   now gated and honest. Next: Track 2 (tight GDP audit of the real pipeline).
+- **2026-09-17 run 17 — Two publication engineering items (both requested).** (1) **Wild-audit
+  corpus refreshed** (live HF): 310 repos → 290 unique after fork-dedup, **0 declare DP with an ε**.
+  Headline updated 0/286 → **0/290** in research/25 and DP_RELEASE_LABEL_SPEC.md; results in
+  `research/wild_audit/honest_audit_results.json`. Seed-publication among non-DP synthetic data is
+  2/290 (0.7%), reported as a norm-DP-forbids prevalence, NOT breaches. (2) **AIM adaptive budget
+  (annealing) implemented opt-in** (`AIMGenerator(adaptive_budget=True)`, default False so committed
+  H1 grids are byte-identical): halves a round's σ after a noise-dominated round (AIM 2022 §4),
+  concentrating the fixed budget into informative marginals; every spend dry_run-gated so it can
+  NEVER exceed budget (fixed a dry_run-returns-not-raises bug during impl). Measured gain (research/26,
+  synthetic 4-col, 3 seeds): corr_err fixed→adapt 0.2865→0.2795 (ε=0.5), 0.1673→0.1558 (ε=1), 
+  0.1106→0.1091 (ε=2) — modest, consistent, budget always ≤ cap. 3 new tests (no-overspend,
+  opt-in-default-off, no-regression); 12 AIM tests pass. Honest: fidelity fix, NOT novelty (AIM as
+  published already anneals). ruff+black clean. Commit+push.
