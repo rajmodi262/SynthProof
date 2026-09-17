@@ -205,3 +205,14 @@
   cards + **honesty ledger** (drop 15/15 & recover-original; audited ε=0 instrument-limited;
   multi-table synthesis not built; generators are integrations) + one-liner. Every number read from
   committed results; nothing invented. ruff+black clean. Sent to user.
+- **2026-09-18 run 19 — FULL-DATASET run COMPLETE (every row, all 4 datasets).** After the naive
+  full run OOMed (memory accumulation across cells), `scripts/run_full_isolated.py` ran every cell
+  in a fresh subprocess (400 cells) with no OOM. Results in `results/full/{adult,bank,acs,diabetes}_h1_full.json`
+  (full_dataset=True), committed; per-cell artifacts gitignored. Sizes: Adult 30,162 · Bank 45,211 ·
+  ACS 195,665 · Diabetes 99,492 (vs 6k subsample). **Benefit of full data (best operating point):**
+  correlation error improves markedly — Bank pairwise 0.0289->0.0009 (32x), ACS 0.0202->0.0017 (12x),
+  Adult aim 0.0105->0.0072; downstream F1 up on Adult (84->92%) and Bank (88->90%); ACS F1 89% (was
+  96%), Diabetes ~flat. NOT uniform: at a fixed high eps some cells worsen because the DP domain grows
+  with n (budget spread thinner). Honest correction: earlier "mixed/no benefit" was an eps=8-only
+  slice; the best-of view shows full data clearly helps structure on 3/4. Contribution (auditor/label)
+  is row-count-independent regardless. Next: regenerate comparison + contribution reports on full data.
