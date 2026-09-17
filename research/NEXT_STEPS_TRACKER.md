@@ -126,3 +126,17 @@
   healthcare): `research/23_mechanism_comparison.md`, `research/Mechanism-Comparison.{html,pdf}`.
   Fixed a cosmetic "MST pending" banner (MST lives in the base grid for diabetes). ruff+black clean;
   guardrail + loader tests pass. All datasets the guide was told about are now genuinely covered.
+- **2026-09-17 run 13 — Two improvements: RB3 verifiability + GDP audit.** (1) **RB3 keyed
+  fingerprints made checkable** (commit 93da4ae): `boundary.py` gains a declared-scheme path —
+  `fingerprint_scheme=hmac-sha256` + `fingerprint_key_id` → NOTE (keyed claim bound under
+  signature, checkable accountability, not byte-verification); `sha256`/unkeyed → LEAK even on
+  modern sheets the legacy heuristic missed; keyed-no-key or unknown → UNVERIFIABLE. First RB check
+  to move the common honest case out of "unverifiable". 4 negative-control tests; spec updated;
+  28 tests pass. (2) **GDP audit demonstrated** (`scripts/run_gdp_audit.py` on independent/aim/mst
+  at 2000 runs/world → `results/gdp_audit_*.json`, write-up `research/24_gdp_audit.md`): mu_emp =
+  independent 0.363 / aim 0.183 / mst 0.151 — **informative (>0) where the H1 canary auditor gives
+  audited_eps=0.000** — all below the implied μ=0.5325 (correct ordering, no violation). Shows the
+  headline "audited ε=0" is substantially an ESTIMATOR artefact, not purely a ceiling. Heavy honesty
+  caveats recorded (worst-case 11-record replication, NOT a tight audit of AIM/MST as deployed;
+  weaker sklearn adversary → under-claims; conservative Clopper-Pearson; loose implied comparator;
+  not a novelty claim). The grid's audited_eps still uses Steinke; GDP is complementary. Commit+push.

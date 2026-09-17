@@ -1,0 +1,22 @@
+{
+  "replication_of": "Ganev, Annamalai & Kulynych, TPDP 2026, arXiv:2604.18352",
+  "is_novelty_claim": false,
+  "mechanism": "aim",
+  "target_eps": 1.0,
+  "delta": 0.01,
+  "runs_per_world": 2000,
+  "scored_per_world": 1000,
+  "adversary": "sklearn GradientBoosting on held-out half",
+  "mu_emp": 0.18327968951867213,
+  "ceiling_at_this_n": 5.359822537549039,
+  "implied_mu_from_eps_delta": 0.5325166485029029,
+  "mechanism_mu_from_composition": null,
+  "mean_noise_multiplier": null,
+  "fpr": 0.008,
+  "fnr": 0.965,
+  "threshold": 0.6972363563259696,
+  "alpha": 0.05,
+  "exceeds_implied": false,
+  "verdict": "AUDIT INFORMATIVE. mu_emp = 0.1833 against a ceiling of 5.3598 and an implied mu of 0.5325. The empirical bound sits below the proved bound, which is the expected and correct ordering.",
+  "elapsed_seconds": 248.3
+}
