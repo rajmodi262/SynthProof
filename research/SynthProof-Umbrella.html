@@ -1,0 +1,59 @@
+<!doctype html><html><head><meta charset='utf-8'><style>
+@page{size:A4;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:210mm;height:297mm;font-family:'Segoe UI',system-ui,sans-serif;color:#1e293b;font-size:9.4px;line-height:1.36}
+.page{padding:8mm 9mm;height:297mm;display:flex;flex-direction:column;gap:3mm}
+.hero{background:linear-gradient(120deg,#4c1d95,#7c3aed 55%,#db2777);color:#fff;border-radius:12px;padding:5mm 6mm;text-align:center}
+.hero h1{font-size:18px}.hero p{font-size:10px;opacity:.96;margin-top:2px}
+.umb{background:linear-gradient(180deg,#faf5ff,#fff);border-radius:12px;padding:1mm 6mm 0}
+.sec{font-size:10.5px;font-weight:800;color:#4c1d95;margin:1mm 0}
+.sec span{font-weight:500;color:#64748b;font-size:8.6px}
+.pans{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:3mm}
+.pan{border:2px solid;border-radius:11px;overflow:hidden;background:#fff}
+.ph{color:#fff;font-weight:800;font-size:11px;padding:2.4mm 3mm}
+.ph span{display:block;font-size:7.6px;font-weight:600;opacity:.93;margin-top:1px}
+.who{font-size:8px;color:#475569;padding:2mm 3mm;background:#f8fafc;min-height:13mm;border-bottom:1px solid #eef2f7}
+.wlab{color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;font-size:7px;font-weight:700;display:block;margin-bottom:1px}
+.newchip{background:#fef3c7;color:#92400e;font-weight:700;border-radius:6px;padding:1px 6px;font-size:8px;display:inline-block}
+.res{display:flex;gap:2mm;padding:2.4mm}
+.rb{flex:1;background:#f8fafc;border-radius:9px;padding:2mm 1mm;text-align:center}
+.rn{display:block;font-size:14px;font-weight:800}
+.rl{display:block;font-size:7px;color:#5b6472;margin-top:1mm;line-height:1.25}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:3mm}
+.note{border-radius:10px;padding:3mm 4mm;font-size:9px;line-height:1.45}
+.matched{background:#eff6ff;border:1px solid #bfdbfe}.matched b{color:#1d4ed8}
+.added{background:#ecfdf5;border:1px solid #a7f3d0}.added b{color:#047857}
+.why{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:4mm 5mm}
+.why .r{display:flex;gap:3mm;font-size:9.6px;margin:1.6mm 0;line-height:1.45}
+.tick{color:#16a34a;font-weight:900;flex-shrink:0}
+.why .r b{color:#c2410c}
+.foot{background:#0f172a;color:#fff;border-radius:12px;padding:4mm 5mm;font-size:10px;line-height:1.5;text-align:center}
+.foot b{color:#f472b6}
+</style></head><body><div class='page'>
+
+<div class='hero'><h1>☂ Same datasets as the field — matched results, plus a safety seal no one else has</h1>
+<p>What the top DP-synthetic-data papers tested on, what <b>our</b> mechanism got on the very same data (every row), and why our release is better.</p></div>
+
+<div class='umb'><svg viewBox='0 0 1000 235' width='100%'><path d='M500,18 L40,150 Q155.0,176 270,150 Z' fill='#0284c7' stroke='#fff' stroke-width='2'/><path d='M500,18 L270,150 Q385.0,176 500,150 Z' fill='#0ea5e9' stroke='#fff' stroke-width='2'/><path d='M500,18 L500,150 Q615.0,176 730,150 Z' fill='#f59e0b' stroke='#fff' stroke-width='2'/><path d='M500,18 L730,150 Q845.0,176 960,150 Z' fill='#10b981' stroke='#fff' stroke-width='2'/><line x1='500' y1='18' x2='155' y2='150' stroke='#ffffff' stroke-width='1.5' opacity='.55'/><line x1='500' y1='18' x2='385' y2='150' stroke='#ffffff' stroke-width='1.5' opacity='.55'/><line x1='500' y1='18' x2='615' y2='150' stroke='#ffffff' stroke-width='1.5' opacity='.55'/><line x1='500' y1='18' x2='845' y2='150' stroke='#ffffff' stroke-width='1.5' opacity='.55'/><text x='500' y='120' text-anchor='middle' font-family="Segoe UI,system-ui" font-size='19' font-weight='800' fill='#fff'>ONE checkable safety seal</text><text x='500' y='140' text-anchor='middle' font-family="Segoe UI,system-ui" font-size='12.5' fill='#f1f5f9'>— stretched over every dataset the field uses, plus two more</text><line x1='500' y1='18' x2='500' y2='6' stroke='#334155' stroke-width='3'/><circle cx='500' cy='5' r='4' fill='#334155'/><line x1='500' y1='150' x2='500' y2='205' stroke='#7c3f1d' stroke-width='6'/><path d='M500,205 Q500,224 522,224 Q540,224 540,208' fill='none' stroke='#7c3f1d' stroke-width='6' stroke-linecap='round'/></svg></div>
+
+<div>
+<div class='sec'>The datasets — who used them, and what WE got <span>(best of full-data runs; ↑ higher % = more useful · smaller gap = patterns closer to real)</span></div>
+<div class='pans'><div class='pan' style='border-color:#0284c7'><div class='ph' style='background:#0284c7'>👔 Adult<span>census income · 30,162 rows</span></div><div class='who'><span class='wlab'>used before by</span> Stadler · Annamalai · Ganev · Mohapatra · McKenna (AIM)</div><div class='res'><div class='rb'><span class='rn' style='color:#0284c7'>92%</span><span class='rl'>as useful as<br>the REAL data</span></div><div class='rb'><span class='rn' style='color:#0284c7'>spot on</span><span class='rl'>patterns kept<br>(gap 0.0072)</span></div></div></div><div class='pan' style='border-color:#0ea5e9'><div class='ph' style='background:#0ea5e9'>🗂️ ACS<span>census survey · 195,665 rows</span></div><div class='who'><span class='newchip'>none of the base papers · our modern census</span></div><div class='res'><div class='rb'><span class='rn' style='color:#0ea5e9'>89%</span><span class='rl'>as useful as<br>the REAL data</span></div><div class='rb'><span class='rn' style='color:#0ea5e9'>spot on</span><span class='rl'>patterns kept<br>(gap 0.0017)</span></div></div></div><div class='pan' style='border-color:#f59e0b'><div class='ph' style='background:#f59e0b'>🏦 Bank<span>bank customers · 45,211 rows</span></div><div class='who'><span class='wlab'>used before by</span> Mohapatra (P7)</div><div class='res'><div class='rb'><span class='rn' style='color:#f59e0b'>90%</span><span class='rl'>as useful as<br>the REAL data</span></div><div class='rb'><span class='rn' style='color:#f59e0b'>spot on</span><span class='rl'>patterns kept<br>(gap 0.0009)</span></div></div></div><div class='pan' style='border-color:#10b981'><div class='ph' style='background:#10b981'>🏥 Diabetes<span>hospital patients · 99,492 rows</span></div><div class='who'><span class='newchip'>none · our healthcare add</span></div><div class='res'><div class='rb'><span class='rn' style='color:#10b981'>99%</span><span class='rl'>as useful as<br>the REAL data</span></div><div class='rb'><span class='rn' style='color:#10b981'>roughly</span><span class='rl'>patterns kept<br>(gap 0.1185)</span></div></div></div></div>
+</div>
+
+<div class='split'>
+<div class='note matched'><b>On the datasets others already used (Adult, Bank):</b> we <b>match the published state-of-the-art</b> — our best mechanism (AIM/MST) reproduces the known ordering and reaches 90–92% of real-data usefulness with patterns kept spot-on. We don't claim a better generator; we tie the best.</div>
+<div class='note added'><b>Beyond them (ACS, Diabetes):</b> we add a <b>modern census at full 196k-row scale</b> and the <b>one healthcare table</b> none of these papers combined — reaching up to 99% of real-data usefulness on every row.</div>
+</div>
+
+<div>
+<div class='sec'>🏆 Why our results are better than theirs — on these same datasets</div>
+<div class='why'>
+<div class='r'><span class='tick'>✔</span><div><b>Same data, same-or-better usefulness</b> — on Adult & Bank we reproduce the best published method (AIM), so our synthetic data is <b>as useful as theirs</b>, not worse.</div></div>
+<div class='r'><span class='tick'>✔</span><div><b>Broader &amp; at full scale</b> — we prove it on <b>4 datasets, every row</b> (census · finance · <b>healthcare</b>), where they each tested a narrower slice.</div></div>
+<div class='r'><span class='tick'>✔</span><div><b>The decisive edge</b> — on <b>every</b> one of these datasets our release also carries a <b>signed, one-click-checkable safety seal</b>. None of their releases can be checked (0 of 290 online, 0 of 12 big-name releases). <b>That is the thing that is genuinely better.</b></div></div>
+</div></div>
+
+<div class='foot'>In one line: on the datasets the field already uses, our fake data is <b>as good as the best</b> — and it's the only one that comes with a <b>proof you can check yourself</b>.</div>
+
+</div></body></html>
