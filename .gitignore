@@ -118,3 +118,4 @@ research/litsurvey/literature with datasets/
 release/
 results/full/*_cells/
 results/full/*/cells/
+results/full/percell/
