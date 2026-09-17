@@ -12,7 +12,7 @@
 | T5 | **Scale the case study** beyond public hubs (real DP registries) | medium | ✅ |
 | T6 | Extend `boundary-audit` to more mechanisms / multi-table; propose as Croissant/Dibia extension | big | ◐ scoped |
 | T6a | New RB checks (public_invariants, discretization_source, amplification) | cheap | ✅ |
-| T6b | Formal signed+checkable DP-release label spec (Croissant/Dibia extension) | medium | ☐ |
+| T6b | Formal signed+checkable DP-release label spec (Croissant/Dibia extension) | medium | ✅ |
 | T6c | More generators (MST/PrivBayes) emitting boundary-clean sheets | medium | ☐ |
 | T6d | Multi-table / relational release boundary | BIG (research) | ☐ future/Paper 2 |
 
@@ -46,4 +46,21 @@
   best-documented end. Honest caveats recorded (query vs synthetic release types; registry-summary basis).
 - **2026-09-17 run 6 — T6 SCOPED** → `research/22_T6_scope.md`: T6a new RB checks (cheap, first),
   T6b formal signed+checkable Croissant/Dibia label spec (medium), T6c more generators (compute),
-  T6d multi-table (BIG → Future/Paper 2). **Awaiting approval: do T6a+T6b now, defer T6c, mark T6d future?**
+  T6d multi-table (BIG → Future/Paper 2). Approved: DO ALL 6 a,b,c,d.
+- **2026-09-17 run 7 — T6a DONE** (commit ed12d38). Added RB8 `public_invariants` (P9/Census),
+  RB9 `discretization_source` (P5/Ganev), RB10 `amplification_disclosure` (P7/Mohapatra) to
+  `synthproof/audit/boundary.py`, each with a reintroduction negative-control test. 16 boundary
+  tests pass; ruff+black clean.
+- **2026-09-17 run 8 — T6b DONE.** Wrote `docs/design/DP_RELEASE_LABEL_SPEC.md` (v0.1): the
+  Privacy Data Sheet as a Croissant 1.1 extension implementing Dibia's nine categories + the two
+  gaps Dibia leaves (Ed25519 signature, operating-range/LoD field), with **conformance defined as
+  passing boundary-audit RB1–RB10**. Built `scripts/validate_release_label.py` — composes the
+  existing signature check + operating-range coherence + boundary-audit into one verdict with
+  distinct exit codes (0 conformant / 1 non-conformant / 2 not-fully-checked). Verified live on
+  real demo artefacts (all three exit paths) + 8 negative-control tests in
+  `tests/test_release_label.py` (leak, tamper, incoherent range, unsigned, unpinned, uninformative
+  audit). Honesty: unverifiable channels do NOT fail conformance (spec §5); asymmetry principle
+  restated (conformant ≠ private). ruff+black clean. **Side finding:** two Click commands both
+  named `boundary-audit` in `cli.py` (the second shadows the first → dead code); flagged as a
+  spawn-task chip, not fixed here. Next: T6c (MST/PrivBayes generators, compute-bound), T6d
+  (multi-table, Paper 2 / declared future).
