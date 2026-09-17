@@ -216,3 +216,12 @@
   with n (budget spread thinner). Honest correction: earlier "mixed/no benefit" was an eps=8-only
   slice; the best-of view shows full data clearly helps structure on 3/4. Contribution (auditor/label)
   is row-count-independent regardless. Next: regenerate comparison + contribution reports on full data.
+- **2026-09-18 run 20 — EXPLAINED report** (`scripts/gen_explained_report.py` →
+  `research/Explained-Report.{html,pdf}`, 4 pages, full-data): (1) plain-English explainers for the
+  five metrics (correlation error, TSTR F1 vs real-data ceiling, proved ε, audited ε/GDP μ,
+  MIA-AUC) — what each measures, a good value, and "so what"; (2) per-dataset interpretation in
+  sentences (relationships preserved / useful for ML / privacy holds), full rows; (3) **honest
+  per-paper verdict matrix** P1–P11 with colour tags (WE GO FURTHER/MAKE IT CHECKABLE/MATCH+STAY
+  HONEST/USE+EXTEND/COMPLEMENTARY) — careful framing: we MATCH the SOTA mechanisms, we LEAD only on
+  the signed checkable artifact; (4) the lead axis (0/290, 0/12, 14 checks) + honesty ledger. Every
+  number from committed full results; verdicts grounded in research/18 + research/25. ruff+black clean.
