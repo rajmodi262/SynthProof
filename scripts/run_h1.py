@@ -115,6 +115,19 @@ def main():
         help="seed set override (default: the preregistered 0 1 2 3 4)",
     )
     ap.add_argument("--out", default=None, help="output path override")
+    ap.add_argument(
+        "--mechanisms",
+        nargs="+",
+        default=None,
+        help="mechanism subset override (default: independent pairwise aim mst, those available). "
+        "Use to run one mechanism without re-running the others, e.g. --mechanisms mst.",
+    )
+    ap.add_argument(
+        "--checkpoints",
+        default=None,
+        help="checkpoint dir override. Give a distinct dir when running a mechanism subset so its "
+        "cells are not mixed with a committed full-grid run.",
+    )
     args = ap.parse_args()
 
     eps_grid = tuple(args.eps) if args.eps else EPS_GRID
@@ -124,11 +137,21 @@ def main():
     cfg = dict(DATASETS[args.dataset])
     if args.out:
         cfg["out"] = args.out
+    if args.checkpoints:
+        cfg["checkpoints"] = args.checkpoints
     ds, fingerprint = _load(args.dataset)
     a, b = cfg["corr_cols"]
     true_corr = ds.df[a].corr(ds.df[b])
 
-    mechs = tuple(m for m in ("independent", "pairwise", "aim") if m in MECHANISMS)
+    # MST is a registered select-measure mechanism (generators/mst.py); it belongs in the grid.
+    default_mechs = ("independent", "pairwise", "aim", "mst")
+    requested = tuple(args.mechanisms) if args.mechanisms else default_mechs
+    unknown = [m for m in requested if m not in MECHANISMS and m in default_mechs]
+    mechs = tuple(m for m in requested if m in MECHANISMS)
+    if not mechs:
+        raise SystemExit(
+            f"None of {list(requested)} are available. Known: {sorted(MECHANISMS)}."
+        )
     print(f"dataset: {cfg['label']}  n={ds.num_rows} x {ds.num_cols}")
     print(f"mechanisms: {mechs}")
     print(f"true corr{cfg['corr_cols']} = {true_corr:.4f}")
@@ -138,8 +161,11 @@ def main():
             "preregistered grid and is recorded as reduced in the output."
         )
     print("utility measured on a SECOND, canary-free fit (contamination fix)")
-    if "aim" not in mechs:
-        print("WARNING: private-pgm unavailable, so real AIM is NOT in this run.")
+    if unknown:
+        print(
+            f"WARNING: {unknown} requested but unavailable (private-pgm needs Python >= 3.11), "
+            "so they are NOT in this run."
+        )
 
     from pathlib import Path
 

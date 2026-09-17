@@ -13,7 +13,7 @@
 | T6 | Extend `boundary-audit` to more mechanisms / multi-table; propose as Croissant/Dibia extension | big | ✅ (a–c built; d designed as future) |
 | T6a | New RB checks (public_invariants, discretization_source, amplification) | cheap | ✅ |
 | T6b | Formal signed+checkable DP-release label spec (Croissant/Dibia extension) | medium | ✅ |
-| T6c | More generators (MST/PrivBayes) emitting boundary-clean sheets | medium | ✅ (grid run deferred) |
+| T6c | More generators (MST/PrivBayes) emitting boundary-clean sheets | medium | ✅ (MST H1 grid now run on all 3 datasets) |
 | T6d | Multi-table / relational release boundary | BIG (research) | ✅ designed → declared future/Paper 2 |
 
 ## Run log
@@ -96,3 +96,17 @@
   benchmark when compute allows; (2) recompile `paper/synthproof_ieee.pdf` on Overleaf (T4 left it
   stale); (3) the duplicate `boundary-audit` CLI command chip. All T6 work committed on
   `fix/selection-accounting`; push next.
+- **2026-09-17 run 11 — MST H1 grid RUN on all 3 datasets + cross-dataset comparison.** Ran the
+  full MST H1 grid (5 seeds × 5 ε) on **Adult, ACS, Bank** (`results/h1_mst_adult.json`,
+  `results/{acs,bank}/h1_mst.json`); the committed 3-mechanism grids were untouched (MST written to
+  separate files, merged at report time). Added `--mechanisms`/`--checkpoints` overrides to
+  `scripts/run_h1.py` and put `mst` in the default grid tuple. Built `build_mechanism_comparison.py`
+  → `research/23_mechanism_comparison.md` and `gen_comparison_report.py` →
+  `research/Mechanism-Comparison.{html,pdf}` (colourful, colour-coded, honest). **Findings:**
+  our select-measure mechanisms (AIM/MST) take the **best TSTR F1 on all 3 datasets** — MST hits
+  **96% of real-data F1 on ACS at ε=2**; AIM leads on structure (corr err 0.0105 on Adult,
+  reproducing the published ordering). **Honest limits:** MST does NOT dominate on correlation (its
+  spanning tree can omit the measured edge → falls to baseline level on Adult/Bank); on weakly-
+  correlated Bank all mechanisms converge; **audited ε = 0 for every mechanism/dataset**
+  (instrument-limited — the honesty is the point). Proved-ε and MIA-AUC shown as context, not
+  highlighted as a contest (differences are noise around chance). ruff+black clean. Commit + push.

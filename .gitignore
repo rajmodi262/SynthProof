@@ -70,6 +70,9 @@ docs/thesis/figures/*.png
 results/h1_cells/
 results/acs/h1_cells/
 results/acs/h2_cells/
+results/mst_cells/
+results/acs/mst_cells/
+results/bank/mst_cells/
 # folktables downloads ACS microdata here; ~200 MB, re-fetchable
 data/acs/
 
