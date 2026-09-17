@@ -10,11 +10,11 @@
 | T3 | **Census invariants** worked example — boundary-audit labels "fields outside ε" | cheap | ✅ |
 | T4 | **Audit-power honesty** — state the black-box loose bound + cite P2 (or stronger estimator) | medium | ✅ |
 | T5 | **Scale the case study** beyond public hubs (real DP registries) | medium | ✅ |
-| T6 | Extend `boundary-audit` to more mechanisms / multi-table; propose as Croissant/Dibia extension | big | ◐ scoped |
+| T6 | Extend `boundary-audit` to more mechanisms / multi-table; propose as Croissant/Dibia extension | big | ✅ (a–c built; d designed as future) |
 | T6a | New RB checks (public_invariants, discretization_source, amplification) | cheap | ✅ |
 | T6b | Formal signed+checkable DP-release label spec (Croissant/Dibia extension) | medium | ✅ |
 | T6c | More generators (MST/PrivBayes) emitting boundary-clean sheets | medium | ✅ (grid run deferred) |
-| T6d | Multi-table / relational release boundary | BIG (research) | ☐ future/Paper 2 |
+| T6d | Multi-table / relational release boundary | BIG (research) | ✅ designed → declared future/Paper 2 |
 
 ## Run log
 - **2026-09-17 run 0** — created tracker; reading `synthproof/audit/boundary.py` + the Privacy Data Sheet to plan T2. Next: T1 comparison + T2 code.
@@ -82,3 +82,17 @@
   results) — the mechanism is grid-ready but the grid was not run here. PrivBayes not added (MST
   is the representative second select-measure mechanism; PrivBayes is a different family and a
   larger add). Next: T6d (multi-table, declared future / Paper 2).
+- **2026-09-17 run 10 — T6d DONE (design; declared future / Paper 2).** Wrote
+  `docs/design/MULTITABLE_RELEASE_BOUNDARY.md` (v0.1, design only): defines the relational release
+  boundary rigorously — why single-table RB1–RB10 do not transfer, the **entity-level neighbour
+  relation** (row vs entity vs edge unit), **per-entity contribution over joins** via degree
+  truncation (cf. Cebere P3), and four **candidate** channel checks with no single-table analogue
+  (RB11 relational_unit, RB12 fk_degree, RB13 join_cardinality, RB14 cross_table_fingerprint).
+  **Explicitly NOT built and NOT validated** (honesty guardrail: never describe multi-table as
+  done/in-progress) — no relational generator, no RB11–RB14 in `boundary.py`, no relational label
+  fields; the doc states this in §6. This is the honest deliverable for a research-bet item: the
+  scope, not a rushed generator emitting unverifiable guarantees. **T6 parent COMPLETE:** a–c
+  built+tested, d designed as declared future work. Standing follow-ups: (1) run the MST H1 grid
+  benchmark when compute allows; (2) recompile `paper/synthproof_ieee.pdf` on Overleaf (T4 left it
+  stale); (3) the duplicate `boundary-audit` CLI command chip. All T6 work committed on
+  `fix/selection-accounting`; push next.
