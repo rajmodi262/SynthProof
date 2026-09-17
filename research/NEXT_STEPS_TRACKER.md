@@ -170,3 +170,16 @@
   boundary/capsule tests still pass; ruff+black clean; release/ gitignored (contains a keypair).
   Next: Track 1 (auditor+label hardened into the paper core, with the non-eps-channel prior-art
   gate), Track 2 (tight GDP audit of the real pipeline).
+- **2026-09-17 run 16 — Publication Track 1 GATE: prior-art check → `research/25`.** Resolved the
+  novelty question CLAUDE.md flagged as open. Web search (5 sources, all fetched-URL-cited):
+  (1) domain/metadata leakage is a KNOWN phenomenon (2022+, DP synthesizers) → RB6/RB9 catch a known
+  leak, contribution is making it checkable; (2) empirical MIA/GDP auditing is CROWDED
+  (Annamalai/Ganev 2405.10994, 2604.18352; Synth-MIA 2509.18014) → our GDP audit is replication;
+  (3) the machine-checkable label is PROPOSED by Dibia 2507.15997 ("automatic compliance checking")
+  but NOT built, unsigned, no operating-range. **Verdict: the signed, artefact-only, machine-checkable
+  conformance checker (boundary-audit RB1–RB14 + Ed25519 + operating range) is the surviving
+  contribution — engineering/integration novelty (implementing Dibia + filling its 2 gaps), never
+  "we invented non-ε auditing."** Updated `boundary.py` docstring (was "not checked yet") and
+  CLAUDE.md open-questions. Empirical backbone already in hand: 0/286 HF, 0/12 deployments, and a
+  pipeline release that passes RB1–14 + MLCommons validator (`build_release.py`). Track 1 framing
+  now gated and honest. Next: Track 2 (tight GDP audit of the real pipeline).

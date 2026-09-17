@@ -23,8 +23,13 @@ are both 64 hex characters. Every finding therefore carries one of three severit
                 makes it one;
   note          the artefact states a sound basis, and nothing in it contradicts that.
 
-NOT CLAIMED AS NOVEL. Whether auditing a DP release's non-epsilon channels has prior art has
-not been checked yet. Until it is, describe this as a checker, not a contribution.
+NOVELTY, CHECKED (research/25, 2026-09-17). The leak phenomena are partly known (domain/metadata
+leakage is documented for DP synthesizers -> RB6/RB9) and empirical MIA/GDP auditing is crowded.
+What is not built elsewhere is the thing this module is: a SIGNED, ARTEFACT-ONLY, machine-checkable
+conformance checker for a DP release label -- exactly what Dibia et al. (arXiv:2507.15997) propose
+and do not build. So describe this as an ENGINEERING/INTEGRATION contribution (implementing the
+proposed label + filling its signature and operating-range gaps), never as inventing non-epsilon
+auditing.
 """
 
 import re

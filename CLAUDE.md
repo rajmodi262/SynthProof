@@ -125,6 +125,14 @@ synopsis contributions locked · Q5 compute ceiling · Q6 ACS availability · Q7
 - *Does SDC already have the certificate concept?* **Partly.** SACRO + Five Safes gate releases
   and produce auditable records since 2022 — but SACRO reads output values and does not
   autonomously refuse. That is what leaves S3 standing.
+- *Is auditing a DP release's non-ε channels novel?* **CHECKED 2026-09-17 → `research/25`.** The
+  leak phenomena are partly known (domain/metadata leakage, 2022+ → RB6/RB9) and empirical MIA/GDP
+  auditing is crowded. The **signed, artefact-only, machine-checkable conformance checker**
+  (boundary-audit RB1–RB14) is NOT built elsewhere: Dibia (2507.15997) *proposes* a machine-checkable
+  label for "automatic compliance checking" but builds no checker, no signature, no operating-range.
+  Frame the paper as **implementation + the two gaps (signature, operating range)** — engineering/
+  integration novelty (S1+S2), never "we invented non-ε auditing." The `boundary.py` docstring now
+  says exactly this.
 
 **Still open, and they are the risks to the verdict:**
 - The SDC Handbook returned **HTTP 403**. S3 rests on one practice guide and one toolkit paper.
