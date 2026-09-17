@@ -66,6 +66,13 @@ DATASETS = [
         RESULTS / "diabetes/h1_mst.json",
     ),
 ]
+_NONE = RESULTS / "_none.json"  # full files hold all 4 mechanisms, so no separate MST file
+DATASETS_FULL = [
+    ("UCI Adult", "census", RESULTS / "full/adult_h1_full.json", _NONE),
+    ("ACSIncome CA-2018", "census", RESULTS / "full/acs_h1_full.json", _NONE),
+    ("UCI Bank Marketing", "finance", RESULTS / "full/bank_h1_full.json", _NONE),
+    ("UCI Diabetes 130", "healthcare", RESULTS / "full/diabetes_h1_full.json", _NONE),
+]
 GDP = {m: _load(RESULTS / f"gdp_audit_{m}.json") for m in ("independent", "aim", "mst")}
 WILD = _load(Path("research/wild_audit/honest_audit_results.json"))
 
@@ -211,10 +218,10 @@ def _mech_chart(rows):
     return f"<svg viewBox='0 0 {W} {H}' width='100%'>{bars}</svg>"
 
 
-def build_html() -> str:
+def build_html(datasets=DATASETS) -> str:
     ds_rows = []
     mech_pct = []
-    for label, dom, base_p, mst_p in DATASETS:
+    for label, dom, base_p, mst_p in datasets:
         b = _best_of(base_p, mst_p)
         if not b:
             continue
@@ -343,8 +350,16 @@ th{{background:var(--bg);font-weight:700}}
 
 
 def main() -> int:
-    out = Path("research/Contribution-Report.html")
-    out.write_text(build_html(), encoding="utf-8")
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--full", action="store_true", help="use full-dataset (every-row) results")
+    args = ap.parse_args()
+    datasets = DATASETS_FULL if args.full else DATASETS
+    out = Path(
+        "research/Contribution-Report-FULL.html" if args.full else "research/Contribution-Report.html"
+    )
+    out.write_text(build_html(datasets), encoding="utf-8")
     print(f"wrote {out}")
     return 0
 

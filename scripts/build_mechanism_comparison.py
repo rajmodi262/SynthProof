@@ -40,6 +40,26 @@ DATASETS = {
     ),
 }
 
+# Full-dataset variants (every row) produced by scripts/run_full_isolated.py. Each full file
+# already contains all four mechanisms, so there is no separate MST file.
+DATASETS_FULL = {
+    "adult": (RESULTS / "full/adult_h1_full.json", RESULTS / "_none.json", "UCI Adult (FULL)"),
+    "acs": (RESULTS / "full/acs_h1_full.json", RESULTS / "_none.json", "ACSIncome CA-2018 (FULL)"),
+    "bank": (
+        RESULTS / "full/bank_h1_full.json",
+        RESULTS / "_none.json",
+        "UCI Bank Marketing (FULL)",
+    ),
+    "diabetes": (
+        RESULTS / "full/diabetes_h1_full.json",
+        RESULTS / "_none.json",
+        "UCI Diabetes 130 (FULL, healthcare)",
+    ),
+}
+
+# Active dataset set (swapped to DATASETS_FULL by --full in main()).
+_ACTIVE = DATASETS
+
 # Our contribution's two select-measure mechanisms vs the marginal baselines.
 OURS = ("aim", "mst")
 BASELINES = ("independent", "pairwise")
@@ -78,7 +98,7 @@ def _fmt(cell: dict, key: str) -> str:
 
 
 def _merged(name: str) -> Dict[str, object]:
-    base_path, mst_path, label = DATASETS[name]
+    base_path, mst_path, label = _ACTIVE[name]
     base = _load(base_path)
     mst = _load(mst_path)
     if base is None:
@@ -225,6 +245,19 @@ def _summary_table(datasets: List[dict]) -> List[str]:
 
 
 def main() -> int:
+    import argparse
+
+    global _ACTIVE
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--full", action="store_true", help="use the full-dataset grids (every row)")
+    args = ap.parse_args()
+    _ACTIVE = DATASETS_FULL if args.full else DATASETS
+    out_file = (
+        "research/23b_mechanism_comparison_FULL.md"
+        if args.full
+        else "research/23_mechanism_comparison.md"
+    )
+
     out_lines = [
         "# 23 — Cross-dataset mechanism comparison (what ours does vs the others)",
         "",
@@ -243,7 +276,7 @@ def main() -> int:
 
     any_pending = False
     merged_all: List[dict] = []
-    for name in DATASETS:
+    for name in _ACTIVE:
         dataset = _merged(name)
         merged_all.append(dataset)
         if dataset.get("missing"):
@@ -290,7 +323,7 @@ def main() -> int:
             "built. Re-run this script after it completes for the full table._"
         )
 
-    out_path = Path("research/23_mechanism_comparison.md")
+    out_path = Path(out_file)
     out_path.write_text("\n".join(out_lines), encoding="utf-8")
     print(f"wrote {out_path}  (MST pending on some datasets: {any_pending})")
     return 0

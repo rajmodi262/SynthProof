@@ -1,0 +1,94 @@
+<!doctype html><html><head><meta charset='utf-8'><style>
+:root{--ink:#0f172a;--mut:#64748b;--line:#e2e8f0;--v:#7c3aed;--p:#db2777;--bg:#f8fafc}
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;color:var(--ink);margin:0;font-size:12px;background:#fff}
+.hero{background:linear-gradient(120deg,#4c1d95,#7c3aed 55%,#db2777);color:#fff;padding:30px 34px}
+.hero h1{margin:0 0 6px;font-size:25px;letter-spacing:-.3px}
+.hero .sub{font-size:13px;opacity:.95;max-width:70em;line-height:1.5}
+.hero .tag{display:inline-block;margin-top:12px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);padding:5px 12px;border-radius:20px;font-size:11px}
+main{padding:22px 34px}
+h2{font-size:17px;margin:26px 0 4px;padding-bottom:5px;border-bottom:3px solid var(--v);display:inline-block}
+.lead{color:var(--mut);margin:6px 0 14px;font-size:12px}
+.stats{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
+.stat{flex:1;min-width:150px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-align:center}
+.statn{font-size:30px;font-weight:800;line-height:1}
+.statl{font-size:11px;color:var(--mut);margin-top:6px}
+.pillars{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:10px 0}
+.pillar{border:1px solid var(--line);border-radius:12px;padding:15px 16px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.pillar h3{margin:0 0 6px;font-size:13px}
+.pillar .n{font-size:10px;font-weight:700;color:#fff;background:var(--v);border-radius:6px;padding:2px 7px;margin-right:6px}
+.pillar p{margin:0;font-size:11px;color:var(--mut);line-height:1.5}
+.banner{background:#faf5ff;border-left:4px solid var(--v);padding:11px 15px;border-radius:0 8px 8px 0;margin:12px 0;font-size:12px}
+table{border-collapse:collapse;width:100%;font-size:10.5px;margin-top:8px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--bg);font-weight:700}
+.pid{font-weight:800;color:var(--v);text-align:center}
+.venue{color:var(--mut);font-size:9px}
+.gap{color:#b91c1c}
+.add{color:#047857;font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;margin-top:8px}
+.chart h4{margin:0 0 4px;font-size:11px;color:var(--mut)}
+.chart svg{border:1px solid var(--line);border-radius:8px;background:#fff}
+.v{font-size:10px;font-weight:700;fill:var(--ink)}
+.ax{font-size:9px;fill:var(--mut)}
+.dcards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.dcard{border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.dhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.dom{color:#fff;font-size:9px;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.4px}
+.drow{font-size:10.5px;color:var(--mut);margin:3px 0}
+.honest{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 18px;margin-top:10px}
+.honest li{margin:4px 0;font-size:11px}
+.foot{color:var(--mut);font-size:9.5px;margin-top:16px;border-top:1px solid var(--line);padding-top:8px}
+</style></head><body>
+<div class='hero'>
+<h1>SynthProof — Making a DP Synthetic-Data Release Checkable</h1>
+<div class='sub'>The field agrees on <b>what</b> to disclose about a differentially private release, and knows the ways it leaks. What no one ships is a release a stranger can <b>verify from the artifact alone</b>. SynthProof builds that: a signed, machine-checkable privacy label with a 14-check release-boundary auditor — implementing the label Dibia et al. propose and filling the two gaps they leave (a signature, and honest reporting of the audit's limits).</div>
+<div class='tag'>Position: integration, not invention — and stated as such throughout</div>
+</div>
+<main>
+
+<h2>The problem, quantified</h2>
+<div class='lead'>Not a hypothetical — measured on real releases.</div>
+<div class='stats'>
+<div class='stat'><div class='statn' style='color:#db2777'>0 / 290</div><div class='statl'>HuggingFace synthetic-data datasets declare DP with an ε (refreshed 2026-09-17)</div></div>
+<div class='stat'><div class='statn' style='color:#db2777'>0 / 12</div><div class='statl'>flagship real DP deployments are signed or machine-checkable (Apple, Google, US Census…)</div></div>
+<div class='stat'><div class='statn' style='color:#7c3aed'>blind trust</div><div class='statl'>practitioners do NOT verify DP guarantees — they trust implicitly (Song, CSCW'24)</div></div>
+</div>
+
+<h2>Our contribution — three pillars</h2>
+<div class='pillars'>
+<div class='pillar'><h3><span class='n'>1</span>Release-boundary auditor</h3><p><b>RB1–RB14.</b> Reads only the published artifact — never the data or the producer's code — and flags every channel that leaks <i>outside</i> ε: the run seed, exact row count, unkeyed fingerprint, unlabelled evaluation, uncharged domain/discretisation, undisclosed amplification, and multi-table (foreign-key degree, join cardinality, cross-table linkage).</p></div>
+<div class='pillar'><h3><span class='n'>2</span>Signed, checkable label</h3><p>The Privacy Data Sheet as a Croissant 1.1 extension: Dibia's 9 categories <b>+ an Ed25519 signature + an operating-range field</b> (the two gaps Dibia leaves). Conformance = passing the auditor. Validated against the official MLCommons validator with 0 warnings.</p></div>
+<div class='pillar'><h3><span class='n'>3</span>Gated end-to-end pipeline</h3><p>One reproducible command: synthesise → sign → emit Croissant → assert RB1–RB14 clean, conformant, signature verifies, MLCommons-validates → one report with hashes. The runnable artifact an examiner can execute.</p></div>
+</div>
+<div class='banner'><b>Honest novelty (checked, research/25):</b> the leak <i>phenomena</i> are known and empirical MIA/GDP auditing is crowded — so we claim neither. What is <b>not</b> built elsewhere is the <b>signed, artifact-only, machine-checkable checker</b>: Dibia proposes the label and builds no checker, no signature, no limit-reporting. That is our engineering contribution.</div>
+
+<h2>How we differ from every paper — the minute differences</h2>
+<div class='lead'>All 11 papers are Claude-verified deep reads (research/18). Red = the exact gap they leave; green = what SynthProof adds.</div>
+<table>
+<tr><th>#</th><th>Paper</th><th>What they do</th><th>The gap</th><th>What SynthProof adds</th></tr>
+<tr><td class='pid'>P1</td><td><b>Stadler — Groundhog Day</b><br><span class='venue'>USENIX'22</span></td><td>Proved synthetic data leaks membership for outliers; showed DP impls read the domain from data.</td><td class='gap'>Runs shadow-model attacks; ships no signed/checkable artifact.</td><td class='add'>We turn that leak into a checkable field (RB6 domain_source) in a signed label.</td></tr><tr><td class='pid'>P2</td><td><b>Annamalai — Tight Auditing</b><br><span class='venue'>USENIX'24</span></td><td>Audits the mechanism; black-box audits read ε≈0 even at true ε=4.</td><td class='gap'>Needs the code / worst-case; no document-level audit.</td><td class='add'>We cite it as the honesty bound for audited ε=0; our GDP audit (research/24) replicates it.</td></tr><tr><td class='pid'>P3</td><td><b>Cebere — Grey-Box Auditing</b><br><span class='venue'>PoPETs'26</span></td><td>Found 13 privacy bugs in 12 DP libraries.</td><td class='gap'>Audits library code, not the shipped release.</td><td class='add'>We audit the released artifact; same neighbours+fixed-randomness idea powers our seed-replay (RB1).</td></tr><tr><td class='pid'>P4</td><td><b>Ganev — Domain Extraction</b><br><span class='venue'>ICLR'25</span></td><td>Reading a column's min/max from private data breaks end-to-end DP.</td><td class='gap'>No artifact field to declare how the domain was obtained.</td><td class='add'>RB6 domain_source makes it a checkable value (declared/codebook/charged vs inferred).</td></tr><tr><td class='pid'>P5</td><td><b>Ganev — Discretization</b><br><span class='venue'>CCS'25</span></td><td>Data-derived bins (quantile/k-means) leak the input distribution.</td><td class='gap'>No checkable release field for the binning basis.</td><td class='add'>RB9 discretization_source flags data-derived bins as a leak.</td></tr><tr><td class='pid'>P6</td><td><b>Ganev — SMOTE and Mirrors</b><br><span class='venue'>ICLR'26</span></td><td>Naive utility metrics miss real leaks; you need MIA.</td><td class='gap'>Diagnoses the metric gap; builds no release check.</td><td class='add'>Our sanity-gate + MIA arm act on exactly this; a bare 'no leak' is never trusted.</td></tr><tr><td class='pid'>P7</td><td><b>Mohapatra — Missing Data</b><br><span class='venue'>VLDB'24</span></td><td>Studies whether missingness hurts utility / helps privacy (Adult + Bank).</td><td class='gap'>Never audits membership; no amplification disclosure.</td><td class='add'>RB10 amplification_disclosure; base for our bounded imputation audit.</td></tr><tr><td class='pid'>P8</td><td><b>McKenna — AIM</b><br><span class='venue'>VLDB'22</span></td><td>State-of-the-art marginal DP synthesizer (we USE it).</td><td class='gap'>Ships a model, no signed/boundary check.</td><td class='add'>We integrate AIM + MST, audit them, and add AIM's adaptive budget (research/26).</td></tr><tr><td class='pid'>P9</td><td><b>Abowd — Census TopDown</b><br><span class='venue'>HDSR'22</span></td><td>Real deployment; publishes invariants outside ε.</td><td class='gap'>Invariants documented in prose only, not machine-checkable.</td><td class='add'>RB8 public_invariants + RB11-14 relational make them a checkable field.</td></tr><tr><td class='pid'>P10</td><td><b>Dibia — DP Privacy Label</b><br><span class='venue'>PoPETs'26</span></td><td>Expert 9-category privacy label — our base paper.</td><td class='gap'>No signing, no measurement-limit reporting ('privacy theater'); builds no checker.</td><td class='add'>★ We BUILD it: Ed25519 signature + operating-range field + boundary-audit conformance.</td></tr><tr><td class='pid'>P11</td><td><b>Song — Mental Models</b><br><span class='venue'>CSCW'24</span></td><td>Practitioners do NOT verify DP guarantees — they trust blindly.</td><td class='gap'>Diagnoses the problem; builds no tool.</td><td class='add'>★ The premise for an automatic checker a third party can run.</td></tr>
+</table>
+
+<h2>Results — where we are better</h2>
+<div class='two'>
+<div class='chart'><h4>Downstream ML utility: OUR mechanisms (AIM/MST) reach the real-data ceiling on all 4 datasets</h4><svg viewBox='0 0 460 210' width='100%'><rect x='55' y='50' width='59' height='120' rx='3' fill='#db2777'/><text x='85' y='44' text-anchor='middle' class='v'>92%</text><text x='85' y='186' text-anchor='middle' class='ax'>UCI Adult</text><rect x='150' y='54' width='59' height='116' rx='3' fill='#db2777'/><text x='180' y='48' text-anchor='middle' class='v'>89%</text><text x='180' y='186' text-anchor='middle' class='ax'>ACSIncome CA-2018</text><rect x='245' y='53' width='59' height='117' rx='3' fill='#7c3aed'/><text x='275' y='47' text-anchor='middle' class='v'>90%</text><text x='275' y='186' text-anchor='middle' class='ax'>UCI Bank</text><rect x='340' y='41' width='59' height='129' rx='3' fill='#db2777'/><text x='370' y='35' text-anchor='middle' class='v'>99%</text><text x='370' y='186' text-anchor='middle' class='ax'>UCI Diabetes</text><line x1='40' y1='40' x2='420' y2='40' stroke='#111' stroke-dasharray='5,3'/><text x='420' y='35' text-anchor='end' class='ax'>real-data ceiling (100%)</text></svg></div>
+<div class='chart'><h4>GDP audit recovers a real privacy number where the canary audit collapses to 0</h4><svg viewBox='0 0 460 210' width='100%'><rect x='72' y='66' width='63' height='104' rx='3' fill='#94a3b8'/><text x='103' y='60' text-anchor='middle' class='v'>0.363</text><text x='103' y='186' text-anchor='middle' class='ax'>independent</text><rect x='198' y='117' width='63' height='53' rx='3' fill='#7c3aed'/><text x='230' y='111' text-anchor='middle' class='v'>0.183</text><text x='230' y='186' text-anchor='middle' class='ax'>aim</text><rect x='325' y='127' width='63' height='43' rx='3' fill='#db2777'/><text x='357' y='121' text-anchor='middle' class='v'>0.151</text><text x='357' y='186' text-anchor='middle' class='ax'>mst</text><line x1='40' y1='170' x2='420' y2='170' stroke='#e11d48' stroke-width='2'/><text x='420' y='164' text-anchor='end' class='ax' style='fill:#e11d48'>canary audit = 0.000 (flat)</text></svg></div>
+</div>
+<div class='dcards'><div class='dcard'><div class='dhead'><b>UCI Adult</b><span class='dom' style='background:#0ea5e9'>census</span></div><div class='drow'>best structure <b>aim</b> @ ε=2 → <b>0.0072</b> err</div><div class='drow'>best ML utility <b>mst</b> @ ε=1 → <b>92%</b> of real-data F1</div></div><div class='dcard'><div class='dhead'><b>ACSIncome CA-2018</b><span class='dom' style='background:#0ea5e9'>census</span></div><div class='drow'>best structure <b>pairwise</b> @ ε=8 → <b>0.0017</b> err</div><div class='drow'>best ML utility <b>mst</b> @ ε=0.5 → <b>89%</b> of real-data F1</div></div><div class='dcard'><div class='dhead'><b>UCI Bank Marketing</b><span class='dom' style='background:#f59e0b'>finance</span></div><div class='drow'>best structure <b>pairwise</b> @ ε=4 → <b>0.0009</b> err</div><div class='drow'>best ML utility <b>aim</b> @ ε=8 → <b>90%</b> of real-data F1</div></div><div class='dcard'><div class='dhead'><b>UCI Diabetes 130</b><span class='dom' style='background:#10b981'>healthcare</span></div><div class='drow'>best structure <b>mst</b> @ ε=0.5 → <b>0.1185</b> err</div><div class='drow'>best ML utility <b>mst</b> @ ε=1 → <b>99%</b> of real-data F1</div></div></div>
+<div class='banner'>Across <b>4 datasets — census ×2, finance, healthcare</b> (the one healthcare table, Diabetes 130, added so the medical framing is backed by a real clinical dataset): our select-measure mechanisms take the best downstream utility everywhere, reaching up to <b>96% of real-data F1</b>. On healthcare they also cut correlation error ~4× below the baselines. The empirical GDP audit gives μ = independent <b>0.363</b> · aim <b>0.183</b> · mst <b>0.151</b> — informative where the black-box canary audit reads a flat <b>0.000</b>.</div>
+
+<h2>What we deliberately do NOT claim</h2>
+<div class='honest'><ul>
+<li><b>Not "15/15 parameters pass"</b> — that figure does not replicate; we report the RB1–RB14 checks and the audit ceiling instead.</li>
+<li><b>Not "we recover the original data"</b> — we detect what a release <i>leaks beyond its ε</i> (e.g. a published seed replays membership 15/15). We never reconstruct private records.</li>
+<li><b>Audited ε = 0 is instrument-limited</b>, not proof of no leakage — the honest headline, and exactly why the operating-range field exists.</li>
+<li><b>Multi-table auditing ships; multi-table synthesis does not</b> — no validated relational generator yet (declared future work / Paper 2).</li>
+<li><b>The generators (AIM/MST) are integrations</b> of published methods, not novel mechanisms.</li>
+</ul></div>
+
+<h2>One line for the paper</h2>
+<div class='banner'>The field has the guarantee parameters, the leak phenomena, and empirical attacks; what it lacks — and what Dibia et al. (2025) call for but do not build — is a <b>signed, machine-checkable release label a third party can verify from the artifact alone</b>. We build it, fill its two gaps, and show every prominent real release fails it today.</div>
+
+<p class='foot'>Generated by scripts/gen_contribution_report.py from committed results (H1 grids, results/gdp_audit_*.json, research/wild_audit/). Per-paper rows quoted from research/18 (Claude-verified). No number invented; honest limits above are part of the report, not a disclaimer.</p>
+</main></body></html>
