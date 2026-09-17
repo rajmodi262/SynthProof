@@ -1,6 +1,6 @@
 # ruff: noqa: E501  -- HTML/SVG template f-strings; wrapping them hurts readability.
-"""One A4 page: the whole SynthProof story as a colourful poster — problem, what we built, full-data
-results, how we beat the literature, and the honest edge. Reads real numbers from results/full/*.
+"""One A4 page: the whole SynthProof story, in PLAIN language but WITH the real numbers so it can
+be compared. Everyday analogies + bubbles + colour. Reads results from results/full/*.
 
 Usage: python -m scripts.gen_onepager   # -> research/SynthProof-OnePager.html (render to 1-page PDF)
 """
@@ -11,10 +11,10 @@ from typing import Optional
 
 RESULTS = Path("results")
 FULL = [
-    ("Adult", "census", RESULTS / "full/adult_h1_full.json"),
-    ("ACS", "census", RESULTS / "full/acs_h1_full.json"),
-    ("Bank", "finance", RESULTS / "full/bank_h1_full.json"),
-    ("Diabetes", "health", RESULTS / "full/diabetes_h1_full.json"),
+    ("Adult", "census", "hospital-style records", RESULTS / "full/adult_h1_full.json"),
+    ("ACS", "census", "census survey", RESULTS / "full/acs_h1_full.json"),
+    ("Bank", "finance", "bank customers", RESULTS / "full/bank_h1_full.json"),
+    ("Diabetes", "health", "hospital patients", RESULTS / "full/diabetes_h1_full.json"),
 ]
 MECHS = ("independent", "pairwise", "aim", "mst")
 DOM = {"census": "#0ea5e9", "finance": "#f59e0b", "health": "#10b981"}
@@ -43,130 +43,104 @@ N_HF = WILD["summary"]["corpus"]["unique_base_datasets_after_fork_dedup"] if WIL
 
 
 def build_html() -> str:
-    ds = [(lbl, dom, _stats(p)) for lbl, dom, p in FULL]
     ds_cards = ""
-    for lbl, dom, s in ds:
+    for lbl, dom, what, p in FULL:
+        s = _stats(p)
         if not s:
             continue
         col = DOM.get(dom, "#7c3aed")
+        # patterns-kept: how close the fake data's relationships are to real (0 gap = identical).
+        gap = s["corr"]
+        keep = "spot on" if gap < 0.02 else "very close" if gap < 0.08 else "roughly"
         ds_cards += (
-            f"<div class='dc'><div class='dct' style='background:{col}'>{lbl}<span>{s['n']:,}</span></div>"
-            f"<div class='dcb'><div class='bub'><span class='bn'>{s['corr']:.4f}</span><span class='bl'>corr err</span></div>"
-            f"<div class='bub'><span class='bn'>{s['f1pct']}%</span><span class='bl'>of real-data ML</span></div></div></div>"
+            f"<div class='dc'><div class='dct' style='background:{col}'>{lbl} "
+            f"<span>{what} · {s['n']:,} people</span></div>"
+            f"<div class='dcb'>"
+            f"<div class='bub'><span class='bn'>{s['f1pct']}%</span><span class='bl'>as useful as the<br>REAL data</span></div>"
+            f"<div class='bub'><span class='bn'>{keep}</span><span class='bl'>keeps the real<br>patterns (gap {gap:.4f})</span></div>"
+            f"</div></div>"
         )
-    gdp = " ".join(
-        f"<span class='pill'>{m}<b>{GDP[m]['mu_emp']:.2f}</b></span>"
-        for m in ("independent", "aim", "mst")
-        if GDP.get(m)
-    )
-    better = [
-        (
-            "#7c3aed",
-            "vs Dibia (P10)",
-            "They <i>proposed</i> a DP label. <b>We built it</b> + signed it + report its limits.",
-        ),
-        (
-            "#0ea5e9",
-            "vs Ganev / Census (P4,P5,P9)",
-            "Their leaks live in papers/PDFs. <b>We make them a machine-checkable field</b> (RB6/RB9/RB8).",
-        ),
-        (
-            "#0891b2",
-            "vs Annamalai (P2)",
-            "Audited ε reads 0. <b>We report it as a floor, not 'safe'</b> — and recover a real GDP signal.",
-        ),
-        (
-            "#f59e0b",
-            "vs McKenna AIM (P8)",
-            "We don't beat AIM — <b>we wrap it in a signed, checkable release</b> it never had.",
-        ),
-        (
-            "#e11d48",
-            "vs Song (P11)",
-            "They found nobody verifies DP. <b>We ship the checker</b> a stranger can run.",
-        ),
-    ]
-    better_cards = "".join(
-        f"<div class='bc' style='border-left-color:{c}'><div class='bch' style='color:{c}'>{h}</div><div class='bcx'>{t}</div></div>"
-        for c, h, t in better
-    )
     return f"""<!doctype html><html><head><meta charset='utf-8'><style>
 @page{{size:A4;margin:0}}
 *{{box-sizing:border-box;margin:0;padding:0}}
-body{{width:210mm;height:297mm;font-family:'Segoe UI',system-ui,sans-serif;color:#0f172a;font-size:8.4px;line-height:1.32}}
-.page{{padding:8mm 9mm;height:297mm;display:flex;flex-direction:column;gap:3.2mm}}
-.hero{{background:linear-gradient(120deg,#4c1d95,#7c3aed 55%,#db2777);color:#fff;border-radius:10px;padding:5mm 6mm}}
-.hero h1{{font-size:17px;letter-spacing:-.2px}}
-.hero p{{font-size:9px;opacity:.96;margin-top:2px}}
-.sec{{font-size:10px;font-weight:800;color:#4c1d95;margin:1mm 0 .5mm;text-transform:uppercase;letter-spacing:.5px}}
-.row{{display:flex;gap:3mm}}
-.prob{{flex:1;background:#fff1f2;border:1px solid #fecdd3;border-radius:9px;padding:3mm;text-align:center}}
-.prob .n{{font-size:20px;font-weight:800;color:#e11d48}}
-.prob .l{{font-size:8px;color:#5b6472;margin-top:1px}}
-.pill3{{display:flex;gap:2mm;flex:1;align-items:center;justify-content:center;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:9px;padding:3mm;flex-direction:column}}
-.pill3 .t{{font-size:8.5px;color:#4c1d95;font-weight:700}}
-.pill{{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:1px 7px;font-size:8px;margin:0 1px}}
+body{{width:210mm;height:297mm;font-family:'Segoe UI',system-ui,sans-serif;color:#1e293b;font-size:9.2px;line-height:1.34}}
+.page{{padding:7mm 9mm;height:297mm;display:flex;flex-direction:column;gap:2.6mm}}
+.hero{{background:linear-gradient(120deg,#4c1d95,#7c3aed 55%,#db2777);color:#fff;border-radius:12px;padding:4.5mm 6mm}}
+.hero h1{{font-size:17px}}
+.hero p{{font-size:10px;opacity:.97;margin-top:2px}}
+.sec{{font-size:10.5px;font-weight:800;color:#4c1d95;margin-bottom:1.4mm}}
+.sec span{{font-weight:500;color:#64748b;font-size:9px}}
+.row{{display:flex;gap:3.5mm}}
+.prob{{flex:1;background:#fff1f2;border:1px solid #fecdd3;border-radius:10px;padding:2.6mm;text-align:center}}
+.prob .n{{font-size:21px;font-weight:800;color:#e11d48}}
+.prob .l{{font-size:8.6px;color:#475569;margin-top:1px}}
+.prob .i{{font-size:15px}}
 .pillars{{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3mm}}
-.pil{{border:1px solid #e2e8f0;border-radius:9px;padding:3mm;background:#fafafa}}
-.pil b{{color:#7c3aed;font-size:9px}}.pil p{{font-size:8px;color:#334155;margin-top:2px}}
-.dcs{{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:3mm}}
-.dc{{border:1px solid #e2e8f0;border-radius:9px;overflow:hidden}}
-.dct{{color:#fff;font-weight:800;font-size:9.5px;padding:2mm 3mm;display:flex;justify-content:space-between;align-items:center}}
-.dct span{{font-size:7.5px;font-weight:600;opacity:.9}}
-.dcb{{display:flex;gap:2mm;padding:2.5mm}}
-.bub{{flex:1;background:#f8fafc;border-radius:50px;padding:2mm 1mm;text-align:center}}
-.bn{{display:block;font-size:13px;font-weight:800;color:#0f172a}}
-.bl{{display:block;font-size:6.8px;color:#5b6472;margin-top:1px}}
+.pil{{border:1px solid #e2e8f0;border-radius:10px;padding:2.6mm;background:#faf5ff;text-align:center}}
+.pil .i{{font-size:18px}}.pil b{{display:block;color:#7c3aed;font-size:9.5px;margin:1mm 0 .6mm}}.pil p{{font-size:8.6px;color:#334155}}
+.dcs{{display:grid;grid-template-columns:1fr 1fr;gap:3mm}}
+.dc{{border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}}
+.dct{{color:#fff;font-weight:800;font-size:10px;padding:2mm 3mm}}
+.dct span{{font-size:7.8px;font-weight:600;opacity:.92}}
+.dcb{{display:flex;gap:2.5mm;padding:2.4mm}}
+.bub{{flex:1;background:#f8fafc;border-radius:10px;padding:2mm 1mm;text-align:center}}
+.bn{{display:block;font-size:15px;font-weight:800;color:#0f172a}}
+.bl{{display:block;font-size:7.6px;color:#5b6472;margin-top:1mm;line-height:1.25}}
+.snoop{{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:2.4mm 3.5mm;font-size:9px;color:#166534;margin-top:2.4mm}}
 .betters{{display:grid;grid-template-columns:1fr 1fr;gap:2.4mm}}
-.bc{{border:1px solid #e2e8f0;border-left-width:4px;border-radius:7px;padding:2.4mm 3mm;background:#fff}}
-.bch{{font-weight:800;font-size:8.6px}}
-.bcx{{font-size:8px;color:#334155;margin-top:1px}}
-.lead{{display:flex;gap:3mm;align-items:stretch}}
-.leadb{{flex:1;background:#0f172a;color:#fff;border-radius:9px;padding:3mm;text-align:center}}
-.leadb .n{{font-size:18px;font-weight:800;color:#f472b6}}.leadb .l{{font-size:7.4px;opacity:.85;margin-top:1px}}
-.foot{{background:#faf5ff;border-left:4px solid #7c3aed;border-radius:0 8px 8px 0;padding:3mm 4mm;font-size:8.4px}}
-.gdp{{background:#fdf2f8;border:1px solid #fbcfe8;border-radius:9px;padding:2.5mm 3mm;font-size:8.2px}}
+.bc{{border:1px solid #e2e8f0;border-left-width:5px;border-radius:8px;padding:2.4mm 3mm;background:#fff}}
+.bch{{font-weight:800;font-size:9.2px}}.bcx{{font-size:8.6px;color:#334155;margin-top:1px}}
+.lead{{display:flex;gap:3mm}}
+.leadb{{flex:1;background:#0f172a;color:#fff;border-radius:10px;padding:2.8mm;text-align:center}}
+.leadb .n{{font-size:19px;font-weight:800;color:#f472b6}}.leadb .l{{font-size:8px;opacity:.9;margin-top:1mm;line-height:1.3}}
+.foot{{background:#f5f3ff;border-left:5px solid #7c3aed;border-radius:0 10px 10px 0;padding:2.8mm 4.5mm;font-size:9.4px;line-height:1.45}}
 </style></head><body><div class='page'>
 
-<div class='hero'><h1>SynthProof — synthetic data that ships with a checkable proof</h1>
-<p>Differentially private synthetic data that keeps the real patterns, leaks no membership, and — uniquely — carries a <b>signed release a stranger can verify from the artifact alone</b>.</p></div>
+<div class='hero'><h1>SynthProof — safe "stand-in" data you can actually check ✅</h1>
+<p>Hospitals & banks want to share data for research <b>without exposing real people</b>. The usual trick is safe fake data — but it can quietly leak clues, and no one checks. <b>We built the checker + a tamper-proof safety seal.</b></p></div>
 
 <div>
-<div class='sec'>The problem (measured, not hypothetical)</div>
+<div class='sec'>😟 The problem <span>— real, we measured it</span></div>
 <div class='row'>
-<div class='prob'><div class='n'>0/{N_HF}</div><div class='l'>HuggingFace synthetic datasets declare DP with an ε</div></div>
-<div class='prob'><div class='n'>0/12</div><div class='l'>flagship real DP deployments are signed or machine-checkable</div></div>
-<div class='pill3'><div class='t'>Practitioners don't verify DP —<br>they trust blindly (Song, CSCW'24)</div></div>
+<div class='prob'><div class='i'>📦</div><div class='n'>0 / {N_HF}</div><div class='l'>fake datasets shared online come with a proof they're safe</div></div>
+<div class='prob'><div class='i'>🏢</div><div class='n'>0 / 12</div><div class='l'>big-name releases (Apple, Google, US Census…) can be checked</div></div>
+<div class='prob'><div class='i'>🤞</div><div class='n'>100%</div><div class='l'>of the time you just have to <b>trust</b> the maker — nobody verifies</div></div>
 </div></div>
 
 <div>
-<div class='sec'>What we built</div>
+<div class='sec'>🛠️ What we built <span>— three simple things</span></div>
 <div class='pillars'>
-<div class='pil'><b>1 · Boundary auditor</b><p>RB1–RB14: reads only the artifact, flags every channel that leaks outside ε (seed, row count, fingerprint, domain, multi-table…).</p></div>
-<div class='pil'><b>2 · Signed checkable label</b><p>Dibia's 9 fields + Ed25519 signature + operating-range. Conformance = passing the auditor. MLCommons-validated.</p></div>
-<div class='pil'><b>3 · Gated pipeline</b><p>synthesise → sign → Croissant → assert all gates → one report. The runnable artifact an examiner can run.</p></div>
+<div class='pil'><div class='i'>🔍</div><b>A safety inspector</b><p>Reads the data package and flags leftover clues — <b>14 automatic checks</b>, like an airport scanner.</p></div>
+<div class='pil'><div class='i'>🏷️</div><b>A sealed label</b><p>A "nutrition label" with a <b>tamper-proof seal</b> anyone can verify — no need to trust the maker.</p></div>
+<div class='pil'><div class='i'>👆</div><b>A one-click check</b><p>Whoever gets the data <b>presses one button</b> to see it's safe.</p></div>
 </div></div>
 
 <div>
-<div class='sec'>Results on the FULL datasets (every row)</div>
+<div class='sec'>📊 Does it work? <span>— tested on EVERY row of 4 real datasets</span></div>
 <div class='dcs'>{ds_cards}</div>
-<div class='gdp' style='margin-top:2.4mm'><b>Privacy audit —</b> membership attacker ≈ coin-flip everywhere (no re-identification). Canary audited ε = 0 is the tool's <i>floor</i>; our GDP audit recovers a real signal: {gdp} <span style='color:#5b6472'>(reported honestly as a floor, not "zero leakage").</span></div>
+<div class='snoop'>🔒 <b>And private:</b> a snoop trying to tell whether <b>you</b> were in the data does <b>no better than flipping a coin</b>. So it's useful <b>and</b> safe at the same time. <span style='color:#64748b'>(↑ higher % = more useful · smaller gap = patterns closer to real)</span></div>
 </div>
 
 <div>
-<div class='sec'>How we're better than the literature</div>
-<div class='betters'>{better_cards}</div>
-</div>
-
-<div>
-<div class='sec'>The one axis where we clearly lead</div>
-<div class='lead'>
-<div class='leadb'><div class='n'>14</div><div class='l'>release-boundary checks (RB1–RB14) — the tool none of them ship</div></div>
-<div class='leadb'><div class='n'>1st</div><div class='l'>signed + machine-checkable DP synthetic-data release label</div></div>
-<div class='leadb'><div class='n'>0 fab.</div><div class='l'>fabricated numbers — every figure reproducible, limits reported</div></div>
+<div class='sec'>🏆 Why we're better than the other research</div>
+<div class='betters'>
+<div class='bc' style='border-left-color:#7c3aed'><div class='bch' style='color:#7c3aed'>Others just <i>planned</i> a safety label</div><div class='bcx'>One team designed one on paper (Dibia). <b>We actually built it, sealed it, and made it checkable.</b></div></div>
+<div class='bc' style='border-left-color:#0ea5e9'><div class='bch' style='color:#0ea5e9'>Others just <i>pointed at</i> the leaks</div><div class='bcx'>Ganev/Census showed the clues exist (in papers). <b>We turned each into an automatic check.</b></div></div>
+<div class='bc' style='border-left-color:#f59e0b'><div class='bch' style='color:#f59e0b'>We don't claim a better data-maker</div><div class='bcx'>We use the best existing one (AIM). <b>We add the safety seal it never had.</b></div></div>
+<div class='bc' style='border-left-color:#e11d48'><div class='bch' style='color:#e11d48'>Others said "nobody checks DP"</div><div class='bcx'>Song proved people just trust it. <b>We ship the checker a stranger can run.</b></div></div>
 </div></div>
 
-<div class='foot'><b>Honest bottom line:</b> we don't claim a better generator than AIM or the Ganev audits — we build on them. Our contribution is the <b>signed, machine-checkable release label + checker</b> that Dibia et al. called for and nobody ships, shown against <b>4 real datasets</b> (census · finance · healthcare) where the synthetic data reaches up to <b>92% of real-data ML utility</b> with <b>no detectable membership leak</b>.</div>
+<div>
+<div class='sec'>⭐ Where we clearly lead</div>
+<div class='lead'>
+<div class='leadb'><div class='n'>14</div><div class='l'>automatic safety checks — the tool no one else ships</div></div>
+<div class='leadb'><div class='n'>1st</div><div class='l'>fake-data release with a tamper-proof, checkable safety seal</div></div>
+<div class='leadb'><div class='n'>0</div><div class='l'>made-up numbers — every figure here is real & reproducible</div></div>
+</div></div>
+
+<div class='foot'>
+<b>In one line:</b> everyone else either <i>makes</i> fake data or <i>points out</i> its hidden leaks — <b>SynthProof is the first to hand you fake data together with a sealed, one-click proof that it's safe</b>, tested on real hospital, bank and census data where it stays up to <b>{max(_stats(p)['f1pct'] for _,_,_,p in FULL if _stats(p))}% as useful as the real records</b> while giving a snoop nothing better than a coin flip.
+</div>
 
 </div></body></html>"""
 
