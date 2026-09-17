@@ -55,7 +55,8 @@ claim) — both narrow, S2 being engineering novelty.
 
 ## The empirical backbone that makes it a paper (already collected)
 
-- **0 / 286** HuggingFace synthetic-data cards declare DP (`scripts/wild_audit_honest.py`).
+- **0 / 290** HuggingFace synthetic-data base datasets declare DP with an ε (310 repos examined,
+  deduplicated to 290 after fork-collapse; refreshed 2026-09-17, `scripts/wild_audit_honest.py`).
 - **12 / 12** flagship real DP deployments document ε but **none is signed, none is
   machine-checkable** (`research/21`).
 - Our pipeline emits a release that **passes RB1–RB14, is signed, and validates against the

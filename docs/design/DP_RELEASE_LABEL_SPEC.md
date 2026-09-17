@@ -25,7 +25,7 @@ of their own experts called *"privacy theater"*:
 
 Twelve of the most prominent real-world DP deployments confirm the pattern from the field side:
 all document ε and the mechanism, **none is signed, and none is machine-checkable**
-(`research/21`). Across 286 HuggingFace synthetic-data cards, 0 declare DP at all
+(`research/21`). Across 290 HuggingFace synthetic-data base datasets (refreshed 2026-09-17), 0 declare DP at all
 (`scripts/wild_audit_honest.py`).
 
 This spec closes the two gaps by defining the SynthProof label as **the Dibia nine-category label
