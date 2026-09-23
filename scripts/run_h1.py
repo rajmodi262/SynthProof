@@ -232,8 +232,17 @@ def main():
     if args.checkpoints:
         cfg["checkpoints"] = args.checkpoints
     ds, fingerprint = _load(args.dataset, rows=args.rows)
-    a, b = cfg["corr_cols"]
-    true_corr = ds.df[a].corr(ds.df[b])
+    # `true_corr` is an informational display of the FIRST structure pair. corr_cols may list
+    # more than two columns (a richer association set for categorical datasets), so take the
+    # first pair, and fall back to NaN when the pair is categorical -- Pearson .corr() is only
+    # defined on numerics. The full corr_cols list still drives the mixed association matrix in
+    # run_grid / _mean_abs_corr_error.
+    cc = list(cfg["corr_cols"])
+    a, b = cc[0], cc[1]
+    try:
+        true_corr = float(ds.df[a].corr(ds.df[b]))
+    except (TypeError, ValueError):
+        true_corr = float("nan")
 
     # MST is a registered select-measure mechanism (generators/mst.py); it belongs in the grid.
     default_mechs = ("independent", "pairwise", "aim", "mst")
