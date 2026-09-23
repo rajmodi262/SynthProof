@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 import numpy as np
+import pandas as pd
 
 from synthproof.accounting.accountant import Accountant
 from synthproof.accounting.calibration import BudgetPlan
@@ -155,17 +156,87 @@ def informative_numeric_columns(
     return keep
 
 
+def _cramers_v(x, y) -> float:
+    """Bias-corrected Cramér's V association between two categorical series, in [0, 1]."""
+    from scipy.stats import chi2_contingency
+
+    tab = pd.crosstab(x, y)
+    if tab.shape[0] < 2 or tab.shape[1] < 2:
+        return 0.0
+    chi2 = chi2_contingency(tab, correction=False)[0]
+    n = tab.to_numpy().sum()
+    if n == 0:
+        return 0.0
+    phi2 = chi2 / n
+    r, k = tab.shape
+    phi2c = max(0.0, phi2 - (k - 1) * (r - 1) / (n - 1))
+    rc = r - (r - 1) ** 2 / (n - 1)
+    kc = k - (k - 1) ** 2 / (n - 1)
+    denom = min(kc - 1, rc - 1)
+    return float(np.sqrt(phi2c / denom)) if denom > 0 else 0.0
+
+
+def _correlation_ratio(categories, values) -> float:
+    """Correlation ratio (eta) between a categorical and a numeric series, in [0, 1]."""
+    cats = pd.Series(categories).astype(str)
+    vals = pd.to_numeric(pd.Series(values), errors="coerce")
+    mask = vals.notna()
+    cats, vals = cats[mask], vals[mask]
+    if len(vals) < 2:
+        return 0.0
+    grand = vals.mean()
+    ss_between = sum(len(g) * (g.mean() - grand) ** 2 for _, g in vals.groupby(cats.values))
+    ss_total = float(((vals - grand) ** 2).sum())
+    return float(np.sqrt(ss_between / ss_total)) if ss_total > 0 else 0.0
+
+
+def _association_matrix(df, cols: List[str]) -> np.ndarray:
+    """Symmetric pairwise association matrix over mixed-type columns, each entry in [0, 1].
+
+    num-num uses |Pearson|, num-cat/cat-num uses the correlation ratio (eta), and cat-cat
+    uses bias-corrected Cramér's V. This generalises the Pearson correlation matrix so an
+    all-categorical or mixed table gets a structure score at all.
+    """
+    is_num = {c: pd.api.types.is_numeric_dtype(df[c]) for c in cols}
+    n = len(cols)
+    m = np.eye(n)
+    for i in range(n):
+        for j in range(i + 1, n):
+            ci, cj = cols[i], cols[j]
+            if is_num[ci] and is_num[cj]:
+                v = abs(float(df[[ci, cj]].corr().iloc[0, 1]))
+            elif is_num[ci] and not is_num[cj]:
+                v = _correlation_ratio(df[cj], df[ci])
+            elif not is_num[ci] and is_num[cj]:
+                v = _correlation_ratio(df[ci], df[cj])
+            else:
+                v = _cramers_v(df[ci], df[cj])
+            m[i, j] = m[j, i] = 0.0 if v != v else v
+    return m
+
+
 def _mean_abs_corr_error(real, synth, cols: List[str]) -> float:
-    """Mean absolute error over the pairwise correlation matrix — a structure metric.
+    """Mean absolute error over the pairwise association matrix — a structure metric.
 
     Independent-marginal mechanisms score badly here by construction; a model that captures
     pairwise dependence should score better. This is the quantity that separates the families.
+
+    When every column is numeric this is exactly the mean absolute error of the Pearson
+    correlation matrix (the original metric, unchanged, so committed numeric results are
+    preserved). When any column is categorical it falls back to a mixed association matrix
+    (|Pearson| / correlation-ratio / Cramér's V) so categorical and mixed tables score too.
     """
     if len(cols) < 2:
         return float("nan")
-    a = real[cols].corr().to_numpy()
-    b = synth[cols].corr().to_numpy()
+    all_numeric = all(pd.api.types.is_numeric_dtype(real[c]) for c in cols)
     iu = np.triu_indices(len(cols), k=1)
+    if all_numeric:
+        a = real[cols].corr().to_numpy()
+        b = synth[cols].corr().to_numpy()
+        diff = np.abs(a[iu] - b[iu])
+        return float(np.nanmean(diff)) if diff.size else float("nan")
+    a = _association_matrix(real, cols)
+    b = _association_matrix(synth, cols)
     diff = np.abs(a[iu] - b[iu])
     return float(np.nanmean(diff)) if diff.size else float("nan")
 
@@ -395,28 +466,41 @@ def run_cell(
 
     # The MIA runs against the AUDIT release. It asks whether training membership is
     # recoverable, which is a question about the release that actually contained the members.
-    mia = DistanceMIABaseline(seed=eval_seed, max_records=400).evaluate(
-        audit_synth, train_df=fit_ds.df, test_df=holdout_df
-    )
-    emit(
-        "attack",
-        {
-            "auc": float(mia.auc),
-            "advantage": float(mia.advantage),
-            "tpr_at_1pct_fpr": float(mia.tpr_at_1pct_fpr),
-        },
-    )
+    # Both distance-based adversaries need a shared numeric column to measure proximity /
+    # density on. An all-categorical release (Mushroom, Nursery) has none, so the question
+    # does not arise -- reported as NOT APPLICABLE, never as a passed attack, the same rule
+    # linkability follows. Attribute inference and singling-out below are set-based and still
+    # run, so an all-categorical cell is not left with zero privacy evidence.
+    try:
+        mia = DistanceMIABaseline(seed=eval_seed, max_records=400).evaluate(
+            audit_synth, train_df=fit_ds.df, test_df=holdout_df
+        )
+        emit(
+            "attack",
+            {
+                "auc": float(mia.auc),
+                "advantage": float(mia.advantage),
+                "tpr_at_1pct_fpr": float(mia.tpr_at_1pct_fpr),
+            },
+        )
+    except ValueError as exc:
+        mia = None
+        emit("attack", {"not_applicable": str(exc)})
 
     # A second, structurally different adversary. The two fail differently -- the baseline is
     # a raw proximity heuristic, DOMIAS divides by a reference density to remove the
     # typicality confound -- so both are reported rather than one standing in for the other.
-    domias = DOMIAS(seed=eval_seed, max_records=400).evaluate(
-        audit_synth, train_df=fit_ds.df, test_df=holdout_df
-    )
-    emit(
-        "attack_domias",
-        {"auc": float(domias.auc), "tpr_at_1pct_fpr": float(domias.tpr_at_1pct_fpr)},
-    )
+    try:
+        domias = DOMIAS(seed=eval_seed, max_records=400).evaluate(
+            audit_synth, train_df=fit_ds.df, test_df=holdout_df
+        )
+        emit(
+            "attack_domias",
+            {"auc": float(domias.auc), "tpr_at_1pct_fpr": float(domias.tpr_at_1pct_fpr)},
+        )
+    except ValueError as exc:
+        domias = None
+        emit("attack_domias", {"not_applicable": str(exc)})
 
     # Singling out: does any real record appear in the release as a unique exact match? This
     # is the one risk of the EDPB's three that a release can fail outright rather than by
@@ -481,9 +565,11 @@ def run_cell(
         # this pipeline and never reported; a metric nothing reads cannot catch anything.
         "marginal_w1": float(util.marginal_distance),
         "trtr_f1": float(util.trtr_macro_f1),
-        "mia_auc": float(mia.auc),
-        "domias_auc": float(domias.auc),
-        "domias_tpr_at_1pct": float(domias.tpr_at_1pct_fpr),
+        # NaN, not 0.0, when a distance-based attack does not apply (all-categorical release).
+        # A zero would read as "attack ran, found nothing" -- an absent measurement, not a null.
+        "mia_auc": (float(mia.auc) if mia else float("nan")),
+        "domias_auc": (float(domias.auc) if domias else float("nan")),
+        "domias_tpr_at_1pct": (float(domias.tpr_at_1pct_fpr) if domias else float("nan")),
         "singling_out_risk": float(singling.singling_out_risk),
         # NaN, not 0.0, when the risk does not apply. A zero here would read as "measured, no
         # linkability found" -- the difference between an absent measurement and a null one.

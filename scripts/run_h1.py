@@ -67,6 +67,45 @@ DATASETS = {
         "checkpoints": "results/diabetes/h1_cells",
         "label": "UCI Diabetes 130 (healthcare)",
     },
+    # Five extra UCI benchmarks added to test generalisation across data TYPES. Mushroom and
+    # Nursery are ALL-CATEGORICAL (only runnable since the categorical-aware evaluator upgrade);
+    # their corr_cols are categorical, scored by the mixed association matrix. Wine and BCW are
+    # all-numeric; German is mixed. See research/23c_generalisation_benchmarks.md.
+    "mushroom": {
+        "target_col": "target",
+        "corr_cols": ("odor", "gill_color", "cap_color"),
+        "out": "results/mushroom/h1_all_families.json",
+        "checkpoints": "results/mushroom/h1_cells",
+        "label": "UCI Mushroom (all-categorical)",
+    },
+    "nursery": {
+        "target_col": "target",
+        "corr_cols": ("health", "parents", "has_nurs"),
+        "out": "results/nursery/h1_all_families.json",
+        "checkpoints": "results/nursery/h1_cells",
+        "label": "UCI Nursery (all-categorical, 4-class)",
+    },
+    "german": {
+        "target_col": "target",
+        "corr_cols": ("duration", "credit_amount"),
+        "out": "results/german/h1_all_families.json",
+        "checkpoints": "results/german/h1_cells",
+        "label": "Statlog German Credit (finance)",
+    },
+    "wine": {
+        "target_col": "quality",
+        "corr_cols": ("total_sulfur_dioxide", "free_sulfur_dioxide"),
+        "out": "results/wine/h1_all_families.json",
+        "checkpoints": "results/wine/h1_cells",
+        "label": "UCI Wine Quality red (chemistry)",
+    },
+    "bcw": {
+        "target_col": "diagnosis",
+        "corr_cols": ("radius", "area"),
+        "out": "results/bcw/h1_all_families.json",
+        "checkpoints": "results/bcw/h1_cells",
+        "label": "Breast Cancer Wisconsin (healthcare)",
+    },
 }
 
 # Datasets that carry an H1 grid and deliberately NO H2 study, each with the reason. H2 measures
@@ -84,6 +123,25 @@ H1_ONLY = {
         "Diabetes 130 was added for the healthcare utility/privacy comparison (H1). It DOES carry "
         "gender and race, so an H2 subgroup-leakage study is possible and is declared future work "
         "-- simply not run yet, so it lives in H1 only for now, recorded here not silently omitted."
+    ),
+    "mushroom": (
+        "Mushroom is a generalisation benchmark (all-categorical, no protected attribute); H2 "
+        "subgroup-leakage has no group to split on, so H1 only."
+    ),
+    "nursery": (
+        "Nursery is a generalisation benchmark (all-categorical admission ratings, no protected "
+        "attribute); H1 only for the same reason as Mushroom."
+    ),
+    "german": (
+        "German Credit is a finance generalisation benchmark; `personal_status` mixes sex with "
+        "marital status and is not carried in the schema, so no clean H2 split -- H1 only."
+    ),
+    "wine": (
+        "Wine Quality is an all-numeric chemistry benchmark with no personal subgroups -- H1 only."
+    ),
+    "bcw": (
+        "Breast Cancer Wisconsin has no protected demographic attribute (only tumour "
+        "measurements), so there is no H2 subgroup to compare -- H1 only."
     ),
 }
 
@@ -113,6 +171,10 @@ def _load(name: str, rows: int = N_ROWS):
         from synthproof.data.datasets import load_diabetes130
 
         return _subsample(load_diabetes130(), rows), None
+    if name in ("mushroom", "nursery", "german", "wine", "bcw"):
+        from synthproof.data.datasets import load as load_dataset
+
+        return _subsample(load_dataset(name), rows), None
     raise SystemExit(f"Unknown dataset {name!r}. Choose from {sorted(DATASETS)}.")
 
 
