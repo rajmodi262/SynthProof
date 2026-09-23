@@ -14,6 +14,11 @@ import json
 from pathlib import Path
 from typing import Optional
 
+try:
+    from scripts._cells import seed_mean_cells
+except ImportError:  # run as a plain file
+    from _cells import seed_mean_cells
+
 RESULTS = Path("results")
 FULL = [
     ("UCI Adult", "census", "age vs hours-worked", RESULTS / "full/adult_h1_full.json"),
@@ -40,9 +45,9 @@ def _dstats(p: Path):
     if not d:
         return None
     by = {}
-    for c in d["cells"]:
+    for c in seed_mean_cells(d["cells"]):
         by.setdefault(c["mechanism"], {})[float(c["target_eps"])] = c
-    trtr = d["cells"][0]["trtr_f1"]["mean"]
+    trtr = seed_mean_cells(d["cells"])[0]["trtr_f1"]["mean"]
     bc = min(
         ((m, e, c["correlation_error"]["mean"]) for m in MECHS for e, c in by.get(m, {}).items()),
         key=lambda t: t[2],

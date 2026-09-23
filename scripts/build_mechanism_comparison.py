@@ -18,6 +18,11 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional
 
+try:
+    from scripts._cells import seed_mean_cells
+except ImportError:  # run as a plain file
+    from _cells import seed_mean_cells
+
 RESULTS = Path("results")
 
 # dataset key -> (baseline grid with independent/pairwise/aim, MST grid, human label)
@@ -87,7 +92,7 @@ def _load(path: Path) -> Optional[dict]:
 
 def _cells_by_mech(grid: dict) -> Dict[str, Dict[float, dict]]:
     out: Dict[str, Dict[float, dict]] = {}
-    for c in grid["cells"]:
+    for c in seed_mean_cells(grid["cells"]):
         out.setdefault(c["mechanism"], {})[float(c["target_eps"])] = c
     return out
 

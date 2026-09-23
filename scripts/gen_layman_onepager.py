@@ -9,6 +9,11 @@ Usage: python -m scripts.gen_layman_onepager   # -> research/SynthProof-Simple.h
 import json
 from pathlib import Path
 
+try:
+    from scripts._cells import seed_mean_cells
+except ImportError:  # run as a plain file
+    from _cells import seed_mean_cells
+
 RESULTS = Path("results")
 FULL = {
     "Adult": RESULTS / "full/adult_h1_full.json",
@@ -22,9 +27,9 @@ MECHS = ("independent", "pairwise", "aim", "mst")
 def _best_f1_pct(p):
     d = json.loads(p.read_text(encoding="utf-8"))
     by = {}
-    for c in d["cells"]:
+    for c in seed_mean_cells(d["cells"]):
         by.setdefault(c["mechanism"], {})[float(c["target_eps"])] = c
-    trtr = d["cells"][0]["trtr_f1"]["mean"]
+    trtr = seed_mean_cells(d["cells"])[0]["trtr_f1"]["mean"]
     bf = max(c["tstr_f1"]["mean"] for m in MECHS for c in by.get(m, {}).values())
     return round(100 * bf / trtr)
 

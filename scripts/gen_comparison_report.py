@@ -14,6 +14,11 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional
 
+try:
+    from scripts._cells import seed_mean_cells
+except ImportError:  # run as a plain file
+    from _cells import seed_mean_cells
+
 RESULTS = Path("results")
 DATASETS = {
     "adult": (RESULTS / "h1_all_families.json", RESULTS / "h1_mst_adult.json", "UCI Adult"),
@@ -48,7 +53,7 @@ def _merged(name: str):
     for grid in (base, _load(mst_p)):
         if grid is None:
             continue
-        for c in grid["cells"]:
+        for c in seed_mean_cells(grid["cells"]):
             by.setdefault(c["mechanism"], {})[float(c["target_eps"])] = c
     eps = sorted({e for m in by.values() for e in m})
     return {

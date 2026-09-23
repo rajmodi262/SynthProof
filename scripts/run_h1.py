@@ -106,6 +106,22 @@ DATASETS = {
         "checkpoints": "results/bcw/h1_cells",
         "label": "Breast Cancer Wisconsin (healthcare)",
     },
+    # SAME-DATASET rivals from the base papers: Texas (Stadler '22, healthcare) and SF Fire
+    # (Annamalai '24, McKenna/AIM '22). Fire is all-categorical, so its structure set is too.
+    "texas": {
+        "target_col": "mortality_risk",
+        "corr_cols": ("LENGTH_OF_STAY", "TOTAL_CHARGES"),
+        "out": "results/texas/h1_all_families.json",
+        "checkpoints": "results/texas/h1_cells",
+        "label": "Texas Hospital Discharge (Stadler '22, healthcare)",
+    },
+    "fire": {
+        "target_col": "als_unit",
+        "corr_cols": ("call_type_group", "priority", "battalion"),
+        "out": "results/fire/h1_all_families.json",
+        "checkpoints": "results/fire/h1_cells",
+        "label": "SF Fire Calls (Annamalai '24, McKenna/AIM '22)",
+    },
 }
 
 # Datasets that carry an H1 grid and deliberately NO H2 study, each with the reason. H2 measures
@@ -143,6 +159,13 @@ H1_ONLY = {
         "Breast Cancer Wisconsin has no protected demographic attribute (only tumour "
         "measurements), so there is no H2 subgroup to compare -- H1 only."
     ),
+    "texas": (
+        "Texas was added as the same-dataset comparison with Stadler et al. (H1). It carries SEX_CODE "
+        "and RACE, so H2 is possible and is declared future work, not silently omitted."
+    ),
+    "fire": (
+        "SF Fire is an operational (not personal) table with no protected attribute -- H1 only."
+    ),
 }
 
 
@@ -171,7 +194,7 @@ def _load(name: str, rows: int = N_ROWS):
         from synthproof.data.datasets import load_diabetes130
 
         return _subsample(load_diabetes130(), rows), None
-    if name in ("mushroom", "nursery", "german", "wine", "bcw"):
+    if name in ("mushroom", "nursery", "german", "wine", "bcw", "texas", "fire"):
         from synthproof.data.datasets import load as load_dataset
 
         return _subsample(load_dataset(name), rows), None

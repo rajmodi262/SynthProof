@@ -9,6 +9,11 @@ Usage: python -m scripts.gen_umbrella   # -> research/SynthProof-Umbrella.html (
 import json
 from pathlib import Path
 
+try:
+    from scripts._cells import seed_mean_cells
+except ImportError:  # run as a plain file
+    from _cells import seed_mean_cells
+
 RESULTS = Path("results")
 MECHS = ("independent", "pairwise", "aim", "mst")
 # (label, icon, domain-colour, "what it is", who-used-it, full result file)
@@ -51,9 +56,9 @@ DS = [
 def _stats(p):
     d = json.loads(p.read_text(encoding="utf-8"))
     by = {}
-    for c in d["cells"]:
+    for c in seed_mean_cells(d["cells"]):
         by.setdefault(c["mechanism"], {})[float(c["target_eps"])] = c
-    trtr = d["cells"][0]["trtr_f1"]["mean"]
+    trtr = seed_mean_cells(d["cells"])[0]["trtr_f1"]["mean"]
     bc = min(c["correlation_error"]["mean"] for m in MECHS for c in by.get(m, {}).values())
     bf = max(c["tstr_f1"]["mean"] for m in MECHS for c in by.get(m, {}).values())
     return {"n": d["n_rows"], "gap": bc, "pct": round(100 * bf / trtr)}

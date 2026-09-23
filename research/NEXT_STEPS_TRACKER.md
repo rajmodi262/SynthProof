@@ -225,3 +225,13 @@
   HONEST/USE+EXTEND/COMPLEMENTARY) — careful framing: we MATCH the SOTA mechanisms, we LEAD only on
   the signed checkable artifact; (4) the lead axis (0/290, 0/12, 14 checks) + honesty ledger. Every
   number from committed full results; verdicts grounded in research/18 + research/25. ruff+black clean.
+
+## CORRECTION 2026-09-24 — full-dataset percentages were single-seed (report bug, fixed)
+The full-dataset per-cell runner writes one cell PER SEED (n=1, 100 cells); seven report
+generators did `by[mech][eps] = c`, keeping only the LAST seed. Fixed with `scripts/_cells.py`
+(`seed_mean_cells`, regression-tested in `tests/test_report_cells.py`). Corrected 5-seed means:
+**Adult 84% (was reported 92%)**, **Diabetes 98% (was 99%)**; ACS 89, Bank 90, and every
+run_h1-format dataset unchanged. **Retracts the line above claiming full data lifts Adult F1
+84->92%** — on 5-seed means, full-data Adult best TSTR is 84% of TRTR, the same as the subsample.
+The full-data runs remain valid; only the report aggregation was wrong. Bank: simple pairwise
+(91%) edges AIM/MST (90%) — report it as a tie, not a win.

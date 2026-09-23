@@ -14,6 +14,11 @@ import json
 from pathlib import Path
 from typing import Optional
 
+try:
+    from scripts._cells import seed_mean_cells
+except ImportError:  # run as a plain file
+    from _cells import seed_mean_cells
+
 RESULTS = Path("results")
 
 
@@ -30,7 +35,7 @@ def _best_of(base_p: Path, mst_p: Path):
     for grid in (base, _load(mst_p)):
         if grid is None:
             continue
-        for c in grid["cells"]:
+        for c in seed_mean_cells(grid["cells"]):
             by.setdefault(c["mechanism"], {})[float(c["target_eps"])] = c
     trtr = base["cells"][0]["trtr_f1"]["mean"]
     bc = (None, None, 1e9)

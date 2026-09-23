@@ -1,5 +1,9 @@
 # SynthProof — PPT Content Pack (pre-build gather)
 
+> **CORRECTION 2026-09-24:** full-dataset percentages are now 5-seed means (`scripts/_cells.py`).
+> Earlier drafts showed Adult 92% / Diabetes 99% — single-seed values from a report-aggregation
+> bug. Correct: **Adult 84%, Diabetes 98%**; all other datasets unchanged.
+
 > Everything the guide asked for, drafted and grounded in real results. We assemble the
 > deck from this pack. Numbers pulled from `results/full/*.json`, `research/wild_audit/`,
 > `research/21_real_dp_registry_case_study.md` on 2026-09-23. Nothing here is fabricated.
@@ -51,11 +55,11 @@ mechanisms = 900 cells).** Utility = best TSTR-F1 as a % of the real-data (TRTR)
 
 | Dataset | Domain | Rows | Used before by | Our best utility (% of ceiling) |
 |---|---|--:|---|---|
-| **Adult** | census | 30,162 | Stadler'22 · Annamalai'24 · Ganev'25 · McKenna (AIM) | **92%** (MST) |
+| **Adult** | census | 30,162 | Stadler'22 · Annamalai'24 · Ganev'25 · McKenna (AIM) | **84%** (MST) |
 | **ACS** | census | 195,665 | — *(our modern-census add)* | **89%** (MST) |
 | **Bank** | finance | 45,211 | Mohapatra VLDB'24 | **90%** (AIM) |
 | **German** | finance | 1,000 | standard DP benchmark | **86%** (MST) |
-| **Diabetes-130** | **healthcare** | 99,492 | — *(our healthcare add)* | 99%* (all tie) |
+| **Diabetes-130** | **healthcare** | 99,492 | — *(our healthcare add)* | 98%* (all tie) |
 | **Breast Cancer** | **healthcare** | 569 | standard benchmark | **93%** (MST) |
 | **Wine (red)** | chemistry | 1,599 | standard benchmark | **89%** (MST) |
 | **Mushroom** | categorical | 8,124 | classic UCI | **99%** (AIM) |
