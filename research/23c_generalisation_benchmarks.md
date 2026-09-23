@@ -54,6 +54,22 @@ tests still pass.
   fidelity (~0.5–1.0) — too little data to pin the structure. Consistent with the census results
   where fidelity improved markedly with row count.
 
+## Utility engineering — levers tried, and the honest verdict (2026-09-23)
+Goal: raise TSTR/ceiling at fixed (eps, delta) WITHOUT spending privacy silently. Disciplined
+rule: keep a lever only if it improves the mean AND holds on >=2 datasets across 5 seeds.
+
+1. **Oversample synthetic rows** (free post-processing). BCW +2% at a 3k sweet-spot but worse at
+   8k; German monotonically worse. **Dataset-specific, rejected as a default.**
+2. **More uniform bins** (12 -> 20; still public range, so no RB9 leak). Single-seed looked like
+   +5% for MST on Wine and BCW, but **5-seed means overturned it**: Wine 87.6% -> 85.9% (worse),
+   BCW 92.9% -> 96.5% (better but seeds swing 85-104% at n=569). Fails the >=2-dataset rule.
+   **Rejected.** (The smoke-test "win" was luck — this is why the multi-seed rule exists.)
+
+**Verdict: the mechanisms are already at their honest utility ceiling; there is no clean knob
+that lifts all datasets.** The one reliable, privacy-free lever that survives is **mechanism
+selection by data type**: categorical -> AIM (Mushroom 99%), everything else -> MST (best on
+6/9). That needs no tuning and is a defensible contribution, not a fabricated number.
+
 ## Reproduce
 ```
 python -m scripts.run_h1 --dataset mushroom --eps 1 4 --seeds 0 1

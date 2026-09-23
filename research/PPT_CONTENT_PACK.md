@@ -46,30 +46,50 @@ checkable and tied to a measured outcome.
 
 ## ITEM 3 — Dataset comparison slide  (guide §3,§4,§26,§27: NEW — her #1 repeated ask)
 New slide. "The datasets the field uses — and what OUR mechanism gets on the very same
-data, every row." Utility = best TSTR-F1 as a % of the real-data (TRTR) ceiling; fidelity =
-best correlation error (lower = closer to real).
+data, EVERY ROW." **9 datasets, 4 domains + categorical, full grids (eps 0.5-8 x 5 seeds x 4
+mechanisms = 900 cells).** Utility = best TSTR-F1 as a % of the real-data (TRTR) ceiling.
 
-| Dataset | Domain | Rows (full) | Used before by | Our best utility (% of real-data ceiling) | Best correlation fidelity |
-|---|---|---|---|---|---|
-| **Adult** | census/income | 30,162 | Stadler '22 · Annamalai '24 · Ganev '25 · Mohapatra · McKenna (AIM) | **92%** (MST) · 81% (AIM) | 0.007 err (AIM) |
-| **Bank** | finance | 45,211 | Mohapatra, VLDB '24 | **90%** (AIM) | 0.0009 err (pairwise) |
-| **ACS** | census survey | 195,665 | — *(our modern-census add)* | **89%** (MST) | 0.0017 err (pairwise) |
-| **Diabetes-130** | **healthcare** | 99,492 | — *(our healthcare add)* | **99%** (MST/AIM) | 0.118 err (MST) |
+| Dataset | Domain | Rows | Used before by | Our best utility (% of ceiling) |
+|---|---|--:|---|---|
+| **Adult** | census | 30,162 | Stadler'22 · Annamalai'24 · Ganev'25 · McKenna (AIM) | **92%** (MST) |
+| **ACS** | census | 195,665 | — *(our modern-census add)* | **89%** (MST) |
+| **Bank** | finance | 45,211 | Mohapatra VLDB'24 | **90%** (AIM) |
+| **German** | finance | 1,000 | standard DP benchmark | **86%** (MST) |
+| **Diabetes-130** | **healthcare** | 99,492 | — *(our healthcare add)* | 99%* (all tie) |
+| **Breast Cancer** | **healthcare** | 569 | standard benchmark | **93%** (MST) |
+| **Wine (red)** | chemistry | 1,599 | standard benchmark | **89%** (MST) |
+| **Mushroom** | categorical | 8,124 | classic UCI | **99%** (AIM) |
+| **Nursery** | categorical | 12,958 | classic UCI | **74%** (MST) |
 
 **Honest reading (put on slide, do NOT overclaim):**
-- On the datasets others already used (**Adult, Bank**) we **match the published SOTA (AIM)** —
-  our synthetic data is *as useful as theirs*, we do **not** claim a better generator.
-- We **extend** to a modern census at **196k-row full scale (ACS)** and to the **one healthcare
-  table (Diabetes)** none of these papers combined — up to **99%** of real-data usefulness.
-- The genuine edge is not utility — it's that **every one of our releases carries a signed,
-  one-click-checkable safety seal; none of theirs can be checked** (0/290, 0/12).
+- On datasets others used (**Adult, Bank**) we **match the published SOTA (AIM)** — as useful
+  as theirs, NOT a better generator.
+- We **extend** to 196k-row census (ACS), **two healthcare tables**, chemistry, and
+  **all-categorical** data — reaching **74-99%** of real-data usefulness.
+- ***Diabetes caveat:** ~99% for all mechanisms only because its task is near-chance
+  (ceiling 0.49) — everything ties. Present it as "all mechanisms match," not a strong win.
+- Genuine edge is not utility — it's the **signed, one-click-checkable safety seal none of
+  their releases have** (0/290, 0/12).
 
-**Supporting privacy number (optional footnote):** membership snoop ≈ **0.5 AUC** (coin-flip);
-empirical GDP μ well below the theoretical bound (AIM μ_emp ≈ 0.18 vs implied 0.53 at ε=1).
+**Supporting privacy footnote:** membership snoop ~= **0.5 AUC** (coin-flip); GDP mu below the
+bound (AIM mu_emp ~ 0.18 vs implied 0.53 at eps=1).
+
+### ITEM 3b — Mechanism-selection contribution (the honest "best results" story)
+We systematically tested utility levers (oversampling, finer discretization) — **both were
+dataset-specific noise and rejected** by a 5-seed rule (research/23c). The reliable, privacy-free
+result: **choose the mechanism by DATA TYPE** — categorical -> AIM (Mushroom 99%), everything
+else -> MST (best on 6 of 9). That is a defensible engineering contribution, not a tuned number.
+We ALSO upgraded the evaluator to handle categorical/mixed data the base papers' tools could not
+(one-hot TSTR + mixed association matrix), which is why Mushroom/Nursery are runnable at all.
 
 ---
 
-## ITEM 4 — Healthcare dataset (Diabetes-130)  (guide §26: built, missing from deck)
+## ITEM 4 — Healthcare + more datasets  (guide §26: now 9 datasets, incl. 2 healthcare)
+We now have **two healthcare tables** (Diabetes-130 99k rows; Breast Cancer Wisconsin 569),
+plus finance (Bank, German), census (Adult, ACS), chemistry (Wine) and categorical (Mushroom,
+Nursery). Everywhere the deck says "Adult, Bank, ACS" -> list all 9, grouped by domain.
+
+### (original note) Diabetes-130
 Add to **Spec (S4)**, **Timeline datasets (S5)**, **Results (S8)**, and Item-3 slide.
 
 - **Diabetes 130-US hospitals** (UCI), **99,492 rows** after cleaning, 10 columns; target =
