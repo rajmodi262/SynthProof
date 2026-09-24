@@ -331,3 +331,45 @@ def test_rb14_cross_table_fingerprint_mirrors_rb3():
     no_scheme = _codes({"cross_table_fingerprint": "b" * 64})
     assert no_scheme["RB14"].severity == boundary.UNVERIFIABLE
     assert "RB14" not in _codes({})
+
+
+# ------------------------------------------------------------------ audit C4 (research/27)
+
+
+def test_rb5_is_recomputed_from_the_signed_event_list(keys):
+    """RB5 used to read the maker's self-reported verdict; now the checker recomposes epsilon."""
+    sheet = _clean_sheet(keys).to_dict()
+    assert sheet["mechanism_events"], "a release must carry its event list"
+    rb5 = [f for f in boundary.audit_sheet(sheet).findings if f.code == "RB5"]
+    assert rb5 and rb5[0].severity == boundary.NOTE and "Recomputed" in rb5[0].finding
+
+
+def test_an_understated_epsilon_is_caught_by_recomputation(keys):
+    sheet = _clean_sheet(keys).to_dict()
+    sheet["total_proved_eps"] = sheet["total_proved_eps"] / 2  # claim half of what was spent
+    sheet["accountant_agreement"] = {"verdict": "agree"}  # and say the cross-check agreed
+    report = boundary.audit_sheet(sheet)
+    assert any(f.code == "RB5" and f.severity == boundary.LEAK for f in report.findings)
+
+
+def test_a_self_reported_verdict_without_events_is_not_trusted(keys):
+    sheet = _clean_sheet(keys).to_dict()
+    sheet.pop("mechanism_events")
+    sheet["accountant_agreement"] = {"verdict": "agree"}
+    rb5 = [f for f in boundary.audit_sheet(sheet).findings if f.code == "RB5"]
+    assert rb5[0].severity == boundary.UNVERIFIABLE
+
+
+def test_the_signature_is_checked_first_when_a_key_is_given(keys, tmp_path):
+    from synthproof.ledger.signing import PUBLIC_KEY_NAME, resolve_key_dir
+
+    sheet = _clean_sheet(keys).to_dict()
+    pub = resolve_key_dir() / PUBLIC_KEY_NAME
+    ok = boundary.audit_release(sheet, public_key_path=pub)
+    assert ok.findings[0].code == "RB0" and ok.findings[0].severity == boundary.NOTE
+    sheet["num_rows"] = 1  # edit the signed label
+    bad = boundary.audit_release(sheet, public_key_path=pub)
+    assert bad.findings[0].code == "RB0" and bad.findings[0].severity == boundary.LEAK
+    assert not bad.passed
+    unchecked = boundary.audit_release(sheet)
+    assert unchecked.findings[0].severity == boundary.UNVERIFIABLE

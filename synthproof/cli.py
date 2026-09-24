@@ -419,34 +419,6 @@ def verify(datasheet, pubkey):
     )
 
 
-@main.command("boundary-audit")
-@click.argument("artefact", type=click.Path(exists=True))
-@click.option("--json", "as_json", is_flag=True, help="Emit the report as JSON.")
-def boundary_audit(artefact, as_json):
-    """Audits a release for what it leaks OUTSIDE its epsilon, from the artefact alone.
-
-    Give it a Privacy Data Sheet or a Croissant record. It reads only that file -- never the
-    data, never the producer's code -- and reports every channel through which the artefact
-    discloses something the headline epsilon does not cover: the run seed (which replays the
-    whole release), the exact row count, an unkeyed hash of the input, or measurements taken on
-    the real table. This is the check a data recipient can run before trusting a release.
-
-    Exit status is 1 if any open channel (a `leak`) is found, 0 otherwise. A pass is not proof
-    the release is sound -- see the `unverifiable` items, which the artefact cannot settle.
-    """
-    from synthproof.audit import boundary
-
-    doc = json.loads(Path(artefact).read_text(encoding="utf-8"))
-    report = boundary.audit_release(doc)
-
-    if as_json:
-        click.echo(json.dumps(report.to_dict(), indent=2))
-    else:
-        click.echo(boundary.render(report))
-
-    raise SystemExit(0 if report.passed else 1)
-
-
 @main.command("croissant")
 @click.option(
     "--datasheet",
@@ -789,7 +761,13 @@ def audit_power(eps, canaries, alpha, subgroups, as_json, gdp, gdp_delta, mu, ru
 @main.command("boundary-audit")
 @click.argument("artefact", type=click.Path(exists=True, dir_okay=False))
 @click.option("--json", "as_json", is_flag=True, help="Emit the report as JSON.")
-def boundary_audit_cmd(artefact: str, as_json: bool):
+@click.option(
+    "--pubkey",
+    type=click.Path(exists=True, dir_okay=False),
+    default=None,
+    help="The maker's public key. When given, the signature is verified FIRST (RB0).",
+)
+def boundary_audit_cmd(artefact: str, as_json: bool, pubkey: Optional[str] = None):
     """Checks a released sheet or Croissant record for leaks OUTSIDE its epsilon.
 
     Reads only the artefact -- never the data or the producer's code -- so anyone holding a release
@@ -804,7 +782,7 @@ def boundary_audit_cmd(artefact: str, as_json: bool):
         raise click.ClickException(f"{artefact} is not JSON: {exc}") from exc
     if not isinstance(document, dict):
         raise click.ClickException(f"{artefact} is not a sheet or a Croissant record.")
-    report = boundary.audit_release(document)
+    report = boundary.audit_release(document, public_key_path=pubkey)
     if as_json:
         click.echo(json.dumps(report.to_dict(), indent=2))
     else:

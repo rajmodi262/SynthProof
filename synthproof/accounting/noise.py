@@ -142,3 +142,34 @@ def sample_discrete_gaussian(sigma: float, size: int = 1, seed: Optional[int] = 
         dtype=np.int64,
     )
     return samples
+
+
+def exponential_mechanism(
+    scores, epsilon: float, sensitivity: float, seed: Optional[int] = None
+) -> int:
+    """Index chosen by the exponential mechanism: P(i) proportional to exp(eps * q_i / (2 * Delta)).
+
+    Sampled exactly from the normalised distribution (log-sum-exp for stability) rather than by
+    adding floating-point Gumbel noise. Privacy: eps-DP, and -- because the mechanism has bounded
+    range -- (eps^2 / 8)-zCDP (Cesar & Rogers 2021, arXiv:2004.07223). The accountant charges it
+    through that zCDP bound; see `MechanismSpec("exponential", ...)`.
+    """
+    q = np.asarray(scores, dtype=float)
+    if q.size == 0:
+        raise ValueError("exponential mechanism needs at least one candidate")
+    if epsilon <= 0 or sensitivity <= 0:
+        raise ValueError(f"need epsilon > 0 and sensitivity > 0, got {epsilon}, {sensitivity}")
+    logits = (epsilon / (2.0 * sensitivity)) * (q - q.max())
+    p = np.exp(logits)
+    p /= p.sum()
+    return int(np.random.default_rng(seed).choice(q.size, p=p))
+
+
+def em_noise_scale(epsilon: float, sensitivity: float) -> float:
+    """The `noise_scale` under which an exponential-mechanism step is charged.
+
+    An eps-EM step is (eps^2/8)-zCDP. A Gaussian with noise multiplier m is 1/(2 m^2)-zCDP, so
+    the two have identical RDP curves when m = 2 / eps; with the utility's sensitivity Delta the
+    scale is m * Delta = 2 * Delta / eps. The accountant maps "exponential" to that Gaussian event.
+    """
+    return 2.0 * sensitivity / epsilon

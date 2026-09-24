@@ -35,17 +35,28 @@ class UtilityResult:
     # 0 means the marginals match; it is scale-free, so it is comparable across columns
     # and across datasets.
     marginal_distance: float
+    # Mean of TSTR/TRTR over three model families (random forest, logistic regression, gradient
+    # boosting). One 20-tree forest on one split made the headline depend on that model's quirks
+    # (audit M3, research/27). None when not requested.
+    usefulness_multi: Optional[float] = None
 
 
 class UtilityEvaluator:
     """Evaluates ML utility (TSTR vs TRTR) and statistical fidelity."""
 
-    def __init__(self, target_col: str = "category", seed: int = 42, test_size: float = 0.2):
+    def __init__(
+        self,
+        target_col: str = "category",
+        seed: int = 42,
+        test_size: float = 0.2,
+        multi_model: bool = False,
+    ):
         if not (0.0 < test_size < 1.0):
             raise ValueError(f"test_size must be in (0, 1), got {test_size}")
         self.target_col = target_col
         self.seed = seed
         self.test_size = test_size
+        self.multi_model = multi_model
 
     @staticmethod
     def _stratify_labels(y: pd.Series) -> Optional[pd.Series]:
@@ -62,7 +73,12 @@ class UtilityEvaluator:
             (num_cols if pd.api.types.is_numeric_dtype(df[c]) else cat_cols).append(c)
         return num_cols, cat_cols
 
-    def evaluate(self, real_df: pd.DataFrame, synthetic_df: pd.DataFrame) -> UtilityResult:
+    def evaluate(
+        self,
+        real_df: pd.DataFrame,
+        synthetic_df: pd.DataFrame,
+        test_df: Optional[pd.DataFrame] = None,
+    ) -> UtilityResult:
         """Computes TSTR vs TRTR macro F1 on a shared held-out split, plus marginal distance.
 
         Features can be numeric, categorical, or a mix. Categorical features are one-hot
@@ -72,7 +88,10 @@ class UtilityEvaluator:
         evaluated at all -- the previous version used numeric columns only and raised on a
         table that had none.
         """
-        np.random.seed(self.seed)
+        # `test_df`: real rows the GENERATOR never saw. When given, TRTR trains on all of
+        # `real_df` and both models are scored on `test_df`. Without it the test split is carved
+        # out of `real_df` -- rows the generator was fitted on, so TSTR was scored partly
+        # in-sample for the synthesiser (audit M2, research/27).
 
         num_cols, cat_cols = self._feature_columns(real_df)
 
@@ -97,10 +116,10 @@ class UtilityEvaluator:
         encoder: Optional[OneHotEncoder] = None
         if cat_cols:
             encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
-            vocab = pd.concat(
-                [real_df[cat_cols].astype(str), synthetic_df[cat_cols].astype(str)],
-                ignore_index=True,
-            )
+            parts = [real_df[cat_cols].astype(str), synthetic_df[cat_cols].astype(str)]
+            if test_df is not None:
+                parts.append(test_df[cat_cols].astype(str))
+            vocab = pd.concat(parts, ignore_index=True)
             encoder.fit(vocab)
 
         def encode(df: pd.DataFrame) -> np.ndarray:
@@ -115,16 +134,19 @@ class UtilityEvaluator:
         # The previous version called clf_trtr.predict(X_real) on its own training data,
         # reporting in-sample accuracy (a constant 0.971) as the TRTR baseline. Splitting on
         # the row index keeps numeric and categorical features aligned per row.
-        idx = np.arange(len(real_df))
-        tr_idx, te_idx = train_test_split(
-            idx,
-            test_size=self.test_size,
-            random_state=self.seed,
-            stratify=self._stratify_labels(real_df[self.target_col]),
-        )
-        real_tr, real_te = real_df.iloc[tr_idx], real_df.iloc[te_idx]
-        y_real_tr = real_df[self.target_col].iloc[tr_idx]
-        y_real_te = real_df[self.target_col].iloc[te_idx]
+        if test_df is not None:
+            real_tr, real_te = real_df, test_df
+        else:
+            idx = np.arange(len(real_df))
+            tr_idx, te_idx = train_test_split(
+                idx,
+                test_size=self.test_size,
+                random_state=self.seed,
+                stratify=self._stratify_labels(real_df[self.target_col]),
+            )
+            real_tr, real_te = real_df.iloc[tr_idx], real_df.iloc[te_idx]
+        y_real_tr = real_tr[self.target_col]
+        y_real_te = real_te[self.target_col]
 
         X_real_tr, X_real_te = encode(real_tr), encode(real_te)
 
@@ -139,6 +161,29 @@ class UtilityEvaluator:
         clf_tstr = RandomForestClassifier(n_estimators=20, random_state=self.seed)
         clf_tstr.fit(X_synth, y_synth)
         tstr_f1 = float(f1_score(y_real_te, clf_tstr.predict(X_real_te), average="macro"))
+
+        usefulness_multi = None
+        if self.multi_model:
+            from sklearn.ensemble import HistGradientBoostingClassifier
+            from sklearn.linear_model import LogisticRegression
+            from sklearn.pipeline import make_pipeline
+            from sklearn.preprocessing import StandardScaler
+
+            ratios = [tstr_f1 / trtr_f1 if trtr_f1 > 0 else float("nan")]
+            for make in (
+                lambda: make_pipeline(StandardScaler(), LogisticRegression(max_iter=500)),
+                lambda: HistGradientBoostingClassifier(random_state=self.seed),
+            ):
+                r_model = make().fit(X_real_tr, y_real_tr)
+                s_model = make()
+                if len(pd.unique(y_synth)) < 2:
+                    ratios.append(0.0)  # a one-class release teaches nothing
+                    continue
+                s_model.fit(X_synth, y_synth)
+                trtr = float(f1_score(y_real_te, r_model.predict(X_real_te), average="macro"))
+                tstr = float(f1_score(y_real_te, s_model.predict(X_real_te), average="macro"))
+                ratios.append(tstr / trtr if trtr > 0 else float("nan"))
+            usefulness_multi = float(np.nanmean(ratios))
 
         # Marginal distance per feature column, averaged. Numeric columns use Wasserstein-1
         # standardised by the real column's spread (scale-free, comparable across columns).
@@ -170,4 +215,5 @@ class UtilityEvaluator:
             trtr_macro_f1=trtr_f1,
             utility_gap=float(max(0.0, trtr_f1 - tstr_f1)),
             marginal_distance=marginal_dist,
+            usefulness_multi=usefulness_multi,
         )

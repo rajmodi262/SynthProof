@@ -16,7 +16,8 @@ def test_tabular_dataset_classification():
 
 
 def test_dp_domain_profiler_charges_budget():
-    ds = TabularDataset.create_synthetic_toy(num_rows=50)
+    # No schema: nothing is publicly declared, so every column's domain must be bought.
+    ds = TabularDataset(TabularDataset.create_synthetic_toy(num_rows=5000).df)
     acc = Accountant(budget_eps=2.0, budget_delta=1e-5)
 
     initial_spends = len(acc.spends)
@@ -70,14 +71,16 @@ def test_public_ranges_cost_no_budget_and_are_used_verbatim():
     ds = _bounded_dataset()
     profiler = DPDomainProfiler(accountant=Accountant(10.0, 1e-5), eps_budget=0.5)
 
-    # Only the categorical column needs a query; both numerics are publicly bounded.
-    assert profiler._query_count(ds) == 1
+    # Both numerics are publicly bounded and the categorical domain is declared: no queries.
+    assert profiler._query_count(ds) == 0
 
     profile = profiler.profile(ds, seed=0)
     assert profile.columns["age"].is_public_range is True
     assert (profile.columns["age"].min_val, profile.columns["age"].max_val) == (0.0, 120.0)
     assert (profile.columns["income"].min_val, profile.columns["income"].max_val) == (0.0, 5e5)
     assert profile.columns["g"].is_public_range is False
+    assert profile.columns["g"].is_public_domain is True
+    assert profile.eps_spent == 0.0
 
 
 def test_undeclared_numeric_range_still_falls_back_to_a_noisy_estimate():
@@ -94,7 +97,7 @@ def test_undeclared_numeric_range_still_falls_back_to_a_noisy_estimate():
 
 def test_profiling_spends_exactly_its_budget_despite_mixed_sensitivities():
     """A shared noise multiplier keeps every query on the same RDP curve."""
-    ds = TabularDataset.create_synthetic_toy(200)
+    ds = TabularDataset(TabularDataset.create_synthetic_toy(5000).df)  # nothing declared
     for budget in (0.2, 1.0, 2.0):
         acc = Accountant(budget_eps=10.0, budget_delta=1e-5)
         profile = DPDomainProfiler(accountant=acc, eps_budget=budget).profile(ds, seed=0)
@@ -131,3 +134,26 @@ def test_dataset_source_refuses_non_https_urls():
     from synthproof.data.datasets import ADULT
 
     assert ADULT.url.startswith("https://")
+
+
+def test_declared_category_domain_is_used_whole_and_costs_nothing():
+    """Regression for audit C1 (research/27): a declared domain used to be thresholded over the
+    OBSERVED values only, so a public category with count 0 could never appear while one held
+    by a single person survived ~1 time in 51 -- a delta near 2e-2 against a declared 1e-5.
+    The declared domain is now released whole, which reads nothing from the data."""
+    import pandas as pd
+
+    from synthproof.data.schema import CATEGORICAL, ColumnSpec, Schema
+
+    schema = Schema(columns=[ColumnSpec("g", CATEGORICAL, categories=["a", "b", "rare", "absent"])])
+    with_one = TabularDataset(pd.DataFrame({"g": ["a"] * 300 + ["b"] * 300 + ["rare"]}), schema=schema)
+    without = TabularDataset(pd.DataFrame({"g": ["a"] * 300 + ["b"] * 301}), schema=schema)
+    for seed in range(20):
+        outs = []
+        for ds in (with_one, without):
+            acc = Accountant(budget_eps=10.0, budget_delta=1e-5)
+            prof = DPDomainProfiler(accountant=acc, eps_budget=1.0).profile(ds, seed=seed)
+            outs.append(prof.columns["g"].categories)
+            assert acc.spends == []
+        # Identical output on neighbouring tables: the release does not depend on the data.
+        assert outs[0] == outs[1] == ["a", "b", "rare", "absent"]

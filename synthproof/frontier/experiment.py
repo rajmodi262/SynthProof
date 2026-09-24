@@ -23,6 +23,7 @@ from synthproof.audit.canary import AuditResult, CanaryAuditor, CanarySet
 from synthproof.audit.steinke import OneRunCanarySet, SteinkeAuditor, SteinkeResult
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
+from synthproof.evaluate.fidelity import association_error, pairwise_tvd
 from synthproof.evaluate.utility import UtilityEvaluator
 from synthproof.frontier.checkpoint import run_with_checkpoints
 from synthproof.generators.aim import AIMGenerator, mbi_available
@@ -31,6 +32,11 @@ from synthproof.generators.moments import GaussianMomentGenerator
 from synthproof.generators.pairwise import PairwiseMarginalGenerator
 
 DEFAULT_SEEDS = (0, 1, 2, 3, 4)
+# Part of every cached cell's configuration hash. Bump it whenever a change alters what a cell
+# computes, so a checkpoint from older code can never be silently reused. "audit27" = the
+# research/27 fixes (declared domains released whole, rebuilt AIM/MST on one zCDP budget,
+# held-out utility, table-wide structure metrics, mixed-type MIA).
+PIPELINE_VERSION = "audit27"
 DEFAULT_EPS_GRID = (0.5, 1.0, 2.0, 4.0, 8.0)
 
 # Mechanism families. "independent" and "pairwise" differ in model class, which is what H1
@@ -129,6 +135,10 @@ class CellResult:
     trtr_f1: Interval
     mia_auc: Interval
     correlation_error: Interval
+    # Table-wide structure (audit M1): every column pair, not the one pair in corr_cols.
+    structure_error_all: Optional[Interval] = None
+    pair_tvd: Optional[Interval] = None
+    usefulness_multi: Optional[Interval] = None
     raw: Dict[str, List[float]] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
@@ -305,8 +315,25 @@ def run_cell(
     # every seed below 2**32 -- all the research grids use -- is unchanged.
     eval_seed = seed % (2**32)
 
-    plan = BudgetPlan.split(target_eps, delta=delta, profile_frac=0.1)
-    acc = Accountant(budget_eps=target_eps * 1.02, budget_delta=delta)
+    # Profiling is free when the schema declares every bound and category domain (true of every
+    # registry dataset): it then reads nothing and charges nothing, so the WHOLE budget goes to
+    # synthesis. Reserving 10% for a profiler that spends none of it left that share idle (audit
+    # H1, research/27). Only a schema with undeclared domains gets the 10/90 split.
+    needs_profile = (
+        DPDomainProfiler(
+            accountant=Accountant(budget_eps=float("inf"), budget_delta=delta), eps_budget=1.0
+        )._query_count(fit_ds)
+        > 0
+    )
+    plan = (
+        BudgetPlan.split(target_eps, delta=delta, profile_frac=0.1)
+        if needs_profile
+        else BudgetPlan(total_eps=target_eps, delta=delta, profile_eps=0.0, synthesis_eps=target_eps)
+    )
+    # Budget = the target itself, plus float slack only. It used to be `target * 1.02`, a 2%
+    # overshoot allowance nothing needed or explained (audit L4).
+    budget_cap = target_eps * (1.0 + 1e-6)
+    acc = Accountant(budget_eps=budget_cap, budget_delta=delta)
     emit(
         "budget",
         {
@@ -354,10 +381,15 @@ def run_cell(
 
     def _synthesise(source: TabularDataset, accountant: Accountant):
         """Profiles and fits one release from `source`, returning its synthetic table."""
-        prof = DPDomainProfiler(accountant=accountant, eps_budget=plan.profile_eps).profile(
+        # eps_budget must be positive; with a fully declared schema it is never spent.
+        prof = DPDomainProfiler(accountant=accountant, eps_budget=plan.profile_eps or 1.0).profile(
             source, seed=seed
         )
         generator = MECHANISMS[mechanism](seed=seed)
+        # The prediction target is public (it is printed in the release's data sheet); a
+        # mechanism that can use a target-aware workload is told it.
+        if hasattr(generator, "target_col") and target_col is not None:
+            generator.target_col = target_col
         generator.fit(source, prof, accountant, target_eps=plan.synthesis_eps)
         return generator.generate(num_samples=num_release), prof
 
@@ -438,7 +470,7 @@ def run_cell(
     # data holder publishing twice. Each fit gets its own accountant and composes to the same
     # epsilon by construction, since the calibration inputs are identical.
     if separate_utility_fit:
-        util_acc = Accountant(budget_eps=target_eps * 1.02, budget_delta=delta)
+        util_acc = Accountant(budget_eps=budget_cap, budget_delta=delta)
         util_synth, _ = _synthesise(fit_ds, util_acc)
         utility_source = "clean_fit"
     else:
@@ -459,8 +491,9 @@ def run_cell(
     # comparison describe the same population.
     reference_df = fit_ds.df
 
-    util = UtilityEvaluator(target_col=target_col, seed=eval_seed).evaluate(
-        reference_df, util_synth
+    # Scored on `holdout_df`: real rows neither release was fitted on (audit M2).
+    util = UtilityEvaluator(target_col=target_col, seed=eval_seed, multi_model=True).evaluate(
+        reference_df, util_synth, test_df=holdout_df
     )
     emit("utility", {"tstr_f1": float(util.tstr_macro_f1), "trtr_f1": float(util.trtr_macro_f1)})
 
@@ -565,6 +598,8 @@ def run_cell(
         # this pipeline and never reported; a metric nothing reads cannot catch anything.
         "marginal_w1": float(util.marginal_distance),
         "trtr_f1": float(util.trtr_macro_f1),
+        # Mean TSTR/TRTR over random forest, logistic regression and gradient boosting (M3).
+        "usefulness_multi": float(util.usefulness_multi),
         # NaN, not 0.0, when a distance-based attack does not apply (all-categorical release).
         # A zero would read as "attack ran, found nothing" -- an absent measurement, not a null.
         "mia_auc": (float(mia.auc) if mia else float("nan")),
@@ -588,6 +623,9 @@ def run_cell(
                 else informative_numeric_columns(reference_df, fit_ds.numerical_cols)
             ),
         ),
+        # Table-wide structure over EVERY column pair (audit M1, research/27).
+        "structure_error_all": association_error(reference_df, util_synth),
+        "pair_tvd": pairwise_tvd(reference_df, util_synth),
         # Metadata a consumer needs in order to read the two metrics above honestly.
         "reference": "fit_split",
         "auditor": auditor_kind,
@@ -656,6 +694,7 @@ def run_grid(
             "rows": dataset.num_rows,
             "target_col": target_col,
             "corr_cols": list(corr_cols) if corr_cols is not None else None,
+            "pipeline": PIPELINE_VERSION,
         }
         for mech in mechanisms
         for eps in eps_grid
@@ -714,6 +753,13 @@ def run_grid(
                     trtr_f1=bootstrap_ci(raw["trtr_f1"]),
                     mia_auc=bootstrap_ci(raw["mia_auc"]),
                     correlation_error=bootstrap_ci(raw["correlation_error"]),
+                    structure_error_all=(
+                        bootstrap_ci(raw["structure_error_all"]) if "structure_error_all" in raw else None
+                    ),
+                    pair_tvd=bootstrap_ci(raw["pair_tvd"]) if "pair_tvd" in raw else None,
+                    usefulness_multi=(
+                        bootstrap_ci(raw["usefulness_multi"]) if "usefulness_multi" in raw else None
+                    ),
                     raw=raw,
                 )
             )

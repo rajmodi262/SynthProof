@@ -66,6 +66,29 @@ EVALUATION_PRIVACY = (
 )
 
 
+def mechanism_events_from_spends(spends) -> List[Dict]:
+    """The release's noisy steps as a compact, signable list: identical charges are merged.
+
+    Order does not matter to composition, so merging identical (mechanism, sensitivity, scale,
+    sampling) charges into one entry with summed repetitions loses nothing and keeps a
+    15-column AIM release to a handful of lines.
+    """
+    merged: Dict[tuple, Dict] = {}
+    for sp in spends:
+        m = sp.mechanism
+        key = (m.name, float(m.sensitivity), float(m.noise_scale), m.sampling_rate)
+        if key not in merged:
+            merged[key] = {
+                "name": m.name,
+                "sensitivity": float(m.sensitivity),
+                "noise_scale": float(m.noise_scale),
+                "steps": 0,
+                "sampling_rate": m.sampling_rate,
+            }
+        merged[key]["steps"] += int(m.steps or 1)
+    return list(merged.values())
+
+
 @dataclass
 class PrivacyDataSheet:
     """The machine-readable claim that accompanies a release.
@@ -149,6 +172,11 @@ class PrivacyDataSheet:
     # `unavailable`/`unsupported` are reported rather than hidden -- an absent check must never
     # look like a passed one. See accounting/differential.py.
     accountant_agreement: Optional[Dict] = None
+    # Every noisy step of the release (mechanism, sensitivity, noise scale, repetitions), signed
+    # with the rest of the sheet, so boundary-audit can RECOMPUTE epsilon with both accountants
+    # instead of reading the maker's own verdict above (audit C4, research/27). Noise scales are
+    # data-independent calibration outputs, so publishing them reveals nothing about the input.
+    mechanism_events: Optional[List[Dict]] = None
 
     signature: Optional[str] = None
     public_key: Optional[str] = None
@@ -450,6 +478,7 @@ class FrontierEngine:
             agreement = enforce_accountant_agreement(
                 cross_check_spends(res.get("_spends", []), delta)
             )
+            events = mechanism_events_from_spends(res.get("_spends", []))
 
             ledger.append(
                 LedgerEntry(
@@ -489,6 +518,7 @@ class FrontierEngine:
             preflight_findings=[f.to_dict() for f in findings],
             residual_risk=_RESIDUAL_RISK,
             accountant_agreement=agreement.to_dict(),
+            mechanism_events=events,
             dataset_name=dataset.name,
             num_rows=size.rows,
             release_rows_source=size.source,

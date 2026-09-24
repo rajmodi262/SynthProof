@@ -55,18 +55,22 @@ UNDER_REPORT_MARGIN = 0.999
 # `sigma` for GaussianMechanism are both expressed in units of sensitivity, which is the same
 # convention dp_accounting uses -- getting that wrong would manufacture a disagreement out of a
 # unit error, so it is asserted by test_agreement_survives_a_sensitivity_other_than_one.
-SUPPORTED_MECHANISMS = ("gaussian", "laplace")
+SUPPORTED_MECHANISMS = ("gaussian", "laplace", "exponential")
 
 
 def _autodp_mechanism(spec_name: str, noise_scale: float, sensitivity: float, index: int = 0):
     """Translate one charged mechanism into its autodp counterpart."""
-    from autodp.mechanism_zoo import GaussianMechanism, LaplaceMechanism
+    from autodp.mechanism_zoo import ExponentialMechanism, GaussianMechanism, LaplaceMechanism
 
     scaled = float(noise_scale) / float(sensitivity)
     if spec_name == "gaussian":
         return GaussianMechanism(sigma=scaled, name=f"g{index}")
     if spec_name == "laplace":
         return LaplaceMechanism(b=scaled, name=f"l{index}")
+    if spec_name == "exponential":
+        # autodp's own ExponentialMechanism (its zCDP + pure-DP RDP bounds), from the pure eps
+        # the step was run at: eps = 2 * Delta / noise_scale = 2 / scaled.
+        return ExponentialMechanism(eps=2.0 / scaled, name=f"e{index}")
     raise ValueError(f"unsupported mechanism for cross-check: {spec_name}")
 
 
@@ -254,7 +258,9 @@ def cross_check_spends(
     # (research/accountant_crosscheck/subsampled_gaussian_grid.json), so neither a tolerance nor
     # the direction of a gap means anything. On the same grid the charged epsilon was never below
     # dp_accounting's PLD accountant (0 of 40), which tests/test_differential_accounting.py pins.
-    subsampled = [s for s in specs if s.sampling_rate is not None and s.sampling_rate < 1.0]
+    subsampled = [
+        s for s in specs if getattr(s, "sampling_rate", None) is not None and s.sampling_rate < 1.0
+    ]
     if subsampled:
         return AccountantAgreement(
             primary="dp_accounting",

@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any, Dict, Tuple
 
 from synthproof.frontier.checkpoint import CellRecord, GridCheckpoint, config_hash
+from synthproof.frontier.experiment import PIPELINE_VERSION
 
 # Preregistered protocol -- identical to scripts.run_h1 so the cells (and their hashes) match.
 EPS_GRID = (0.5, 1.0, 2.0, 4.0, 8.0)
@@ -124,6 +125,7 @@ def main() -> int:
             "rows": n_rows,
             "target_col": target_col,
             "corr_cols": list(corr_cols),
+            "pipeline": PIPELINE_VERSION,
         }
         for mech in mechs
         for eps in eps_grid

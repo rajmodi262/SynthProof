@@ -34,6 +34,12 @@ DEFAULT_ORDERS: Sequence[float] = (
 # Mechanism names accepted in MechanismSpec.name, mapped to how they are accounted.
 _GAUSSIAN_NAMES = frozenset({"gaussian", "dp-sgd", "dpsgd"})
 _LAPLACE_NAMES = frozenset({"laplace"})
+# The exponential mechanism, charged through its bounded-range zCDP bound: an eps-EM step is
+# (eps^2/8)-zCDP (Cesar & Rogers 2021, arXiv:2004.07223), which is exactly the RDP curve of a
+# Gaussian with noise multiplier 2/eps. `noise_scale` for an EM spec is 2*Delta/eps
+# (`noise.em_noise_scale`), so noise_scale/sensitivity IS that multiplier. Charging report-noisy-
+# max as a Laplace mechanism, as selection used to be, is not a theorem (audit L1, research/27).
+_EXPONENTIAL_NAMES = frozenset({"exponential"})
 
 
 class Accountant:
@@ -92,10 +98,12 @@ class Accountant:
             base = dp_event.GaussianDpEvent(noise_multiplier)
         elif name in _LAPLACE_NAMES:
             base = dp_event.LaplaceDpEvent(noise_multiplier)
+        elif name in _EXPONENTIAL_NAMES:
+            base = dp_event.GaussianDpEvent(noise_multiplier)
         else:
             raise ValueError(
                 f"Unknown mechanism {spec.name!r}. Supported: "
-                f"{sorted(_GAUSSIAN_NAMES | _LAPLACE_NAMES)}. "
+                f"{sorted(_GAUSSIAN_NAMES | _LAPLACE_NAMES | _EXPONENTIAL_NAMES)}. "
                 "(A previous version silently accounted unknown mechanisms as Gaussian.)"
             )
 

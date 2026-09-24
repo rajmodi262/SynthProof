@@ -39,7 +39,9 @@ class MIAResult:
 class DistanceMIABaseline:
     """Membership inference by nearest-neighbour distance to the synthetic table."""
 
-    def __init__(self, seed: int = 42, max_records: Optional[int] = None):
+    def __init__(
+        self, seed: int = 42, max_records: Optional[int] = None, include_categorical: bool = True
+    ):
         """
         Args:
             seed: RNG seed for reproducibility.
@@ -49,21 +51,47 @@ class DistanceMIABaseline:
         """
         self.seed = seed
         self.max_records = max_records
+        # Categorical columns count toward the distance as a mismatch (0 or 1 each). Without
+        # them the attack saw 4 of Adult's 12 columns and NONE of an all-categorical table's --
+        # where it returned a constant score and so an AUC of exactly 0.5 that read as "attacker
+        # at chance" on every Mushroom, Nursery and SF-Fire cell (audit C3, research/27).
+        self.include_categorical = include_categorical
 
-    def _scores(self, df: pd.DataFrame, synthetic_df: pd.DataFrame, num_cols: list) -> np.ndarray:
-        """Similarity to the nearest synthetic record; higher == more likely a member."""
-        if not num_cols or len(synthetic_df) == 0 or len(df) == 0:
-            return np.zeros(len(df))
+    def _scores(
+        self, df: pd.DataFrame, synthetic_df: pd.DataFrame, num_cols: list, cat_cols: list = ()
+    ) -> np.ndarray:
+        """Similarity to the nearest synthetic record; higher == more likely a member.
 
-        synth = synthetic_df[num_cols].to_numpy(dtype=float)
-        scale = np.nanstd(synth, axis=0)
-        scale[~np.isfinite(scale) | (scale == 0)] = 1.0
+        Distance = sqrt( sum over numeric columns of (diff / synthetic SD)^2
+                         + number of categorical columns that differ ).
+        """
+        cat_cols = list(cat_cols)
+        if (not num_cols and not cat_cols) or len(synthetic_df) == 0 or len(df) == 0:
+            raise ValueError("No shared column to measure a distance on.")
 
-        target = df[num_cols].to_numpy(dtype=float)
+        if num_cols:
+            synth = synthetic_df[num_cols].to_numpy(dtype=float)
+            scale = np.nanstd(synth, axis=0)
+            scale[~np.isfinite(scale) | (scale == 0)] = 1.0
+            target = df[num_cols].to_numpy(dtype=float)
+        if cat_cols:
+            # One shared integer code per value, so equality is a cheap array comparison.
+            codes = {}
+            s_cat = np.empty((len(synthetic_df), len(cat_cols)), dtype=np.int64)
+            t_cat = np.empty((len(df), len(cat_cols)), dtype=np.int64)
+            for j, c in enumerate(cat_cols):
+                lk = codes.setdefault(c, {})
+                s_cat[:, j] = [lk.setdefault(v, len(lk)) for v in synthetic_df[c].astype(str)]
+                t_cat[:, j] = [lk.setdefault(v, len(lk)) for v in df[c].astype(str)]
+
         out = np.zeros(len(df))
         for i in range(len(df)):
-            d = (synth - target[i]) / scale
-            out[i] = 1.0 / (1.0 + float(np.min(np.sqrt(np.nansum(d**2, axis=1)))))
+            d2 = np.zeros(len(synthetic_df))
+            if num_cols:
+                d2 += np.nansum(((synth - target[i]) / scale) ** 2, axis=1)
+            if cat_cols:
+                d2 += (s_cat != t_cat[i]).sum(axis=1)
+            out[i] = 1.0 / (1.0 + float(np.sqrt(np.min(d2))))
         return out
 
     def evaluate(
@@ -80,8 +108,15 @@ class DistanceMIABaseline:
             if c in synthetic_df.columns and pd.api.types.is_numeric_dtype(synthetic_df[c])
         ]
 
-        train_scores = self._scores(train_df, synthetic_df, num_cols)
-        test_scores = self._scores(test_df, synthetic_df, num_cols)
+        cat_cols = (
+            [c for c in train_df.columns if c in synthetic_df.columns and c not in num_cols]
+            if self.include_categorical
+            else []
+        )
+        # Raises when there is nothing to compare on: an absent attack must never be reported
+        # as one that ran and found nothing.
+        train_scores = self._scores(train_df, synthetic_df, num_cols, cat_cols)
+        test_scores = self._scores(test_df, synthetic_df, num_cols, cat_cols)
 
         labels = np.concatenate([np.ones(len(train_scores)), np.zeros(len(test_scores))])
         scores = np.concatenate([train_scores, test_scores])

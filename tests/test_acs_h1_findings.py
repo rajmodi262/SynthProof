@@ -63,30 +63,21 @@ def _cell(payload, mech, eps):
 # ------------------------------------------------------- the confound
 
 
-@requires_aim
-@pytest.mark.parametrize("eps", [0.5, 8.0])
-def test_aim_selects_the_measured_pair_on_adult_at_every_epsilon(eps):
-    """THE confound behind H1's headline.
-
-    Adult's structure metric is corr(age, hours_per_week), and AIM selects exactly that pair
-    as a clique at every budget tested. So "AIM reproduces structure best on Adult" is at
-    least partly a statement about a coincidence between the metric's column pair and AIM's
-    clique selection — not a general claim about structure preservation.
-
-    On ACSIncome the coincidence does not hold and the finding does not reproduce; see
-    results/acs/H1_RESULTS.md §4.
-    """
-    cliques, _, _ = _two_way_cliques(_adult(), eps)
-    assert {"age", "hours_per_week"} in cliques, (
-        f"AIM no longer selects the measured pair at eps={eps}; cliques were {cliques}. "
-        "If this changed, results/acs/H1_RESULTS.md §4 needs rewriting."
-    )
+# REMOVED 2026-09-24 (audit research/27): `test_aim_selects_the_measured_pair_on_adult_at_every_epsilon`
+# pinned the OLD AIM's habit of selecting (age, hours_per_week) -- the one pair the structure metric
+# read. That clique-selection confound was already retracted (research/, CLAUDE.md), and the
+# structure metric is now table-wide (`structure_error_all`, `pair_tvd`; audit M1), so a
+# coincidence with one pair can no longer drive the result. AIM was rebuilt (budget-driven rounds,
+# exponential-mechanism selection, target workload), so the pinned behaviour is gone by design.
 
 
 @requires_aim
-def test_the_dp_profiler_suppresses_far_fewer_acs_categories_as_the_budget_grows():
-    """The root cause of AIM's ACS degradation: the domain grows sharply with epsilon, so a
-    fixed clique allowance covers proportionally less of it."""
+def test_the_acs_domain_no_longer_depends_on_the_budget():
+    """ACS's schema declares its category domains, so they are released whole and for free
+    (audit C1, research/27). The domain used to be thresholded over the OBSERVED values and grew
+    sharply with epsilon (OCCP: a handful of groups at 0.5, most of them at 8) -- a data-dependent
+    domain, which was also the root cause of AIM's ACS degradation. It is now the same at every
+    budget."""
     pytest.importorskip("folktables")
     if not Path("data/acs").exists():
         pytest.skip("ACS microdata not downloaded")
@@ -95,14 +86,11 @@ def test_the_dp_profiler_suppresses_far_fewer_acs_categories_as_the_budget_grows
     ds, _ = load_acs_income(n_rows=6000, seed=0, download=False)
     sizes = {}
     for eps in (0.5, 8.0):
-        plan = BudgetPlan.split(eps, delta=1e-5, profile_frac=0.1)
-        acc = Accountant(budget_eps=eps * 1.02, budget_delta=1e-5)
-        prof = DPDomainProfiler(accountant=acc, eps_budget=plan.profile_eps).profile(ds, seed=0)
+        acc = Accountant(budget_eps=eps, budget_delta=1e-5)
+        prof = DPDomainProfiler(accountant=acc, eps_budget=0.1 * eps).profile(ds, seed=0)
         sizes[eps] = {n: len(c.categories) for n, c in prof.columns.items() if c.categories}
-
-    # OCCP is the clearest case: a handful of surviving groups at a tight budget, most of
-    # them at a loose one.
-    assert sizes[8.0]["OCCP"] > sizes[0.5]["OCCP"] * 3
+        assert acc.total() == 0.0
+    assert sizes[0.5] == sizes[8.0]
 
 
 @requires_aim
@@ -163,12 +151,9 @@ def test_aim_and_independent_do_not_separate_on_acs():
     assert not (aim["hi"] < ind["lo"] or ind["hi"] < aim["lo"])
 
 
-@requires_results
-def test_aim_utility_on_acs_falls_between_the_tightest_and_loosest_budget():
-    """More budget, worse downstream utility — and the CIs do not overlap, so it is not
-    noise. Pinned because it is the observation §2 and §3 are built on."""
-    b = json.loads(ACS_H1.read_text())
-    lo = _cell(b, "aim", 0.5)["tstr_f1"]
-    hi = _cell(b, "aim", 8.0)["tstr_f1"]
-    assert hi["mean"] < lo["mean"]
-    assert hi["hi"] < lo["lo"], "the degradation is no longer statistically separated"
+# REMOVED 2026-09-24: `test_aim_utility_on_acs_falls_between_the_tightest_and_loosest_budget`
+# pinned the old ACS grid, in which AIM got WORSE with more budget. Its cause -- a category domain
+# that grew with epsilon because it was thresholded over the observed values -- was the C1 leak
+# (research/27); with declared domains released whole, that grid is superseded by the re-run.
+
+

@@ -211,11 +211,11 @@ def test_the_calibrated_threshold_splits_delta_across_categorical_columns():
     assert p._category_threshold(10.0, 8) > p._category_threshold(10.0, 1)
 
 
-def test_the_calibrated_threshold_is_off_by_default():
-    """Committed results were produced with the legacy threshold. Switching the default would
-    silently change every published number."""
+def test_the_calibrated_threshold_is_on_by_default():
+    """Audit C1 (research/27): the legacy 3-sigma threshold has no delta term, so it is no
+    longer the default. It now only governs undeclared domains."""
     p = DPDomainProfiler(accountant=Accountant(budget_eps=10.0, budget_delta=1e-5), eps_budget=1.0)
-    assert p.delta_calibrated_threshold is False
+    assert p.delta_calibrated_threshold is True
 
 
 def test_a_zero_delta_is_rejected_by_the_calibrated_threshold():

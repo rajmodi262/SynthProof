@@ -93,8 +93,10 @@ def adult_schema() -> Schema:
     """
     return Schema(
         columns=[
-            ColumnSpec("age", NUMERICAL, lower=17.0, upper=90.0),
-            ColumnSpec("hours_per_week", NUMERICAL, lower=1.0, upper=99.0),
+            # Round, generous ranges. The previous 17-90 and 1-99 were exactly the observed
+            # extremes -- a data-derived domain declared as "public" (audit C2, research/27).
+            ColumnSpec("age", NUMERICAL, lower=15.0, upper=100.0),
+            ColumnSpec("hours_per_week", NUMERICAL, lower=0.0, upper=100.0),
             ColumnSpec("capital_gain", NUMERICAL, lower=0.0, upper=100000.0),
             ColumnSpec("capital_loss", NUMERICAL, lower=0.0, upper=5000.0),
             ColumnSpec(
@@ -231,7 +233,7 @@ def bank_marketing_schema() -> Schema:
         columns=[
             # Retail banking customers: the dataset is adults, and 95 is a defensible public
             # ceiling for a marketing contact list.
-            ColumnSpec("age", NUMERICAL, lower=18.0, upper=95.0),
+            ColumnSpec("age", NUMERICAL, lower=15.0, upper=100.0),  # was the observed 18-95 (C2)
             # Account balance in euros. Negative because current accounts go overdrawn; the
             # bounds are a declared plausible range for a retail account, not observed extremes.
             ColumnSpec("balance", NUMERICAL, lower=-10000.0, upper=110000.0),
@@ -400,10 +402,13 @@ def diabetes130_schema() -> Schema:
     """
     return Schema(
         columns=[
+            # 1-14 days is the cohort's published inclusion criterion (Strack et al. 2014), not
+            # an observation. The other three were the observed extremes (132, 81, 16) -- a
+            # data-derived domain declared as public (audit C2) -- and are now round ranges.
             ColumnSpec("time_in_hospital", NUMERICAL, lower=1.0, upper=14.0),
-            ColumnSpec("num_lab_procedures", NUMERICAL, lower=1.0, upper=132.0),
-            ColumnSpec("num_medications", NUMERICAL, lower=1.0, upper=81.0),
-            ColumnSpec("number_diagnoses", NUMERICAL, lower=1.0, upper=16.0),
+            ColumnSpec("num_lab_procedures", NUMERICAL, lower=0.0, upper=150.0),
+            ColumnSpec("num_medications", NUMERICAL, lower=0.0, upper=100.0),
+            ColumnSpec("number_diagnoses", NUMERICAL, lower=0.0, upper=20.0),
             ColumnSpec(
                 "age",
                 CATEGORICAL,
@@ -631,7 +636,7 @@ def german_credit_schema() -> Schema:
     numeric/categorical finance table; target 1=good, 2=bad -> mapped to good/bad."""
     return Schema(
         columns=[
-            ColumnSpec("duration", NUMERICAL, lower=1.0, upper=72.0),
+            ColumnSpec("duration", NUMERICAL, lower=0.0, upper=80.0),  # was the observed max 72 (C2)
             ColumnSpec("credit_amount", NUMERICAL, lower=0.0, upper=20000.0),
             ColumnSpec("age", NUMERICAL, lower=18.0, upper=80.0),
             ColumnSpec("installment_rate", NUMERICAL, lower=1.0, upper=4.0),
@@ -672,14 +677,16 @@ def wine_quality_schema() -> Schema:
     b = {
         "fixed_acidity": (4.0, 16.0),
         "volatile_acidity": (0.0, 2.0),
-        "citric_acid": (0.0, 1.0),
+        "citric_acid": (0.0, 2.0),
         "residual_sugar": (0.0, 16.0),
         "chlorides": (0.0, 1.0),
-        "free_sulfur_dioxide": (1.0, 72.0),
-        "total_sulfur_dioxide": (6.0, 289.0),
+        # Were (1, 72) and (6, 289): the red wines' own min/max -- the exact data-derived domain
+        # Ganev et al. (P4) attack, on their own dataset (audit C2). Now round ranges.
+        "free_sulfur_dioxide": (0.0, 100.0),
+        "total_sulfur_dioxide": (0.0, 300.0),
         "density": (0.985, 1.005),
         "pH": (2.7, 4.1),
-        "sulphates": (0.3, 2.0),
+        "sulphates": (0.0, 2.5),
         "alcohol": (8.0, 15.0),
     }
     cols = [ColumnSpec(k, NUMERICAL, lower=lo, upper=hi) for k, (lo, hi) in b.items()]

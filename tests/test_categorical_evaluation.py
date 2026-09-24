@@ -85,3 +85,23 @@ def test_mixed_types_produce_a_finite_score():
     df["num"] = np.random.default_rng(4).normal(size=len(df))
     err = _mean_abs_corr_error(df, df, ["a", "num", "target"])
     assert np.isfinite(err)
+
+
+def test_utility_is_scored_on_the_given_unseen_rows():
+    """Audit M2 (research/27): with `test_df`, both models are scored on rows the generator never
+    saw. A test set whose labels are inverted must drive both scores down -- proof it is used."""
+    import numpy as np
+    import pandas as pd
+
+    from synthproof.evaluate.utility import UtilityEvaluator
+
+    rng = np.random.default_rng(0)
+    x = rng.normal(size=600)
+    real = pd.DataFrame({"x": x, "y": np.where(x > 0, "p", "n")})
+    xt = rng.normal(size=300)
+    flipped = pd.DataFrame({"x": xt, "y": np.where(xt > 0, "n", "p")})
+    ev = UtilityEvaluator(target_col="y", seed=0)
+    normal = ev.evaluate(real, real.copy())
+    held = ev.evaluate(real, real.copy(), test_df=flipped)
+    assert normal.trtr_macro_f1 > 0.9
+    assert held.trtr_macro_f1 < 0.2 and held.tstr_macro_f1 < 0.2

@@ -320,9 +320,92 @@ def _evaluation(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
     ]
 
 
+def _recompute_epsilon(sheet: Mapping[str, Any]) -> Optional[List[BoundaryFinding]]:
+    """RB5 from the artefact's own signed event list, not from its self-reported verdict.
+
+    A sheet that carries `mechanism_events` (every noisy step: mechanism, sensitivity, noise
+    scale, repetitions) lets the checker recompose epsilon itself with BOTH accountants. Before
+    this, RB5 read `accountant_agreement.verdict` as written -- a maker could type "agree"
+    (audit C4, research/27). Returns None when the sheet carries no events.
+    """
+    events = sheet.get("mechanism_events")
+    if not isinstance(events, list) or not events:
+        return None
+    from synthproof.accounting.accountant import Accountant
+    from synthproof.accounting.differential import cross_check_spends
+    from synthproof.accounting.types import MechanismSpec
+
+    delta = float(sheet.get("delta") or 0.0)
+    try:
+        acct = Accountant(budget_eps=float("inf"), budget_delta=delta)
+        for ev in events:
+            acct.charge(
+                MechanismSpec(
+                    name=str(ev["name"]),
+                    sensitivity=float(ev["sensitivity"]),
+                    noise_scale=float(ev["noise_scale"]),
+                    steps=int(ev.get("steps", 1)),
+                    sampling_rate=ev.get("sampling_rate"),
+                )
+            )
+    except (KeyError, TypeError, ValueError) as exc:
+        return [
+            BoundaryFinding(
+                "RB5",
+                LEAK,
+                "mechanism_events",
+                f"The signed event list cannot be recomposed ({exc}).",
+                "The published epsilon has no computation behind it that a reader can repeat.",
+                "Publish a well-formed event list: name, sensitivity, noise_scale, steps.",
+            )
+        ]
+    recomputed = acct.total() + float(sheet.get("release_rows_eps") or 0.0)
+    claimed = sheet.get("total_proved_eps")
+    if not isinstance(claimed, (int, float)) or recomputed > float(claimed) * (1 + 1e-6) + 1e-9:
+        return [
+            BoundaryFinding(
+                "RB5",
+                LEAK,
+                "total_proved_eps",
+                f"Recomposing the signed event list gives epsilon {recomputed:.4f}, larger than "
+                f"the published {claimed}.",
+                "The headline guarantee under-states what the release's own steps cost.",
+                "Publish the recomputed epsilon, or correct the event list.",
+            )
+        ]
+    second = cross_check_spends(acct.spends, delta)
+    if second.verdict == "under_report":
+        return [
+            BoundaryFinding(
+                "RB5",
+                LEAK,
+                "mechanism_events",
+                f"An independent accountant (autodp) composes the events to "
+                f"{second.secondary_epsilon:.4f}, more than the published {claimed}.",
+                "The published guarantee is not supported by an independent computation.",
+                "Do not rely on total_proved_eps until the disagreement is resolved.",
+            )
+        ]
+    return [
+        BoundaryFinding(
+            "RB5",
+            NOTE,
+            "mechanism_events",
+            f"Recomputed here from the signed event list: epsilon {recomputed:.4f} "
+            f"(published {claimed}); second accountant: {second.verdict}.",
+            "The epsilon is repeatable by the reader, not taken on the maker's word.",
+            "None.",
+        )
+    ]
+
+
 def _cross_check(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
     agreement = sheet.get("accountant_agreement") or {}
     verdict = agreement.get("verdict") if isinstance(agreement, Mapping) else None
+    # A maker's own admission of an under-report is a leak whatever the recomputation says.
+    recomputed = None if verdict == "under_report" else _recompute_epsilon(sheet)
+    if recomputed is not None:
+        return recomputed
     if verdict == "under_report":
         return [
             BoundaryFinding(
@@ -339,11 +422,12 @@ def _cross_check(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
         return [
             BoundaryFinding(
                 "RB5",
-                NOTE,
+                UNVERIFIABLE,
                 "accountant_agreement",
-                f"A second accountant was consulted: {verdict}.",
-                "The epsilon does not rest on one implementation alone.",
-                "None.",
+                f"The maker reports a second accountant said: {verdict}. The sheet carries no "
+                "event list, so this checker cannot recompute it.",
+                "The agreement is the maker's own statement, not something this file proves.",
+                "Publish mechanism_events so a reader can recompose the epsilon.",
             )
         ]
     return [
@@ -810,11 +894,58 @@ def audit_croissant(record: Mapping[str, Any]) -> BoundaryReport:
     return BoundaryReport("croissant", _ordered(findings))
 
 
-def audit_release(document: Mapping[str, Any]) -> BoundaryReport:
-    """Audits whichever artefact `document` is: a Croissant record or a bare sheet."""
+def _signature(document: Mapping[str, Any], public_key_path) -> BoundaryFinding:
+    """RB0: is the label the one its maker signed? Checked FIRST; everything else reads it."""
+    if public_key_path is None:
+        return BoundaryFinding(
+            "RB0",
+            UNVERIFIABLE,
+            "signature",
+            "The signature was not checked (no public key given).",
+            "Every other finding describes the label as received, which may have been edited.",
+            "Re-run with --pubkey <the maker's public key>.",
+        )
+    from pathlib import Path
+
+    from synthproof.frontier import croissant as croissant_mod
+    from synthproof.ledger import signing
+
+    try:
+        if isinstance(document.get("dp:privacyDataSheet"), Mapping):
+            croissant_mod.verify_croissant(dict(document), key_path=Path(public_key_path))
+        else:
+            signing.verify_datasheet(dict(document), key_path=Path(public_key_path))
+    except (signing.SignatureError, croissant_mod.CroissantError) as exc:
+        return BoundaryFinding(
+            "RB0",
+            LEAK,
+            "signature",
+            f"The signature does not verify: {exc}",
+            "The label was altered after signing, or was not signed by this key. Nothing in it "
+            "can be relied on.",
+            "Obtain the original signed release from its maker.",
+        )
+    return BoundaryFinding(
+        "RB0",
+        NOTE,
+        "signature",
+        "Signature verified against the given public key.",
+        "The label is exactly what the key holder signed (not that its numbers are true).",
+        "None.",
+    )
+
+
+def audit_release(document: Mapping[str, Any], public_key_path=None) -> BoundaryReport:
+    """Audits whichever artefact `document` is: a Croissant record or a bare sheet.
+
+    The signature is checked first when a public key is given (RB0); without one the report
+    says the label was taken as received.
+    """
     if "dp:privacyDataSheet" in document or "@context" in document:
-        return audit_croissant(document)
-    return audit_sheet(document)
+        report = audit_croissant(document)
+    else:
+        report = audit_sheet(document)
+    return BoundaryReport(report.artefact, [_signature(document, public_key_path), *report.findings])
 
 
 def render(report: BoundaryReport, width: Optional[int] = 96) -> str:

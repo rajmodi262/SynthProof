@@ -138,7 +138,7 @@ def test_the_accountant_rejects_an_unknown_mechanism_by_name():
 
     acc = Accountant(budget_eps=10.0, budget_delta=1e-5)
     with pytest.raises(ValueError, match="Unknown mechanism"):
-        acc.charge(MechanismSpec(name="exponential", sensitivity=1.0, noise_scale=1.0, steps=1))
+        acc.charge(MechanismSpec(name="sparse_vector", sensitivity=1.0, noise_scale=1.0, steps=1))
 
 
 def test_zero_noise_never_composes_to_a_finite_epsilon():
@@ -150,3 +150,21 @@ def test_zero_noise_never_composes_to_a_finite_epsilon():
     acc = Accountant(budget_eps=float("inf"), budget_delta=1e-5)
     acc.charge(MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=0.0, steps=1))
     assert acc.total() == float("inf")
+
+
+def test_the_exponential_mechanism_is_charged_by_its_zcdp_bound_and_autodp_agrees():
+    """Audit L1 (research/27): selection is the exponential mechanism, charged through the
+    (eps^2/8)-zCDP bound (Cesar & Rogers 2021). A second library must agree, or the release is
+    blocked -- the same rule every other charge follows."""
+    from synthproof.accounting.accountant import Accountant
+    from synthproof.accounting.differential import cross_check_spends
+    from synthproof.accounting.noise import em_noise_scale
+    from synthproof.accounting.types import MechanismSpec
+
+    acc = Accountant(budget_eps=100.0, budget_delta=1e-5)
+    for _ in range(10):
+        acc.charge(MechanismSpec("exponential", sensitivity=1.0, noise_scale=em_noise_scale(0.2, 1.0)))
+        acc.charge(MechanismSpec("gaussian", sensitivity=1.0, noise_scale=8.0))
+    agreement = cross_check_spends(acc.spends, 1e-5)
+    assert agreement.verdict in ("agree", "conservative"), agreement.detail
+    assert not agreement.blocks_release

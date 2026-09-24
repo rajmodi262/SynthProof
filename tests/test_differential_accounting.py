@@ -175,7 +175,7 @@ def test_a_mechanism_the_accountant_knows_but_we_cannot_check_reads_unsupported(
 def test_a_mechanism_the_accountant_rejects_never_reaches_the_cross_check():
     """The outer guard. An unknown name must fail loudly, not be accounted as Gaussian."""
     with pytest.raises(ValueError, match="Unknown mechanism"):
-        cross_check(1.0, 1e-5, "exponential", 1.0, 3)
+        cross_check(1.0, 1e-5, "sparse_vector", 1.0, 3)
 
 
 def test_an_empty_spend_history_is_unavailable_not_agreed():

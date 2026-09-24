@@ -146,13 +146,13 @@ def test_adaptive_budget_never_overspends():
 
 
 @requires_mbi
-def test_adaptive_budget_is_opt_in_and_off_by_default():
-    """Default AIM does not anneal, so committed grids are unaffected."""
+def test_adaptive_budget_is_opt_in():
+    """AIM's annealing assumes ~16d rounds; at ~d it cut SF Fire to 2 rounds and 79% usefulness
+    against 98% without it (research/27), so it is opt-in."""
     assert AIMGenerator().adaptive_budget is False
     assert AIMGenerator(adaptive_budget=True).adaptive_budget is True
 
 
-@requires_mbi
 def test_adaptive_budget_does_not_hurt_correlation_on_a_correlated_pair():
     """The point of annealing is concentrating budget on the informative marginals. It should be
     at least as good as the fixed split on a strongly correlated pair (checked as no-worse to keep
@@ -179,3 +179,26 @@ def test_a_generous_budget_still_measures_two_way_marginals():
 
     assert ("x", "y") in gen.measured_cliques_
     assert not gen.skipped_cliques_
+
+
+# ------------------------------------------------------------------ audit H1 / L1 (research/27)
+
+
+@pytest.mark.parametrize("eps", [0.5, 2.0, 8.0])
+def test_aim_spends_its_whole_budget(eps):
+    """Stages used to be calibrated separately; RDP composition is sub-additive, so 18-25% of
+    every budget went unspent. One zCDP budget now composes to the target."""
+    ds = _correlated()
+    acc = Accountant(eps * (1 + 1e-6), 1e-5)
+    profile = DPDomainProfiler(acc, eps_budget=0.1).profile(ds, seed=0)
+    assert acc.total() == 0.0  # fully declared schema: profiling is free
+    AIMGenerator(seed=0).fit(ds, profile, acc, target_eps=eps)
+    assert acc.total() == pytest.approx(eps, rel=1e-3)
+    assert acc.total() <= eps * (1 + 1e-6)
+
+
+def test_selection_is_charged_as_the_exponential_mechanism():
+    ds = _correlated()
+    gen, acc = _fit(ds, 2.0, rounds=2)
+    sel = [s for s in acc.spends if (s.run_id or "").startswith("aim_select")]
+    assert sel and all(s.mechanism.name == "exponential" for s in sel)

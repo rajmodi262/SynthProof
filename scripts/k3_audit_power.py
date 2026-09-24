@@ -83,7 +83,7 @@ def one_run(ds, n, arm, seed):
         d_auc = float("nan")
     try:
         m_auc = (
-            DistanceMIABaseline(seed=seed, max_records=min(n, 1500))
+            DistanceMIABaseline(seed=seed, max_records=min(n, 1500), include_categorical=False)
             .evaluate(synth, members, nonmembers)
             .auc
         )

@@ -139,3 +139,14 @@ def test_a_tiny_model_budget_degrades_to_one_way_marginals():
     assert len(synth) == 300
     assert gen.skipped_cliques_, "refused cliques must be recorded"
     assert all(len(c) == 1 for c in gen.measured_cliques_)
+
+
+
+@pytest.mark.parametrize("eps", [0.5, 8.0])
+def test_mst_spends_its_whole_budget(eps):
+    """Audit H1 (research/27): one zCDP budget, split in thirds, composes to the target."""
+    ds = _three_col()
+    acc = Accountant(eps * (1 + 1e-6), 1e-5)
+    profile = DPDomainProfiler(acc, eps_budget=0.1).profile(ds, seed=0)
+    MSTGenerator(seed=0).fit(ds, profile, acc, target_eps=eps)
+    assert acc.total() == pytest.approx(eps, rel=1e-3)

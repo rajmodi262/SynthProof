@@ -43,6 +43,7 @@ class ColumnProfile:
     categories: Optional[List[Any]] = None
     suppressed_categories: int = 0  # rare categories withheld by the DP threshold
     is_public_range: bool = False  # True when the range came from the schema, not the data
+    is_public_domain: bool = False  # True when the categories came from the declared schema
 
 
 @dataclass
@@ -69,7 +70,7 @@ class DPDomainProfiler:
         eps_budget: float = 0.1,
         sensitivity: float = 1.0,
         schema_declared: bool = True,
-        delta_calibrated_threshold: bool = False,
+        delta_calibrated_threshold: bool = True,
     ):
         """
         Args:
@@ -92,9 +93,11 @@ class DPDomainProfiler:
 
                 With `schema_declared=False` there is no public domain to fall back on, so an
                 unsatisfiable budget raises instead.
-            delta_calibrated_threshold: Opt in to the delta-calibrated suppression threshold.
-                Off by default because switching it on changes published results — see
-                `_category_threshold` for the arithmetic and what it costs.
+            delta_calibrated_threshold: Use the delta-calibrated suppression threshold for a
+                column whose category domain is NOT publicly declared. On by default: the
+                legacy 3-sigma threshold let a singleton category through with probability
+                ~1/51 at eps=1, against a declared delta of 1e-5 (audit C1, research/27). It
+                only applies to inferred schemas now -- a declared domain is used as-is, free.
         """
         if eps_budget <= 0:
             raise ValueError(f"eps_budget must be positive, got {eps_budget}")
@@ -209,7 +212,7 @@ class DPDomainProfiler:
             return None
         for spec in dataset.schema.columns:
             if spec.name == col:
-                return spec.categories
+                return list(spec.categories) if spec.categories else None
         return None
 
     def _query_count(self, dataset: TabularDataset) -> int:
@@ -219,7 +222,7 @@ class DPDomainProfiler:
         there is nothing to learn and nothing to hide. Only columns without a declared range
         need a (2-query) noisy min/max, and only categorical columns need a histogram.
         """
-        n = len(dataset.categorical_cols)
+        n = sum(1 for c in dataset.categorical_cols if self._public_categories(dataset, c) is None)
         for col in dataset.numerical_cols:
             if self._public_bounds(dataset, col) is None:
                 n += 2
@@ -239,17 +242,13 @@ class DPDomainProfiler:
         """Profiles the dataset schema, spending at most `eps_budget` in total."""
         n_queries = self._query_count(dataset)
         if n_queries == 0:
-            # Everything is publicly declared; profiling is free.
-            rng = np.random.default_rng(seed)
-            cols = {
-                c: self._public_profile(dataset, c)
-                for c in dataset.columns
-                if self._public_bounds(dataset, c) is not None
-            }
-            for c in dataset.categorical_cols:
-                cols[c] = self._profile_categorical(
-                    dataset, c, 1.0, rng, n_categorical=len(dataset.categorical_cols)
-                )
+            # Everything is publicly declared; profiling is free and touches no data.
+            cols = {}
+            for c in dataset.columns:
+                if c in dataset.numerical_cols:
+                    cols[c] = self._public_profile(dataset, c)
+                else:
+                    cols[c] = self._public_domain_profile(dataset, c)
             return DomainProfile(
                 dataset_name=dataset.name,
                 num_rows=dataset.num_rows,
@@ -288,6 +287,12 @@ class DPDomainProfiler:
                     col_profiles[col] = self._public_profile(dataset, col)
                 else:
                     col_profiles[col] = self._profile_numeric(dataset, col, noise_scale, rng, sens)
+            elif self._public_categories(dataset, col) is not None:
+                # A declared domain is a public fact: use ALL of it, charge nothing. The previous
+                # path thresholded noisy counts of the OBSERVED values only, so a public category
+                # with count 0 could never appear while one held by a single person survived
+                # ~1 time in 51 -- the declared schema did not make that private (audit C1).
+                col_profiles[col] = self._public_domain_profile(dataset, col)
             else:
                 col_profiles[col] = self._profile_categorical(
                     dataset,
@@ -295,7 +300,11 @@ class DPDomainProfiler:
                     noise_scale,
                     rng,
                     sens,
-                    n_categorical=len(dataset.categorical_cols),
+                    n_categorical=sum(
+                        1
+                        for c in dataset.categorical_cols
+                        if self._public_categories(dataset, c) is None
+                    ),
                 )
 
         return DomainProfile(
@@ -303,6 +312,16 @@ class DPDomainProfiler:
             num_rows=dataset.num_rows,
             columns=col_profiles,
             eps_spent=self.accountant.total() - eps_before,
+        )
+
+    def _public_domain_profile(self, dataset: TabularDataset, col: str) -> ColumnProfile:
+        """Uses the publicly declared category domain. Costs no budget and reads no data."""
+        return ColumnProfile(
+            name=col,
+            dtype="categorical",
+            categories=list(self._public_categories(dataset, col)),
+            suppressed_categories=0,
+            is_public_domain=True,
         )
 
     def _public_profile(self, dataset: TabularDataset, col: str) -> ColumnProfile:
