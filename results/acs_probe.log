@@ -1,0 +1,1 @@
+{"dataset": "acs", "mech": "aim", "eps": 1.0, "seed": 0, "useful": 0.9951, "useful_before": 0.6702, "useful_3model": 0.9907, "pair_tvd": 0.1408, "proved": 1.0, "secs": 723.7}
