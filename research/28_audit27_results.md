@@ -51,3 +51,25 @@ yardstick: the old MST scores ~79-80% on Bank when measured the same way, level 
 (~81%, 3 seeds at ε=8). The old code also proved only 0.75-0.78 of ε=1 and 6.2-6.6 of ε=8; the new code
 proves the full target. The Texas, Fire, Wine, Breast Cancer, German, Mushroom and Nursery 'before'
 numbers above were produced after the evaluator fix and are comparable as they stand.
+
+## Two-seed confirmation (seeds 0 and 1)
+
+Mean of the two seeds, with each seed in brackets. Unseen-row usefulness, every row. Every proved ε
+equals its target. Source: results/audit27_sample*.log (seed 1: results/audit27_sample_seed1.log).
+
+| Dataset | AIM ε=1 | AIM ε=8 | MST ε=1 | MST ε=8 |
+|---|---|---|---|---|
+| adult | 97% (97 / 97) | 93% (94 / 92) | 83% (82 / 83) | 87% (84 / 89) |
+| bank | 98% (97 / 100) | 98% (97 / 98) | 83% (85 / 80) | 80% (77 / 82) |
+| texas | 100% (100 / 100) | 101% (101 / 100) | 94% (94 / 94) | 94% (94 / 94) |
+| fire | 99% (99 / 99) | 99% (99 / 99) | 98% (98 / 98) | 98% (98 / 98) |
+| wine | 90% (93 / 87) | 91% (91 / 92) | 84% (84 / 83) | 87% (89 / 85) |
+| acs | 100% (100 / 100) | 99% (99 / 100) | 95% (95 / 95) | 95% (95 / 95) |
+| diabetes | 99% (98 / 99) | 98% (98 / 99) | 98% (98 / 98) | 99% (99 / 98) |
+| bcw | 96% (93 / 98) | 97% (93 / 100) | 92% (91 / 93) | 94% (91 / 97) |
+| german | 97% (94 / 99) | 96% (93 / 98) | 79% (72 / 85) | 93% (91 / 96) |
+| mushroom | 98% (97 / 99) | 99% (99 / 99) | 98% (98 / 98) | 98% (98 / 98) |
+| nursery | 80% (80 / 80) | 82% (82 / 81) | 74% (74 / 75) | 72% (72 / 72) |
+
+The second seed confirms the first: AIM is 92-100% on 10 of 11 datasets (Nursery ~80%), and the seed-to-seed
+spread is mostly within ±3 points (largest: Wine AIM ε=1 93/87, German MST ε=1 72/85).
