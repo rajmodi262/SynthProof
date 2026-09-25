@@ -1,0 +1,4 @@
+adult.zip (archive.ics.uci.edu): curl: (56) CONNECT tunnel failed, response 403
+fire.csv (raw.githubusercontent.com): 200
+census pums (www2.census.gov): curl: (56) CONNECT tunnel failed, response 403
+date -u: Fri Sep 25 19:31:15 UTC 2026
