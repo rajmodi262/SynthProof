@@ -1,0 +1,13 @@
+{"dataset": "bank", "mech": "mst", "eps": 1.0, "seed": 1, "useful": 0.801, "useful_before": 0.893, "useful_3model": 0.7804, "pair_tvd": 0.2615, "proved": 1.0, "secs": 25.8}
+{"dataset": "bank", "mech": "mst", "eps": 8.0, "seed": 1, "useful": 0.8226, "useful_before": 0.8698, "useful_3model": 0.7876, "pair_tvd": 0.2612, "proved": 7.9996, "secs": 5.2}
+{"dataset": "bank", "mech": "mst", "eps": 1.0, "seed": 2, "useful": 0.8144, "useful_before": 0.893, "useful_3model": 0.7825, "pair_tvd": 0.2609, "proved": 1.0, "secs": 5.2}
+{"dataset": "bank", "mech": "mst", "eps": 8.0, "seed": 2, "useful": 0.8336, "useful_before": 0.8698, "useful_3model": 0.789, "pair_tvd": 0.2601, "proved": 7.9996, "secs": 4.1}
+{"dataset": "fire", "mech": "independent", "eps": 1.0, "seed": 0, "useful": 0.7541, "useful_before": 0.7283, "useful_3model": 0.6385, "pair_tvd": 0.1526, "proved": 1.0, "secs": 0.5}
+{"dataset": "fire", "mech": "independent", "eps": 8.0, "seed": 0, "useful": 0.7406, "useful_before": 0.7314, "useful_3model": 0.634, "pair_tvd": 0.1526, "proved": 7.9996, "secs": 0.4}
+{"dataset": "fire", "mech": "pairwise", "eps": 1.0, "seed": 0, "useful": 0.9172, "useful_before": 0.9298, "useful_3model": 0.971, "pair_tvd": 0.106, "proved": 1.0, "secs": 2.6}
+{"dataset": "fire", "mech": "pairwise", "eps": 8.0, "seed": 0, "useful": 0.9404, "useful_before": 0.9242, "useful_3model": 0.9772, "pair_tvd": 0.1053, "proved": 7.9996, "secs": 2.4}
+{"dataset": "fire", "mech": "mst", "eps": 1.0, "seed": 0, "useful": 0.9833, "useful_before": 0.9663, "useful_3model": 0.9903, "pair_tvd": 0.0313, "proved": 1.0, "secs": 43.6}
+{"dataset": "fire", "mech": "mst", "eps": 8.0, "seed": 0, "useful": 0.9805, "useful_before": 0.9608, "useful_3model": 0.9908, "pair_tvd": 0.0312, "proved": 7.9996, "secs": 7.9}
+{"dataset": "fire", "mech": "aim", "eps": 1.0, "seed": 0, "useful": 0.9852, "useful_before": 0.6669, "useful_3model": 0.9933, "pair_tvd": 0.0429, "proved": 1.0, "secs": 378.4}
+{"dataset": "fire", "mech": "aim", "eps": 8.0, "seed": 0, "useful": 0.9858, "useful_before": 0.6685, "useful_3model": 0.9916, "pair_tvd": 0.0429, "proved": 7.9996, "secs": 162.9}
+{"dataset": "acs", "mech": "aim", "eps": 8.0, "seed": 0, "useful": 0.9941, "useful_before": 0.6292, "useful_3model": 0.9907, "pair_tvd": 0.14, "proved": 7.9996, "secs": 270.9}
