@@ -1,0 +1,16 @@
+{"dataset": "bank", "mech": "aim", "eps": 1.0, "seed": 0, "useful_old_code": 0.8143, "proved_old_code": 0.777}
+{"dataset": "bank", "mech": "aim", "eps": 8.0, "seed": 0, "useful_old_code": 0.7663, "proved_old_code": 6.526}
+{"dataset": "bank", "mech": "mst", "eps": 1.0, "seed": 0, "useful_old_code": 0.7988, "proved_old_code": 0.746}
+{"dataset": "bank", "mech": "mst", "eps": 8.0, "seed": 0, "useful_old_code": 0.7947, "proved_old_code": 6.161}
+{"dataset": "diabetes", "mech": "aim", "eps": 1.0, "seed": 0, "useful_old_code": 0.9888, "proved_old_code": 0.782}
+{"dataset": "diabetes", "mech": "aim", "eps": 8.0, "seed": 0, "useful_old_code": 0.9933, "proved_old_code": 6.592}
+{"dataset": "diabetes", "mech": "mst", "eps": 1.0, "seed": 0, "useful_old_code": 0.9894, "proved_old_code": 0.759}
+{"dataset": "diabetes", "mech": "mst", "eps": 8.0, "seed": 0, "useful_old_code": 0.9911, "proved_old_code": 6.36}
+{"dataset": "adult", "mech": "aim", "eps": 1.0, "seed": 0, "useful_old_code": 0.8141, "proved_old_code": 0.778}
+{"dataset": "adult", "mech": "aim", "eps": 8.0, "seed": 0, "useful_old_code": 0.8065, "proved_old_code": 6.543}
+{"dataset": "adult", "mech": "mst", "eps": 1.0, "seed": 0, "useful_old_code": 0.819, "proved_old_code": 0.749}
+{"dataset": "adult", "mech": "mst", "eps": 8.0, "seed": 0, "useful_old_code": 0.8138, "proved_old_code": 6.213}
+{"dataset": "acs", "mech": "aim", "eps": 1.0, "seed": 0, "useful_old_code": 0.845, "proved_old_code": 0.778}
+{"dataset": "acs", "mech": "aim", "eps": 8.0, "seed": 0, "useful_old_code": 0.6211, "proved_old_code": 6.543}
+{"dataset": "acs", "mech": "mst", "eps": 1.0, "seed": 0, "useful_old_code": 0.9421, "proved_old_code": 0.752}
+{"dataset": "acs", "mech": "mst", "eps": 8.0, "seed": 0, "useful_old_code": 0.9421, "proved_old_code": 6.257}
