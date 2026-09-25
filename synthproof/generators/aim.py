@@ -75,7 +75,9 @@ DEFAULT_SELECTION_FRAC = 0.1
 # junction tree changes), so 1 keeps a fit near a minute; annealing usually ends it sooner.
 ROUNDS_PER_COLUMN = 1
 # Junction-tree budget in megabytes (AIM bounds model size for the same reason, section 4).
-DEFAULT_MAX_MODEL_MB = 128.0
+# 80 MB is AIM's own bound (McKenna et al. 2022, section 4). It was 128 here, which with 64-bit
+# JAX (every array twice the size) ran full ACS out of memory.
+DEFAULT_MAX_MODEL_MB = 80.0
 # Mirror-descent iterations: warm-started per round, longer for the final fit.
 ROUND_ITERS = 100
 FINAL_ITERS = 1000
@@ -100,6 +102,15 @@ def _quiet_jax_cache() -> None:
     except Exception:  # pragma: no cover - jax absent or API moved; the warning is cosmetic
         pass
     enable_x64()
+
+
+def _clear_jax_caches() -> None:
+    try:
+        import jax
+
+        jax.clear_caches()
+    except Exception:  # pragma: no cover - older jax without clear_caches
+        pass
 
 
 def _require_mbi():
@@ -208,6 +219,14 @@ class AIMGenerator(BaseGenerator):
                 (self.target_col, a, b) for i, a in enumerate(others) for b in others[i + 1 :]
             ]
 
+        # A candidate's TRUE marginal never changes, so it is computed once, not every round.
+        _true_cache: Dict[tuple, np.ndarray] = {}
+
+        def true_marginal(cl):
+            if cl not in _true_cache:
+                _true_cache[cl] = np.asarray(data.project(cl).datavector(), dtype=float)
+            return _true_cache[cl]
+
         # ---- one budget. A hair below the calibrated rho so floating-point sums of many
         # charges can never tip the accountant over the target.
         rho = rho_for(target_eps, accountant.budget.delta) * (1.0 - 1e-9)
@@ -285,7 +304,7 @@ class AIMGenerator(BaseGenerator):
             sigma = sigma_for_rho(rho_meas)
             scores = []
             for cl in affordable:
-                true_y = np.asarray(data.project(cl).datavector(), dtype=float)
+                true_y = true_marginal(cl)
                 est_y = np.asarray(model.project(cl).datavector(), dtype=float)
                 penalty = np.sqrt(2.0 / np.pi) * sigma * true_y.size
                 scores.append(float(np.abs(true_y - est_y).sum()) - penalty)
@@ -303,6 +322,10 @@ class AIMGenerator(BaseGenerator):
             measurements.append(m)
             used += rho_meas + rho_sel
             r += 1
+            # Every round re-traces the model's marginal queries for a new junction tree, and JAX
+            # keeps every compiled program. Over a full-size fit that cache grew until full ACS
+            # hit "MemoryError: bad allocation"; the programs are never reused, so drop them.
+            _clear_jax_caches()
 
             if self.adaptive_budget and not fixed:
                 model = estimation.MirrorDescent().estimate(
