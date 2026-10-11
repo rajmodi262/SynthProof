@@ -44,11 +44,19 @@ def health():
     return {
         "status": "ok",
         "auth": "required" if state.AUTH_ENABLED else "disabled",
+        # shared: one key, every caller the same principal; per-user: named keys, each spend
+        # attributed in the ledger. The names themselves are not disclosed here.
+        "auth_mode": state.AUTH_MODE,
         "auth_note": (
-            "A shared API key is required on data and ledger endpoints."
-            if state.AUTH_ENABLED
-            else "NO AUTHENTICATION. Anyone who can reach this port can upload data, spend "
-            "budget and read the ledger. Set SYNTHPROOF_API_KEY before exposing it."
+            "Named API keys are required; every spend is attributed to its key's owner."
+            if state.AUTH_MODE == "per-user"
+            else (
+                "A shared API key is required on data and ledger endpoints. Every caller is "
+                "the same principal; set SYNTHPROOF_API_KEYS for per-user attribution."
+                if state.AUTH_ENABLED
+                else "NO AUTHENTICATION. Anyone who can reach this port can upload data, spend "
+                "budget and read the ledger. Set SYNTHPROOF_API_KEY before exposing it."
+            )
         ),
         "demo_mode": state.DEMO_MODE,
         "ledger_verified": state.GLOBAL_LEDGER.verify(),

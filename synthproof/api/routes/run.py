@@ -100,7 +100,7 @@ def _sse(event: str, payload: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(payload, default=_json_default)}\n\n"
 
 
-def _run_stream(req: RunRequest) -> Iterator[str]:
+def _run_stream(req: RunRequest, actor: str = "anonymous") -> Iterator[str]:
     """Streams pipeline stages as they complete.
 
     `run_cell` is synchronous, so it runs on a worker thread and pushes stage events into a
@@ -241,6 +241,8 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
                 eps_spent=float(payload["proved_eps"]),
                 delta=req.delta,
                 seed=req.seed,
+                # Who spent the budget: the principal whose key authenticated the request.
+                actor=actor,
             )
         )
 
@@ -380,11 +382,11 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
         )
 
 
-@router.post("/api/run", dependencies=[Depends(require_api_key)])
-def run(req: RunRequest):
+@router.post("/api/run")
+def run(req: RunRequest, actor: str = Depends(require_api_key)):
     """Runs one release and streams every stage as server-sent events."""
     return StreamingResponse(
-        _run_stream(req),
+        _run_stream(req, actor),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

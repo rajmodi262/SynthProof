@@ -34,15 +34,21 @@ def get_ledger():
     a cached flag. The chain detects modification, insertion, reordering, replay and
     truncation; it does not defend against an adversary holding the signing key.
 
-    Note the service's key is generated in memory per process, so these signatures do not
-    survive a restart — see the preamble in `docs/API.md`.
+    An in-memory ledger signs with a per-process key; a file-backed one
+    (SYNTHPROOF_LEDGER_DB) keeps its key in SYNTHPROOF_KEY_DIR, so its head verifies across
+    restarts. Each entry carries its `actor` -- the principal whose API key made the spend -- and
+    `eps_by_actor` sums the spend per principal (naive sum: an upper bound, not a composition).
     """
     entries = state.GLOBAL_LEDGER.get_entries()
+    by_actor: dict = {}
+    for e in entries:
+        by_actor[e.actor] = round(by_actor.get(e.actor, 0.0) + e.eps_spent, 4)
     return {
         "verified": state.GLOBAL_LEDGER.verify(),
         "head": state.GLOBAL_LEDGER.get_latest_hash(),
         "count": len(entries),
         "total_eps_spent": round(sum(e.eps_spent for e in entries), 4),
+        "eps_by_actor": by_actor,
         "entries": [
             {
                 "entry_id": e.entry_id,
@@ -55,6 +61,7 @@ def get_ledger():
                 "eps_spent": e.eps_spent,
                 "delta": e.delta,
                 "seed": e.seed,
+                "actor": e.actor,
                 "signature": e.signature[:32],
             }
             for e in entries

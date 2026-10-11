@@ -180,3 +180,43 @@ def test_cors_origins_can_be_configured_explicitly(monkeypatch):
 def test_cors_stays_open_for_the_unauthenticated_local_demo(monkeypatch):
     _, m = _app(monkeypatch)
     assert m._ALLOWED_ORIGINS == ["*"]
+
+
+# ------------------------------------------------------------------ named keys (per-user)
+
+ALICE, BOB = "alice-key-0123456789abcdef", "bob-key-fedcba9876543210"
+RUN = {"dataset": "toy", "mechanism": "independent", "target_eps": 1.0, "rows": 400}
+
+
+def test_named_keys_each_authenticate_and_a_wrong_one_is_refused(monkeypatch):
+    client, m = _app(monkeypatch, SYNTHPROOF_API_KEYS=f"alice={ALICE},bob={BOB}")
+    assert m.AUTH_ENABLED and client.get("/api/health").json()["auth_mode"] == "per-user"
+    for key in (ALICE, BOB):
+        assert client.get("/api/mechanisms", headers={"X-API-Key": key}).status_code == 200
+    assert client.get("/api/mechanisms", headers={"X-API-Key": "nope"}).status_code == 401
+
+
+def test_a_spend_is_attributed_to_the_key_that_made_it(monkeypatch):
+    client, _ = _app(monkeypatch, SYNTHPROOF_API_KEYS=f"alice={ALICE},bob={BOB}")
+    body = {**RUN, "num_canaries": 4}
+    assert "event: done" in client.post("/api/run", json=body, headers={"X-API-Key": BOB}).text
+    ledger = client.get("/api/ledger", headers={"X-API-Key": ALICE}).json()
+    assert ledger["entries"][-1]["actor"] == "bob"
+    assert ledger["eps_by_actor"]["bob"] > 0
+    assert "alice" not in ledger["eps_by_actor"]
+
+
+def test_the_shared_key_still_works_and_says_it_is_shared(monkeypatch):
+    client, _ = _app(monkeypatch, key=KEY)
+    health = client.get("/api/health").json()
+    assert health["auth_mode"] == "shared" and "SYNTHPROOF_API_KEYS" in health["auth_note"]
+    body = {**RUN, "num_canaries": 4}
+    client.post("/api/run", json=body, headers={"X-API-Key": KEY})
+    entries = client.get("/api/ledger", headers={"X-API-Key": KEY}).json()["entries"]
+    assert entries[-1]["actor"] == "shared-key"
+
+
+@pytest.mark.parametrize("raw", ["alice", "alice=", "=k", "a=k1,a=k2", "a=k,b=k"])
+def test_a_malformed_key_list_stops_the_service(monkeypatch, raw):
+    with pytest.raises(ValueError):
+        _app(monkeypatch, SYNTHPROOF_API_KEYS=raw)

@@ -98,35 +98,74 @@ _seed_demo_ledger()
 # could reach the port could upload a sensitive table, consume the privacy budget attached to
 # someone else's dataset, or read the spend history.
 #
-# It is NOT user authentication. There is one key, so every caller is the same principal: the
-# ledger's `actor` field cannot distinguish them, key rotation invalidates everyone at once,
-# and there is no per-user budget or audit trail. A deployment that needs to know WHO spent
-# the budget needs real identity, which is also the missing prerequisite for the cross-session
-# budget filter described in docs/design/USER_FACING_SYSTEM.md §2.3. This is the smallest
-# honest step, not the destination.
+# A single shared key is NOT user authentication: every caller is the same principal. So
+# SYNTHPROOF_API_KEYS takes NAMED keys -- "alice=<key>,bob=<key>" -- and every request is
+# attributed to the name whose key it carried. The ledger records that name as the `actor` of
+# each spend, so the spend history says WHO spent the budget, and one person's key can be
+# revoked without rotating everyone's. Both variables may be set; the shared key's principal is
+# "shared-key".
+#
+# Still not the destination: there is no per-user budget, no expiry and no SSO. It is the
+# identity the cross-session budget filter (docs/design/USER_FACING_SYSTEM.md §2.3) would key on.
 #
 # Unset by default so the local demo keeps working. `/api/health` reports which mode is
 # active, because a service that is open and does not say so is worse than one that is open.
 API_KEY = os.environ.get("SYNTHPROOF_API_KEY", "").strip()
-AUTH_ENABLED = bool(API_KEY)
+SHARED_PRINCIPAL = "shared-key"
+
+
+def _parse_named_keys(raw: str) -> Dict[str, str]:
+    """Parses "name=key,name=key". A malformed value stops the service rather than half-working."""
+    keys: Dict[str, str] = {}
+    for part in (p.strip() for p in raw.split(",")):
+        if not part:
+            continue
+        name, sep, key = part.partition("=")
+        name, key = name.strip(), key.strip()
+        if not sep or not name or not key:
+            raise ValueError(
+                f"SYNTHPROOF_API_KEYS entry {part.split('=')[0]!r} is not of the form name=key."
+            )
+        if name in keys or name == SHARED_PRINCIPAL:
+            raise ValueError(f"SYNTHPROOF_API_KEYS names {name!r} twice or uses a reserved name.")
+        if key in keys.values():
+            raise ValueError("Two SYNTHPROOF_API_KEYS entries share a key; keys must be unique.")
+        keys[name] = key
+    return keys
+
+
+API_KEYS: Dict[str, str] = _parse_named_keys(os.environ.get("SYNTHPROOF_API_KEYS", ""))
+if API_KEY:
+    API_KEYS[SHARED_PRINCIPAL] = API_KEY
+AUTH_ENABLED = bool(API_KEYS)
+AUTH_MODE = (
+    "per-user"
+    if any(n != SHARED_PRINCIPAL for n in API_KEYS)
+    else ("shared" if AUTH_ENABLED else "disabled")
+)
+ANONYMOUS = "anonymous"
 
 
 def require_api_key(
     authorization: Optional[str] = Header(default=None),
     x_api_key: Optional[str] = Header(default=None),
-) -> None:
-    """Rejects a request that lacks the configured key. A no-op when no key is set.
+) -> str:
+    """Returns the caller's principal name, or rejects the request. "anonymous" when auth is off.
 
-    Accepts either `Authorization: Bearer <key>` or `X-API-Key: <key>`. Comparison is
-    constant-time: a plain `==` on a secret leaks its prefix through response timing, which is
-    a small thing to get wrong and a silly one to get wrong in a privacy project.
+    Accepts either `Authorization: Bearer <key>` or `X-API-Key: <key>`. Every configured key is
+    compared, in constant time, whichever one matches: stopping at the first match would leak
+    through timing which position the caller's key holds.
     """
     if not AUTH_ENABLED:
-        return
+        return ANONYMOUS
     supplied = x_api_key or ""
     if authorization and authorization.lower().startswith("bearer "):
         supplied = authorization[7:].strip()
-    if not supplied or not hmac.compare_digest(supplied, API_KEY):
+    matched: Optional[str] = None
+    for name, key in API_KEYS.items():
+        if hmac.compare_digest(supplied.encode("utf-8"), key.encode("utf-8")) and supplied:
+            matched = name
+    if matched is None:
         raise HTTPException(
             status_code=401,
             detail=(
@@ -135,6 +174,7 @@ def require_api_key(
             ),
             headers={"WWW-Authenticate": "Bearer"},
         )
+    return matched
 
 
 @contextlib.contextmanager
