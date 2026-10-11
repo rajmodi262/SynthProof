@@ -36,7 +36,7 @@ from synthproof.audit.ceiling import ceiling_for
 from synthproof.audit.steinke import DEFAULT_ALPHA
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.preflight import enforce
-from synthproof.frontier.experiment import MECHANISMS, run_cell
+from synthproof.frontier.experiment import MECHANISMS, default_target, run_cell
 from synthproof.frontier.release_size import DP_COUNT_FRAC, declared, dp_count
 from synthproof.ledger.ledger import Ledger
 from synthproof.ledger.types import LedgerEntry
@@ -397,12 +397,7 @@ class FrontierEngine:
             )
         ledger = ledger or Ledger(db_path=":memory:")
 
-        if target_col is None:
-            target_col = (
-                "income"
-                if "income" in dataset.categorical_cols
-                else (dataset.categorical_cols[0] if dataset.categorical_cols else None)
-            )
+        target_col = default_target(dataset, target_col)
         if target_col is None:
             raise ValueError(
                 "A data sheet needs a categorical target column for the utility evaluation."

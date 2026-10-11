@@ -32,7 +32,12 @@ from synthproof.api.descriptions import (  # noqa: F401  (audit_ceiling re-expor
 )
 from synthproof.api.state import require_api_key
 from synthproof.frontier.certificate import EVALUATION_PRIVACY
-from synthproof.frontier.experiment import MECHANISMS, informative_numeric_columns, run_cell
+from synthproof.frontier.experiment import (
+    MECHANISMS,
+    default_target,
+    informative_numeric_columns,
+    run_cell,
+)
 from synthproof.ledger.types import LedgerEntry
 
 router = APIRouter()
@@ -56,6 +61,11 @@ class RunRequest(BaseModel):
         ge=100,
         le=50_000,
         description="Rows to release, declared in advance, and the subsample size.",
+    )
+    target: Optional[str] = Field(
+        None,
+        description="Categorical column the utility evaluation predicts. Omitted: `income` if "
+        "present, else the table's last categorical column.",
     )
 
 
@@ -122,11 +132,11 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
         yield _sse("error", {"message": exc.detail})
         return
 
-    target_col = (
-        "income"
-        if "income" in ds.categorical_cols
-        else (ds.categorical_cols[0] if ds.categorical_cols else None)
-    )
+    try:
+        target_col = default_target(ds, req.target)
+    except ValueError as exc:
+        yield _sse("error", {"message": str(exc)})
+        return
     if target_col is None:
         yield _sse(
             "error",
@@ -251,7 +261,7 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
             "mechanism_available": True,
             "delta": req.delta,
             "seed": None,  # withheld: it replays every noise draw (D5)
-            "target_column": getattr(ds, "target_col", None) or getattr(ds, "target", None),
+            "target_column": target_col,
             "total_proved_eps": float(payload["proved_eps"]),
             "total_audited_eps": float(audit.audited_eps),
             "audit_ceiling": _audit_payload(audit, req.num_canaries).get("ceiling", 0.0),

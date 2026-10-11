@@ -187,6 +187,13 @@ def list_mechanisms():
     help="Rows to release, declared in advance. Left out with --input, a small share of the "
     "budget buys a noisy row count instead, because the exact count is private.",
 )
+@click.option(
+    "--target",
+    "target_col",
+    default=None,
+    help="Categorical column the utility evaluation predicts. Omitted: `income` if present, "
+    "else the table's last categorical column.",
+)
 @click.option("--canaries", default=30, help="Canaries planted for the audit.")
 @click.option(
     "--sign/--no-sign",
@@ -224,6 +231,7 @@ def run(
     synthetic_out,
     croissant_out,
     release_rows,
+    target_col,
 ):
     """Synthesises a dataset and emits its Privacy Data Sheet."""
     if seed is None:
@@ -243,6 +251,14 @@ def run(
     key_ready = sign and (signing.resolve_key_dir() / signing.PRIVATE_KEY_NAME).exists()
     fingerprint_key = signing.load_fingerprint_key(create=key_ready)
 
+    from synthproof.frontier.experiment import default_target
+
+    try:
+        # Validated before any budget is spent, so a typo costs nothing.
+        target_col = default_target(ds, target_col)
+    except ValueError as exc:
+        raise click.ClickException(str(exc)) from exc
+    click.echo(f"Utility is evaluated by predicting '{target_col}'.")
     click.echo(f"Synthesising at total eps={eps} (delta={delta}) with '{mechanism}'...")
     try:
         engine = FrontierEngine(seed=seed)
@@ -256,6 +272,7 @@ def run(
             domain_source=domain_source,
             release_rows=release_rows,
             fingerprint_key=fingerprint_key,
+            target_col=target_col,
         )
     except PreflightRefused as exc:
         # A refusal is an outcome, not a crash. Show every blocking reason and its remedy.

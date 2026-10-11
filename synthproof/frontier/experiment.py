@@ -252,6 +252,30 @@ def _mean_abs_corr_error(real, synth, cols: List[str]) -> float:
     return float(np.nanmean(diff)) if diff.size else float("nan")
 
 
+def default_target(dataset: TabularDataset, requested: Optional[str] = None) -> Optional[str]:
+    """The column the utility evaluation predicts: the caller's choice, or a stated default.
+
+    The default used to be the FIRST categorical column, which is almost never the prediction
+    task: on the five demo tables it picked gender, home_ownership, contract_type,
+    years_at_company and education_num, so every utility and attribute-inference number those
+    releases reported was measured on a column nobody wanted to predict. The default is now
+    `income` when present, else the LAST categorical column -- where the target sits in UCI
+    tables and in every bundled demo. A caller who knows the task should name it.
+
+    Raises ValueError when `requested` is not a categorical column of the table.
+    """
+    if requested is not None:
+        if requested not in dataset.categorical_cols:
+            raise ValueError(
+                f"Target column {requested!r} is not a categorical column of this table "
+                f"(categorical: {dataset.categorical_cols})."
+            )
+        return requested
+    if "income" in dataset.categorical_cols:
+        return "income"
+    return dataset.categorical_cols[-1] if dataset.categorical_cols else None
+
+
 def run_cell(
     dataset: TabularDataset,
     mechanism: str,
@@ -484,8 +508,7 @@ def run_cell(
     # Defaulting to categorical_cols[0] picked `workclass` on UCI Adult — 7 classes, 73%
     # majority — which is not the benchmark's prediction task and produced macro-F1 near
     # chance for every mechanism, hiding any real difference. Callers should name the target.
-    if target_col is None:
-        target_col = dataset.categorical_cols[0] if dataset.categorical_cols else None
+    target_col = default_target(dataset, target_col)
     if target_col is None:
         raise ValueError("Utility evaluation needs a categorical target column.")
     # The reference is the clean fit split: the real population the mechanism was trained
