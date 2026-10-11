@@ -67,9 +67,10 @@ consistent across five heterogeneous releases, but N is small and several finer 
 **This is exactly the gap the tool fills, and it is now grounded in real named releases rather than a
 keyword scrape.** The honest contribution is: the guarantee's *parameters* are increasingly
 documented (SDNist, Dibia et al. point the same way), but the *artefact's* boundary safety is not
-expressible in any standard and not enforced in any real release — SynthProof's signed, boundary-
-checked Privacy Data Sheet is the first artefact to carry all of P1–P11, and `boundary-audit` the
-first tool to check them without the data or the code.
+expressible in any standard and not enforced in any real release — SynthProof's signed, boundary-checked Privacy Data Sheet carries all of P1–P11, and
+`boundary-audit` checks them without the data or the code. We found no other artefact or tool
+that does both, on one search (`research/25_prior_art_release_auditing.md`); that is an absence
+in what we searched, not a priority claim.
 
 ## Limitations (state these in the paper)
 
@@ -95,3 +96,16 @@ not the ML hubs, are where a scaled-up audit of real DP releases should draw fro
 3. OpenDP / SmartNoise — opendp.org (library, bounded/unbounded DP).
 4. Apple — *Differential Privacy Overview* (local model).
 5. Dibia et al. — arXiv:2507.15997 §5 (registries named for real DP deployments).
+
+---
+
+### Measurement convention — the ceiling is borrowed, and attributed
+
+The audit ceiling reported beside every ε_audited is `log(r / ln(1/α))`, a one-line corollary of
+Steinke, Nasr & Jagielski (NeurIPS 2023, arXiv:2305.08846) Thm 2.1 — **not a result of ours** — and
+the same quantity is already named *maximum auditable epsilon* by Annamalai, Ganev & De Cristofaro
+(USENIX Sec 2024, arXiv:2405.10994) §2.2. Reporting it alongside the measurement is a transfer of
+**limit-of-detection (LoD) reporting** from analytical chemistry, where **MIQE 2.0** (Bustin et al.,
+*Clinical Chemistry* 2025;71(6):634–651) mandates LoD/LLOQ disclosure and a laboratory reports
+*"Not Detected, < LOD"* rather than zero. The transfer is the claim; the convention is not our
+invention. Full attribution: `docs/MEASUREMENT_CONVENTIONS.md`.
