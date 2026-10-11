@@ -55,8 +55,8 @@ family G is the weak point).
 
 ## Key state (observed 2026-08-21, from the repo not from memory)
 
-- **H1**: supported on structure/utility (AIM corr-err 0.0078 vs independent 0.0947 at eps=8,
-  non-overlapping CIs). **Privacy half disqualified** — auditor ceiling ~2.7 at m=60 vs
+- **H1**: supported on structure (AIM corr-err 0.0105 vs independent 0.0947 at eps=8,
+  non-overlapping CIs; AIM vs pairwise overlap). AIM values are the 2026-10-11 D1 re-run. **Privacy half disqualified** — auditor ceiling ~2.7 at m=60 vs
   eps_proved 7.36.
 - **H2**: not supported at this scale; direction weakly consistent; instrument-limited.
 - **H3**: run (uniform vs utility-weighted allocation).

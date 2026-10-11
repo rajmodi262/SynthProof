@@ -909,11 +909,11 @@ Two things could not be held identical, and both are reported rather than correc
 
 **H2 replicated.** The null holds on both datasets and for the same reason. On Adult, 0 of 14 comparisons survive BH-FDR or Bonferroni; on ACS, 0 of 22. On ACS the largest observed bound was 0.096 at adversary accuracy 0.591, against a ceiling of 2.65 — 3.6% of the instrument's range. The conclusion is unchanged and is now dataset-independent: at this canary budget the instrument cannot resolve subgroup differences, which bounds the effect rather than establishing its absence.
 
-**H1's structure ordering did not.** At ε = 8 on Adult the three families separate with mutually non-overlapping CIs, `aim` (0.0078) < `pairwise` (0.0283) < `independent` (0.0947). On ACS the ordering inverts — `pairwise` (0.0202) < `independent` (0.0535) ≈ `aim` (0.0626) — and AIM is **not statistically distinguishable** from the independent-marginals baseline.
+**H1's structure ordering did not.** At ε = 8 on Adult both structured families separate from the independent baseline — `aim` (0.0105) and `pairwise` (0.0283) against `independent` (0.0947) — but their own intervals overlap, so they are not ranked against each other. On ACS the ordering inverts — `pairwise` (0.0202) < `independent` (0.0535) ≈ `aim` (0.0621) — and AIM is **not statistically distinguishable** from the independent-marginals baseline. (AIM values are the 2026-10-11 re-run after the D1 fix; see `results/H1_RESULTS.md` §2.)
 
 Per the analysis plan, a contradicting result is diagnosed, not adjusted. The diagnosis:
 - The engineering model-size bound is **not** responsible — `skipped_cliques_` is empty at both ε = 0.5 and ε = 8, with 17 cliques measured at each.
-- The structure metric is the correlation of a **single column pair**, and AIM's score on it is largely determined by whether that pair is among the ~6 two-way cliques AIM selects. On Adult, AIM selects `age`×`hours_per_week` at *every* ε tested. On ACS it selects `AGEP`×`WKHP` at one of three, and the ACS correlation error tracks that selection exactly: 0.0977 (not selected) → 0.0395 (selected) → 0.0626 (not selected).
+- The structure metric is the correlation of a **single column pair**, and AIM's score on it is largely determined by whether that pair is among the ~6 two-way cliques AIM selects. On Adult, AIM selects `age`×`hours_per_week` at *every* ε tested. On ACS it selects `AGEP`×`WKHP` at one of three, and the pre-correction ACS correlation error tracked that selection exactly: 0.0977 (not selected) → 0.0395 (selected) → 0.0626 (not selected). The D1 re-run did not record selections.
 
 This was later tested directly rather than left as an inference from one pair, by recording AIM's error and its clique selection for EVERY numeric pair across the grid (`scripts/run_clique_confound.py`). The test weakened the claim, and the weakened version is what this thesis states.
 
@@ -1057,13 +1057,13 @@ These two series reflect distinct instruments and must never be quoted interchan
 
 Our first pre-registered hypothesis (H1) evaluated whether higher-order graphical model synthesis (AIM) consistently dominates pairwise and independent marginal mechanisms across utility and structural metrics. The empirical findings reveal a critical divergence between dense and sparse datasets:
 
-On the dense UCI Adult benchmark, H1 is fully supported across all structural and utility dimensions. At $\varepsilon = 8.0$, 2-way correlation error demonstrates mutually disjoint 95% bootstrap confidence intervals:
-$$\text{AIM } (0.0078 \text{ [0.0069, 0.0087]}) < \text{Pairwise } (0.0283 \text{ [0.0264, 0.0302]}) < \text{Independent } (0.0947 \text{ [0.0911, 0.0983]})$$
-Downstream machine learning utility (Train on Synthetic, Test on Real macro F1) exhibits identical ordering: AIM ($0.669$) > Pairwise ($0.662$) > Independent ($0.648$).
+On the dense UCI Adult benchmark, H1 is supported on structure. At $\varepsilon = 8.0$, both structured families separate from the independent baseline on 2-way correlation error, and their own 95% bootstrap intervals overlap:
+$$\text{AIM } (0.0105 \text{ [0.0059, 0.0153]}),\ \text{Pairwise } (0.0283 \text{ [0.0132, 0.0517]}) < \text{Independent } (0.0947 \text{ [0.0817, 0.1071]})$$
+Downstream utility (Train on Synthetic, Test on Real macro F1) has the same ordering of means — AIM ($0.506$) > Pairwise ($0.432$) > Independent ($0.406$) — but every pair of intervals overlaps, so utility does not separate the families on Adult.
 
-However, on the higher-cardinality, sparse ACSIncome benchmark, H1 fails to replicate on structural correlation error. At $\varepsilon = 8.0$, Pairwise achieves the lowest correlation error ($0.0202 \text{ [0.0185, 0.0219]}$), while Independent ($0.0535 \text{ [0.0498, 0.0572]}$) and AIM ($0.0626 \text{ [0.0581, 0.0671]}$) exhibit overlapping confidence intervals. 
+However, on the higher-cardinality, sparse ACSIncome benchmark, H1 fails to replicate on structural correlation error. At $\varepsilon = 8.0$, Pairwise achieves the lowest correlation error ($0.0202 \text{ [0.0076, 0.0383]}$), while Independent ($0.0535 \text{ [0.0471, 0.0604]}$) and AIM ($0.0621 \text{ [0.0405, 0.0837]}$) exhibit overlapping confidence intervals. 
 
-Furthermore, on ACSIncome, AIM displays a non-monotonic utility curve: as privacy budget increases from $\varepsilon = 0.5$ to $\varepsilon = 8.0$, AIM's TSTR macro F1 paradoxically *declines* from $0.704 \text{ [0.695, 0.713]}$ to $0.581 \text{ [0.539, 0.629]}$. 
+Furthermore, on ACSIncome, AIM displays a non-monotonic utility curve: as privacy budget increases from $\varepsilon = 0.5$ to $\varepsilon = 8.0$, AIM's TSTR macro F1 *declines* from $0.649 \text{ [0.605, 0.694]}$ to $0.567 \text{ [0.514, 0.627]}$ (peaking at $0.691$ at $\varepsilon = 2$); the endpoint intervals overlap, so this is a direction rather than a separated result. 
 
 One candidate explanation, not tested here, is **privacy-budgeted domain expansion**. Under strict differential privacy, domain profiling must spend privacy budget to discover active category levels. At low $\varepsilon = 0.5$, the profiler suppresses rare categories, retaining only 3 levels for occupation (`OCCP`) and 3 levels for relationship (`RELP`). At higher $\varepsilon = 8.0$, the profiler admits 23 occupation levels and 14 relationship levels. If expanding the contingency table domain dilutes the per-measurement noise budget across larger state spaces, Private-PGM's fixed clique budget may capture a smaller proportion of the joint distribution, potentially degrading utility on sparse tabular domains.
 
@@ -1090,8 +1090,8 @@ Our auditing pipeline reliably detects coarse implementation defects—readily f
 The pre-registered H1 hypothesis posited that AIM's graphical model architecture would consistently outperform lower-order marginal mechanisms on multi-attribute structural correlation error. While Adult confirmed this ordering, initial investigation observed an apparent dependency: evaluating marginal-based synthesizers on a small, fixed set of low-order statistics directly tracks which pairs receive measurement budget.
 
 In AIM, privacy budget is partitioned between candidate selection (identifying informative marginal cliques) and noisy measurement. For a dataset with $d$ features, AIM selects approximately 6 two-way marginal cliques. The structural correlation metric used in standard benchmarks evaluates the correlation of a single designated column pair:
-- On UCI Adult, the evaluated pair is `age × hours_per_week`. Because these continuous attributes exhibit strong mutual dependence, AIM's exponential mechanism selects this specific clique at **every** evaluated privacy budget $\varepsilon \in \{0.5, 1.0, 2.0, 4.0, 8.0\}$. Consequently, AIM measures this interaction directly and achieves near-zero error ($0.0078$).
-- On ACSIncome, the evaluated pair is `AGEP × WKHP`. Due to domain sparsity and competition among competing marginals, AIM selects this clique at **only one of three** evaluated budgets. The resulting error tracks clique selection directly: $0.0977$ when unselected, dropping to $0.0395$ when selected, and rising back to $0.0626$ when unselected.
+- On UCI Adult, the evaluated pair is `age × hours_per_week`. Because these continuous attributes exhibit strong mutual dependence, AIM's exponential mechanism selects this specific clique at **every** evaluated privacy budget $\varepsilon \in \{0.5, 1.0, 2.0, 4.0, 8.0\}$. Consequently, AIM measures this interaction directly and achieves low error ($0.0105$ at $\varepsilon = 8$).
+- On ACSIncome, the evaluated pair is `AGEP × WKHP`. Due to domain sparsity and competition among competing marginals, AIM selects this clique at **only one of three** evaluated budgets. In the pre-correction run the error tracked clique selection directly: $0.0977$ when unselected, dropping to $0.0395$ when selected, and rising back to $0.0626$ when unselected. The D1 re-run (2026-10-11) did not record selections.
 
 We verified that model-size limits did not cause this variation: `skipped_cliques_` is empty at both $\varepsilon = 0.5$ and $\varepsilon = 8.0$, with exactly 17 total cliques measured across both runs. 
 
@@ -1235,11 +1235,11 @@ Ceiling — the largest ε this instrument could report even against a 100% verb
 | `pairwise` | 2 | 1.828 | 0.0493 [0.0170, 0.0950] | 0.418 [0.335, 0.468] |
 | `pairwise` | 4 | 3.664 | 0.0197 [0.0048, 0.0464] | 0.427 [0.362, 0.477] |
 | `pairwise` | 8 | 7.356 | 0.0283 [0.0132, 0.0517] | 0.432 [0.368, 0.478] |
-| `aim` | 0.5 | 0.385 | 0.0827 [0.0258, 0.1395] | 0.498 [0.478, 0.517] |
-| `aim` | 1 | 0.778 | 0.0424 [0.0142, 0.0708] | 0.540 [0.515, 0.565] |
-| `aim` | 2 | 1.576 | 0.0564 [0.0139, 0.1007] | 0.470 [0.445, 0.496] |
-| `aim` | 4 | 3.201 | 0.0260 [0.0015, 0.0681] | 0.460 [0.440, 0.482] |
-| `aim` | 8 | 6.543 | 0.0078 [0.0031, 0.0125] | 0.505 [0.468, 0.544] |
+| `aim` | 0.5 | 0.385 | 0.0941 [0.0469, 0.1414] | 0.461 [0.444, 0.483] |
+| `aim` | 1 | 0.778 | 0.0443 [0.0113, 0.0802] | 0.515 [0.466, 0.564] |
+| `aim` | 2 | 1.576 | 0.0545 [0.0129, 0.0973] | 0.491 [0.474, 0.508] |
+| `aim` | 4 | 3.201 | 0.0349 [0.0048, 0.0851] | 0.499 [0.470, 0.528] |
+| `aim` | 8 | 6.543 | 0.0105 [0.0059, 0.0153] | 0.506 [0.436, 0.574] |
 
 *TRTR baseline (real → held-out real): **0.660 [0.646, 0.674]**. Every synthetic value above sits below it.*
 
@@ -1257,11 +1257,11 @@ Ceiling — the largest ε this instrument could report even against a 100% verb
 | `pairwise` | 2 | 1.828 | 0.0468 [0.0179, 0.0830] | 0.489 [0.470, 0.509] |
 | `pairwise` | 4 | 3.664 | 0.0315 [0.0098, 0.0618] | 0.481 [0.452, 0.504] |
 | `pairwise` | 8 | 7.356 | 0.0202 [0.0076, 0.0383] | 0.522 [0.498, 0.547] |
-| `aim` | 0.5 | 0.385 | 0.0977 [0.0421, 0.1591] | 0.704 [0.695, 0.713] |
-| `aim` | 1 | 0.778 | 0.0395 [0.0204, 0.0695] | 0.692 [0.683, 0.702] |
-| `aim` | 2 | 1.576 | 0.0521 [0.0286, 0.0778] | 0.650 [0.621, 0.675] |
-| `aim` | 4 | 3.201 | 0.0732 [0.0630, 0.0875] | 0.651 [0.633, 0.670] |
-| `aim` | 8 | 6.543 | 0.0626 [0.0432, 0.0753] | 0.581 [0.539, 0.629] |
+| `aim` | 0.5 | 0.385 | 0.0808 [0.0190, 0.1521] | 0.649 [0.605, 0.694] |
+| `aim` | 1 | 0.778 | 0.0399 [0.0196, 0.0694] | 0.669 [0.633, 0.694] |
+| `aim` | 2 | 1.576 | 0.0609 [0.0317, 0.0892] | 0.691 [0.674, 0.705] |
+| `aim` | 4 | 3.201 | 0.0588 [0.0463, 0.0695] | 0.631 [0.607, 0.655] |
+| `aim` | 8 | 6.543 | 0.0621 [0.0405, 0.0837] | 0.567 [0.514, 0.627] |
 
 *TRTR baseline (real → held-out real): **0.725 [0.707, 0.742]**. Every synthetic value above sits below it.*
 
@@ -1271,7 +1271,7 @@ Ceiling — the largest ε this instrument could report even against a 100% verb
 |---|---|---|
 | `independent` | 0.0947 [0.0817, 0.1071] | 0.0535 [0.0471, 0.0604] |
 | `pairwise` | 0.0283 [0.0132, 0.0517] | 0.0202 [0.0076, 0.0383] |
-| `aim` | 0.0078 [0.0031, 0.0125] | 0.0626 [0.0432, 0.0753] |
+| `aim` | 0.0105 [0.0059, 0.0153] | 0.0621 [0.0405, 0.0837] |
 
 *Ordering on Adult: **aim < pairwise < independent**. On ACS: **pairwise < independent < aim**.*
 
@@ -1367,7 +1367,7 @@ A rigorous defense requires explicit acknowledgment of systemic limitations:
 4. **No Cross-Release Budget Enforcement**: SynthProof manages privacy accounting within a single dataset release pipeline. Cross-session, multi-query budget governance across multiple release cycles is formally addressed by dedicated policy systems like DPolicy (arXiv:2505.06747).
 5. **Systematic Multi-Stage Under-Spend**: Compound pipelines consistently achieve an achieved-to-target ratio of $\approx 0.92$ due to linear stage partitioning under sublinear RDP composition. While conservative, eliminating this gap requires multi-dimensional outer bisection, which was deferred to preserve consistency across committed benchmark grids.
 6. **Excluded Attack Algorithms**: LiRA (Carlini et al.) is not implemented due to computational intractability (~21 hours per cell for an uninformative null). Anonymeter is not integrated due to a hard dependency conflict (`numpy < 2.0` breaking AIM).
-7. **Dataset Specificity of Mechanism Advantage**: As shown in Chapter 7 and `results/bank/BANK_MARKETING.md`, the structural superiority of AIM observed on UCI Adult does not transfer across domains. On ACSIncome at $\varepsilon = 8$, pairwise achieved lower correlation error than AIM ($0.0202 \text{ [0.0076, 0.0383]}$ vs $0.0626 \text{ [0.0432, 0.0753]}$, non-overlapping), while on UCI Bank Marketing at $\varepsilon = 8$ no mechanism separated on structure (all intervals overlapped).
+7. **Dataset Specificity of Mechanism Advantage**: As shown in Chapter 7 and `results/bank/BANK_MARKETING.md`, the structural superiority of AIM observed on UCI Adult does not transfer across domains. On ACSIncome at $\varepsilon = 8$, pairwise achieved lower correlation error than AIM ($0.0202 \text{ [0.0076, 0.0383]}$ vs $0.0621 \text{ [0.0405, 0.0837]}$, non-overlapping), while on UCI Bank Marketing at $\varepsilon = 8$ no mechanism separated on structure (all intervals overlapped).
 8. **Replicated Nulls on Subgroup Hypotheses**: Hypotheses H2 (subgroup leakage parity) and H3 (weighted budget allocation) yielded bounded null results under rigorous multi-testing correction.
 9. **Scope Boundaries**: Our implementation is restricted to tabular data, record-level differential privacy, single data holders, and the central curator model (`deployment_model: central`).
 10. **Namespace Authority**: The `dp:` JSON-LD context used in our Croissant 1.1 export represents an experimental project namespace, not an officially registered W3C or MLCommons standard.

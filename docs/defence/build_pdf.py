@@ -146,14 +146,14 @@ def verify_numbers(text: str) -> list[str]:
         ("independent", 8.0, "0.0947"),
         ("pairwise", 4.0, "0.0197"),
         ("pairwise", 8.0, "0.0283"),
-        ("aim", 1.0, "0.0424"),
-        ("aim", 8.0, "0.0078"),
+        ("aim", 1.0, "0.0443"),
+        ("aim", 8.0, "0.0105"),
     ]:
         c = cell(adult, mech, eps)
         if c:
             want(f"Adult {mech} eps={eps} correlation_error", c["correlation_error"]["mean"], corr)
 
-    for mech, eps, f1 in [("aim", 1.0, "0.540"), ("aim", 8.0, "0.505")]:
+    for mech, eps, f1 in [("aim", 1.0, "0.515"), ("aim", 8.0, "0.506")]:
         c = cell(adult, mech, eps)
         if c:
             want(f"Adult {mech} eps={eps} tstr_f1", c["tstr_f1"]["mean"], f1, places=3)
@@ -177,7 +177,7 @@ def verify_numbers(text: str) -> list[str]:
     # ── H1, ACSIncome: the ordering that did NOT transfer ─────────────────────
     acs = load("results/acs/h1_all_families.json")
     acs_vals = {}
-    for mech, shown in [("independent", "0.0535"), ("pairwise", "0.0202"), ("aim", "0.0626")]:
+    for mech, shown in [("independent", "0.0535"), ("pairwise", "0.0202"), ("aim", "0.0621")]:
         c = cell(acs, mech, 8.0)
         if c:
             acs_vals[mech] = c["correlation_error"]["mean"]

@@ -169,11 +169,12 @@ See **[results/H1_RESULTS.md](results/H1_RESULTS.md)** (Adult),
 **[results/acs/CROSS_DATASET.md](results/acs/CROSS_DATASET.md)**.
 Regenerate with `make h1` and `make h1-acs`.
 
-**On UCI Adult**, the three mechanism families separate at ε = 8 with mutually non-overlapping
-CIs: `aim` (0.0078) < `pairwise` (0.0283) < `independent` (0.0947) correlation error.
+**On UCI Adult**, both structured families separate from the independent baseline at ε = 8 —
+`aim` (0.0105) and `pairwise` (0.0283) against `independent` (0.0947) correlation error — but
+not from each other.
 
 **On ACSIncome the ordering does not reproduce.** It inverts — `pairwise` (0.0202) <
-`independent` (0.0535) ≈ `aim` (0.0626) — and AIM is not statistically distinguishable from
+`independent` (0.0535) ≈ `aim` (0.0621) — and AIM is not statistically distinguishable from
 the independent-marginals baseline. We diagnosed rather than adjusted: the structure metric is
 the correlation of a *single column pair*, and AIM selects exactly that pair as a clique at
 every ε tested on Adult but at only one of three on ACS. The Adult headline is therefore partly

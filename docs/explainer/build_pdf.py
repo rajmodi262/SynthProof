@@ -109,10 +109,10 @@ def verify_numbers(text: str) -> list[str]:
     adult = load("results/h1_all_families.json")
     acs = load("results/acs/h1_all_families.json")
     for name, block, mech, shown in [
-        ("H1 adult aim eps8", adult, "aim", "0.0078"),
+        ("H1 adult aim eps8", adult, "aim", "0.0105"),
         ("H1 adult independent eps8", adult, "independent", "0.0947"),
         ("H1 adult pairwise eps8", adult, "pairwise", "0.0283"),
-        ("H1 acs aim eps8", acs, "aim", "0.0626"),
+        ("H1 acs aim eps8", acs, "aim", "0.0621"),
         ("H1 acs independent eps8", acs, "independent", "0.0535"),
         ("H1 acs pairwise eps8", acs, "pairwise", "0.0202"),
     ]:

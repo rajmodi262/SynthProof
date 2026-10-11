@@ -38,6 +38,12 @@ This matches the preregistration exactly on seeds, ε grid and δ. Deviations ar
 
 ## 2. Results
 
+> **Corrected 2026-10-11 — AIM rows re-run after the D1 fix.** Until 2026-09-14 AIM fitted its
+> model with `known_total` set to the exact row count, an uncharged read of a private quantity
+> (`research/11_selection_accounting.md`). The AIM cells were re-run with the total estimated from
+> the noisy measurements (commit `a8a31b1`). Independent and pairwise are unchanged. The headline
+> moved from 0.0078 to **0.0105**, and **AIM and pairwise no longer separate at ε = 8**.
+
 | Mechanism | target ε | proved ε | Correlation error (95% CI) | TSTR F1 (95% CI) |
 |---|---:|---:|---|---|
 | independent | 0.5 | 0.456 | 0.0934 [0.0802, 0.1063] | 0.472 [0.417, 0.525] |
@@ -50,11 +56,11 @@ This matches the preregistration exactly on seeds, ε grid and δ. Deviations ar
 | pairwise | 2.0 | 1.828 | 0.0493 [0.0170, 0.0950] | 0.418 [0.335, 0.468] |
 | pairwise | 4.0 | 3.664 | **0.0197** [0.0048, 0.0464] | 0.427 [0.362, 0.477] |
 | pairwise | 8.0 | 7.356 | 0.0283 [0.0132, 0.0517] | 0.432 [0.368, 0.478] |
-| **aim** | 0.5 | 0.385 | 0.0827 [0.0258, 0.1395] | 0.498 [0.478, 0.517] |
-| **aim** | 1.0 | 0.778 | 0.0424 [0.0142, 0.0708] | **0.540** [0.515, 0.565] |
-| **aim** | 2.0 | 1.576 | 0.0564 [0.0139, 0.1007] | 0.470 [0.445, 0.496] |
-| **aim** | 4.0 | 3.201 | 0.0260 [0.0015, 0.0681] | 0.460 [0.440, 0.482] |
-| **aim** | 8.0 | 6.543 | **0.0078** [0.0031, 0.0125] | 0.505 [0.468, 0.544] |
+| **aim** | 0.5 | 0.385 | 0.0941 [0.0469, 0.1414] | 0.461 [0.444, 0.483] |
+| **aim** | 1.0 | 0.778 | 0.0443 [0.0113, 0.0802] | **0.515** [0.466, 0.564] |
+| **aim** | 2.0 | 1.576 | 0.0545 [0.0129, 0.0973] | 0.491 [0.474, 0.508] |
+| **aim** | 4.0 | 3.201 | 0.0349 [0.0048, 0.0851] | 0.499 [0.470, 0.528] |
+| **aim** | 8.0 | 6.543 | **0.0105** [0.0059, 0.0153] | 0.506 [0.436, 0.574] |
 
 **TRTR baseline (real → held-out real): 0.660 [0.646, 0.674]**
 
@@ -74,16 +80,20 @@ Non-overlapping 95% CIs on correlation error:
 | 0.5 | overlap | overlap | overlap |
 | 1.0 | overlap | **separated** | overlap |
 | 2.0 | overlap | overlap | overlap |
-| 4.0 | **separated** | **separated** | overlap |
-| 8.0 | **separated** | **separated** | **separated** |
+| 4.0 | **separated** | overlap | overlap |
+| 8.0 | **separated** | **separated** | overlap |
 
-At ε = 8 all three families are mutually separated:
+At ε = 8 both structured families separate from the independent baseline, but not from each
+other:
 
 ```
 independent   [0.0817, 0.1071]
 pairwise      [0.0132, 0.0517]     entirely below independent
-aim           [0.0031, 0.0125]     entirely below both
+aim           [0.0059, 0.0153]     entirely below independent; overlaps pairwise
 ```
+
+The ordering aim < pairwise holds on the means (0.0105 vs 0.0283) but is **not established**:
+the intervals overlap.
 
 **Separation appears only at ε ≥ 4.** At ε ≤ 2 the DP noise dominates the 0.1034 correlation
 being measured and no family is distinguishable. That threshold is itself a useful
@@ -96,7 +106,7 @@ measurable.*
 |---|---|---:|
 | independent | 0.0934 → 0.0930 → 0.0939 → 0.0935 → 0.0947 | **+0.0012** |
 | pairwise | 0.0611 → 0.0694 → 0.0493 → 0.0197 → 0.0283 | −0.0328 |
-| aim | 0.0827 → 0.0424 → 0.0564 → 0.0260 → **0.0078** | **−0.0749** |
+| aim | 0.0941 → 0.0443 → 0.0545 → 0.0349 → **0.0105** | **−0.0836** |
 
 The independent baseline is **flat to within 0.0012 across a 16× budget range**. That is the
 control working exactly as it should: a mechanism that models no dependence cannot convert
@@ -107,11 +117,12 @@ Neither structured mechanism is perfectly monotone — pairwise rises at ε = 8 
 With 5 seeds and overlapping intervals those are within noise; the honest statement is a
 downward trend, not a monotone one.
 
-### 3.3 AIM wins on both metrics, and does it at a lower spend
+### 3.3 AIM has the lowest means, and reaches them at a lower spend
 
-AIM achieves the minimum correlation error on Adult at ε = 8 (**0.0078**, an order of magnitude below the
-baseline) and the best downstream utility throughout (TSTR **0.540** at ε = 1, **0.505** at
-ε = 8, against a TRTR ceiling of 0.660).
+AIM has the lowest mean correlation error on Adult at ε = 8 (**0.0105**, about nine times below
+the baseline, separated from it; overlapping pairwise) and the highest mean TSTR at every
+ε ≥ 1 (**0.515** at ε = 1, **0.506** at ε = 8, against a TRTR ceiling of 0.660). At ε = 0.5 its
+mean TSTR (0.461) is the lowest of the three. The TSTR intervals overlap throughout.
 
 It also does this at a **lower actual privacy spend**. AIM composes to 0.77–0.82 × target
 where the other two reach 0.91–0.92, because it spends a quarter of its synthesis budget on
@@ -122,8 +133,7 @@ adaptive selection:
 | independent, pairwise | 0.912, 0.912, 0.914, 0.916, 0.919 |
 | aim | 0.771, 0.778, 0.788, 0.800, 0.818 |
 
-So AIM's advantage is **understated** by this table, not overstated: it achieves the best
-structure and utility while spending roughly 11% less ε than the mechanisms it beats.
+So AIM's means are reached while spending roughly 11% less ε than the other two mechanisms.
 
 ### 3.4 Calibration holds across the full grid
 
@@ -134,7 +144,7 @@ profile and synthesis stages. Safe, and it leaves a little utility unclaimed.
 ### 3.5 Utility is dominated by model class, not by budget
 
 TSTR barely moves with ε for any mechanism — independent goes 0.472 → 0.406, pairwise 0.483 →
-0.432, AIM 0.498 → 0.505. **The binding constraint at this scale is model expressiveness, not
+0.432, AIM 0.461 → 0.506. **The binding constraint at this scale is model expressiveness, not
 noise.** A practitioner reading this should not expect a larger ε to buy downstream accuracy on
 a 12-column table at n = 6,000; they should expect it to buy joint structure.
 
@@ -212,15 +222,16 @@ earlier documents reported it in good faith.
 ## 5. Why the reduced grid also gave the wrong ordering
 
 The 3-seed × 2-ε run reported **pairwise** as leading on structure. On the full
-protocol it is **AIM**, by a factor of 3.6 at ε = 8.
+protocol AIM has the lower mean, by a factor of 2.7 at ε = 8 (0.0105 vs 0.0283), but the
+intervals overlap, so the two best mechanisms are not ranked by this grid either.
 
 Nothing was fixed in between — the difference is sampling. AIM's per-seed variance is high
-(its CI at ε = 0.5 spans [0.026, 0.140]) because adaptive selection makes different clique
+(its CI at ε = 0.5 spans [0.047, 0.141]) because adaptive selection makes different clique
 choices under different noise draws. Three seeds was not enough to rank two mechanisms whose
-intervals overlap.
+intervals overlap, and five is not enough either.
 
 **This is the concrete argument for the preregistered seed count.** A reduced grid did not
-merely widen the intervals; it inverted the ordering of the two best mechanisms. Any reader
+merely widen the intervals; it inverted the ordering of the two best mechanisms' means. Any reader
 tempted to trust a 3-seed comparison in this literature should note that.
 
 ---

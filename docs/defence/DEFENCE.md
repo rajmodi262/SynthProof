@@ -514,9 +514,9 @@ attributable to the **data**, not the procedure — and that is enforced by a te
 
 **What did not transfer:**
 
-- **H1's structure ordering inverted.** Adult at ε = 8: aim (0.0078) < pairwise (0.0283) <
-  independent (0.0947), all CIs mutually non-overlapping. ACS: pairwise (0.0202) < independent
-  (0.0535) ≈ aim (0.0626), with **independent and aim not separating at all**.
+- **H1's structure ordering inverted.** Adult at ε = 8: aim (0.0105) and pairwise (0.0283) both
+  separate from independent (0.0947), but not from each other. ACS: pairwise (0.0202) < independent
+  (0.0535) ≈ aim (0.0621), with **independent and aim not separating at all**.
 
 Two things could not be held identical, and both are reported rather than corrected away:
 
@@ -652,10 +652,11 @@ of 35 — one false positive at r = 100, ε = 0.070. **The prose was fixed, not 
 | independent | 8.0 | 7.356 | 0.0947 [0.0817, 0.1071] | 0.406 [0.297, 0.515] |
 | pairwise | 4.0 | 3.664 | **0.0197** [0.0048, 0.0464] | 0.427 [0.362, 0.477] |
 | pairwise | 8.0 | 7.356 | 0.0283 [0.0132, 0.0517] | 0.432 [0.368, 0.478] |
-| aim | 1.0 | 0.778 | 0.0424 [0.0142, 0.0708] | **0.540** [0.515, 0.565] |
-| aim | 8.0 | 6.543 | **0.0078** [0.0031, 0.0125] | 0.505 [0.468, 0.544] |
+| aim | 1.0 | 0.778 | 0.0443 [0.0113, 0.0802] | **0.515** [0.466, 0.564] |
+| aim | 8.0 | 6.543 | **0.0105** [0.0059, 0.0153] | 0.506 [0.436, 0.574] |
 
-**TRTR baseline (real → held-out real): 0.660 [0.646, 0.674].**
+**TRTR baseline (real → held-out real): 0.660 [0.646, 0.674].** AIM rows are the 2026-10-11
+re-run after the D1 fix (AIM no longer fits with the exact row count; `results/H1_RESULTS.md` §2).
 
 Two things a panel should be told without being asked. First, `independent` is **flat in ε** —
 0.0934 at ε = 0.5 and 0.0947 at ε = 8. That is correct and is the control working: a mechanism
@@ -669,9 +670,9 @@ claim synthetic data matches real data here.
 |---|---|---|
 | independent | 0.0947 [0.0817, 0.1071] | 0.0535 [0.0471, 0.0604] |
 | pairwise | 0.0283 [0.0132, 0.0517] | **0.0202** [0.0076, 0.0383] |
-| aim | **0.0078** [0.0031, 0.0125] | 0.0626 [0.0432, 0.0753] |
+| aim | **0.0105** [0.0059, 0.0153] | 0.0621 [0.0405, 0.0837] |
 
-On Adult all three separate with non-overlapping CIs. On ACS, **independent and aim do not
+On Adult both structured families separate from independent, but aim and pairwise overlap. On ACS, **independent and aim do not
 separate**. Reported as measured; §7.2 is the diagnosis.
 
 ### 6.3 H2 — subgroup disparity: a *bounded* null
@@ -775,7 +776,8 @@ The ACS grid contradicted Adult. The diagnosis is the most publishable thing in 
 The structure metric is the correlation of a **single column pair**. AIM selects roughly six
 two-way cliques, and its score on that metric is largely decided by **whether the measured pair
 is one of them**. On Adult, AIM selects `age`×`hours_per_week` at *every* ε tested. On ACS it
-selects `AGEP`×`WKHP` at one of three, and the ACS error tracks that selection exactly:
+selects `AGEP`×`WKHP` at one of three, and in the pre-correction run the ACS error tracked that
+selection exactly (the D1 re-run did not record selections):
 
 ```
 0.0977  (pair not selected)  ->  0.0395  (selected)  ->  0.0626  (not selected)
@@ -1056,7 +1058,7 @@ enough to estimate a false-positive rate precisely — at 5 seeds, 1/5 and 0.05 
 distinguishable, and we say so where it matters.
 
 **29. Your TSTR numbers are much worse than real data. Isn't that a failure?**
-The real baseline is 0.660 and the best synthetic is 0.540. We report the gap rather than hiding
+The real baseline is 0.660 and the best synthetic is 0.515. We report the gap rather than hiding
 it. That gap **is** the honest state of DP tabular synthesis at these ε values, and pretending
 otherwise would be the Groundhog Day failure Stadler et al. document.
 

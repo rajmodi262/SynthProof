@@ -14,19 +14,24 @@ the decision about what H1 now claims is not made here.
 
 ## 1. The contradiction
 
+> **Corrected 2026-10-11.** The AIM rows on both datasets were re-run after the D1 fix (AIM no
+> longer fits with the exact row count; `research/11_selection_accounting.md`, commit `a8a31b1`).
+> Independent and pairwise are unchanged. The numbers below are the re-run; the contradiction
+> survives it, and Adult's aim-vs-pairwise separation does not.
+
 Correlation error at eps = 8, mean [95% bootstrap CI], lower is better:
 
 | mechanism | UCI Adult | ACSIncome |
 |---|---|---|
 | independent | 0.0947 [0.0817, 0.1071] | 0.0535 [0.0471, 0.0604] |
 | pairwise | 0.0283 [0.0132, 0.0517] | **0.0202 [0.0076, 0.0383]** |
-| aim | **0.0078 [0.0031, 0.0125]** | 0.0626 [0.0432, 0.0753] |
+| aim | **0.0105 [0.0059, 0.0153]** | 0.0621 [0.0405, 0.0837] |
 
-- **Adult:** aim > pairwise > independent, all three CIs mutually non-overlapping.
+- **Adult:** aim and pairwise both beat independent (separated); aim vs pairwise overlap.
 - **ACS:** pairwise > independent > aim, and independent vs aim **do not separate**.
 
-AIM goes from the clear best on Adult to statistically indistinguishable from the
-independent-marginals baseline on ACS.
+AIM goes from clearly better than the independent baseline on Adult to statistically
+indistinguishable from it on ACS.
 
 TSTR macro F1 at eps = 8 tells a different story — that ordering **does** reproduce
 (aim > pairwise > independent on both) — but on Adult none of its adjacent pairs separate,
@@ -34,16 +39,19 @@ so it carries little weight there.
 
 ## 2. AIM's utility on ACS *falls* as epsilon rises
 
-This is the more surprising number, and the CIs at the endpoints do not overlap, so it is
-not noise:
+In the re-run (2026-10-11 correction) the endpoint CIs **overlap**, so this is a direction, not
+a separated result. The series peaks at eps = 2 before falling:
 
-| eps | AIM TSTR F1 [95% CI] | AIM corr err | selects AGEP x WKHP? |
-|---:|---|---|---|
-| 0.5 | 0.7039 [0.6946, 0.7126] | 0.0977 | no |
-| 1.0 | 0.6918 [0.6831, 0.7016] | **0.0395** | **yes** |
-| 2.0 | 0.6498 [0.6212, 0.6750] | 0.0521 | no |
-| 4.0 | 0.6510 [0.6333, 0.6696] | 0.0732 | no |
-| 8.0 | 0.5812 [0.5386, 0.6289] | 0.0626 | no |
+| eps | AIM TSTR F1 [95% CI] | AIM corr err |
+|---:|---|---|
+| 0.5 | 0.6493 [0.6049, 0.6937] | 0.0808 |
+| 1.0 | 0.6693 [0.6331, 0.6935] | **0.0399** |
+| 2.0 | 0.6910 [0.6744, 0.7055] | 0.0609 |
+| 4.0 | 0.6311 [0.6074, 0.6549] | 0.0588 |
+| 8.0 | 0.5668 [0.5137, 0.6266] | 0.0621 |
+
+The pre-correction run recorded whether AIM selected AGEP x WKHP at each eps (selected only at
+eps = 1). The re-run did not record selections, so that column is not repeated here.
 
 (TRTR baseline on ACS: 0.725 [0.707, 0.742].)
 

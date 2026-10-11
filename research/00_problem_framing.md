@@ -137,8 +137,9 @@ correlation (0.093 -> 0.334); a utility target defaulting to the wrong column. T
 result documents were retracted in-repo.
 
 ### 5.5 H1/H2/H3 status
-- **H1**: supported on *structure and utility* — AIM corr-err 0.0078 [0.0031, 0.0125] vs
-  independent 0.0947 [0.0817, 0.1071] at eps = 8, non-overlapping CIs. Privacy half disqualified.
+- **H1**: supported on *structure* — AIM corr-err 0.0105 [0.0059, 0.0153] vs
+  independent 0.0947 [0.0817, 0.1071] at eps = 8, non-overlapping CIs (2026-10-11 D1 re-run;
+  was 0.0078 before AIM stopped reading the exact row count). Privacy half disqualified.
 - **H2**: **not supported.** Direction weakly consistent — rarest subgroup (`Other`, 0.8% of
   rows) has highest attack accuracy at both eps. Per-subgroup ceiling 3.27-4.19.
   Instrument-limited, not mechanism-limited.

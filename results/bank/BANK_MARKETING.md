@@ -19,16 +19,16 @@
 
 | Target ε | Metric | independent [95% CI] | pairwise [95% CI] | aim [95% CI] | pw vs ind | aim vs ind | aim vs pw |
 |---:|---|---|---|---|---|---|---|
-| 0.5 | Correlation error | 0.0934 [0.0802, 0.1063] | 0.0611 [0.0219, 0.1143] | 0.0827 [0.0258, 0.1395] | overlap | overlap | overlap |
-| 0.5 | TSTR macro F1 | 0.4719 [0.4173, 0.5247] | 0.4830 [0.3800, 0.5680] | 0.4977 [0.4779, 0.5174] | overlap | overlap | overlap |
-| 1 | Correlation error | 0.0930 [0.0817, 0.1044] | 0.0694 [0.0380, 0.1213] | 0.0424 [0.0142, 0.0708] | overlap | SEPARATED | overlap |
-| 1 | TSTR macro F1 | 0.4700 [0.4318, 0.5081] | 0.4277 [0.3512, 0.4986] | 0.5403 [0.5146, 0.5651] | overlap | SEPARATED | SEPARATED |
-| 2 | Correlation error | 0.0939 [0.0818, 0.1057] | 0.0493 [0.0170, 0.0950] | 0.0564 [0.0139, 0.1007] | overlap | overlap | overlap |
-| 2 | TSTR macro F1 | 0.4264 [0.3395, 0.5037] | 0.4181 [0.3350, 0.4680] | 0.4700 [0.4449, 0.4962] | overlap | overlap | overlap |
-| 4 | Correlation error | 0.0935 [0.0808, 0.1057] | 0.0197 [0.0048, 0.0464] | 0.0260 [0.0015, 0.0681] | SEPARATED | SEPARATED | overlap |
-| 4 | TSTR macro F1 | 0.4670 [0.3518, 0.5752] | 0.4268 [0.3620, 0.4773] | 0.4599 [0.4405, 0.4816] | overlap | overlap | overlap |
-| 8 | Correlation error | 0.0947 [0.0817, 0.1071] | 0.0283 [0.0132, 0.0517] | 0.0078 [0.0031, 0.0125] | SEPARATED | SEPARATED | SEPARATED |
-| 8 | TSTR macro F1 | 0.4065 [0.2967, 0.5152] | 0.4321 [0.3683, 0.4781] | 0.5049 [0.4683, 0.5439] | overlap | overlap | overlap |
+| 0.5 | Correlation error | 0.0934 [0.0802, 0.1063] | 0.0611 [0.0219, 0.1143] | 0.0941 [0.0469, 0.1414] | overlap | overlap | overlap |
+| 0.5 | TSTR macro F1 | 0.4719 [0.4173, 0.5247] | 0.4830 [0.3800, 0.5680] | 0.4613 [0.4439, 0.4827] | overlap | overlap | overlap |
+| 1 | Correlation error | 0.0930 [0.0817, 0.1044] | 0.0694 [0.0380, 0.1213] | 0.0443 [0.0113, 0.0802] | overlap | SEPARATED | overlap |
+| 1 | TSTR macro F1 | 0.4700 [0.4318, 0.5081] | 0.4277 [0.3512, 0.4986] | 0.5145 [0.4657, 0.5640] | overlap | overlap | overlap |
+| 2 | Correlation error | 0.0939 [0.0818, 0.1057] | 0.0493 [0.0170, 0.0950] | 0.0545 [0.0129, 0.0973] | overlap | overlap | overlap |
+| 2 | TSTR macro F1 | 0.4264 [0.3395, 0.5037] | 0.4181 [0.3350, 0.4680] | 0.4914 [0.4744, 0.5082] | overlap | overlap | SEPARATED |
+| 4 | Correlation error | 0.0935 [0.0808, 0.1057] | 0.0197 [0.0048, 0.0464] | 0.0349 [0.0048, 0.0851] | SEPARATED | overlap | overlap |
+| 4 | TSTR macro F1 | 0.4670 [0.3518, 0.5752] | 0.4268 [0.3620, 0.4773] | 0.4989 [0.4696, 0.5277] | overlap | overlap | overlap |
+| 8 | Correlation error | 0.0947 [0.0817, 0.1071] | 0.0283 [0.0132, 0.0517] | 0.0105 [0.0059, 0.0153] | SEPARATED | SEPARATED | overlap |
+| 8 | TSTR macro F1 | 0.4065 [0.2967, 0.5152] | 0.4321 [0.3683, 0.4781] | 0.5064 [0.4357, 0.5737] | overlap | overlap | overlap |
 
 ### ACSIncome (California, 2018)
 
@@ -36,16 +36,16 @@
 
 | Target ε | Metric | independent [95% CI] | pairwise [95% CI] | aim [95% CI] | pw vs ind | aim vs ind | aim vs pw |
 |---:|---|---|---|---|---|---|---|
-| 0.5 | Correlation error | 0.0521 [0.0455, 0.0582] | 0.0543 [0.0186, 0.1088] | 0.0977 [0.0421, 0.1591] | overlap | overlap | overlap |
-| 0.5 | TSTR macro F1 | 0.4397 [0.4217, 0.4599] | 0.4664 [0.4455, 0.4967] | 0.7039 [0.6946, 0.7126] | overlap | SEPARATED | SEPARATED |
-| 1 | Correlation error | 0.0531 [0.0460, 0.0606] | 0.0727 [0.0423, 0.1133] | 0.0395 [0.0204, 0.0695] | overlap | overlap | overlap |
-| 1 | TSTR macro F1 | 0.4411 [0.4171, 0.4652] | 0.4675 [0.4445, 0.4944] | 0.6918 [0.6831, 0.7016] | overlap | SEPARATED | SEPARATED |
-| 2 | Correlation error | 0.0530 [0.0465, 0.0601] | 0.0468 [0.0179, 0.0830] | 0.0521 [0.0286, 0.0778] | overlap | overlap | overlap |
-| 2 | TSTR macro F1 | 0.4305 [0.4123, 0.4512] | 0.4894 [0.4699, 0.5093] | 0.6498 [0.6212, 0.6750] | SEPARATED | SEPARATED | SEPARATED |
-| 4 | Correlation error | 0.0536 [0.0473, 0.0605] | 0.0315 [0.0098, 0.0618] | 0.0732 [0.0630, 0.0875] | overlap | SEPARATED | SEPARATED |
-| 4 | TSTR macro F1 | 0.4416 [0.4230, 0.4629] | 0.4812 [0.4521, 0.5045] | 0.6510 [0.6333, 0.6696] | overlap | SEPARATED | SEPARATED |
-| 8 | Correlation error | 0.0535 [0.0471, 0.0604] | 0.0202 [0.0076, 0.0383] | 0.0626 [0.0432, 0.0753] | SEPARATED | overlap | SEPARATED |
-| 8 | TSTR macro F1 | 0.4616 [0.4489, 0.4744] | 0.5219 [0.4975, 0.5466] | 0.5812 [0.5386, 0.6289] | SEPARATED | SEPARATED | overlap |
+| 0.5 | Correlation error | 0.0521 [0.0455, 0.0582] | 0.0543 [0.0186, 0.1088] | 0.0808 [0.0190, 0.1521] | overlap | overlap | overlap |
+| 0.5 | TSTR macro F1 | 0.4397 [0.4217, 0.4599] | 0.4664 [0.4455, 0.4967] | 0.6493 [0.6049, 0.6937] | overlap | SEPARATED | SEPARATED |
+| 1 | Correlation error | 0.0531 [0.0460, 0.0606] | 0.0727 [0.0423, 0.1133] | 0.0399 [0.0196, 0.0694] | overlap | overlap | overlap |
+| 1 | TSTR macro F1 | 0.4411 [0.4171, 0.4652] | 0.4675 [0.4445, 0.4944] | 0.6693 [0.6331, 0.6935] | overlap | SEPARATED | SEPARATED |
+| 2 | Correlation error | 0.0530 [0.0465, 0.0601] | 0.0468 [0.0179, 0.0830] | 0.0609 [0.0317, 0.0892] | overlap | overlap | overlap |
+| 2 | TSTR macro F1 | 0.4305 [0.4123, 0.4512] | 0.4894 [0.4699, 0.5093] | 0.6910 [0.6744, 0.7055] | SEPARATED | SEPARATED | SEPARATED |
+| 4 | Correlation error | 0.0536 [0.0473, 0.0605] | 0.0315 [0.0098, 0.0618] | 0.0588 [0.0463, 0.0695] | overlap | overlap | overlap |
+| 4 | TSTR macro F1 | 0.4416 [0.4230, 0.4629] | 0.4812 [0.4521, 0.5045] | 0.6311 [0.6074, 0.6549] | overlap | SEPARATED | SEPARATED |
+| 8 | Correlation error | 0.0535 [0.0471, 0.0604] | 0.0202 [0.0076, 0.0383] | 0.0621 [0.0405, 0.0837] | SEPARATED | overlap | SEPARATED |
+| 8 | TSTR macro F1 | 0.4616 [0.4489, 0.4744] | 0.5219 [0.4975, 0.5466] | 0.5668 [0.5137, 0.6266] | SEPARATED | SEPARATED | overlap |
 
 ### UCI Bank Marketing
 
@@ -53,27 +53,27 @@
 
 | Target ε | Metric | independent [95% CI] | pairwise [95% CI] | aim [95% CI] | pw vs ind | aim vs ind | aim vs pw |
 |---:|---|---|---|---|---|---|---|
-| 0.5 | Correlation error | 0.0450 [0.0278, 0.0584] | 0.1485 [0.1034, 0.1909] | 0.0573 [0.0499, 0.0640] | SEPARATED | overlap | SEPARATED |
-| 0.5 | TSTR macro F1 | 0.4747 [0.4690, 0.4857] | 0.4733 [0.4690, 0.4815] | 0.4740 [0.4690, 0.4833] | overlap | overlap | overlap |
-| 1 | Correlation error | 0.0445 [0.0305, 0.0549] | 0.0996 [0.0306, 0.1686] | 0.0669 [0.0506, 0.0805] | overlap | overlap | overlap |
-| 1 | TSTR macro F1 | 0.4812 [0.4711, 0.4913] | 0.4133 [0.2961, 0.4745] | 0.4765 [0.4702, 0.4832] | overlap | overlap | overlap |
-| 2 | Correlation error | 0.0446 [0.0323, 0.0534] | 0.0968 [0.0569, 0.1244] | 0.0660 [0.0491, 0.0818] | SEPARATED | overlap | overlap |
-| 2 | TSTR macro F1 | 0.4841 [0.4695, 0.4986] | 0.4205 [0.3171, 0.4755] | 0.4874 [0.4659, 0.5074] | overlap | overlap | overlap |
-| 4 | Correlation error | 0.0430 [0.0316, 0.0521] | 0.0732 [0.0390, 0.1075] | 0.0603 [0.0517, 0.0690] | overlap | overlap | overlap |
-| 4 | TSTR macro F1 | 0.4818 [0.4718, 0.4918] | 0.4527 [0.3836, 0.5032] | 0.4869 [0.4744, 0.5031] | overlap | overlap | overlap |
-| 8 | Correlation error | 0.0416 [0.0294, 0.0523] | 0.0289 [0.0107, 0.0550] | 0.0489 [0.0377, 0.0592] | overlap | overlap | overlap |
-| 8 | TSTR macro F1 | 0.4792 [0.4708, 0.4876] | 0.4824 [0.4501, 0.5137] | 0.4536 [0.3963, 0.4926] | overlap | overlap | overlap |
+| 0.5 | Correlation error | 0.0450 [0.0278, 0.0584] | 0.1485 [0.1034, 0.1909] | 0.0517 [0.0439, 0.0637] | SEPARATED | overlap | SEPARATED |
+| 0.5 | TSTR macro F1 | 0.4747 [0.4690, 0.4857] | 0.4733 [0.4690, 0.4815] | 0.4301 [0.3516, 0.4695] | overlap | overlap | overlap |
+| 1 | Correlation error | 0.0445 [0.0305, 0.0549] | 0.0996 [0.0306, 0.1686] | 0.0604 [0.0503, 0.0722] | overlap | overlap | overlap |
+| 1 | TSTR macro F1 | 0.4812 [0.4711, 0.4913] | 0.4133 [0.2961, 0.4745] | 0.4758 [0.4640, 0.4906] | overlap | overlap | overlap |
+| 2 | Correlation error | 0.0446 [0.0323, 0.0534] | 0.0968 [0.0569, 0.1244] | 0.0516 [0.0395, 0.0670] | SEPARATED | overlap | overlap |
+| 2 | TSTR macro F1 | 0.4841 [0.4695, 0.4986] | 0.4205 [0.3171, 0.4755] | 0.3968 [0.2936, 0.4986] | overlap | overlap | overlap |
+| 4 | Correlation error | 0.0430 [0.0316, 0.0521] | 0.0732 [0.0390, 0.1075] | 0.0535 [0.0402, 0.0670] | overlap | overlap | overlap |
+| 4 | TSTR macro F1 | 0.4818 [0.4718, 0.4918] | 0.4527 [0.3836, 0.5032] | 0.4794 [0.4682, 0.4936] | overlap | overlap | overlap |
+| 8 | Correlation error | 0.0416 [0.0294, 0.0523] | 0.0289 [0.0107, 0.0550] | 0.0579 [0.0356, 0.0802] | overlap | overlap | overlap |
+| 8 | TSTR macro F1 | 0.4792 [0.4708, 0.4876] | 0.4824 [0.4501, 0.5137] | 0.4617 [0.4294, 0.4918] | overlap | overlap | overlap |
 
 ### Cross-Dataset Comparison at ε = 8
 
 | Dataset | Metric | independent [95% CI] | pairwise [95% CI] | aim [95% CI] | pw vs ind | aim vs ind | aim vs pw |
 |---|---|---|---|---|---|---|---|
-| UCI Adult | Correlation error | 0.0947 [0.0817, 0.1071] | 0.0283 [0.0132, 0.0517] | 0.0078 [0.0031, 0.0125] | SEPARATED | SEPARATED | SEPARATED |
-| UCI Adult | TSTR macro F1 | 0.4065 [0.2967, 0.5152] | 0.4321 [0.3683, 0.4781] | 0.5049 [0.4683, 0.5439] | overlap | overlap | overlap |
-| ACSIncome (California, 2018) | Correlation error | 0.0535 [0.0471, 0.0604] | 0.0202 [0.0076, 0.0383] | 0.0626 [0.0432, 0.0753] | SEPARATED | overlap | SEPARATED |
-| ACSIncome (California, 2018) | TSTR macro F1 | 0.4616 [0.4489, 0.4744] | 0.5219 [0.4975, 0.5466] | 0.5812 [0.5386, 0.6289] | SEPARATED | SEPARATED | overlap |
-| UCI Bank Marketing | Correlation error | 0.0416 [0.0294, 0.0523] | 0.0289 [0.0107, 0.0550] | 0.0489 [0.0377, 0.0592] | overlap | overlap | overlap |
-| UCI Bank Marketing | TSTR macro F1 | 0.4792 [0.4708, 0.4876] | 0.4824 [0.4501, 0.5137] | 0.4536 [0.3963, 0.4926] | overlap | overlap | overlap |
+| UCI Adult | Correlation error | 0.0947 [0.0817, 0.1071] | 0.0283 [0.0132, 0.0517] | 0.0105 [0.0059, 0.0153] | SEPARATED | SEPARATED | overlap |
+| UCI Adult | TSTR macro F1 | 0.4065 [0.2967, 0.5152] | 0.4321 [0.3683, 0.4781] | 0.5064 [0.4357, 0.5737] | overlap | overlap | overlap |
+| ACSIncome (California, 2018) | Correlation error | 0.0535 [0.0471, 0.0604] | 0.0202 [0.0076, 0.0383] | 0.0621 [0.0405, 0.0837] | SEPARATED | overlap | SEPARATED |
+| ACSIncome (California, 2018) | TSTR macro F1 | 0.4616 [0.4489, 0.4744] | 0.5219 [0.4975, 0.5466] | 0.5668 [0.5137, 0.6266] | SEPARATED | SEPARATED | overlap |
+| UCI Bank Marketing | Correlation error | 0.0416 [0.0294, 0.0523] | 0.0289 [0.0107, 0.0550] | 0.0579 [0.0356, 0.0802] | overlap | overlap | overlap |
+| UCI Bank Marketing | TSTR macro F1 | 0.4792 [0.4708, 0.4876] | 0.4824 [0.4501, 0.5137] | 0.4617 [0.4294, 0.4918] | overlap | overlap | overlap |
 
 <!-- END GENERATED: bank-h1-tables -->
 
@@ -93,23 +93,24 @@ schedule rather than anything about a person.
 
 ## The headline: AIM's structural advantage is Adult-specific
 
-Correlation error at ε = 8 — lower is better. Bracketed figures are 95% bootstrap CIs.
+Correlation error at ε = 8 — lower is better. Bracketed figures are 95% bootstrap CIs. AIM rows
+are the 2026-10-11 correction (re-run after the D1 fix, commit `a8a31b1`).
 
 | Dataset | true corr | independent | pairwise | **aim** |
 |---|---:|---|---|---|
-| **Adult** | +0.1034 | 0.0947 [0.082, 0.107] | 0.0283 [0.013, 0.052] | **0.0078 [0.003, 0.013]** |
-| **ACSIncome** | +0.0721 | 0.0535 [0.047, 0.060] | **0.0202 [0.008, 0.038]** | 0.0626 [0.043, 0.075] |
-| **Bank Marketing** | +0.0604 | 0.0416 [0.029, 0.052] | 0.0289 [0.011, 0.055] | 0.0489 [0.038, 0.059] |
+| **Adult** | +0.1034 | 0.0947 [0.082, 0.107] | 0.0283 [0.013, 0.052] | **0.0105 [0.006, 0.015]** |
+| **ACSIncome** | +0.0721 | 0.0535 [0.047, 0.060] | **0.0202 [0.008, 0.038]** | 0.0621 [0.041, 0.084] |
+| **Bank Marketing** | +0.0604 | 0.0416 [0.029, 0.052] | 0.0289 [0.011, 0.055] | 0.0579 [0.036, 0.080] |
 
-On Adult, AIM is **12× better than independent marginals** with non-overlapping intervals —
+On Adult, AIM is **about 9× better than independent marginals** with non-overlapping intervals —
 the result H1 was built on. It does not reproduce:
 
-- On **Bank Marketing**, AIM (0.0489 [0.0377, 0.0592]) is **statistically indistinguishable from independent
+- On **Bank Marketing**, AIM (0.0579 [0.0356, 0.0802]) is **statistically indistinguishable from independent
   marginals** (0.0416 [0.0294, 0.0523]) — the intervals overlap. The headline mechanism buys
   nothing structurally on this table.
-- On **ACSIncome**, AIM is *worse* than independent.
+- On **ACSIncome**, AIM's mean is *worse* than independent, with overlapping intervals.
 - On **Bank Marketing**, no mechanism separates on structure at ε = 8: pairwise (0.0289 [0.0107, 0.0550]),
-  independent (0.0416 [0.0294, 0.0523]), and AIM (0.0489 [0.0377, 0.0592]) all have overlapping intervals.
+  independent (0.0416 [0.0294, 0.0523]), and AIM (0.0579 [0.0356, 0.0802]) all have overlapping intervals.
   On **ACSIncome**, pairwise separates from independent (0.0202 [0.0076, 0.0383] vs 0.0535 [0.0471, 0.0604]).
 
 Across three datasets and two domains, **AIM's structural advantage appears on exactly one of
@@ -137,11 +138,11 @@ Two things reproduce everywhere, and they are the claims worth keeping:
 
 | Dataset | TRTR | independent | pairwise | aim | Ordering |
 |---|---:|---:|---:|---:|---|
-| **Adult** | 0.6604 | 0.4065 | 0.4321 | **0.5049** | aim > pairwise > independent |
-| **ACSIncome** | 0.7246 | 0.4616 | 0.5219 | **0.5812** | aim > pairwise > independent |
-| **Bank Marketing** | 0.5610 | 0.4792 | 0.4824 | 0.4536 | pairwise ~ independent ~ aim |
+| **Adult** | 0.6604 | 0.4065 | 0.4321 | **0.5064** | aim > pairwise > independent |
+| **ACSIncome** | 0.7246 | 0.4616 | 0.5219 | **0.5668** | aim > pairwise > independent |
+| **Bank Marketing** | 0.5610 | 0.4792 | 0.4824 | 0.4617 | pairwise ~ independent ~ aim |
 
-On Bank Marketing, pairwise (0.4824), independent (0.4792), and AIM (0.4536) all have overlapping intervals.
+On Bank Marketing, pairwise (0.4824), independent (0.4792), and AIM (0.4617) all have overlapping intervals.
 All three sit well below TRTR (0.5610). **No mechanism utility advantage was detected on this dataset.**
 
 This matters because the utility ordering was the part of the cross-dataset comparison that
@@ -169,8 +170,8 @@ generality claim is narrower than it was before this run.
 
 The full 5 × 5 preregistered grid (75 cells, seeds 0–4, ε ∈ {0.5, 1, 2, 4, 8}) resolved the cross-dataset comparison:
 - The reduced run showed pairwise separated from independent on structure; the full grid does not. Pairwise widened from 0.0174 [0.006, 0.029] to 0.0289 [0.0107, 0.0550], overlapping independent (0.0416 [0.0294, 0.0523]). No mechanism is separated on structure on Bank Marketing at ε = 8.
-- AIM remains structurally indistinguishable from independent marginals at ε = 8 (0.0489 [0.0377, 0.0592] vs 0.0416 [0.0294, 0.0523]; reduced run was 0.0468 vs 0.0447).
-- On utility (TSTR F1 at ε = 8), pairwise is 0.4824 [0.4501, 0.5137], independent is 0.4792 [0.4708, 0.4876], and AIM is 0.4536 [0.3963, 0.4926], all overlapping and well below TRTR 0.5610 [0.5451, 0.5765] (reduced run was 0.4723, 0.4751, 0.4716). No mechanism utility advantage was detected on Bank Marketing.
+- AIM remains structurally indistinguishable from independent marginals at ε = 8 (0.0579 [0.0356, 0.0802] after the D1 re-run, 0.0489 before it, vs 0.0416 [0.0294, 0.0523]; reduced run was 0.0468 vs 0.0447).
+- On utility (TSTR F1 at ε = 8), pairwise is 0.4824 [0.4501, 0.5137], independent is 0.4792 [0.4708, 0.4876], and AIM is 0.4617 [0.4294, 0.4918] (0.4536 before the D1 re-run), all overlapping and well below TRTR 0.5610 [0.5451, 0.5765] (reduced run was 0.4723, 0.4751, 0.4716). No mechanism utility advantage was detected on Bank Marketing.
 
 ## What this means for the thesis
 

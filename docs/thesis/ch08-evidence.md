@@ -16,7 +16,7 @@ Presented separately they look like three experiments. Presented as a chain they
 
 **(2) The audit could not have answered its question.** H1 ran at m = 60 where the ceiling is **2.97**, against a proved ε of **7.36**. Certifying 7.36 needs ~**4,711** perfectly-detected canaries. The gap was guaranteed before any mechanism ran.
 
-**(3) The benchmark measured clique selection, not fidelity.** AIM at ε = 8 scores **0.0078** on Adult and **0.0626** on ACS, where the independent baseline scores **0.0535** — indistinguishable. The metric is one column pair, and AIM's score on it depends largely on whether that pair is among its ~6 selected cliques.
+**(3) The benchmark measured clique selection, not fidelity.** AIM at ε = 8 scores **0.0105** on Adult and **0.0621** on ACS, where the independent baseline scores **0.0535** — indistinguishable. The metric is one column pair, and AIM's score on it depends largely on whether that pair is among its ~6 selected cliques.
 
 [WRITE: ~500 words. The chain: a measurement can be biased against what it measures (1), can be incapable of the reading it is asked for (2), and can measure a different quantity than its name suggests (3). All three were invisible from inside a single experiment. THAT is the contribution — not any individual number.]
 

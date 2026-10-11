@@ -462,9 +462,17 @@ the easiest way to win it.
 
 ---
 
-## 8. The confound, in plain language
+## 8. The confound, in plain language — RETRACTED
 
-### The one-liner
+> **Read this first. We withdrew this claim on 2026-08-25.** A controlled experiment of our own
+> (`results/SELECTION_ABLATION.md`, 175 fits) showed that AIM picks almost exactly the most
+> strongly related pair of columns, so "pairs AIM selected" and "pairs that are actually related"
+> are the same pairs. On the unrelated pairs the independent baseline is simply a correct model,
+> not a weak one. The numbers below are real, but they do **not** show that AIM's advantage is an
+> artefact of its own choice. Present this section only as an example of a reading we tested and
+> dropped, never as a finding.
+
+### The one-liner (as originally stated, now withdrawn)
 
 > **"We graded the exam using a question one of the students wrote."**
 
@@ -489,22 +497,23 @@ On the pairs it chose, AIM is about **four times better** than a generator that 
 relationships between columns at all. On the pairs it did not choose, it is **the same as
 that generator**.
 
-AIM's advantage lives exactly where it spent budget. And our headline measured precisely such
-a pair. (Source: `results/clique_confound.json`.)
+We first read this as "AIM's advantage lives exactly where it spent budget". The selection
+ablation shows the simpler explanation: AIM spends budget on the pairs that are actually related,
+and that is where any model of relationships can beat one that models none. (Sources:
+`results/clique_confound.json`, `results/SELECTION_ABLATION.md`.)
 
 ### Why this matters beyond us
 
-This is not just a bug in our benchmark. It is a warning about how the whole field compares
-DP synthesisers: **if your fidelity metric happens to land on a pair an adaptive mechanism
-selected, you are measuring its choice, not its quality.** The fix is cheap — fix the set of
+What survives is narrower: a fidelity score built on **one** column pair is fragile, whichever
+mechanism it favours. The fix is cheap — fix the set of
 column pairs in advance, chosen independently of any mechanism — and it is what we would do
 next.
 
 ### The caveat you must volunteer
 
 On our second dataset, ACS, the same test came back **inconclusive** — AIM selected no pair
-there, so the design cannot speak either way. One dataset shows the confound; the other
-cannot test it. Say so. A result you have qualified yourself is much harder to attack than
+there, so the design cannot speak either way. Neither dataset supports the confound reading
+now. Say so. A result you have qualified yourself is much harder to attack than
 one a panellist has to qualify for you.
 
 ---
@@ -522,12 +531,14 @@ rows. Lower is better.
 |---|---|---|
 | independent | 0.0947 [0.0817, 0.1071] | 0.0535 [0.0471, 0.0604] |
 | pairwise tree | 0.0283 [0.0132, 0.0517] | **0.0202 [0.0076, 0.0383]** |
-| AIM | **0.0078 [0.0031, 0.0125]** | 0.0626 [0.0432, 0.0753] |
+| AIM | **0.0105 [0.0059, 0.0153]** | 0.0621 [0.0405, 0.0837] |
 
 Sources: `results/h1_all_families.json`, `results/acs/h1_all_families.json`.
 
-**On Adult: supported.** All three intervals are separate — they do not overlap — so the
-ordering is real and not noise. AIM is clearly best.
+**On Adult: supported.** Both AIM and the pairwise tree beat the independent baseline — their
+intervals do not overlap with it — so that part is real and not noise. AIM has the lowest
+average, but its interval overlaps the pairwise tree's, so which of those two is best is not
+settled.
 
 **On ACS: the ordering inverts.** Pairwise wins, and AIM stops being distinguishable from the
 baseline entirely.
@@ -807,7 +818,7 @@ knows everything else can guess whether you are in the data about 73 times in 10
 
 | | |
 |---|---|
-| H1, AIM vs independent, Adult, ε=8 | 0.0078 vs 0.0947, intervals separate |
+| H1, AIM vs independent, Adult, ε=8 | 0.0105 vs 0.0947, intervals separate |
 | H1 on ACS | ordering inverts; AIM stops separating |
 | H2 | 14 and 22 tests, 0 survive FDR; observed 0.036 of a 3.27 range |
 | H3 | not supported, both datasets |

@@ -227,18 +227,18 @@ export const DATA = {
           "proved": 0.38534588280692106,
           "audited": 0.0,
           "corrErr": {
-            "mean": 0.08267253963411507,
-            "lo": 0.02580866139821541,
-            "hi": 0.13953641787001475,
+            "mean": 0.09412129937409733,
+            "lo": 0.046851812896291825,
+            "hi": 0.14139078585190284,
             "n": 5
           },
           "tstrF1": {
-            "mean": 0.4976755508095618,
-            "lo": 0.47793372126928346,
-            "hi": 0.5174173803498401,
+            "mean": 0.46134887895032595,
+            "lo": 0.4439355244552976,
+            "hi": 0.4827050573874351,
             "n": 5
           },
-          "miaAuc": 0.4877762499999999
+          "miaAuc": 0.49704
         },
         {
           "mechanism": "aim",
@@ -246,18 +246,18 @@ export const DATA = {
           "proved": 0.7781757068329299,
           "audited": 0.0,
           "corrErr": {
-            "mean": 0.04244948831194656,
-            "lo": 0.014186566303072398,
-            "hi": 0.07081931097823266,
+            "mean": 0.04425718587067332,
+            "lo": 0.011332808321507293,
+            "hi": 0.08021787018091761,
             "n": 5
           },
           "tstrF1": {
-            "mean": 0.5403160553053341,
-            "lo": 0.5145578580021576,
-            "hi": 0.5651389298883261,
+            "mean": 0.5145394854191965,
+            "lo": 0.46571137279705094,
+            "hi": 0.5639510634436593,
             "n": 5
           },
-          "miaAuc": 0.494155
+          "miaAuc": 0.485475
         },
         {
           "mechanism": "aim",
@@ -265,18 +265,18 @@ export const DATA = {
           "proved": 1.5761918554915184,
           "audited": 0.0,
           "corrErr": {
-            "mean": 0.05642020128486837,
-            "lo": 0.013858994385180326,
-            "hi": 0.10067417213062049,
+            "mean": 0.05445077033500782,
+            "lo": 0.012868949153485318,
+            "hi": 0.0972781845041568,
             "n": 5
           },
           "tstrF1": {
-            "mean": 0.46995845884659426,
-            "lo": 0.4448787766468742,
-            "hi": 0.4962307123290056,
+            "mean": 0.49142052497071675,
+            "lo": 0.47444760384707924,
+            "hi": 0.5081542375173876,
             "n": 5
           },
-          "miaAuc": 0.4907125
+          "miaAuc": 0.49905499999999997
         },
         {
           "mechanism": "aim",
@@ -284,18 +284,18 @@ export const DATA = {
           "proved": 3.201144720066901,
           "audited": 0.0,
           "corrErr": {
-            "mean": 0.025955155328871504,
-            "lo": 0.0015101518778062456,
-            "hi": 0.06810645172749857,
+            "mean": 0.034889018560636156,
+            "lo": 0.004831355825574699,
+            "hi": 0.0851020355041038,
             "n": 5
           },
           "tstrF1": {
-            "mean": 0.4598668332134809,
-            "lo": 0.44048883268416156,
-            "hi": 0.4816034507866007,
+            "mean": 0.4988726088800277,
+            "lo": 0.46955672989422725,
+            "hi": 0.5277253373324451,
             "n": 5
           },
-          "miaAuc": 0.49322625000000003
+          "miaAuc": 0.49878999999999996
         },
         {
           "mechanism": "aim",
@@ -303,18 +303,18 @@ export const DATA = {
           "proved": 6.5426925748221745,
           "audited": 0.0,
           "corrErr": {
-            "mean": 0.00781899168595442,
-            "lo": 0.0031011754138930677,
-            "hi": 0.012536807958015775,
+            "mean": 0.010512964713469946,
+            "lo": 0.00588434339295558,
+            "hi": 0.015272027888757093,
             "n": 5
           },
           "tstrF1": {
-            "mean": 0.5048724230010384,
-            "lo": 0.46827928668173274,
-            "hi": 0.5438516995225722,
+            "mean": 0.5064186715302752,
+            "lo": 0.43565594570957655,
+            "hi": 0.5737159997647586,
             "n": 5
           },
-          "miaAuc": 0.50040625
+          "miaAuc": 0.5009812499999999
         }
       ]
     },
@@ -442,7 +442,7 @@ export const DATA = {
           "mechanism": "pairwise",
           "eps": 0.5,
           "proved": 0.4558899343630535,
-          "audited": 0.0,
+          "audited": 0.015177059535813548,
           "corrErr": {
             "mean": 0.05428173700215973,
             "lo": 0.018648490652164774,
@@ -539,18 +539,18 @@ export const DATA = {
           "proved": 0.3853466544994819,
           "audited": 0.0,
           "corrErr": {
-            "mean": 0.09767981039831207,
-            "lo": 0.04205855322232303,
-            "hi": 0.15906340322937113,
+            "mean": 0.08081785842285807,
+            "lo": 0.01897691784374562,
+            "hi": 0.15214960222470406,
             "n": 5
           },
           "tstrF1": {
-            "mean": 0.7038949027908518,
-            "lo": 0.6945518690642001,
-            "hi": 0.7125636108358265,
+            "mean": 0.6492976719850152,
+            "lo": 0.6049218947892252,
+            "hi": 0.6936734491808053,
             "n": 5
           },
-          "miaAuc": 0.484150625
+          "miaAuc": 0.491614375
         },
         {
           "mechanism": "aim",
@@ -558,18 +558,18 @@ export const DATA = {
           "proved": 0.7781704325167329,
           "audited": 0.0,
           "corrErr": {
-            "mean": 0.039494466496544346,
-            "lo": 0.020429356309965663,
-            "hi": 0.06945611143996806,
+            "mean": 0.03994027541225522,
+            "lo": 0.019555835500512146,
+            "hi": 0.06943212832700374,
             "n": 5
           },
           "tstrF1": {
-            "mean": 0.69179003498293,
-            "lo": 0.6831397862534659,
-            "hi": 0.70164966272443,
+            "mean": 0.6693412226495876,
+            "lo": 0.6330806700803187,
+            "hi": 0.6935036258739332,
             "n": 5
           },
-          "miaAuc": 0.4975706250000001
+          "miaAuc": 0.48945437499999994
         },
         {
           "mechanism": "aim",
@@ -577,18 +577,18 @@ export const DATA = {
           "proved": 1.5762727717225564,
           "audited": 0.0,
           "corrErr": {
-            "mean": 0.052096976804806315,
-            "lo": 0.02861622482811511,
-            "hi": 0.07779956313192712,
+            "mean": 0.06088339938626099,
+            "lo": 0.03173670374637194,
+            "hi": 0.08921301812411145,
             "n": 5
           },
           "tstrF1": {
-            "mean": 0.6498387453659829,
-            "lo": 0.6211767062971394,
-            "hi": 0.6750396580292397,
+            "mean": 0.6909961336262593,
+            "lo": 0.6744381351838667,
+            "hi": 0.7054937270631005,
             "n": 5
           },
-          "miaAuc": 0.486081875
+          "miaAuc": 0.479454375
         },
         {
           "mechanism": "aim",
@@ -596,18 +596,18 @@ export const DATA = {
           "proved": 3.201143027606534,
           "audited": 0.0,
           "corrErr": {
-            "mean": 0.07324260975027318,
-            "lo": 0.06302194896503219,
-            "hi": 0.08752231369100202,
+            "mean": 0.05877585701358647,
+            "lo": 0.04625679906798043,
+            "hi": 0.06947965247072826,
             "n": 5
           },
           "tstrF1": {
-            "mean": 0.6510441615236237,
-            "lo": 0.6333133695461973,
-            "hi": 0.6695960683795269,
+            "mean": 0.631078239412544,
+            "lo": 0.6074190868940018,
+            "hi": 0.6549326072189882,
             "n": 5
           },
-          "miaAuc": 0.49160562500000005
+          "miaAuc": 0.498003125
         },
         {
           "mechanism": "aim",
@@ -615,18 +615,18 @@ export const DATA = {
           "proved": 6.542736383600297,
           "audited": 0.0,
           "corrErr": {
-            "mean": 0.06258672620935572,
-            "lo": 0.04318816149146203,
-            "hi": 0.07533630534781102,
+            "mean": 0.06212351617509837,
+            "lo": 0.04050507356127222,
+            "hi": 0.08374195878892451,
             "n": 5
           },
           "tstrF1": {
-            "mean": 0.5811672873009257,
-            "lo": 0.5385551513932021,
-            "hi": 0.628943769475779,
+            "mean": 0.5668310793353015,
+            "lo": 0.5137250808089622,
+            "hi": 0.6265507836817996,
             "n": 5
           },
-          "miaAuc": 0.49491187499999995
+          "miaAuc": 0.506395625
         }
       ]
     }
@@ -697,8 +697,9 @@ export const DATA = {
     "adult": {
       "source": "results/clique_confound.json",
       "label": "UCI Adult",
-      "confirmed": true,
-      "verdict": "CONFOUND CONFIRMED. AIM beats the independent-marginal baseline on the pairs it selects as cliques, and does NOT beat it on the pairs it does not select \u2014 on those it is statistically indistinguishable from a mechanism that models no cross-column dependence at all. AIM's structure advantage therefore exists exactly where it spent a clique, and the H1 headline measured precisely such a pair. The H1 structure result must be read as a statement about clique selection.",
+      "confirmed": false,
+      "retracted": true,
+      "verdict": "SUPERSEDED 2026-08-25. The earlier verdict (retained above as verdict_RETRACTED) read AIM's lower error on selected pairs as evidence that its structure advantage is an artefact of clique selection. That reading is NOT supported by this data: AIM selects almost exactly the most-dependent numeric pair and nothing else (corr(|true corr|, selection rate) = +0.700 Adult, +0.809 ACS), so 'selected' and 'strongly dependent' are confounded here, and the within-pair analysis that would break the confound has only one pair in both states with no confidence interval. A controlled ablation (scripts/run_selection_ablation.py, 175 fits) holds the evaluated pair fixed and finds the benefit of measuring a pair scales with that pair's true dependence (corr = -0.898; -0.960 excluding one outlier). AIM's advantage is therefore the mechanism working as designed, matching Chen, Gong & Wang (arXiv:2511.13893). What survives is an EVALUATION-DESIGN claim: measuring the scored pair cuts its error by 53% on average and 80% on the headline pair, so a benchmark scoring one fixed low-order statistic substantially reports whether the mechanism chose to measure it.",
       "selectedPairs": [
         "age|hours_per_week"
       ],
@@ -738,7 +739,8 @@ export const DATA = {
       "source": "results/acs/clique_confound.json",
       "label": "ACSIncome (CA 2018)",
       "confirmed": false,
-      "verdict": "INCONCLUSIVE: AIM does not separate from the baseline even on the pairs it selects, so this design cannot speak to the confound either way.",
+      "retracted": true,
+      "verdict": "SUPERSEDED 2026-08-25. The earlier verdict (retained above as verdict_RETRACTED) read AIM's lower error on selected pairs as evidence that its structure advantage is an artefact of clique selection. That reading is NOT supported by this data: AIM selects almost exactly the most-dependent numeric pair and nothing else (corr(|true corr|, selection rate) = +0.700 Adult, +0.809 ACS), so 'selected' and 'strongly dependent' are confounded here, and the within-pair analysis that would break the confound has only one pair in both states with no confidence interval. A controlled ablation (scripts/run_selection_ablation.py, 175 fits) holds the evaluated pair fixed and finds the benefit of measuring a pair scales with that pair's true dependence (corr = -0.898; -0.960 excluding one outlier). AIM's advantage is therefore the mechanism working as designed, matching Chen, Gong & Wang (arXiv:2511.13893). What survives is an EVALUATION-DESIGN claim: measuring the scored pair cuts its error by 53% on average and 80% on the headline pair, so a benchmark scoring one fixed low-order statistic substantially reports whether the mechanism chose to measure it.",
       "selectedPairs": [],
       "unselectedPairs": [
         "AGEP|SCHL",
@@ -1058,11 +1060,12 @@ export const DATA = {
   "mutation": {
     "kind": "targeted mutation probe (curated list, not a general sweep)",
     "score": 1.0,
-    "caught": 10,
+    "caught": 18,
     "survived": 0,
+    "missing_anchors": 0,
     "equivalent_excluded": 3,
-    "denominator": 10,
-    "elapsed_seconds": 76.7,
+    "denominator": 18,
+    "elapsed_seconds": 95.5,
     "results": [
       {
         "id": "budget-off-by-one",
@@ -1160,8 +1163,14 @@ export const DATA = {
       },
       {
         "id": "empty-domain-guesses-again",
-        "status": "NOT APPLIED",
-        "danger": "The empty-domain fallback would again return a data-derived category rather than the public domain \u2014 the exact critical defect fixed earlier in this project."
+        "status": "caught",
+        "path": "synthproof/data/profiler.py",
+        "danger": "The empty-domain fallback would again return a data-derived category rather than the public domain \u2014 the exact critical defect fixed earlier in this project.",
+        "tests": [
+          "tests/test_profiler_soundness.py",
+          "tests/test_data.py"
+        ],
+        "equivalent": ""
       },
       {
         "id": "identifier-check-never-fires",
@@ -1213,6 +1222,86 @@ export const DATA = {
         "tests": [
           "tests/test_steinke.py",
           "tests/test_subgroup_audit.py"
+        ],
+        "equivalent": ""
+      },
+      {
+        "id": "range-proved-not-audited",
+        "status": "caught",
+        "path": "synthproof/audit/ceiling.py",
+        "danger": "The range check would compare the audited epsilon against the ceiling instead of the proved epsilon, restoring the flaw where an uncertified claim is reported in-range.",
+        "tests": [
+          "tests/test_range_verdict.py",
+          "tests/test_capsule.py"
+        ],
+        "equivalent": ""
+      },
+      {
+        "id": "ceiling-mismatch-disabled",
+        "status": "caught",
+        "path": "synthproof/audit/ceiling.py",
+        "danger": "Fabricated or mismatched ceilings would go undetected, allowing invalid demo sheets to pass.",
+        "tests": [
+          "tests/test_range_verdict.py",
+          "tests/test_capsule.py"
+        ],
+        "equivalent": ""
+      },
+      {
+        "id": "ceiling-mismatch-tolerance-loosened",
+        "status": "caught",
+        "path": "synthproof/audit/ceiling.py",
+        "danger": "The ceiling mismatch tolerance would be loosened by 1000x, allowing tampered or drifted ceilings to escape detection.",
+        "tests": [
+          "tests/test_range_verdict.py",
+          "tests/test_capsule.py"
+        ],
+        "equivalent": ""
+      },
+      {
+        "id": "audit-exceeds-proof-not-flagged",
+        "status": "caught",
+        "path": "synthproof/audit/ceiling.py",
+        "danger": "An audit exceeding the proved upper bound would not be flagged as a contradiction, allowing mathematically impossible releases to pass.",
+        "tests": [
+          "tests/test_range_verdict.py",
+          "tests/test_capsule.py"
+        ],
+        "equivalent": ""
+      },
+      {
+        "id": "embedded-key-trusted",
+        "status": "caught",
+        "path": "synthproof/capsule/generator.py",
+        "danger": "A capsule verified against its embedded key would be reported as publisher-authenticated, recreating the self-signed key trust vulnerability.",
+        "tests": [
+          "tests/test_verify_key_trust.py",
+          "tests/test_capsule.py",
+          "tests/test_cli_commands.py"
+        ],
+        "equivalent": ""
+      },
+      {
+        "id": "key-source-swapped",
+        "status": "caught",
+        "path": "synthproof/capsule/generator.py",
+        "danger": "The reported key source would be inverted, reporting externally-supplied keys as embedded.",
+        "tests": [
+          "tests/test_verify_key_trust.py",
+          "tests/test_capsule.py",
+          "tests/test_cli_commands.py"
+        ],
+        "equivalent": ""
+      },
+      {
+        "id": "fingerprint-truncated",
+        "status": "caught",
+        "path": "synthproof/capsule/generator.py",
+        "danger": "The key fingerprint would be truncated to 8 characters instead of 16, increasing collision risk and violating the fingerprint specification.",
+        "tests": [
+          "tests/test_verify_key_trust.py",
+          "tests/test_capsule.py",
+          "tests/test_cli_commands.py"
         ],
         "equivalent": ""
       }

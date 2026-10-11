@@ -27,7 +27,7 @@ pytestmark = pytest.mark.skipif(
 def test_h1_table_reproduces_committed_adult_values():
     """Spot-checks against results/H1_RESULTS.md, which was written independently."""
     md = table_h1(load("h1_all_families.json"), "UCI Adult")
-    assert "0.0078" in md, "aim at eps=8 correlation error missing"
+    assert "0.0105" in md, "aim at eps=8 correlation error missing"
     assert "0.0947" in md, "independent at eps=8 correlation error missing"
     assert "0.660" in md, "TRTR baseline missing"
 

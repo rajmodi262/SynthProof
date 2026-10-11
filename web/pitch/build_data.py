@@ -92,7 +92,10 @@ def confound_block(rel: str) -> dict:
     return {
         "source": rel,
         "label": d["dataset_label"],
-        "confirmed": d["confound_confirmed"],
+        # The confound claim was retracted on 2026-09-04; the file keeps the old flag under
+        # `confound_confirmed_RETRACTED`. Never report a retracted claim as confirmed.
+        "confirmed": False if "confound_confirmed_RETRACTED" in d else d["confound_confirmed"],
+        "retracted": "confound_confirmed_RETRACTED" in d,
         "verdict": d["verdict"],
         "selectedPairs": c["selected_pairs"],
         "unselectedPairs": c["unselected_pairs"],
