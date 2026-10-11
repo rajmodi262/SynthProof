@@ -1,14 +1,14 @@
 {
   "manifest_version": 1,
-  "generated_at": "2026-09-12T15:34:29.253846+00:00",
+  "generated_at": "2026-10-11T16:01:17.988245+00:00",
   "git": {
-    "commit": "d66bad169e56b877017e5335253abb4882633b20",
-    "branch": "audit-fixes-and-acs",
+    "commit": "66d145dcb72c2476ed070f011b471ab250c1c24c",
+    "branch": "fix/brutal-audit",
     "dirty": true
   },
   "environment": {
     "python": "3.11.4",
-    "platform": "Windows-10-10.0.26200-SP0",
+    "platform": "Windows-10-10.0.26300-SP0",
     "machine": "AMD64"
   },
   "dependencies": {
@@ -53,6 +53,72 @@
           "corr_cols": [
             "AGEP",
             "WKHP"
+          ]
+        },
+        "bank": {
+          "target_col": "y",
+          "corr_cols": [
+            "age",
+            "balance"
+          ]
+        },
+        "diabetes": {
+          "target_col": "readmitted",
+          "corr_cols": [
+            "time_in_hospital",
+            "num_medications"
+          ]
+        },
+        "mushroom": {
+          "target_col": "target",
+          "corr_cols": [
+            "odor",
+            "gill_color",
+            "cap_color"
+          ]
+        },
+        "nursery": {
+          "target_col": "target",
+          "corr_cols": [
+            "health",
+            "parents",
+            "has_nurs"
+          ]
+        },
+        "german": {
+          "target_col": "target",
+          "corr_cols": [
+            "duration",
+            "credit_amount"
+          ]
+        },
+        "wine": {
+          "target_col": "quality",
+          "corr_cols": [
+            "total_sulfur_dioxide",
+            "free_sulfur_dioxide"
+          ]
+        },
+        "bcw": {
+          "target_col": "diagnosis",
+          "corr_cols": [
+            "radius",
+            "area"
+          ]
+        },
+        "texas": {
+          "target_col": "mortality_risk",
+          "corr_cols": [
+            "LENGTH_OF_STAY",
+            "TOTAL_CHARGES"
+          ]
+        },
+        "fire": {
+          "target_col": "als_unit",
+          "corr_cols": [
+            "call_type_group",
+            "priority",
+            "battalion"
           ]
         }
       }
@@ -148,8 +214,8 @@
     }
   },
   "files": {
-    "results/h1_all_families.json": "493d9cb1be21f6df6c6bc8f899f64794c2d37f6671a791f2c5fc1e0fe6e5402d",
-    "results/acs/h1_all_families.json": "e06bfa4b7bad80fee9deffbac08471d0c77289ad8bda1990bc43cf436c6d4d98",
+    "results/h1_all_families.json": "b222711fdcbf54dd2f7a52fd56283c5073cc9b054880673d9ef8bfb3de776837",
+    "results/acs/h1_all_families.json": "f4f217d903e5dab54f3cfea92a9bef0bb997db9af33eb38b0186b80b526b80a0",
     "results/h2_subgroups.json": "0072495d534915b91aea57fb1e7b93ad77d9b1d0f6f85342c1a9ac1d67066842",
     "results/h2_analysis.json": "5e34a97a732997a58feacfce2dbeb46bf93f792100395fb925ebd7669239e99c",
     "results/acs/h2_subgroups.json": "561c53c668554dfe361ddb4a9ce82ee76a2585c58c63ec89c60987ff690aefd0",
@@ -161,5 +227,5 @@
     "results/acs/fairness.json": "5e7cd30b364067e39fa5bf82a018a1dff84cd625d34f0e508cb4ec5783018843",
     "results/gdp_audit.json": "d59ffeb71eb13fb2e566966556a3b68d4a484c822dd5f90ebf475ff3754e3343"
   },
-  "manifest_hash": "d259e6b2a98b1240e5c91f357c9d3571dd5214204b80346cb6023193bc1cf800"
+  "manifest_hash": "7f63ab94912cbd8b5b6d3b3034fe32675c31f4dee2710a0dbe77a6f03253bd7e"
 }
