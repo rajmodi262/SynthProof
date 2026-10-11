@@ -16,13 +16,14 @@ Mechanism names now come from the same registry the experiments use, so a data s
 name an algorithm the code did not run.
 """
 
+import functools
 import hashlib
 import hmac
 import json
 import math
 import secrets
 from dataclasses import asdict, dataclass, field
-from typing import Dict, List, Optional, Sequence
+from typing import Callable, Dict, List, Optional, ParamSpec, Sequence, TypeVar
 
 import pandas as pd
 
@@ -32,6 +33,7 @@ from synthproof.accounting.differential import (
 from synthproof.accounting.differential import (
     enforce as enforce_accountant_agreement,  # `enforce` is taken by preflight
 )
+from synthproof.accounting.noise import exact_noise
 from synthproof.audit.ceiling import ceiling_for
 from synthproof.audit.steinke import DEFAULT_ALPHA
 from synthproof.data.dataset import TabularDataset
@@ -316,6 +318,26 @@ def fingerprint_key_id(key: bytes) -> str:
     return hashlib.sha256(b"synthproof-fingerprint-key-commitment\x00" + key).hexdigest()[:16]
 
 
+_P = ParamSpec("_P")
+_R = TypeVar("_R")
+
+
+def _with_exact_noise(fn: Callable[_P, _R]) -> Callable[_P, _R]:
+    """Runs a release with the exact-arithmetic CKS'20 samplers (accounting/noise.py).
+
+    A release is what leaves the curator, so it gets the sampler whose decisions involve no
+    floating point. The research grids call run_cell directly and keep the float sampler, so
+    their committed numbers stay reproducible.
+    """
+
+    @functools.wraps(fn)
+    def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _R:
+        with exact_noise():
+            return fn(*args, **kwargs)
+
+    return wrapper
+
+
 class FrontierEngine:
     """Sweeps epsilon and exports a Privacy Data Sheet."""
 
@@ -328,6 +350,7 @@ class FrontierEngine:
         # which is not the same as "the release was empty" -- callers must check.
         self.last_release: Optional[pd.DataFrame] = None
 
+    @_with_exact_noise
     def run_sweep(
         self,
         dataset: TabularDataset,

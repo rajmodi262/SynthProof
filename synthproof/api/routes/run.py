@@ -23,6 +23,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from synthproof.accounting.noise import exact_noise
 from synthproof.api import projection, state
 from synthproof.api.descriptions import (  # noqa: F401  (audit_ceiling re-exported for tests)
     MECHANISM_INFO,
@@ -165,21 +166,23 @@ def _run_stream(req: RunRequest) -> Iterator[str]:
 
     def worker():
         try:
-            res = run_cell(
-                ds,
-                req.mechanism,
-                req.target_eps,
-                seed=req.seed,
-                delta=req.delta,
-                num_canaries=req.num_canaries,
-                target_col=target_col,
-                corr_cols=corr_cols or None,
-                on_stage=lambda name, payload: events.put(("stage", name, payload)),
-                return_artifacts=True,
-                # `rows` is declared in the request, so the release size is public whatever the
-                # table's real length is (PUBLIC_RELEASE_BOUNDARY.md, D2).
-                release_rows=req.rows,
-            )
+            # A console release is a release: exact-arithmetic noise (accounting/noise.py).
+            with exact_noise():
+                res = run_cell(
+                    ds,
+                    req.mechanism,
+                    req.target_eps,
+                    seed=req.seed,
+                    delta=req.delta,
+                    num_canaries=req.num_canaries,
+                    target_col=target_col,
+                    corr_cols=corr_cols or None,
+                    on_stage=lambda name, payload: events.put(("stage", name, payload)),
+                    return_artifacts=True,
+                    # `rows` is declared in the request, so the release size is public whatever the
+                    # table's real length is (PUBLIC_RELEASE_BOUNDARY.md, D2).
+                    release_rows=req.rows,
+                )
             events.put(("result", "done", res))
         except Exception as exc:  # surfaced to the console rather than swallowed
             events.put(

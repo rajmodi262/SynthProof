@@ -7,16 +7,122 @@ Implements:
 
 SCOPE OF THE FLOATING-POINT CLAIM. Both samplers emit integers, which avoids the Mironov
 (2012) attack in its usual form — leakage through the output representation when a continuous
-sample is rounded. Neither is an exact-arithmetic implementation: the acceptance test and the
+sample is rounded. The DEFAULT samplers are not exact-arithmetic: the acceptance test and the
 underlying geometric draws use floating point. The distributions are correct (verified against
 the exact PMFs by chi-square), but an adversary observing the sampler at bit level or through
 timing is out of scope. `sample_discrete_gaussian` documents this in full.
+
+EXACT MODE (added 2026-10-12). `exact_noise()` switches both samplers to Canonne, Kamath &
+Steinke (2020) Algorithms 1-3 as specified: Bernoulli(exp(-gamma)) from rational arithmetic and
+integer draws only, no floating point anywhere in a decision. The noise parameters are converted
+to the EXACT rational value of the float they arrive as, so exact mode samples the discrete
+Gaussian / Laplace for precisely the scale the accountant charged. Release surfaces (CLI `run`,
+the API, the release builder) use it; the research grids keep the float sampler so committed
+numbers stay reproducible. It is slower, by design: an exact decision costs rational arithmetic.
 """
 
+import contextlib
 import math
-from typing import Optional
+import random
+from fractions import Fraction
+from typing import Iterator, Optional
 
 import numpy as np
+
+# Module-level switch, read on every call so a context manager can scope it to one release.
+_EXACT = False
+
+
+@contextlib.contextmanager
+def exact_noise(enabled: bool = True) -> Iterator[None]:
+    """Within this block, both samplers use the exact-arithmetic CKS'20 algorithms."""
+    global _EXACT
+    previous = _EXACT
+    _EXACT = enabled
+    try:
+        yield
+    finally:
+        _EXACT = previous
+
+
+def exact_noise_enabled() -> bool:
+    return _EXACT
+
+
+# ---------------------------------------------------------------- exact samplers (CKS'20)
+
+
+def _bernoulli(p: Fraction, rng: random.Random) -> int:
+    """Bernoulli(p) for rational p in [0, 1], from one integer draw."""
+    return int(rng.randrange(p.denominator) < p.numerator)
+
+
+def _bernoulli_exp_small(gamma: Fraction, rng: random.Random) -> int:
+    """Bernoulli(exp(-gamma)) for rational gamma in [0, 1] (CKS'20 Algorithm 1, first loop)."""
+    k = 1
+    while _bernoulli(gamma / k, rng):
+        k += 1
+    return k % 2
+
+
+def _bernoulli_exp(gamma: Fraction, rng: random.Random) -> int:
+    """Bernoulli(exp(-gamma)) for any rational gamma >= 0 (CKS'20 Algorithm 1)."""
+    while gamma > 1:
+        if not _bernoulli_exp_small(Fraction(1), rng):
+            return 0
+        gamma -= 1
+    return _bernoulli_exp_small(gamma, rng)
+
+
+def _discrete_laplace_exact(s: int, t: int, rng: random.Random) -> int:
+    """One draw from the discrete Laplace with scale t/s (CKS'20 Algorithm 2)."""
+    while True:
+        u = rng.randrange(t)
+        if not _bernoulli_exp(Fraction(u, t), rng):
+            continue
+        v = 0
+        while _bernoulli_exp(Fraction(1), rng):
+            v += 1
+        y = (u + t * v) // s
+        b = _bernoulli(Fraction(1, 2), rng)
+        if b and y == 0:
+            continue
+        return (1 - 2 * b) * y
+
+
+def _discrete_gaussian_exact(sigma_sq: Fraction, rng: random.Random) -> int:
+    """One draw from the discrete Gaussian with variance parameter sigma_sq (CKS'20 Alg. 3)."""
+    t = math.isqrt(sigma_sq.numerator // sigma_sq.denominator) + 1
+    while True:
+        y = _discrete_laplace_exact(1, t, rng)
+        gamma = (abs(y) - sigma_sq / t) ** 2 / (2 * sigma_sq)
+        if _bernoulli_exp(gamma, rng):
+            return y
+
+
+def sample_discrete_laplace_exact(
+    scale: float, size: int = 1, seed: Optional[int] = None
+) -> np.ndarray:
+    """Exact DLap(scale): mass proportional to exp(-|x| / scale), from integer draws only."""
+    if scale <= 0:
+        raise ValueError(f"Scale must be positive, got {scale}")
+    b = Fraction(scale)  # the exact value of the float, not a rounding of it
+    rng = random.Random(seed)
+    return np.array(
+        [_discrete_laplace_exact(b.denominator, b.numerator, rng) for _ in range(size)],
+        dtype=np.int64,
+    )
+
+
+def sample_discrete_gaussian_exact(
+    sigma: float, size: int = 1, seed: Optional[int] = None
+) -> np.ndarray:
+    """Exact N_Z(0, sigma^2), from rational arithmetic and integer draws only."""
+    if sigma <= 0:
+        raise ValueError(f"Sigma must be positive, got {sigma}")
+    sigma_sq = Fraction(sigma) ** 2
+    rng = random.Random(seed)
+    return np.array([_discrete_gaussian_exact(sigma_sq, rng) for _ in range(size)], dtype=np.int64)
 
 
 def sample_discrete_laplace(scale: float, size: int = 1, seed: Optional[int] = None) -> np.ndarray:
@@ -39,6 +145,8 @@ def sample_discrete_laplace(scale: float, size: int = 1, seed: Optional[int] = N
     """
     if scale <= 0:
         raise ValueError(f"Scale must be positive, got {scale}")
+    if _EXACT:
+        return sample_discrete_laplace_exact(scale, size=size, seed=seed)
 
     # Geometric parameter: p = 1 - exp(-1/b)
     p = 1.0 - math.exp(-1.0 / scale)
@@ -127,6 +235,8 @@ def sample_discrete_gaussian(sigma: float, size: int = 1, seed: Optional[int] = 
     """
     if sigma <= 0:
         raise ValueError(f"Sigma must be positive, got {sigma}")
+    if _EXACT:
+        return sample_discrete_gaussian_exact(sigma, size=size, seed=seed)
 
     sigma_sq = sigma * sigma
 
