@@ -61,8 +61,8 @@ USER synthproof
 EXPOSE 8000
 
 # NOTE: real AIM is NOT available in this image. private-pgm (`mbi`) installs from git and is
-# not in the dependency set, so the AIM mechanism is unregistered here and the console offers
-# only `independent` and `pairwise`. This is the same gap that hid real AIM from CI until
+# not in the dependency set, so AIM, MST and fixed_workload are unregistered here and the
+# console offers `independent`, `moments`, `pairwise` and `dpvae`. This is the same gap that hid real AIM from CI until
 # 2026-09-12. It is stated rather than silently tolerated; installing it requires a git
 # dependency in the image, which is a deliberate decision, not a default.
 CMD ["uvicorn", "synthproof.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

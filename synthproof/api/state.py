@@ -20,11 +20,33 @@ from fastapi import Header, HTTPException
 
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.schema import Schema
+from synthproof.ledger import signing
 from synthproof.ledger.ledger import Ledger
 from synthproof.ledger.types import LedgerEntry
 
 _LEDGER_DB = os.environ.get("SYNTHPROOF_LEDGER_DB", ":memory:")
-GLOBAL_LEDGER = Ledger(db_path=_LEDGER_DB)
+
+
+def _ledger_key(db_path: str):
+    """The key that signs the ledger head: ephemeral in memory, persistent on disk.
+
+    A file-backed ledger used to get a fresh in-memory key on every start, so after a restart
+    its stored head signature no longer verified and /api/health reported a broken ledger --
+    the persistent mode was unusable by construction. On disk the key now lives in
+    SYNTHPROOF_KEY_DIR, created once on first start and reused after that.
+    """
+    if db_path == ":memory:":
+        return None
+    key_path = signing.resolve_key_dir() / signing.PRIVATE_KEY_NAME
+    if not key_path.exists():
+        try:
+            signing.generate_keypair()
+        except FileExistsError:  # another worker created it first
+            pass
+    return signing.load_private_key(key_path)
+
+
+GLOBAL_LEDGER = Ledger(db_path=_LEDGER_DB, private_key=_ledger_key(_LEDGER_DB))
 
 # `/api/ledger/tamper` and `/api/ledger/reset` exist to demonstrate that the chain is
 # tamper-EVIDENT. They are destructive by design: one rewrites a spend, the other deletes the

@@ -16,6 +16,13 @@ services:
       # Unset by default so the local demo needs no configuration. /api/health reports
       # auth: "disabled" loudly when it is. One shared key is NOT user authentication.
       - SYNTHPROOF_API_KEY=${SYNTHPROOF_API_KEY:-}
+      # The volume below was mounted but nothing pointed at it: the API defaulted to an
+      # in-memory ledger, so the "durable" record reset on every restart. These put the ledger
+      # AND the key that signs its head on the volume (a ledger whose key changes on restart
+      # cannot verify its own head). A file-backed ledger disables the destructive tamper/reset
+      # demo endpoints by design; the live tamper demo runs on the local launcher.
+      - SYNTHPROOF_LEDGER_DB=/app/.synthproof/ledger.db
+      - SYNTHPROOF_KEY_DIR=/app/.synthproof/keys
     volumes:
       - ledger_data:/app/.synthproof
     restart: unless-stopped
