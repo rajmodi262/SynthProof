@@ -36,12 +36,14 @@ this release, together with the following.
   said that an audited ε of 0 is not evidence of no leakage. All restored.
 - **The boundary auditor** crashed on malformed fields and flagged an absent size as a leak.
 
-### Known gaps
-
-- The Docker image does not include private-PGM, so AIM, MST and fixed_workload are unavailable in
-  it.
-- The `@slow` end-to-end spec (a real release driven through the UI) passes locally in seconds but
-  has timed out on two-core GitHub runners in the weekly schedule.
+- **The console's demo presets only worked on the developer's machine**: the API looked for the
+  demo CSVs in a folder outside the repository, so a fresh clone, CI and the Docker image ran every
+  preset on the toy table. It now reads the repository's `demo_datasets/`, and a missing table is
+  reported instead of silently ignored. This was why the weekly `@slow` e2e spec timed out on CI.
+- **The Docker image** now builds private-PGM from the commit `requirements.lock` pins, so all seven
+  mechanisms (AIM, MST and fixed_workload included) are available in it, and it ships the demo
+  tables. Verified: an AIM release through the container's API, and the Compose ledger keeping and
+  verifying its head across a restart.
 
 ## Unreleased (folded into 1.2.0)
 

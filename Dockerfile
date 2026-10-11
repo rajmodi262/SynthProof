@@ -28,7 +28,7 @@ FROM python:3.11-slim AS wheels
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+    build-essential git \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml README.md /app/
@@ -36,17 +36,26 @@ COPY synthproof/ /app/synthproof/
 
 RUN pip wheel --no-cache-dir --wheel-dir /wheels .
 
+# private-PGM (`mbi`) has no PyPI release, so it is built from git -- pinned to the commit
+# requirements.lock records, the one every committed AIM/MST result was produced with. Without
+# it AIM, MST and fixed_workload are unregistered and the image cannot run the headline mechanism.
+ARG MBI_COMMIT=78df3419f271ac2c1fa7929aa7adc910a583084f
+RUN pip wheel --no-cache-dir --wheel-dir /wheels \
+    "mbi @ git+https://github.com/ryan112358/private-pgm.git@${MBI_COMMIT}"
+
 # ---------------------------------------------------------------- stage 3: the runtime
 FROM python:3.11-slim AS runtime
 
 WORKDIR /app
 
 COPY --from=wheels /wheels /wheels
-RUN pip install --no-cache-dir --no-index --find-links=/wheels synthproof \
+RUN pip install --no-cache-dir --no-index --find-links=/wheels synthproof mbi \
     && rm -rf /wheels
 
 COPY synthproof/ /app/synthproof/
 COPY scripts/ /app/scripts/
+# The console's demo presets read these. Without them every preset silently ran the toy table.
+COPY demo_datasets/ /app/demo_datasets/
 
 # The console, built in stage 1. Without this the container has an API and no UI.
 COPY --from=console /synthproof/api/console /app/synthproof/api/console
@@ -60,9 +69,6 @@ USER synthproof
 
 EXPOSE 8000
 
-# NOTE: real AIM is NOT available in this image. private-pgm (`mbi`) installs from git and is
-# not in the dependency set, so AIM, MST and fixed_workload are unregistered here and the
-# console offers `independent`, `moments`, `pairwise` and `dpvae`. This is the same gap that hid real AIM from CI until
-# 2026-09-12. It is stated rather than silently tolerated; installing it requires a git
-# dependency in the image, which is a deliberate decision, not a default.
+# All seven mechanisms are available, AIM, MST and fixed_workload included: private-PGM is
+# built in stage 2 from the commit requirements.lock pins.
 CMD ["uvicorn", "synthproof.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

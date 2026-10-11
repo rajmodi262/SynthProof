@@ -193,17 +193,29 @@ def _register_upload(upload_id: str, ds: TabularDataset) -> None:
 _DEMO_DATASETS: "Dict[str, TabularDataset]" = {}
 
 
+def demo_dataset_dirs() -> "list[Path]":
+    """Where the demo CSVs are looked for, in order.
+
+    The repository's own `demo_datasets/` comes first. It used to be absent from this list, which
+    only searched a `04_Demo_CSV_Datasets/` folder OUTSIDE the repository -- so in a fresh clone,
+    in CI and in the Docker image every console demo preset silently fell back to the toy table.
+    """
+    here = Path(__file__).resolve()
+    return [
+        here.parents[2] / "demo_datasets",
+        here.parents[3] / "04_Demo_CSV_Datasets",
+        here.parents[2] / "04_Demo_CSV_Datasets",
+        Path("demo_datasets"),
+        Path("04_Demo_CSV_Datasets"),
+        Path("../04_Demo_CSV_Datasets"),
+    ]
+
+
 def _init_demo_datasets() -> None:
     """Discovers and caches the pre-verified demo CSV datasets if present."""
     if _DEMO_DATASETS:
         return
-    possible_dirs = [
-        Path(__file__).resolve().parent.parent.parent.parent / "04_Demo_CSV_Datasets",
-        Path(__file__).resolve().parent.parent.parent / "04_Demo_CSV_Datasets",
-        Path("04_Demo_CSV_Datasets"),
-        Path("../04_Demo_CSV_Datasets"),
-    ]
-    for d in possible_dirs:
+    for d in demo_dataset_dirs():
         if d.is_dir():
             for p in sorted(d.glob("*.csv")):
                 try:

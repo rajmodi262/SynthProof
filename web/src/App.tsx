@@ -163,12 +163,19 @@ export default function App() {
     if (running) return
     const found = datasets.find((d) => d.id === preset.id || d.id.includes(preset.id.slice(3, 10)))
     if (found) {
+      setError(null)
       setConfig((c) => ({
         ...c,
         dataset: found.id,
         target_eps: preset.eps,
         rows: preset.rows,
       }))
+    } else {
+      // A missing table used to be a silent no-op: the click did nothing and the next run used
+      // whatever dataset was already selected, so a demo preset could run on the toy table.
+      setError(
+        `Demo table '${preset.id}' is not available on this server (expected in demo_datasets/).`,
+      )
     }
   }
 

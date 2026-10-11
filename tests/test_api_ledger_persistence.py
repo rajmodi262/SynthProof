@@ -39,3 +39,14 @@ def test_the_old_behaviour_fails_which_is_why_the_key_is_persisted(tmp_path):
 
 def test_an_in_memory_ledger_still_gets_an_ephemeral_key():
     assert _ledger_key(":memory:") is None
+
+
+def test_the_demo_presets_load_from_the_repository_itself():
+    # They were looked for only in a folder OUTSIDE the repository, so a fresh clone, CI and the
+    # Docker image ran every console demo preset on the toy table instead.
+    from synthproof.api import state
+
+    first = state.demo_dataset_dirs()[0]
+    assert first.name == "demo_datasets" and first.is_dir()
+    stems = {p.stem for p in first.glob("*.csv")}
+    assert {"01_healthcare_patient_outcomes", "04_hr_employee_attrition"} <= stems
