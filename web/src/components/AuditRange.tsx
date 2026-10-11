@@ -92,7 +92,7 @@ export function AuditRange({ measurements, audit, targetEps, onOpenExplainer }: 
           <span>0.0</span>
           {ceiling !== null && (
             <span style={{ marginLeft: `${ceilingPct! - 20}%` }} className="text-muted font-medium">
-              Ceiling: {ceiling.toFixed(2)}
+              Audit ceiling: {ceiling.toFixed(2)}
             </span>
           )}
           <span>{maxScale.toFixed(1)}</span>
@@ -122,6 +122,43 @@ export function AuditRange({ measurements, audit, targetEps, onOpenExplainer }: 
           </div>
         </div>
       </div>
+
+      {/* What the audited number can and cannot mean, stated in words with its values. The
+          redesign kept only the gauge and its tooltips, so an audited 0 appeared with nothing
+          saying it is not evidence of no leakage -- the "privacy theater" failure the
+          operating-range field exists to prevent. Restored from Readouts.tsx. */}
+      {measurements && ceiling !== null && (
+        <div className="mt-2.5 space-y-1.5 text-[11px] leading-relaxed text-muted">
+          <p>
+            <span className="font-mono text-ink">ε_audited = {audited.toFixed(3)}</span>
+            {audited === 0 ? (
+              <>
+                {' '}means the audit found no statistically significant leakage
+                {audit?.p_value !== undefined && audit?.p_value !== null
+                  ? ` (p = ${audit.p_value.toFixed(3)})`
+                  : ''}{' '}
+                — <strong className="font-medium text-ink">not</strong> that leakage is absent.
+              </>
+            ) : (
+              <> is a measured lower bound: privacy loss is at least this large.</>
+            )}
+          </p>
+          <p>
+            At this canary count the instrument cannot report above{' '}
+            <span className="font-mono text-ink">ε ≈ {ceiling.toFixed(2)}</span> (the audit
+            ceiling), even against a release that is 100% verbatim training data
+            {isExceeded ? (
+              <>
+                , which is below the proved bound of{' '}
+                <span className="font-mono text-ink">{proved.toFixed(2)}</span>. The gap is a
+                property of the measurement, not of the mechanism.
+              </>
+            ) : (
+              '.'
+            )}
+          </p>
+        </div>
+      )}
     </div>
   )
 }

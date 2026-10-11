@@ -271,7 +271,7 @@ test.describe('the full pipeline, through the UI @slow', () => {
     await page.getByText(/Run parameters/i).first().click()
     await page.locator('label:has-text("canary pairs") input').fill('4')
 
-    await page.getByRole('button', { name: /Synthesise & Audit Release/i }).first().click()
+    await page.getByRole('button', { name: /Run release & compute proof/i }).first().click()
 
     const abort = page.getByRole('button', { name: /Abort Verification Pipeline/i })
 
