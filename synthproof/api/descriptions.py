@@ -167,15 +167,16 @@ def _audit_payload(audit, num_canaries: int) -> dict:
     }
 
 
-# DOMIAS and attribute inference were listed here as unimplemented long after both shipped,
-# and `run_cell` was running DOMIAS the whole time. Only LiRA is genuinely absent, and that is
-# a decision rather than a gap.
+# Attacks NOT RUN on a release. DOMIAS and attribute inference were listed here long after both
+# shipped. LiRA is implemented (synthproof/attacks/lira.py, 2026-10-12) but is an offline audit,
+# not a per-release check: it needs K shadow releases plus C challenge releases per target.
 NOT_IMPLEMENTED_ATTACKS = [
     {
         "name": "LiRA",
         "reason": (
-            "Deliberately not implemented: ~21h of compute for a likely wide-CI null, and "
-            "naming a cheaper attack 'LiRA' would misreport what ran (audit finding F7)."
+            "Not run per release. Implemented as an offline audit (synthproof/attacks/lira.py, "
+            "scripts/run_lira.py): it needs K shadow + C challenge releases per target record, "
+            "so it audits a mechanism configuration rather than one release."
         ),
     },
 ]

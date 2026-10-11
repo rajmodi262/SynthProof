@@ -274,10 +274,10 @@ class PrivacyDataSheet:
 # What differential privacy does NOT cover. Stated in the sheet because a reader who sees only
 # an epsilon will reasonably assume it covers more than it does, and every item here has bitten
 # a real deployment.
-# LiRA is the only attack named here that does not exist, and its absence is deliberate: a
-# shadow-model attack is roughly 21 hours of compute for a likely wide-CI null, and calling
-# anything cheaper "LiRA" would repeat the naming failure audit finding F7 recorded. Anything
-# that IS implemented must never appear in this list -- see `attacks_run` below.
+# Attacks NOT RUN on this release. LiRA is implemented as an offline audit of a mechanism
+# configuration (synthproof/attacks/lira.py) -- it needs K shadow + C challenge releases per
+# target -- so it is never run inside one release. Anything a release DOES run must never appear
+# in this list -- see `attacks_run` below.
 ATTACKS_NOT_IMPLEMENTED = ["LiRA"]
 
 _RESIDUAL_RISK = [

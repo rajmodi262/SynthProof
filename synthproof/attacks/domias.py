@@ -7,7 +7,9 @@ WHY THIS ATTACK AND NOT LiRA. The synopsis promises four attacks; two existed an
 weak. LiRA (Carlini et al. 2022) is the strongest known membership attack, but it needs 64+
 shadow models — here, 64+ full synthesis runs — which is days of laptop compute for a result
 that is noisy on tabular data. DOMIAS is designed specifically for the synthetic-data setting,
-needs a single reference set, and costs one density estimate.
+needs a single reference set, and costs one density estimate. (LiRA was later implemented as
+an offline audit of a mechanism configuration, `attacks/lira.py`; DOMIAS stays the per-release
+density attack.)
 
 THE IDEA. A record is more likely to have been in the training set if the synthetic
 distribution assigns it *more* mass than the general population does. So score each target by
