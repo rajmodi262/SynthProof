@@ -1,6 +1,49 @@
 # Changelog
 
-## Unreleased
+## 1.2.0 — 2026-10-12
+
+Everything under "Unreleased" below (the September release-boundary and accounting fixes) ships in
+this release, together with the following.
+
+### Added
+
+- **`boundary-audit`** — an artefact-only checker for what a release discloses outside its epsilon
+  (RB0 signature, RB1–RB10 single-table channels, RB11–RB14 multi-table checks). It recomposes ε
+  from the sheet's signed `mechanism_events` with both accountants rather than trusting a typed
+  verdict.
+- **MST** (maximum spanning tree over private-PGM) as a fourth marginal mechanism, and a GDP audit
+  that reports an informative μ where the canary audit gives zero.
+- **Eight more benchmarks**: UCI Diabetes 130, Mushroom, Nursery, German Credit, Wine Quality,
+  Breast Cancer Wisconsin, Texas Hospital Discharge and SF Fire, with categorical-aware evaluation
+  and full-data grids.
+- **The imputation audit** (arms A0–A4_CHARGED) and its preregistration.
+- **`--target` on `synthproof run`**, `target` on the API: the column the utility evaluation
+  predicts.
+
+### Fixed — 2026-10 review
+
+- **Imputation arms under-charged ε**: A3's noisy sum assumed sensitivity (upper − lower) while
+  summing raw values; A3 drew candidates from the data; A4_CHARGED needed Laplace(2/ε). Fixed, and
+  all 42 affected cells re-run; the null still holds.
+- **H1 adopts the D1 re-run**: Adult AIM correlation error at ε = 8 is 0.0105, and AIM and pairwise
+  **no longer separate**. Every document that claimed three mutually separated families is
+  corrected.
+- **Utility was scored on the first categorical column**, the wrong target on every bundled demo
+  table. The default is now `income`, else the last categorical column.
+- **A file-backed API ledger failed verification after a restart** (fresh key per start); its key
+  now persists, and docker-compose points the ledger at its volume.
+- **The console** hid its demo presets below 1536 px, dropped the refusal warning, and no longer
+  said that an audited ε of 0 is not evidence of no leakage. All restored.
+- **The boundary auditor** crashed on malformed fields and flagged an absent size as a leak.
+
+### Known gaps
+
+- The Docker image does not include private-PGM, so AIM, MST and fixed_workload are unavailable in
+  it.
+- The `@slow` end-to-end spec (a real release driven through the UI) passes locally in seconds but
+  has timed out on two-core GitHub runners in the weekly schedule.
+
+## Unreleased (folded into 1.2.0)
 
 ### Fixed — privacy (self-found, 2026-09-14)
 
