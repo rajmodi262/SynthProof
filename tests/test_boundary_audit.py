@@ -373,3 +373,29 @@ def test_the_signature_is_checked_first_when_a_key_is_given(keys, tmp_path):
     assert not bad.passed
     unchecked = boundary.audit_release(sheet)
     assert unchecked.findings[0].severity == boundary.UNVERIFIABLE
+
+
+# ------------------------------------------------------------- malformed artefacts (2026-10-11)
+# The checker reads untrusted files. A malformed field must become a finding, never a crash, and an
+# absent field must not be reported as a disclosure.
+
+
+def _rb(sheet, code):
+    return [f for f in boundary.audit_sheet(sheet).findings if f.code == code]
+
+
+def test_a_sheet_with_no_size_at_all_has_no_size_channel():
+    assert _rb({"domain_source": "declared"}, "RB2") == []
+
+
+def test_a_non_numeric_count_epsilon_is_a_finding_not_a_crash():
+    sheet = {"num_rows": 100, "release_rows_source": "dp_count", "release_rows_eps": "0.1"}
+    (finding,) = _rb(sheet, "RB2")
+    assert finding.severity == boundary.LEAK
+
+
+def test_an_event_list_without_delta_is_unverifiable_not_infinite():
+    events = [{"name": "gaussian", "sensitivity": 1.0, "noise_scale": 5.0, "steps": 1}]
+    (finding,) = _rb({"mechanism_events": events, "total_proved_eps": 1.0}, "RB5")
+    assert finding.severity == boundary.UNVERIFIABLE
+    assert "delta" in finding.finding

@@ -93,6 +93,17 @@ class BoundaryReport:
 # --------------------------------------------------------------------------- the checks
 
 
+def _number(value: Any) -> Optional[float]:
+    """A sheet field as a float, or None when it is absent or not a number.
+
+    The checker reads untrusted artefacts, so a malformed field must become a finding, never a
+    crash. bool is excluded: JSON true is not an epsilon.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    return float(value)
+
+
 def _seed(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
     seed = sheet.get("seed")
     if seed is None:
@@ -126,6 +137,8 @@ def _seed(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
 def _row_count(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
     n = sheet.get("num_rows")
     source = sheet.get("release_rows_source")
+    if n is None and source is None:
+        return []  # no size is published, so there is no size channel to check
     if source in (None, "unknown"):
         return [
             BoundaryFinding(
@@ -141,7 +154,7 @@ def _row_count(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
             )
         ]
     if source == "dp_count":
-        cost = sheet.get("release_rows_eps") or 0.0
+        cost = _number(sheet.get("release_rows_eps")) or 0.0
         if cost <= 0:
             return [
                 BoundaryFinding(
@@ -335,7 +348,19 @@ def _recompute_epsilon(sheet: Mapping[str, Any]) -> Optional[List[BoundaryFindin
     from synthproof.accounting.differential import cross_check_spends
     from synthproof.accounting.types import MechanismSpec
 
-    delta = float(sheet.get("delta") or 0.0)
+    delta = _number(sheet.get("delta"))
+    if delta is None or not (0.0 < delta < 1.0):
+        return [
+            BoundaryFinding(
+                "RB5",
+                UNVERIFIABLE,
+                "delta",
+                f"The sheet carries an event list but no usable delta ({sheet.get('delta')!r}).",
+                "An (epsilon, delta) guarantee cannot be recomposed without its delta, so the "
+                "published epsilon cannot be checked from the artefact.",
+                "Publish delta in (0, 1) alongside mechanism_events.",
+            )
+        ]
     try:
         acct = Accountant(budget_eps=float("inf"), budget_delta=delta)
         for ev in events:
@@ -359,7 +384,7 @@ def _recompute_epsilon(sheet: Mapping[str, Any]) -> Optional[List[BoundaryFindin
                 "Publish a well-formed event list: name, sensitivity, noise_scale, steps.",
             )
         ]
-    recomputed = acct.total() + float(sheet.get("release_rows_eps") or 0.0)
+    recomputed = acct.total() + (_number(sheet.get("release_rows_eps")) or 0.0)
     claimed = sheet.get("total_proved_eps")
     if not isinstance(claimed, (int, float)) or recomputed > float(claimed) * (1 + 1e-6) + 1e-9:
         return [
@@ -499,6 +524,7 @@ def _public_invariants(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
     inv = sheet.get("public_invariants")
     if not inv:
         return []
+    items: List[Mapping[str, Any]]
     if isinstance(inv, Mapping):
         items = [{"name": k, "basis": v} for k, v in inv.items()]
     elif isinstance(inv, (list, tuple)):
@@ -945,7 +971,9 @@ def audit_release(document: Mapping[str, Any], public_key_path=None) -> Boundary
         report = audit_croissant(document)
     else:
         report = audit_sheet(document)
-    return BoundaryReport(report.artefact, [_signature(document, public_key_path), *report.findings])
+    return BoundaryReport(
+        report.artefact, [_signature(document, public_key_path), *report.findings]
+    )
 
 
 def render(report: BoundaryReport, width: Optional[int] = 96) -> str:
