@@ -28,6 +28,15 @@ from synthproof.data.schema import CATEGORICAL, NUMERICAL, Schema
 MISSING_CATEGORY_LABEL = "__MISSING__"
 
 
+def bounded_shifted_sum(values: np.ndarray, lo: float, hi: float) -> float:
+    """Sum of (clip(v, lo, hi) - lo): each record contributes [0, hi - lo].
+
+    Its add/remove-one sensitivity is therefore exactly hi - lo, the sensitivity the DP sum in
+    arm A3 is charged at. A raw sum of clipped values has sensitivity max(|lo|, |hi|) instead.
+    """
+    return float(np.sum(np.clip(np.asarray(values, dtype=float), lo, hi) - lo))
+
+
 def complete_case_drop(df: pd.DataFrame) -> pd.DataFrame:
     """Arm A0: Drops all rows containing any missing value.
 
@@ -69,7 +78,9 @@ def uncharged_impute(df: pd.DataFrame, schema: Schema) -> pd.DataFrame:
     """Arm A2: Imputes using empirical private statistics without privacy budget accounting.
 
     - Categoricals: filled with the empirical mode of the private column.
-    - Numericals: filled with the empirical median of the private column.
+    - Numericals: filled with the empirical mean of the private column (clipped to the public
+      bounds). The MEAN, not the median, so A2 and A3 use the same estimator and differ only in
+      whether it is noised and charged, as the preregistration requires.
     This reads private row values across records without charging any DP budget.
     """
     out = df.copy()
@@ -85,14 +96,16 @@ def uncharged_impute(df: pd.DataFrame, schema: Schema) -> pd.DataFrame:
             mode_val = modes.iloc[0] if len(modes) > 0 else MISSING_CATEGORY_LABEL
             out[col] = out[col].fillna(mode_val)
         elif col_spec.kind == NUMERICAL:
-            med_val = float(out[col].median(skipna=True))
-            if np.isnan(med_val):
-                med_val = (
-                    (col_spec.lower + col_spec.upper) / 2.0
-                    if col_spec.lower is not None and col_spec.upper is not None
-                    else 0.0
-                )
-            out[col] = out[col].fillna(med_val)
+            vals = out[col].dropna().to_numpy(dtype=float)
+            if col_spec.lower is not None and col_spec.upper is not None:
+                vals = np.clip(vals, col_spec.lower, col_spec.upper)
+            if len(vals):
+                mean_val = float(vals.mean())
+            elif col_spec.lower is not None and col_spec.upper is not None:
+                mean_val = (col_spec.lower + col_spec.upper) / 2.0
+            else:
+                mean_val = 0.0
+            out[col] = out[col].fillna(mean_val)
 
     return out
 
@@ -106,11 +119,15 @@ def dp_charged_impute(
 ) -> pd.DataFrame:
     """Arm A3: Imputes using private statistics perturbed by DP noise and charged to Accountant.
 
-    - Categoricals: DP mode via Report-Noisy-Max over candidate categories.
-      Sensitivity = 1.0; noise scale = 1.0 / eps_col.
-    - Numericals: DP mean bounded within schema bounds [lower, upper].
-      Sensitivity of sum = (upper - lower); Sensitivity of count = 1.0.
-      Budget split equally (eps_col / 2 for sum, eps_col / 2 for count).
+    - Categoricals: DP mode via Report-Noisy-Max over the DECLARED categories only.
+      Sensitivity = 1.0; noise scale = 1.0 / eps_col. A candidate set read off the data would
+      make the output space data-dependent (a value only one record holds could be released);
+      a column with no declared domain falls back to the public sentinel, at no charge.
+    - Numericals: DP mean bounded within schema bounds [lower, upper]. The noisy sum is over
+      (value - lower), which lies in [0, upper - lower], so its add/remove-one sensitivity is
+      exactly (upper - lower). Summing raw values instead has sensitivity max(|lower|, |upper|),
+      which the earlier version under-charged (age in [15, 100]: 100, charged as 85).
+      Sensitivity of count = 1.0. Budget split equally (eps_col / 2 for sum and for count).
     """
     if eps_imp <= 0:
         raise ValueError(f"eps_imp must be positive, got {eps_imp}")
@@ -132,12 +149,13 @@ def dp_charged_impute(
         col_seed = int(rng.integers(0, 2**31 - 1))
 
         if col_spec.kind == CATEGORICAL:
-            # Candidate categories: schema categories or observed unique non-null values
-            declared = col_spec.categories or []
-            observed = list(out[col].dropna().unique())
-            candidates: List[str] = sorted(list(set(str(c) for c in declared + observed)))
+            # Candidates come from the PUBLIC schema only, never from the observed values.
+            candidates: List[str] = [str(c) for c in (col_spec.categories or [])]
             if not candidates:
-                candidates = [MISSING_CATEGORY_LABEL]
+                # No declared domain: there is no private way to choose a category, so use the
+                # public sentinel and charge nothing.
+                out[col] = out[col].fillna(MISSING_CATEGORY_LABEL)
+                continue
 
             # Empirical counts
             counts = out[col].value_counts()
@@ -193,7 +211,7 @@ def dp_charged_impute(
                 run_id=f"impute_dp_count_{col}",
             )
 
-            valid_vals = np.clip(out[col].dropna().to_numpy(dtype=float), lo, hi)
+            valid_vals = out[col].dropna().to_numpy(dtype=float)
             sum_seed = int(rng.integers(0, 2**31 - 1))
             count_seed = int(rng.integers(0, 2**31 - 1))
 
@@ -202,24 +220,43 @@ def dp_charged_impute(
                 sample_discrete_laplace(scale=count_scale, size=1, seed=count_seed)[0]
             )
 
-            dp_sum = float(np.sum(valid_vals)) + noise_sum
+            # Shifted by the public lower bound so each record contributes [0, width].
+            dp_shifted_sum = bounded_shifted_sum(valid_vals, lo, hi) + noise_sum
             dp_count = max(1.0, float(len(valid_vals)) + noise_count)
 
-            dp_mean = float(np.clip(dp_sum / dp_count, lo, hi))
+            dp_mean = float(np.clip(lo + dp_shifted_sum / dp_count, lo, hi))
             out[col] = out[col].fillna(dp_mean)
 
     return out
 
 
-def _prepare_distance_features(df: pd.DataFrame, schema: Schema) -> np.ndarray:
-    """Builds a standardized [0, 1] feature matrix for k-NN distance computation."""
+def _prepare_distance_features(
+    df: pd.DataFrame, schema: Schema, public_fill: bool = False
+) -> np.ndarray:
+    """Builds a standardized [0, 1] feature matrix for k-NN distance computation.
+
+    Missing cells are filled before distances are taken. `public_fill=False` (arm A4) fills
+    with the column's empirical mode/median, an uncharged read of the data. `public_fill=True`
+    (arm A4_CHARGED) fills with the public schema midpoint / first declared category, so the
+    charged arm reads no uncharged statistic.
+    """
     coarse_df = df.copy()
     for col_spec in schema.columns:
         c = col_spec.name
         if c not in coarse_df.columns:
             continue
         if coarse_df[c].isna().sum() > 0:
-            if col_spec.kind == CATEGORICAL:
+            if public_fill:
+                if col_spec.kind == CATEGORICAL:
+                    fill = col_spec.categories[0] if col_spec.categories else "missing"
+                else:
+                    fill = (
+                        (col_spec.lower + col_spec.upper) / 2.0
+                        if col_spec.lower is not None and col_spec.upper is not None
+                        else 0.0
+                    )
+                coarse_df[c] = coarse_df[c].fillna(fill)
+            elif col_spec.kind == CATEGORICAL:
                 m = coarse_df[c].mode(dropna=True)
                 cat_val = (
                     m.iloc[0]
@@ -324,13 +361,19 @@ def dp_charged_knn_impute(
     k: int = 5,
     seed: int = 42,
 ) -> pd.DataFrame:
-    """Arm A4_CHARGED: DP-charged cross-record k-nearest-neighbors imputation.
+    """Arm A4_CHARGED: budget-debited cross-record k-nearest-neighbors imputation.
 
-    Uses identical k-NN neighbor pooling as Arm A4, but with calibrated Laplace noise
-    and formal accounting:
-    - Categoricals: Report-Noisy-Max over candidate categories from neighbor votes.
-    - Numericals: Bounded Laplace perturbation on neighbor mean.
-    - Budget formally debited from `Accountant`.
+    Uses the same k-NN neighbor pooling as Arm A4, with Laplace noise debited to `Accountant`:
+    - Categoricals: Report-Noisy-Max over the DECLARED categories from neighbor votes. Removing
+      one record can drop its vote AND pull the (k+1)-th neighbour into the set, so a vote
+      vector changes in two coordinates; Report-Noisy-Max then needs Laplace(2/eps), not 1/eps.
+    - Numericals: Laplace perturbation of the neighbour sum (a swap moves it by at most width).
+    - Distances use public fills (`public_fill=True`), never an uncharged mode/median.
+
+    NOT A PROVEN DP MECHANISM, stated rather than implied. The per-query epsilon divides the
+    column budget by the number of missing cells, which is itself a private count, so the noise
+    scale is data-dependent. Read A4_CHARGED as a budget-debited heuristic comparator for A4,
+    not as a formally private baseline.
     """
     if eps_imp <= 0:
         raise ValueError(f"eps_imp must be positive, got {eps_imp}")
@@ -343,7 +386,7 @@ def dp_charged_knn_impute(
         return out
 
     k_eff = min(k, len(out) - 1)
-    x_mat = _prepare_distance_features(df, schema)
+    x_mat = _prepare_distance_features(df, schema, public_fill=True)
     nn = NearestNeighbors(n_neighbors=k_eff + 1, metric="euclidean").fit(x_mat)
     _, indices = nn.kneighbors(x_mat)
 
@@ -357,17 +400,17 @@ def dp_charged_knn_impute(
         eps_per_query = eps_per_col / max(1, n_missing)
 
         if col_spec.kind == CATEGORICAL:
-            declared = col_spec.categories or []
-            observed = list(out[col].dropna().unique())
-            candidates = sorted(list(set(str(c) for c in declared + observed)))
+            candidates = [str(c) for c in (col_spec.categories or [])]
             if not candidates:
-                candidates = [MISSING_CATEGORY_LABEL]
+                out[col] = out[col].fillna(MISSING_CATEGORY_LABEL)
+                continue
 
-            noise_scale = 1.0 / eps_per_query
+            # Two coordinates can move by one each (see the docstring): Laplace(2 / eps).
+            noise_scale = 2.0 / eps_per_query
             accountant.charge(
                 MechanismSpec(
                     name="laplace",
-                    sensitivity=1.0,
+                    sensitivity=2.0,
                     noise_scale=noise_scale,
                     steps=n_missing,
                     metadata={"column": col, "mechanism": "dp_knn_report_noisy_max", "k": k_eff},

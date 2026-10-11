@@ -7,6 +7,7 @@ import pytest
 from synthproof.accounting.accountant import Accountant
 from synthproof.data.imputation import (
     MISSING_CATEGORY_LABEL,
+    bounded_shifted_sum,
     complete_case_drop,
     dp_charged_impute,
     dp_charged_knn_impute,
@@ -103,8 +104,8 @@ def test_uncharged_impute(toy_data_with_missing, toy_schema):
     # Mode of city: paris (count=4), tokyo (count=2), nyc (count=2) -> paris
     assert imputed.loc[2, "city"] == "paris"
 
-    # Median of age: [25, 45, 30, 60, 70, 35, 50, 40] -> median is 42.5
-    assert imputed.loc[1, "age"] == 42.5
+    # Mean of age (the same estimator as A3): [25, 45, 30, 60, 70, 35, 50, 40] -> 44.375
+    assert imputed.loc[1, "age"] == pytest.approx(44.375)
 
 
 def test_dp_charged_impute(toy_data_with_missing, toy_schema):
@@ -130,6 +131,45 @@ def test_dp_charged_impute(toy_data_with_missing, toy_schema):
     # Numerical imputed values must fall strictly within bounds
     assert toy_schema["age"].lower <= imputed["age"].min()
     assert imputed["age"].max() <= toy_schema["age"].upper
+
+
+def test_a3_sum_sensitivity_is_the_width_it_is_charged_at():
+    # Under add/remove-one the noisy sum moves by at most the charged sensitivity (upper - lower).
+    # A raw sum of clipped values moves by up to max(|lower|, |upper|): 100 here, charged as 85.
+    lo, hi = 15.0, 100.0
+    base = np.array([20.0, 40.0, 60.0])
+    worst = max(
+        abs(bounded_shifted_sum(np.append(base, x), lo, hi) - bounded_shifted_sum(base, lo, hi))
+        for x in (lo, hi, 50.0, 1e6, -1e6)
+    )
+    assert worst <= hi - lo
+
+
+def test_a3_categorical_never_releases_an_undeclared_value(toy_schema):
+    # "zzz" is the most common observed job but is not in the declared domain. A candidate set
+    # read off the data would release it; the declared-only set cannot.
+    df = pd.DataFrame(
+        {
+            "age": [30.0] * 8,
+            "income": [100.0] * 8,
+            "job": ["zzz"] * 5 + ["doctor", np.nan, np.nan],
+            "city": ["paris"] * 8,
+        }
+    )
+    for seed in range(5):
+        acc = Accountant(budget_eps=1000.0, budget_delta=1e-5)
+        out = dp_charged_impute(df, toy_schema, accountant=acc, eps_imp=500.0, seed=seed)
+        assert set(out.loc[[6, 7], "job"]) <= set(toy_schema["job"].categories)
+
+
+def test_a4_charged_votes_use_laplace_two_over_eps(toy_data_with_missing, toy_schema):
+    acc = Accountant(budget_eps=10.0, budget_delta=1e-5)
+    dp_charged_knn_impute(toy_data_with_missing, toy_schema, accountant=acc, eps_imp=0.4, k=3)
+    votes = [s.mechanism for s in acc.spends if s.mechanism.metadata.get("column") == "job"]
+    assert len(votes) == 1
+    n_missing = int(toy_data_with_missing["job"].isna().sum())
+    eps_per_query = 0.4 / 4 / n_missing  # 4 columns have missing cells
+    assert votes[0].noise_scale == pytest.approx(2.0 / eps_per_query)
 
 
 def test_knn_impute(toy_data_with_missing, toy_schema):
