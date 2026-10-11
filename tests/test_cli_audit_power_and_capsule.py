@@ -181,7 +181,9 @@ def sheet_and_data(tmp_path, monkeypatch):
     assert _invoke("keygen", "--key-dir", str(tmp_path / "keys")).exit_code == 0
 
     rng = np.random.default_rng(0)
-    n = 600
+    # 1,500, not 600-800: `run` without --release-rows sizes the release by a noisy count
+    # (scale 50 rows at eps=1), and 600 rows fell under the 500-row floor ~7% of runs.
+    n = 1500
     src = tmp_path / "in.csv"
     pd.DataFrame(
         {

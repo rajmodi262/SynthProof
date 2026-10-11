@@ -80,9 +80,11 @@ def test_uniform_allocation_never_overspends_the_total():
 
 @pytest.fixture()
 def small_csv(tmp_path):
-    """A table above the 500-row pre-flight floor, so `run` reaches the code under test."""
+    """A table well above the 500-row pre-flight floor, so `run` reaches the code under test."""
     rng = np.random.default_rng(0)
-    n = 600
+    # 1,500, not 600-800: `run` without --release-rows sizes the release by a noisy count
+    # (scale 50 rows at eps=1), and 600 rows fell under the 500-row floor ~7% of runs.
+    n = 1500
     p = tmp_path / "in.csv"
     pd.DataFrame(
         {

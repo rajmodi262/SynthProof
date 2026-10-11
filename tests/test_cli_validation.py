@@ -19,7 +19,9 @@ def csv(tmp_path):
     # control; a table below the floor is refused before epsilon is ever used, which would make
     # them test the wrong thing. Admission control has its own tests in tests/test_preflight.py.
     rng = np.random.default_rng(0)
-    n = 800
+    # 1,500, not 600-800: `run` without --release-rows sizes the release by a noisy count
+    # (scale 50 rows at eps=1), and 600 rows fell under the 500-row floor ~7% of runs.
+    n = 1500
     p = tmp_path / "t.csv"
     pd.DataFrame(
         {

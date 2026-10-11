@@ -33,7 +33,9 @@ def keys(tmp_path, monkeypatch):
 def signed(tmp_path, keys):
     """A real signed data sheet, produced through the CLI rather than constructed."""
     rng = np.random.default_rng(0)
-    n = 800
+    # 1,500, not 600-800: `run` without --release-rows sizes the release by a noisy count
+    # (scale 50 rows at eps=1), and 600 rows fell under the 500-row floor ~7% of runs.
+    n = 1500
     csv = tmp_path / "in.csv"
     pd.DataFrame(
         {
@@ -174,7 +176,9 @@ def test_verify_rejects_a_sheet_signed_by_a_different_key(signed, tmp_path):
 def test_verify_rejects_an_unsigned_sheet(tmp_path, keys):
     """An unsigned sheet is a record, not a proof, and must not pass."""
     rng = np.random.default_rng(1)
-    n = 800
+    # 1,500, not 600-800: `run` without --release-rows sizes the release by a noisy count
+    # (scale 50 rows at eps=1), and 600 rows fell under the 500-row floor ~7% of runs.
+    n = 1500
     csv = tmp_path / "u.csv"
     pd.DataFrame({"age": rng.integers(18, 90, n), "grp": rng.choice(list("abcd"), n)}).to_csv(
         csv, index=False
