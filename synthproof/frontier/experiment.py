@@ -505,8 +505,8 @@ def run_cell(
     # The distance MIA counts categorical mismatches (audit C3), so it runs on every table.
     # DOMIAS still needs a numeric column for its density estimate; on an all-categorical
     # release (Mushroom, Nursery) it is reported as NOT APPLICABLE, never as a passed attack,
-    # the same rule linkability follows. Attribute inference and singling-out below are set-based and still
-    # run, so an all-categorical cell is not left with zero privacy evidence.
+    # the same rule linkability follows. Attribute inference and singling-out below are
+    # set-based and still run, so an all-categorical cell is not left with zero privacy evidence.
     try:
         mia = DistanceMIABaseline(seed=eval_seed, max_records=400).evaluate(
             audit_synth, train_df=fit_ds.df, test_df=holdout_df

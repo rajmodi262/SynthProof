@@ -262,10 +262,11 @@ export default function App() {
             </button>
           </div>
 
-          {/* Presets (Desktop) */}
-          <div className="hidden 2xl:flex items-center gap-1">
+          {/* Presets (Desktop). xl, not 2xl: at 2xl they vanished below 1536 px, which is most
+              laptops -- including the one the viva demo runs on and the e2e viewport. */}
+          <div className="hidden xl:flex items-center gap-1">
             <span className="font-mono text-[10px] uppercase tracking-wider text-faint mr-1">
-              Presets:
+              Demo Presets:
             </span>
             {DEMO_PRESETS.map((p) => {
               const active = config.dataset === p.id || config.dataset.includes(p.id.slice(3, 10))
@@ -275,6 +276,13 @@ export default function App() {
                   type="button"
                   onClick={() => selectPreset(p)}
                   disabled={running}
+                  // The refusal preset must say it will be refused BEFORE it is clicked: an
+                  // earlier "Viva Quick" button promised a run and produced a refusal.
+                  title={
+                    p.refuses
+                      ? 'Expected to be REFUSED: 400 rows is below the 500-row floor. Demonstrates data-blind refusal — pre-flight sees only the schema and the row count, never the data.'
+                      : `${p.rows} rows at eps=${p.eps}`
+                  }
                   className={`rounded-full px-2 py-0.5 font-mono text-[10px] font-medium transition-all ${
                     active
                       ? p.refuses
@@ -302,6 +310,7 @@ export default function App() {
             <button
               onClick={() => setVerifierOpen(true)}
               className="btn-brass !px-2.5 !py-1 !text-xs font-mono"
+              aria-label="Open the Zero-Trust Verifier"
             >
               <span>🛡️ Verifier</span>
             </button>
