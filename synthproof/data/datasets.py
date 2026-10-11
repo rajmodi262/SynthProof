@@ -636,7 +636,9 @@ def german_credit_schema() -> Schema:
     numeric/categorical finance table; target 1=good, 2=bad -> mapped to good/bad."""
     return Schema(
         columns=[
-            ColumnSpec("duration", NUMERICAL, lower=0.0, upper=80.0),  # was the observed max 72 (C2)
+            ColumnSpec(
+                "duration", NUMERICAL, lower=0.0, upper=80.0
+            ),  # was the observed max 72 (C2)
             ColumnSpec("credit_amount", NUMERICAL, lower=0.0, upper=20000.0),
             ColumnSpec("age", NUMERICAL, lower=18.0, upper=80.0),
             ColumnSpec("installment_rate", NUMERICAL, lower=1.0, upper=4.0),
@@ -777,18 +779,20 @@ def texas_schema() -> Schema:
     Numeric bounds are public clips: a stay of at most a year, charges capped at $1M. Target:
     high in-hospital mortality risk (APR-DRG risk 3-4 = major/extreme) vs low (1-2).
     """
-    return Schema(columns=[
-        ColumnSpec("TYPE_OF_ADMISSION", CATEGORICAL, categories=["1", "2", "3", "4", "5", "9"]),
-        ColumnSpec("SEX_CODE", CATEGORICAL, categories=["F", "M"]),
-        ColumnSpec("RACE", CATEGORICAL, categories=["1", "2", "3", "4", "5"]),
-        ColumnSpec("ETHNICITY", CATEGORICAL, categories=["1", "2"]),
-        ColumnSpec("PAT_AGE", CATEGORICAL, categories=[f"{i:02d}" for i in range(22)]),
-        ColumnSpec("ADMIT_WEEKDAY", CATEGORICAL, categories=[str(i) for i in range(1, 8)]),
-        ColumnSpec("ILLNESS_SEVERITY", CATEGORICAL, categories=["1", "2", "3", "4"]),
-        ColumnSpec("LENGTH_OF_STAY", NUMERICAL, lower=1.0, upper=365.0),
-        ColumnSpec("TOTAL_CHARGES", NUMERICAL, lower=0.0, upper=1000000.0),
-        ColumnSpec("mortality_risk", CATEGORICAL, categories=["low", "high"]),
-    ])
+    return Schema(
+        columns=[
+            ColumnSpec("TYPE_OF_ADMISSION", CATEGORICAL, categories=["1", "2", "3", "4", "5", "9"]),
+            ColumnSpec("SEX_CODE", CATEGORICAL, categories=["F", "M"]),
+            ColumnSpec("RACE", CATEGORICAL, categories=["1", "2", "3", "4", "5"]),
+            ColumnSpec("ETHNICITY", CATEGORICAL, categories=["1", "2"]),
+            ColumnSpec("PAT_AGE", CATEGORICAL, categories=[f"{i:02d}" for i in range(22)]),
+            ColumnSpec("ADMIT_WEEKDAY", CATEGORICAL, categories=[str(i) for i in range(1, 8)]),
+            ColumnSpec("ILLNESS_SEVERITY", CATEGORICAL, categories=["1", "2", "3", "4"]),
+            ColumnSpec("LENGTH_OF_STAY", NUMERICAL, lower=1.0, upper=365.0),
+            ColumnSpec("TOTAL_CHARGES", NUMERICAL, lower=0.0, upper=1000000.0),
+            ColumnSpec("mortality_risk", CATEGORICAL, categories=["low", "high"]),
+        ]
+    )
 
 
 def load_texas(data_dir: str = DEFAULT_DATA_DIR, schema: Optional[Schema] = None):
@@ -801,10 +805,12 @@ def load_texas(data_dir: str = DEFAULT_DATA_DIR, schema: Optional[Schema] = None
     spec = schema or texas_schema()
     df = df[[c for c in spec.names if c in df.columns]].dropna()
     # Drop the codebook's INVALID / unknown codes rather than inventing a category for them.
-    for c in spec.columns:
-        if c.kind == CATEGORICAL:
-            df = df[df[c.name].isin(c.categories)]
-    return TabularDataset(df=df.reset_index(drop=True), name="texas_hospital_discharge", schema=spec)
+    for col_spec in spec.columns:
+        if col_spec.kind == CATEGORICAL and col_spec.categories is not None:
+            df = df[df[col_spec.name].isin(col_spec.categories)]
+    return TabularDataset(
+        df=df.reset_index(drop=True), name="texas_hospital_discharge", schema=spec
+    )
 
 
 SF_FIRE = DatasetSource(
@@ -814,18 +820,28 @@ SF_FIRE = DatasetSource(
     filename="fire.csv",
 )
 # Category counts from the authors' published fire-domain.json (public, not read from the data).
-_FIRE_COLS = {"ALS Unit": ("als_unit", 2), "Call Type Group": ("call_type_group", 5),
-              "Priority": ("priority", 8), "Call Type": ("call_type", 31),
-              "Zipcode of Incident": ("zipcode", 28), "Battalion": ("battalion", 11),
-              "Call Final Disposition": ("final_disposition", 15), "City": ("city", 9),
-              "Station Area": ("station_area", 46)}
+_FIRE_COLS = {
+    "ALS Unit": ("als_unit", 2),
+    "Call Type Group": ("call_type_group", 5),
+    "Priority": ("priority", 8),
+    "Call Type": ("call_type", 31),
+    "Zipcode of Incident": ("zipcode", 28),
+    "Battalion": ("battalion", 11),
+    "Call Final Disposition": ("final_disposition", 15),
+    "City": ("city", 9),
+    "Station Area": ("station_area", 46),
+}
 
 
 def sf_fire_schema() -> Schema:
     """All-categorical, integer-coded SF Fire table: the 9 of Annamalai et al.'s 10 trimmed
     attributes present in the clean file (Number of Alarms is not). Target: ALS Unit dispatched."""
-    return Schema(columns=[ColumnSpec(new, CATEGORICAL, categories=[str(i) for i in range(k)])
-                           for new, k in _FIRE_COLS.values()])
+    return Schema(
+        columns=[
+            ColumnSpec(new, CATEGORICAL, categories=[str(i) for i in range(k)])
+            for new, k in _FIRE_COLS.values()
+        ]
+    )
 
 
 def load_sf_fire(data_dir: str = DEFAULT_DATA_DIR, schema: Optional[Schema] = None):

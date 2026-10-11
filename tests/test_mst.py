@@ -141,7 +141,6 @@ def test_a_tiny_model_budget_degrades_to_one_way_marginals():
     assert all(len(c) == 1 for c in gen.measured_cliques_)
 
 
-
 @pytest.mark.parametrize("eps", [0.5, 8.0])
 def test_mst_spends_its_whole_budget(eps):
     """Audit H1 (research/27): one zCDP budget, split in thirds, composes to the target."""

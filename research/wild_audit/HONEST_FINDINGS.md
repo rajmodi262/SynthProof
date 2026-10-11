@@ -6,7 +6,7 @@
 
 ## Why the earlier "30% fatal" number is retracted
 
-`scripts/wild_audit.py` marked a dataset a **FATAL differential-privacy breach whenever the word
+`research/wild_audit/wild_audit_v1_superseded.py` marked a dataset a **FATAL differential-privacy breach whenever the word
 "seed" appeared in its name** (`with-seed`, `_seed_`, …). Two independent errors make that meaningless:
 
 1. **A published seed is only a privacy failure for a mechanism that is actually differentially
@@ -71,5 +71,5 @@ count, and it must never be dressed up as "X% of DP datasets are broken."
 
 - `scripts/wild_audit_honest.py` — the corrected, deduplicated, properly-gated measurement.
 - `research/wild_audit/honest_audit_results.json` — its output.
-- `scripts/wild_audit.py` and `WILD_AUDIT_REPORT.md` — **retained but RETRACTED**; kept only so the
+- `research/wild_audit/wild_audit_v1_superseded.py` and `WILD_AUDIT_REPORT.md` — **retained but RETRACTED**; kept only so the
   error and its correction are on the record.

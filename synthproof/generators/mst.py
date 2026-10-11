@@ -111,6 +111,7 @@ class MSTGenerator(BaseGenerator):
         self.bin_edges_ = self._encoder.bin_edges_
 
     def _encode(self, dataset: TabularDataset) -> pd.DataFrame:
+        assert self._encoder is not None, "_build_levels must run first"
         return self._encoder.encode(dataset)
 
     # ------------------------------------------------------------------ fitting
@@ -134,6 +135,7 @@ class MSTGenerator(BaseGenerator):
         self.skipped_cliques_ = []
 
         coded = self._encode(dataset)
+        assert self._encoder is not None
         domain = Domain(tuple(self.columns), self._encoder.shape())
         data = Dataset(coded, domain)
         d = len(self.columns)
@@ -180,6 +182,7 @@ class MSTGenerator(BaseGenerator):
         remaining = list(candidates)
         eps_sel = em_eps_for_rho(rho_sel) if rounds else 0.0
         for r in range(rounds):
+            assert base_model is not None  # fitted above whenever rounds > 0
             affordable = []
             for cl in remaining:
                 a, b = col_index[cl[0]], col_index[cl[1]]
@@ -201,7 +204,7 @@ class MSTGenerator(BaseGenerator):
             scores = []
             for cl in affordable:
                 true_y = np.asarray(data.project(cl).datavector(), dtype=float)
-                est_y = np.asarray(base_model.project(cl).datavector(), dtype=float)
+                est_y = np.asarray(base_model.project(cl).datavector(), dtype=np.float64)
                 scores.append(float(np.abs(true_y - est_y).sum()))
 
             accountant.charge(
@@ -210,9 +213,7 @@ class MSTGenerator(BaseGenerator):
                 ),
                 run_id=f"mst_select_round_{r}",
             )
-            pick = exponential_mechanism(
-                scores, eps_sel, 1.0, seed=int(rng.integers(0, 2**31 - 1))
-            )
+            pick = exponential_mechanism(scores, eps_sel, 1.0, seed=int(rng.integers(0, 2**31 - 1)))
             clique = affordable[pick]
             remaining.remove(clique)
             uf.union(col_index[clique[0]], col_index[clique[1]])

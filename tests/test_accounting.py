@@ -163,7 +163,9 @@ def test_the_exponential_mechanism_is_charged_by_its_zcdp_bound_and_autodp_agree
 
     acc = Accountant(budget_eps=100.0, budget_delta=1e-5)
     for _ in range(10):
-        acc.charge(MechanismSpec("exponential", sensitivity=1.0, noise_scale=em_noise_scale(0.2, 1.0)))
+        acc.charge(
+            MechanismSpec("exponential", sensitivity=1.0, noise_scale=em_noise_scale(0.2, 1.0))
+        )
         acc.charge(MechanismSpec("gaussian", sensitivity=1.0, noise_scale=8.0))
     agreement = cross_check_spends(acc.spends, 1e-5)
     assert agreement.verdict in ("agree", "conservative"), agreement.detail

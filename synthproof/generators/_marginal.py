@@ -156,7 +156,8 @@ def sample_model(model, rows: int) -> pd.DataFrame:
     m32 = jax.tree_util.tree_map(_f32, model)
     # The sampler recomputes marginals internally, so 64-bit mode is also switched off for the
     # duration of the draw and restored afterwards.
-    was_x64 = bool(jax.config.jax_enable_x64)
+    # jax.config exposes each flag as an attribute at runtime; its stubs do not declare them.
+    was_x64 = bool(jax.config.jax_enable_x64)  # type: ignore[attr-defined]
     jax.config.update("jax_enable_x64", False)
     try:
         return pd.DataFrame(m32.synthetic_data(rows=rows).to_dict())

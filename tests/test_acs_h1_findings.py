@@ -63,7 +63,8 @@ def _cell(payload, mech, eps):
 # ------------------------------------------------------- the confound
 
 
-# REMOVED 2026-09-24 (audit research/27): `test_aim_selects_the_measured_pair_on_adult_at_every_epsilon`
+# REMOVED 2026-09-24 (audit research/27):
+# `test_aim_selects_the_measured_pair_on_adult_at_every_epsilon`
 # pinned the OLD AIM's habit of selecting (age, hours_per_week) -- the one pair the structure metric
 # read. That clique-selection confound was already retracted (research/, CLAUDE.md), and the
 # structure metric is now table-wide (`structure_error_all`, `pair_tvd`; audit M1), so a
@@ -155,5 +156,3 @@ def test_aim_and_independent_do_not_separate_on_acs():
 # pinned the old ACS grid, in which AIM got WORSE with more budget. Its cause -- a category domain
 # that grew with epsilon because it was thresholded over the observed values -- was the C1 leak
 # (research/27); with declared domains released whole, that grid is superseded by the re-run.
-
-

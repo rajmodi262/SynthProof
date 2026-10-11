@@ -29,7 +29,9 @@ from synthproof.data.dataset import TabularDataset  # noqa: E402
 from synthproof.data.profiler import DPDomainProfiler  # noqa: E402
 from synthproof.frontier.experiment import MECHANISMS  # noqa: E402
 
-spec = importlib.util.spec_from_file_location("new_utility", "../SynthProof/synthproof/evaluate/utility.py")
+spec = importlib.util.spec_from_file_location(
+    "new_utility", "../SynthProof/synthproof/evaluate/utility.py"
+)
 new_utility = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(new_utility)
 
@@ -40,16 +42,32 @@ for name in sys.argv[1:]:
     idx = np.random.default_rng(seed).permutation(len(ds.df))
     nh = int(len(idx) * 0.3)
     hold = ds.df.iloc[idx[:nh]].reset_index(drop=True)
-    fit = TabularDataset(ds.df.iloc[idx[nh:]].reset_index(drop=True), name=ds.name, schema=ds.schema)
+    fit = TabularDataset(
+        ds.df.iloc[idx[nh:]].reset_index(drop=True), name=ds.name, schema=ds.schema
+    )
     for mech in ("aim", "mst"):
         for eps in (1.0, 8.0):
             plan = BudgetPlan.split(eps, 1e-5, 0.1)
             acc = Accountant(eps * 1.02, 1e-5)
-            prof = DPDomainProfiler(accountant=acc, eps_budget=plan.profile_eps).profile(fit, seed=seed)
+            prof = DPDomainProfiler(accountant=acc, eps_budget=plan.profile_eps).profile(
+                fit, seed=seed
+            )
             g = MECHANISMS[mech](seed=seed)
             g.fit(fit, prof, acc, target_eps=plan.synthesis_eps)
             syn = g.generate(len(fit.df))
-            u = new_utility.UtilityEvaluator(target_col=tgt, seed=seed).evaluate(fit.df, syn, test_df=hold)
-            print(json.dumps({"dataset": name, "mech": mech, "eps": eps, "seed": seed,
-                              "useful_old_code": round(u.tstr_macro_f1 / u.trtr_macro_f1, 4),
-                              "proved_old_code": round(acc.total(), 3)}), flush=True)
+            u = new_utility.UtilityEvaluator(target_col=tgt, seed=seed).evaluate(
+                fit.df, syn, test_df=hold
+            )
+            print(
+                json.dumps(
+                    {
+                        "dataset": name,
+                        "mech": mech,
+                        "eps": eps,
+                        "seed": seed,
+                        "useful_old_code": round(u.tstr_macro_f1 / u.trtr_macro_f1, 4),
+                        "proved_old_code": round(acc.total(), 3),
+                    }
+                ),
+                flush=True,
+            )

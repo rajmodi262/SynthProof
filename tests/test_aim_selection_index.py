@@ -34,7 +34,9 @@ def test_the_measured_pair_is_the_selected_pair(monkeypatch):
     prof = DPDomainProfiler(accountant=acc, eps_budget=1.0).profile(ds, seed=0)
     # No selection noise, so the pick is the true argmax: (c, d), perfectly dependent.
     monkeypatch.setattr(
-        aim_mod, "exponential_mechanism", lambda scores, eps, sens, seed=None: int(np.argmax(scores))
+        aim_mod,
+        "exponential_mechanism",
+        lambda scores, eps, sens, seed=None: int(np.argmax(scores)),
     )
     # (a, b) -- the FIRST candidate -- is too big for the model bound and is skipped.
     gen = aim_mod.AIMGenerator(seed=0, rounds=1, max_model_mb=0.01)

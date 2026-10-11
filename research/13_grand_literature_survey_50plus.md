@@ -646,7 +646,7 @@ When defending SynthProof before academic and industrial examiners, precision of
 To ensure zero hallucination and complete empirical reproducibility, the literature search was executed using the OpenAlex Scholarly API (`https://api.openalex.org/works`) across 7 targeted queries:
 
 ```bash
-# Query Execution Script: scripts/search_50_papers.py
+# Query Execution Script: research/survey_tools/search_50_papers.py
 # Total Records Fetched: 107 unique DOIs/works
 # Raw Response Archive: research/raw_50_survey.json
 # Summary Text Digest: research/survey_summary.txt

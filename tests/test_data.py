@@ -146,7 +146,9 @@ def test_declared_category_domain_is_used_whole_and_costs_nothing():
     from synthproof.data.schema import CATEGORICAL, ColumnSpec, Schema
 
     schema = Schema(columns=[ColumnSpec("g", CATEGORICAL, categories=["a", "b", "rare", "absent"])])
-    with_one = TabularDataset(pd.DataFrame({"g": ["a"] * 300 + ["b"] * 300 + ["rare"]}), schema=schema)
+    with_one = TabularDataset(
+        pd.DataFrame({"g": ["a"] * 300 + ["b"] * 300 + ["rare"]}), schema=schema
+    )
     without = TabularDataset(pd.DataFrame({"g": ["a"] * 300 + ["b"] * 301}), schema=schema)
     for seed in range(20):
         outs = []

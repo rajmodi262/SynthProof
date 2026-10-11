@@ -160,8 +160,9 @@ H1_ONLY = {
         "measurements), so there is no H2 subgroup to compare -- H1 only."
     ),
     "texas": (
-        "Texas was added as the same-dataset comparison with Stadler et al. (H1). It carries SEX_CODE "
-        "and RACE, so H2 is possible and is declared future work, not silently omitted."
+        "Texas was added as the same-dataset comparison with Stadler et al. (H1). "
+        "It carries SEX_CODE and RACE, so H2 is possible and is declared future work, "
+        "not silently omitted."
     ),
     "fire": (
         "SF Fire is an operational (not personal) table with no protected attribute -- H1 only."

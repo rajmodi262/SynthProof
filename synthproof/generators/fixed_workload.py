@@ -68,8 +68,10 @@ class FixedWorkloadGenerator(AIMGenerator):
     ):
         """
         Args:
-            rounds: How many 2-way cliques to measure. Matched to AIM's default so the two
-                mechanisms measure the same number of marginals.
+            rounds: How many 2-way cliques to measure. This was AIM's fixed default (6) when the
+                control was built; AIM now runs a budget-driven number of rounds (about one per
+                column, plus target 3-way candidates), so the counts no longer match. The
+                clique-selection confound this arm tested was retracted on 2026-09-04.
             workload_seed: PUBLIC seed for drawing the workload. Fixing it makes the arm
                 reproducible and makes clear that no data was consulted to choose it.
             workload: An explicit list of pairs, overriding the random draw. Must be public.
@@ -113,7 +115,7 @@ class FixedWorkloadGenerator(AIMGenerator):
                 raise ValueError(f"Workload contains pairs not in the schema: {unknown}")
         else:
             wrng = np.random.default_rng(self.workload_seed)
-            k = min(self.rounds, len(candidates))
+            k = min(self.rounds if self.rounds is not None else DEFAULT_ROUNDS, len(candidates))
             idx = wrng.choice(len(candidates), size=k, replace=False)
             chosen = [candidates[i] for i in sorted(idx)]
 

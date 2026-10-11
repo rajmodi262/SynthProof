@@ -27,7 +27,9 @@ def run(ds, seed, eps=8.0, **kw):
     idx = np.random.default_rng(seed).permutation(len(ds.df))
     nh = int(len(idx) * 0.3)
     hold = ds.df.iloc[idx[:nh]].reset_index(drop=True)
-    fit = TabularDataset(ds.df.iloc[idx[nh:]].reset_index(drop=True), name=ds.name, schema=ds.schema)
+    fit = TabularDataset(
+        ds.df.iloc[idx[nh:]].reset_index(drop=True), name=ds.name, schema=ds.schema
+    )
     acc = Accountant(eps * (1 + 1e-6), 1e-5)
     prof = DPDomainProfiler(accountant=acc, eps_budget=0.1).profile(fit, seed=seed)
     g = MSTGenerator(seed=seed, **kw)
@@ -41,8 +43,17 @@ def run(ds, seed, eps=8.0, **kw):
 def main():
     ds = load("bank")
     print("numeric:", {c: ds.bounds(c) for c in ds.numerical_cols})
-    variants = {"base": ({}, None), "sel_0.25": ({"selection_frac": 0.25}, None), "no_log_bins": ({}, "nolog")}
-    old = Schema(columns=[ColumnSpec(s.name, s.kind, lower=18.0, upper=95.0) if s.name == "age" else s for s in ds.schema.columns])
+    variants = {
+        "base": ({}, None),
+        "sel_0.25": ({"selection_frac": 0.25}, None),
+        "no_log_bins": ({}, "nolog"),
+    }
+    old = Schema(
+        columns=[
+            ColumnSpec(s.name, s.kind, lower=18.0, upper=95.0) if s.name == "age" else s
+            for s in ds.schema.columns
+        ]
+    )
     ds_old = TabularDataset(ds.df, name=ds.name, schema=old)
     for name, (kw, mode) in {**variants, "old_bounds": ({}, "old")}.items():
         saved = M.LOG_BIN_MIN_UPPER
@@ -52,8 +63,17 @@ def main():
             res = [run(ds_old if mode == "old" else ds, s, **kw) for s in (0, 1, 2)]
         finally:
             M.LOG_BIN_MIN_UPPER = saved
-        print(json.dumps({"variant": name, "useful": [round(r[0], 3) for r in res], "mean": round(float(np.mean([r[0] for r in res])), 3),
-                          "target_edges": [r[1] for r in res]}), flush=True)
+        print(
+            json.dumps(
+                {
+                    "variant": name,
+                    "useful": [round(r[0], 3) for r in res],
+                    "mean": round(float(np.mean([r[0] for r in res])), 3),
+                    "target_edges": [r[1] for r in res],
+                }
+            ),
+            flush=True,
+        )
 
 
 if __name__ == "__main__":

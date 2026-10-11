@@ -362,7 +362,9 @@ def main() -> int:
     args = ap.parse_args()
     datasets = DATASETS_FULL if args.full else DATASETS
     out = Path(
-        "research/Contribution-Report-FULL.html" if args.full else "research/Contribution-Report.html"
+        "research/Contribution-Report-FULL.html"
+        if args.full
+        else "research/Contribution-Report.html"
     )
     out.write_text(build_html(datasets), encoding="utf-8")
     print(f"wrote {out}")

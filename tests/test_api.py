@@ -581,7 +581,9 @@ def test_domain_source_is_a_valid_boundary_value_not_a_marketing_string():
     # auditor would have caught the regression.
     rb6_bad = [
         f
-        for f in audit_sheet({"domain_source": "SynthProof Autonomous Verification Pipeline"}).findings
+        for f in audit_sheet(
+            {"domain_source": "SynthProof Autonomous Verification Pipeline"}
+        ).findings
         if f.code == "RB6"
     ]
     assert rb6_bad and rb6_bad[0].severity != "note"

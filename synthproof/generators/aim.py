@@ -187,6 +187,7 @@ class AIMGenerator(BaseGenerator):
         self.bin_edges_ = self._encoder.bin_edges_
 
     def _encode(self, dataset: TabularDataset) -> pd.DataFrame:
+        assert self._encoder is not None, "_build_levels must run first"
         return self._encoder.encode(dataset)
 
     # ------------------------------------------------------------------ fitting
@@ -209,10 +210,13 @@ class AIMGenerator(BaseGenerator):
         self.skipped_cliques_ = []
 
         coded = self._encode(dataset)
+        assert self._encoder is not None
         domain = Domain(tuple(self.columns), self._encoder.shape())
         data = Dataset(coded, domain)
         d = len(self.columns)
-        candidates = [(a, b) for i, a in enumerate(self.columns) for b in self.columns[i + 1 :]]
+        candidates: List[Tuple[str, ...]] = [
+            (a, b) for i, a in enumerate(self.columns) for b in self.columns[i + 1 :]
+        ]
         if self.target_col is not None and self.target_col in self.columns:
             others = [c for c in self.columns if c != self.target_col]
             candidates += [
@@ -234,7 +238,9 @@ class AIMGenerator(BaseGenerator):
         fixed = self.rounds is not None
         n_pairs = d * (d - 1) // 2
         planned = (
-            min(self.rounds, n_pairs) if fixed else min(self.rounds_per_column * d, len(candidates))
+            min(self.rounds, n_pairs)
+            if self.rounds is not None
+            else min(self.rounds_per_column * d, len(candidates))
         )
         if not candidates:
             planned = 0
@@ -277,7 +283,11 @@ class AIMGenerator(BaseGenerator):
             model = estimation.MirrorDescent().estimate(
                 # known_total=None: the total is estimated from the NOISY measurements, never
                 # the exact row count (research/11_selection_accounting.md).
-                domain, measurements, known_total=None, iters=ROUND_ITERS, warm_start=model
+                domain,
+                measurements,
+                known_total=None,
+                iters=ROUND_ITERS,
+                warm_start=model,
             )
 
             # A marginal already measured -- or contained in one that was -- is not a candidate
@@ -285,16 +295,22 @@ class AIMGenerator(BaseGenerator):
             # wasted round, and on large tables the biggest pair's absolute error stays on top
             # after measurement (SF Fire re-measured zipcode x station_area three times).
             covered = [set(c) for c in self.measured_cliques_ if len(c) >= 2]
+
             def _affordable(pool):
                 out = []
                 for cl in pool:
-                    if hypothetical_model_size(domain, [*self.measured_cliques_, cl]) <= self.max_model_mb:
+                    if (
+                        hypothetical_model_size(domain, [*self.measured_cliques_, cl])
+                        <= self.max_model_mb
+                    ):
                         out.append(cl)
                     elif cl not in self.skipped_cliques_:
                         self.skipped_cliques_.append(cl)
                 return out
 
-            affordable = _affordable([cl for cl in candidates if not any(set(cl) <= m for m in covered)])
+            affordable = _affordable(
+                [cl for cl in candidates if not any(set(cl) <= m for m in covered)]
+            )
             if not affordable:
                 # Everything is covered: a repeat measurement beats leaving budget unspent.
                 affordable = _affordable(candidates)
@@ -311,7 +327,9 @@ class AIMGenerator(BaseGenerator):
 
             eps_sel = em_eps_for_rho(rho_sel)
             accountant.charge(
-                MechanismSpec("exponential", sensitivity=1.0, noise_scale=em_noise_scale(eps_sel, 1.0)),
+                MechanismSpec(
+                    "exponential", sensitivity=1.0, noise_scale=em_noise_scale(eps_sel, 1.0)
+                ),
                 run_id=f"aim_select_round_{r}",
             )
             pick = exponential_mechanism(scores, eps_sel, 1.0, seed=int(rng.integers(0, 2**31 - 1)))

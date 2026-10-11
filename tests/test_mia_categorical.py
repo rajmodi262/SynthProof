@@ -31,5 +31,7 @@ def test_an_unrelated_release_scores_near_chance_but_is_not_a_constant():
 def test_no_shared_column_raises_instead_of_reporting_chance():
     with pytest.raises(ValueError):
         DistanceMIABaseline(seed=0).evaluate(
-            pd.DataFrame({"x": ["a"]}), train_df=pd.DataFrame({"y": ["b"]}), test_df=pd.DataFrame({"y": ["c"]})
+            pd.DataFrame({"x": ["a"]}),
+            train_df=pd.DataFrame({"y": ["b"]}),
+            test_df=pd.DataFrame({"y": ["c"]}),
         )

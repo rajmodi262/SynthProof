@@ -141,10 +141,19 @@ def main():
         resolves_25 = sep(leak25, "domias") or sep(leak25, "distance_mia")
         resolves_50 = sep(leak50, "domias") or sep(leak50, "distance_mia")
         verdict = "PASS" if resolves_25 else ("MARGINAL" if resolves_50 else "FAIL")
-        print(f"  --> K3 verdict at n={n}: {verdict} "
-              f"(resolves 25% leak: {resolves_25}; 50% leak: {resolves_50})")
-        results.append({"n": n, "verdict": verdict, "resolves_25pct": resolves_25,
-                        "resolves_50pct": resolves_50, "arms": per_arm})
+        print(
+            f"  --> K3 verdict at n={n}: {verdict} "
+            f"(resolves 25% leak: {resolves_25}; 50% leak: {resolves_50})"
+        )
+        results.append(
+            {
+                "n": n,
+                "verdict": verdict,
+                "resolves_25pct": resolves_25,
+                "resolves_50pct": resolves_50,
+                "arms": per_arm,
+            }
+        )
 
     (OUT / "k3_audit_power.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
     print("\n" + "=" * 70)

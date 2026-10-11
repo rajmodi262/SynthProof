@@ -24,7 +24,9 @@ import numpy as np
 import pandas as pd
 
 
-def association_error(real: pd.DataFrame, synth: pd.DataFrame, cols: Optional[List[str]] = None) -> float:
+def association_error(
+    real: pd.DataFrame, synth: pd.DataFrame, cols: Optional[List[str]] = None
+) -> float:
     from synthproof.frontier.experiment import _association_matrix
 
     cols = list(cols or [c for c in real.columns if c in synth.columns])
@@ -40,10 +42,14 @@ def _discretise(real: pd.DataFrame, synth: pd.DataFrame, cols: List[str], bins: 
     r, s = pd.DataFrame(index=real.index), pd.DataFrame(index=synth.index)
     for c in cols:
         if pd.api.types.is_numeric_dtype(real[c]):
-            edges = np.unique(np.quantile(real[c].to_numpy(dtype=float), np.linspace(0, 1, bins + 1)))
+            edges = np.unique(
+                np.quantile(real[c].to_numpy(dtype=float), np.linspace(0, 1, bins + 1))
+            )
             inner = edges[1:-1]
             r[c] = np.digitize(real[c].to_numpy(dtype=float), inner)
-            s[c] = np.digitize(pd.to_numeric(synth[c], errors="coerce").to_numpy(dtype=float), inner)
+            s[c] = np.digitize(
+                pd.to_numeric(synth[c], errors="coerce").to_numpy(dtype=float), inner
+            )
         else:
             r[c] = real[c].astype(str)
             s[c] = synth[c].astype(str)
@@ -63,5 +69,8 @@ def pairwise_tvd(
             pr = r.groupby([a, b]).size() / len(r)
             ps = s.groupby([a, b]).size() / max(len(s), 1)
             idx = pr.index.union(ps.index)
-            out.append(0.5 * float(np.abs(pr.reindex(idx, fill_value=0) - ps.reindex(idx, fill_value=0)).sum()))
+            out.append(
+                0.5
+                * float(np.abs(pr.reindex(idx, fill_value=0) - ps.reindex(idx, fill_value=0)).sum())
+            )
     return float(np.mean(out))

@@ -345,7 +345,7 @@ def generate_report_markdown(clusters, by_cluster):
     md.append("To ensure zero hallucination and complete empirical reproducibility, the literature search was executed using the OpenAlex Scholarly API (`https://api.openalex.org/works`) across 7 targeted queries:")
     md.append("")
     md.append("```bash")
-    md.append("# Query Execution Script: scripts/search_50_papers.py")
+    md.append("# Query Execution Script: research/survey_tools/search_50_papers.py")
     md.append("# Total Records Fetched: 107 unique DOIs/works")
     md.append("# Raw Response Archive: research/raw_50_survey.json")
     md.append("# Summary Text Digest: research/survey_summary.txt")

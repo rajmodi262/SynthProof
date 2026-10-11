@@ -195,7 +195,8 @@ def _correlation_ratio(categories, values) -> float:
     if len(vals) < 2:
         return 0.0
     grand = vals.mean()
-    ss_between = sum(len(g) * (g.mean() - grand) ** 2 for _, g in vals.groupby(cats.values))
+    # Both series were masked by the same rows, so grouping by `cats` aligns on the index.
+    ss_between = float(sum((len(g) * (g.mean() - grand) ** 2 for _, g in vals.groupby(cats)), 0.0))
     ss_total = float(((vals - grand) ** 2).sum())
     return float(np.sqrt(ss_between / ss_total)) if ss_total > 0 else 0.0
 
@@ -328,7 +329,9 @@ def run_cell(
     plan = (
         BudgetPlan.split(target_eps, delta=delta, profile_frac=0.1)
         if needs_profile
-        else BudgetPlan(total_eps=target_eps, delta=delta, profile_eps=0.0, synthesis_eps=target_eps)
+        else BudgetPlan(
+            total_eps=target_eps, delta=delta, profile_eps=0.0, synthesis_eps=target_eps
+        )
     )
     # Budget = the target itself, plus float slack only. It used to be `target * 1.02`, a 2%
     # overshoot allowance nothing needed or explained (audit L4).
@@ -499,10 +502,10 @@ def run_cell(
 
     # The MIA runs against the AUDIT release. It asks whether training membership is
     # recoverable, which is a question about the release that actually contained the members.
-    # Both distance-based adversaries need a shared numeric column to measure proximity /
-    # density on. An all-categorical release (Mushroom, Nursery) has none, so the question
-    # does not arise -- reported as NOT APPLICABLE, never as a passed attack, the same rule
-    # linkability follows. Attribute inference and singling-out below are set-based and still
+    # The distance MIA counts categorical mismatches (audit C3), so it runs on every table.
+    # DOMIAS still needs a numeric column for its density estimate; on an all-categorical
+    # release (Mushroom, Nursery) it is reported as NOT APPLICABLE, never as a passed attack,
+    # the same rule linkability follows. Attribute inference and singling-out below are set-based and still
     # run, so an all-categorical cell is not left with zero privacy evidence.
     try:
         mia = DistanceMIABaseline(seed=eval_seed, max_records=400).evaluate(
@@ -599,7 +602,9 @@ def run_cell(
         "marginal_w1": float(util.marginal_distance),
         "trtr_f1": float(util.trtr_macro_f1),
         # Mean TSTR/TRTR over random forest, logistic regression and gradient boosting (M3).
-        "usefulness_multi": float(util.usefulness_multi),
+        "usefulness_multi": (
+            float(util.usefulness_multi) if util.usefulness_multi is not None else float("nan")
+        ),
         # NaN, not 0.0, when a distance-based attack does not apply (all-categorical release).
         # A zero would read as "attack ran, found nothing" -- an absent measurement, not a null.
         "mia_auc": (float(mia.auc) if mia else float("nan")),
@@ -754,7 +759,9 @@ def run_grid(
                     mia_auc=bootstrap_ci(raw["mia_auc"]),
                     correlation_error=bootstrap_ci(raw["correlation_error"]),
                     structure_error_all=(
-                        bootstrap_ci(raw["structure_error_all"]) if "structure_error_all" in raw else None
+                        bootstrap_ci(raw["structure_error_all"])
+                        if "structure_error_all" in raw
+                        else None
                     ),
                     pair_tvd=bootstrap_ci(raw["pair_tvd"]) if "pair_tvd" in raw else None,
                     usefulness_multi=(

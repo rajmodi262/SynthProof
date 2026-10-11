@@ -191,9 +191,9 @@ def run_single_cell(
 
     # 2. Distance MIA evaluation (numeric columns)
     try:
-        dist_res = DistanceMIABaseline(seed=seed, max_records=min(n, 1500), include_categorical=False).evaluate(
-            synth, members, nonmembers
-        )
+        dist_res = DistanceMIABaseline(
+            seed=seed, max_records=min(n, 1500), include_categorical=False
+        ).evaluate(synth, members, nonmembers)
         dist_auc = float(dist_res.auc)
     except Exception as err:
         print(f"Warning: DistanceMIA failed on {arm}-{mech_name}-{eps}-{seed}: {err}")

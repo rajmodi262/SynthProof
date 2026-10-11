@@ -1,11 +1,11 @@
 """Honest in-the-wild measurement of release-boundary hygiene on the Hugging Face Hub.
 
-WHY THIS REPLACES scripts/wild_audit.py. The first version flagged any dataset with the word
-"seed" in its name as a FATAL differential-privacy breach. That is wrong twice over: (1) a published
-seed only breaks privacy for a mechanism that is *actually* differentially private and whose noise
-derives from that seed, and (2) 17 of its 22 "FATAL" hits were forks of ONE course-exercise dataset
-(`uplimit-synthetic-data-week-1-with-seed`). Neither of those is a DP release. The "30% fatal leak
-rate" measured the string "seed", not a privacy failure.
+WHY THIS REPLACES research/wild_audit/wild_audit_v1_superseded.py. The first version flagged any
+dataset with the word "seed" in its name as a FATAL differential-privacy breach. That is wrong
+twice over: (1) a published seed only breaks privacy for a mechanism that is *actually*
+differentially private and whose noise derives from that seed, and (2) 17 of its 22 "FATAL" hits
+were forks of ONE course-exercise dataset (`uplimit-synthetic-data-week-1-with-seed`). Neither of
+those is a DP release. The "30% fatal leak rate" measured the string "seed", not a privacy failure.
 
 WHAT THIS MEASURES INSTEAD, honestly:
   1. The DP-release population on the Hub. Does a genuine corpus of differentially private data
@@ -63,7 +63,9 @@ DP_MECH = re.compile(
     r"gaussian mechanism|laplace mechanism",
     re.I,
 )
-NEIGHBOUR = re.compile(r"add[/ -]?remove|replace[- ]one|bounded|unbounded|neighbou?ring|unit of privacy", re.I)  # noqa: E501
+NEIGHBOUR = re.compile(
+    r"add[/ -]?remove|replace[- ]one|bounded|unbounded|neighbou?ring|unit of privacy", re.I
+)  # noqa: E501
 DELTA = re.compile(r"delta\s*[=:]|δ\s*=|1e-\d", re.I)
 
 SEED = re.compile(
@@ -74,9 +76,13 @@ SEED = re.compile(
 
 
 def fetch_json(url):
+    # Every URL here is built from an https:// literal; refusing anything else keeps urlopen off
+    # file: and custom schemes, which is what nosec B310 records.
+    if not url.startswith("https://"):
+        raise ValueError(f"refusing non-https url: {url!r}")
     req = urllib.request.Request(url, headers=UA)
     try:
-        with urllib.request.urlopen(req, timeout=20) as r:
+        with urllib.request.urlopen(req, timeout=20) as r:  # nosec B310
             return json.loads(r.read())
     except Exception as e:
         print(f"  [warn] {e} for {url[:80]}", file=sys.stderr)
@@ -88,7 +94,8 @@ def fetch_readme(repo_id):
         url = f"https://huggingface.co/datasets/{repo_id}/raw/{branch}/README.md"
         req = urllib.request.Request(url, headers=UA)
         try:
-            with urllib.request.urlopen(req, timeout=12) as r:
+            # https literal above, so the scheme is fixed (nosec B310).
+            with urllib.request.urlopen(req, timeout=12) as r:  # nosec B310
                 return r.read().decode("utf-8", errors="ignore")
         except Exception:
             continue
@@ -101,7 +108,11 @@ def base_repo(repo_id: str) -> str:
     Strips the owner and trailing variant suffixes (-with-seed, _seed_N, -week-N, -evol, -vN, -N).
     """
     name = repo_id.split("/", 1)[-1].lower()
-    name = re.sub(r"[-_](with[-_]?seed|seed[-_]?free|evol|v?\d+|week[-_]?\d+|seed[-_]?\d+(?:\.\d+e\d+)?)$", "", name)  # noqa: E501
+    name = re.sub(
+        r"[-_](with[-_]?seed|seed[-_]?free|evol|v?\d+|week[-_]?\d+|seed[-_]?\d+(?:\.\d+e\d+)?)$",
+        "",
+        name,
+    )  # noqa: E501
     name = re.sub(r"[-_]?seed[-_]?\d*(?:\.\d+e\d+)?", "", name)
     return name or repo_id
 
@@ -168,7 +179,10 @@ def main():
     seed_bases = [g for g in unique_bases if any_true(g, "publishes_seed")]
 
     # Fork inflation illustration: the biggest duplicated base among seed publishers.
-    fork_sizes = sorted(((len(g), g[0]["base"]) for g in unique_bases if any_true(g, "publishes_seed")), reverse=True)  # noqa: E501
+    fork_sizes = sorted(
+        ((len(g), g[0]["base"]) for g in unique_bases if any_true(g, "publishes_seed")),
+        reverse=True,
+    )  # noqa: E501
 
     # Disclosure completeness among genuine DP-claiming repos.
     disc_keys = ["states_epsilon", "states_delta", "states_neighbour_relation", "states_mechanism"]

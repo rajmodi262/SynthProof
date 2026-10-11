@@ -150,8 +150,10 @@ class DPDomainProfiler:
         value held by fewer people than that should not appear in a public release, and the
         earlier number said otherwise.
 
-        NOT YET ENABLED BY DEFAULT, and the reason is a decision rather than an oversight.
-        The calibrated form measurably breaks the low-budget end of the committed benchmarks:
+        ENABLED BY DEFAULT since the research/27 fixes (`delta_calibrated_threshold=True`). It
+        applies only to a domain the schema does not declare; a declared domain is released whole,
+        free. The cost recorded when it was still off -- it breaks the low-budget end of a table
+        whose domain must be discovered:
         on UCI Adult at eps=0.5 it reduces `income` — the TSTR target — to a single level,
         which makes the utility number at that budget meaningless rather than merely worse.
 
@@ -162,7 +164,7 @@ class DPDomainProfiler:
             4.0        19.88         84.3           257.4    0 of 8
             8.0         9.97         42.3           129.6    0 of 8
 
-        Adopting it therefore means re-running every grid and rewriting every H1 number, and
+        Every registry dataset now declares its domains, so the grids no longer take this path;
         it would arguably be more correct still to SPLIT delta between this threshold and the
         RDP-to-(eps, delta) conversion the accountant already spends it on — using the full
         delta for both, as the code below would, double-counts it and the threshold should be
@@ -185,9 +187,9 @@ class DPDomainProfiler:
         return 1.0 + noise_scale * float(np.log(1.0 / (2.0 * delta_col)))
 
     def _legacy_category_threshold(self, noise_scale: float) -> float:
-        """The threshold every committed result was produced with: 3 noise standard deviations.
+        """The pre-research/27 threshold: 3 noise standard deviations.
 
-        Kept as the default so no published number silently changes, and documented as
+        No longer the default (`delta_calibrated_threshold=False` selects it), and documented as
         UNSOUND rather than quietly retained: it carries no delta term, so the probability a
         singleton category survives is a constant of the mechanism (~1 in 51 at eps=1) rather
         than the declared 1e-5. See `_category_threshold` for the correct form and for what
@@ -392,9 +394,8 @@ class DPDomainProfiler:
         seed = int(rng.integers(0, 2**31 - 1))
         noise = sample_discrete_laplace(scale=noise_scale, size=len(observed), seed=seed)
 
-        # Default stays the legacy threshold so no committed number changes. The calibrated
-        # form is implemented and documented in `_category_threshold`; adopting it is a
-        # decision about what to publish, taken deliberately rather than by import.
+        # The delta-calibrated threshold is the default; the legacy 3-sigma form remains
+        # selectable for comparison with pre-research/27 results.
         threshold = (
             self._category_threshold(noise_scale, n_categorical)
             if self.delta_calibrated_threshold

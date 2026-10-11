@@ -17,7 +17,7 @@ the naming failure this module's own history records.
 """
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Dict, Optional, Sequence
 
 import numpy as np
 import pandas as pd
@@ -58,7 +58,11 @@ class DistanceMIABaseline:
         self.include_categorical = include_categorical
 
     def _scores(
-        self, df: pd.DataFrame, synthetic_df: pd.DataFrame, num_cols: list, cat_cols: list = ()
+        self,
+        df: pd.DataFrame,
+        synthetic_df: pd.DataFrame,
+        num_cols: list,
+        cat_cols: Sequence[str] = (),
     ) -> np.ndarray:
         """Similarity to the nearest synthetic record; higher == more likely a member.
 
@@ -76,7 +80,7 @@ class DistanceMIABaseline:
             target = df[num_cols].to_numpy(dtype=float)
         if cat_cols:
             # One shared integer code per value, so equality is a cheap array comparison.
-            codes = {}
+            codes: Dict[str, Dict[str, int]] = {}
             s_cat = np.empty((len(synthetic_df), len(cat_cols)), dtype=np.int64)
             t_cat = np.empty((len(df), len(cat_cols)), dtype=np.int64)
             for j, c in enumerate(cat_cols):

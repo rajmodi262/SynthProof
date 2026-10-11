@@ -66,7 +66,8 @@ class UtilityEvaluator:
 
     def _feature_columns(self, df: pd.DataFrame) -> Tuple[List[str], List[str]]:
         """Split feature columns into numeric and categorical (target excluded)."""
-        num_cols, cat_cols = [], []
+        num_cols: List[str] = []
+        cat_cols: List[str] = []
         for c in df.columns:
             if c == self.target_col:
                 continue

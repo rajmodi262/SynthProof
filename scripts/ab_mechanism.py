@@ -1,6 +1,7 @@
 """Quick sample: new pipeline vs the pre-fix grid, on a few cells per dataset.
 
-    python -m scripts.ab_mechanism --datasets adult fire --mechs aim mst --eps 1 8 --seeds 0 --out x.json
+    python -m scripts.ab_mechanism --datasets adult fire --mechs aim mst \
+        --eps 1 8 --seeds 0 --out x.json
 
 For each (dataset, mechanism, eps, seed) it fits the CURRENT mechanism on the same 70% split the
 grid uses, scores usefulness (TSTR / TRTR) on the 30% of rows the generator never saw, and prints
@@ -66,11 +67,15 @@ def main():
             idx = rng.permutation(len(ds.df))
             nh = int(len(idx) * 0.3)
             hold = ds.df.iloc[idx[:nh]].reset_index(drop=True)
-            fit = TabularDataset(ds.df.iloc[idx[nh:]].reset_index(drop=True), name=ds.name, schema=ds.schema)
+            fit = TabularDataset(
+                ds.df.iloc[idx[nh:]].reset_index(drop=True), name=ds.name, schema=ds.schema
+            )
             for mech in a.mechs:
                 for eps in a.eps:
                     acc = Accountant(eps * (1 + 1e-6), 1e-5)
-                    prof = DPDomainProfiler(accountant=acc, eps_budget=0.1 * eps).profile(fit, seed=seed)
+                    prof = DPDomainProfiler(accountant=acc, eps_budget=0.1 * eps).profile(
+                        fit, seed=seed
+                    )
                     gen = MECHANISMS[mech](seed=seed)
                     if hasattr(gen, "target_col"):
                         gen.target_col = tgt
@@ -78,14 +83,20 @@ def main():
                     gen.fit(fit, prof, acc, target_eps=eps - acc.total())
                     syn = gen.generate(len(fit.df))
                     dt = time.time() - t
-                    u = UtilityEvaluator(target_col=tgt, seed=seed, multi_model=True).evaluate(fit.df, syn, test_df=hold)
+                    u = UtilityEvaluator(target_col=tgt, seed=seed, multi_model=True).evaluate(
+                        fit.df, syn, test_df=hold
+                    )
                     row = dict(
-                        dataset=name, mech=mech, eps=eps, seed=seed,
+                        dataset=name,
+                        mech=mech,
+                        eps=eps,
+                        seed=seed,
                         useful=round(u.tstr_macro_f1 / u.trtr_macro_f1, 4),
                         useful_before=_old(name, mech, eps),
                         useful_3model=round(u.usefulness_multi, 4),
                         pair_tvd=round(pairwise_tvd(fit.df, syn), 4),
-                        proved=round(acc.total(), 4), secs=round(dt, 1),
+                        proved=round(acc.total(), 4),
+                        secs=round(dt, 1),
                     )
                     rows.append(row)
                     print(json.dumps(row), flush=True)
