@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.3.0 — 2026-10-12
+
+The three limitations 1.2.0 still listed as "not for this deadline", each now built and tested.
+
+### Added
+
+- **Exact-arithmetic noise for releases.** CKS'20 Algorithms 1-3 as specified:
+  Bernoulli(exp(-gamma)) from rational arithmetic and integer draws, the discrete Laplace and
+  Gaussian built on it, at the exact rational value of the charged scale. Every release (CLI
+  `run`, the API, the release builder) uses it; research grids keep the float sampler so
+  committed numbers reproduce. A test patches `math.exp` and NumPy's generator to raise and
+  still samples. Measured cost on an 800-row AIM release: 178 s exact vs 183 s float.
+- **Named API keys.** `SYNTHPROOF_API_KEYS="alice=<key>,bob=<key>"`; each spend is recorded in
+  the ledger against its key's owner, `/api/ledger` reports `eps_by_actor`, and `/api/health`
+  reports `auth_mode`. Every key is compared in constant time. Not yet: per-user budgets,
+  expiry, SSO.
+- **LiRA** (Carlini et al. 2022) as an offline audit (`synthproof/attacks/lira.py`,
+  `scripts/run_lira.py`): shadow releases, per-target Gaussians, likelihood ratios on fresh
+  challenge releases, AUC with a per-target bootstrap interval. A positive control must reach
+  AUC >= 0.9 before any null is reported. Results on UCI Adult (`results/lira.json`; 20
+  targets x 8 challenges, 16 shadows): leaky control 1.000; independent 0.569 [0.501, 0.640]
+  at eps 1 and 0.498 [0.421, 0.566] at eps 8; pairwise 0.550 [0.468, 0.626] and 0.551
+  [0.460, 0.626]. MST at eps 1 (reduced: 10 targets, 8 shadows): 0.565 [0.372, 0.755]
+  (`results/lira_mst.json`, transcribed from the run log); MST at eps 8 was not run (~9 h).
+  These are bounded nulls at 16 shadows, not proofs of privacy.
+
 ## 1.2.0 — 2026-10-12
 
 Everything under "Unreleased" below (the September release-boundary and accounting fixes) ships in

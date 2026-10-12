@@ -48,6 +48,25 @@ def main() -> None:
         seed=a.seed,
     )
     rows = []
+    out = Path(a.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    def save():
+        """Written after EVERY cell, so a stopped run keeps what it finished (MST: ~9 h a cell)."""
+        out.write_text(
+            json.dumps(
+                {
+                    "dataset": "uci_adult",
+                    "attack": "LiRA (Carlini et al. 2022), shadow releases, per-target Gaussians",
+                    "score": "-log(1 + nearest-record distance)",
+                    "target_selection": "outlier",
+                    "control_min_auc": CONTROL_MIN_AUC,
+                    "rows": rows,
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
 
     def record(res, seconds):
         lo, hi = res.auc_ci()
@@ -65,6 +84,7 @@ def main() -> None:
             "seconds": round(seconds, 1),
         }
         rows.append(row)
+        save()
         print(
             f"{res.mechanism:12} eps={res.target_eps!s:5} AUC {res.auc:.3f} [{lo:.3f}, {hi:.3f}]"
             f"  TPR@1%FPR {res.tpr_at_1pct_fpr:.3f}  ({seconds:.0f}s)",
@@ -93,22 +113,6 @@ def main() -> None:
             )
             record(res, time.time() - t)
 
-    out = Path(a.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(
-        json.dumps(
-            {
-                "dataset": "uci_adult",
-                "attack": "LiRA (Carlini et al. 2022), shadow releases, per-target Gaussians",
-                "score": "-log(1 + nearest-record distance)",
-                "target_selection": "outlier",
-                "control_min_auc": CONTROL_MIN_AUC,
-                "rows": rows,
-            },
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
     print(f"wrote {out}")
 
 

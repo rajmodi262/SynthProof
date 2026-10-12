@@ -1,0 +1,46 @@
+{
+  "dataset": "uci_adult",
+  "attack": "LiRA (Carlini et al. 2022), shadow releases, per-target Gaussians",
+  "score": "-log(1 + nearest-record distance)",
+  "target_selection": "outlier",
+  "provenance": "TRANSCRIBED from the run log of `python -m scripts.run_lira --mechanisms mst --targets 10 --shadows 8 --challenges 4` (2026-10-12), values as printed to 3 decimals. The run was stopped during the eps=8 cell after the eps=1 cell had taken 9.1 h (MST fits ~270 s each); run_lira writes its file only at the end, so per-challenge scores were not saved. eps=8 is NOT RUN, not a null.",
+  "not_run": [
+    {
+      "mechanism": "mst",
+      "target_eps": 8.0,
+      "reason": "stopped for compute (~9 h)"
+    }
+  ],
+  "rows": [
+    {
+      "mechanism": "leaky_1.0",
+      "target_eps": null,
+      "auc": 0.952,
+      "auc_ci_95": [
+        0.872,
+        1.0
+      ],
+      "tpr_at_1pct_fpr": 0.02,
+      "seconds": 9,
+      "num_targets": 10,
+      "num_shadows": 8,
+      "num_challenges": 4,
+      "train_size": 1000
+    },
+    {
+      "mechanism": "mst",
+      "target_eps": 1.0,
+      "auc": 0.565,
+      "auc_ci_95": [
+        0.372,
+        0.755
+      ],
+      "tpr_at_1pct_fpr": 0.2,
+      "seconds": 32715,
+      "num_targets": 10,
+      "num_shadows": 8,
+      "num_challenges": 4,
+      "train_size": 1000
+    }
+  ]
+}

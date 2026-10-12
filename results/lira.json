@@ -1,0 +1,89 @@
+{
+  "dataset": "uci_adult",
+  "attack": "LiRA (Carlini et al. 2022), shadow releases, per-target Gaussians",
+  "score": "-log(1 + nearest-record distance)",
+  "target_selection": "outlier",
+  "control_min_auc": 0.9,
+  "rows": [
+    {
+      "mechanism": "leaky_1.0",
+      "target_eps": null,
+      "auc": 1.0,
+      "auc_ci_95": [
+        0.9999999999999999,
+        1.0
+      ],
+      "tpr_at_1pct_fpr": 1.0,
+      "tpr_at_10pct_fpr": 1.0,
+      "num_targets": 20,
+      "num_shadows": 16,
+      "num_challenges": 8,
+      "train_size": 1000,
+      "seconds": 20.2
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "auc": 0.56921875,
+      "auc_ci_95": [
+        0.5007812500000001,
+        0.6400078124999999
+      ],
+      "tpr_at_1pct_fpr": 0.0,
+      "tpr_at_10pct_fpr": 0.2125,
+      "num_targets": 20,
+      "num_shadows": 16,
+      "num_challenges": 8,
+      "train_size": 1000,
+      "seconds": 65.1
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "auc": 0.49796875000000007,
+      "auc_ci_95": [
+        0.42124218750000003,
+        0.5662539062499999
+      ],
+      "tpr_at_1pct_fpr": 0.0125,
+      "tpr_at_10pct_fpr": 0.125,
+      "num_targets": 20,
+      "num_shadows": 16,
+      "num_challenges": 8,
+      "train_size": 1000,
+      "seconds": 70.3
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "auc": 0.55046875,
+      "auc_ci_95": [
+        0.46827343749999994,
+        0.6259375
+      ],
+      "tpr_at_1pct_fpr": 0.025,
+      "tpr_at_10pct_fpr": 0.15,
+      "num_targets": 20,
+      "num_shadows": 16,
+      "num_challenges": 8,
+      "train_size": 1000,
+      "seconds": 70.4
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "auc": 0.55125,
+      "auc_ci_95": [
+        0.4603046875,
+        0.6264101562500001
+      ],
+      "tpr_at_1pct_fpr": 0.0,
+      "tpr_at_10pct_fpr": 0.125,
+      "num_targets": 20,
+      "num_shadows": 16,
+      "num_challenges": 8,
+      "train_size": 1000,
+      "seconds": 70.3
+    }
+  ]
+}
