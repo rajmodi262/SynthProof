@@ -465,16 +465,21 @@ def test_retained_release_is_the_canary_free_one():
         release_rows=600,
     )
 
-    res = run_cell(
-        ds,
-        "independent",
-        1.0,
-        seed=7,
-        delta=1e-5,
-        num_canaries=10,
-        return_artifacts=True,
-        release_rows=600,
-    )
+    # The engine releases with exact-arithmetic noise (accounting/noise.py), so the reference run
+    # must too: same seed, same sampler, same data.
+    from synthproof.accounting.noise import exact_noise
+
+    with exact_noise():
+        res = run_cell(
+            ds,
+            "independent",
+            1.0,
+            seed=7,
+            delta=1e-5,
+            num_canaries=10,
+            return_artifacts=True,
+            release_rows=600,
+        )
 
     assert engine.last_release is not None
     pd.testing.assert_frame_equal(
