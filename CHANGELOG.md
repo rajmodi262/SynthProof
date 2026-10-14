@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.3.1 — 2026-10-14
+
+Fixes found by rehearsing the live demo against 1.3.0.
+
+### Fixed
+
+- **The console's correlation matrix was simulated** (a sin() formula under the real column
+  names) and two of its figures were hard-coded constants. It now shows Pearson matrices measured
+  from the run, and the mean/max |dR| computed from them.
+- **The tradeoff curve** is a fixed formula, not a fit; it was labelled "empirical" with a
+  "Predicted TSTR" and a "Recommended Bracket". It is now labelled an illustrative model.
+- **The 3D chamber labelled every release "AIM (eps=1.0)"**; it shows the mechanism and epsilon
+  that ran. The profile stage reported the post-fit running total; it reports profiling's own
+  spend. `/api/mechanisms` describes all seven mechanisms correctly.
+- **DEMO.md** rehearsed end to end: the retracted confound is gone from the "what's new" answer,
+  the restore step is a prerequisite, and the numbers are current.
+- `PAPER_SECTION.md` carries the re-run imputation numbers; the explainer, defence pack and
+  simple guide PDFs are rebuilt with every headline number verified.
+
 ## 1.3.0 — 2026-10-12
 
 The three limitations 1.2.0 still listed as "not for this deadline", each now built and tested.
