@@ -1,7 +1,9 @@
 # SynthProof — live demo runbook
 
-**Everything below was executed and verified on 2026-08-24.** Keys exist in `.keys/`, a release
-exists in `build/release/`, the API serves a pre-built console needing no npm.
+**Every step below was rehearsed end to end on 2026-10-14 against v1.3.0.** Keys exist in
+`.keys/` and the API serves a pre-built console needing no npm. **Before the demo, run the
+"Restore" command in section 3 once** -- it creates `build/release/`, which section 3 needs and
+which is not kept between machines.
 
 **Total runtime: 8 minutes.** Cut to the ⭐ items if you get 4.
 
@@ -14,7 +16,9 @@ cd D:\03_Study\CAPSTONE\SynthProof && .venv311\Scripts\python.exe -m uvicorn syn
 ```
 
 Open **http://127.0.0.1:8000** — the console is served by the API itself. No npm, no second
-process, no build step. Verified: HTTP 200, all four mechanisms available including real AIM.
+process, no build step. Verified: all seven mechanisms available, including real AIM and MST.
+Use a browser window at least **1280 px wide**: narrower, the run controls move below the 3D
+chamber (scroll down to them).
 
 **Leave that terminal running.** Open a SECOND terminal for the CLI parts below.
 
@@ -44,15 +48,22 @@ lost."
 
 ## 2. ⭐ A real release, live (2 min)
 
-In the **console** at http://127.0.0.1:8000 — pick the toy table, `pairwise`, ε = 1.0, run.
+In the **console** at http://127.0.0.1:8000 — click the **⚡ HR Attrition (fastest)** preset
+(the toy table is the slow path), keep `pairwise`, ε = 1.0, and press **Run release & compute
+proof**. It finishes in about ten seconds.
 
 Fourteen stages stream live over SSE. Point at these three as they go past:
 
 | Stage | What to say |
 |---|---|
-| `budget` | "The budget is split before anything runs — 0.1 to profiling, 0.9 to synthesis." |
-| `profile` | "Domain discovery is **charged**. Most pipelines read column ranges off your private table for free. Here it costs ε and the certificate records that it did." |
-| `audit` | "Audited ε is **0.0**, and beside it a ceiling of **2.97**." |
+| `budget` | "profile 0.000 + synthesis 1.000. This table's domain is declared publicly, so learning it costs nothing and the whole budget goes to synthesis. A table with no declared domain would be charged for it." |
+| `fit` | "+1.000 ε — every charge goes through the accountant; the sheet lists them." |
+| `audit` | "Audited ε is about **0.0**, and beside it a ceiling of **2.97**." |
+
+The **Audit Range** panel now states the ceiling beside the result, in words: the instrument
+cannot report above ε ≈ 2.97 at this canary count, so an audited value near zero is not evidence
+that nothing leaked. The correlation matrix is **measured** from the run; the tradeoff curve beside it is
+labelled an illustrative model — do not present it as data.
 
 **The line that lands:** "That zero is not good news and we refuse to present it as good news.
 At 60 canaries our auditor could not report above 2.97 even against a release that was 100%
@@ -91,7 +102,7 @@ Verify again:
 ```
 FAILED
 SIGNATURE VALID, RECORD UNTRUSTWORTHY.
-  dp:epsilonProved: record says 0.01, signed sheet says 0.9615567837005196
+  dp:epsilonProved: record says 0.01, signed sheet says 0.9999580768688316
 ```
 
 **Say:** "The signature is still perfectly valid. We didn't touch the signed bytes. We changed
@@ -161,10 +172,12 @@ run. Certifying ε costs canaries exponential in ε — ε = 7.36 needs about 4,
 > privacy metric. One of their own experts called that omission *privacy theater*. We ship both,
 > inside a record MLCommons validates.
 >
-> And the strongest thing we found is a negative: a benchmark scoring a marginal mechanism on a
-> few low-order statistics may be measuring **which statistics the mechanism chose to spend
-> budget on**, not fidelity. We only saw it because we ran a second dataset and it contradicted
-> the first."
+> And our own pipeline leaked outside its epsilon until we audited it: the published run seed
+> let anyone holding every other record rebuild a release and test membership — 15 of 15 exact
+> matches. The boundary checker we built for that is what we would hand a regulator."
+
+(Do **not** use the old "the benchmark measured clique selection" line: our own 175-fit
+ablation retracted it. See `results/SELECTION_ABLATION.md`.)
 
 **Volunteering the kills first is the strongest move available.** It proves the protocol was
 real. Nobody can ambush you with a paper you already cited against yourself.
@@ -175,12 +188,13 @@ real. Nobody can ambush you with a paper you already cited against yourself.
 
 | | |
 |---|---|
-| Tests / coverage | **607 passing, 93%**, CI gate 90% |
-| Datasets | UCI Adult + ACSIncome, 5 seeds, bootstrapped CIs |
-| Mechanisms | 4 families incl. **real AIM** over private-PGM |
-| Attacks | 5, covering **all three EDPB risks** |
-| Ledger | **9 attacks stopped**, 14 adversarial tests |
-| Reproducibility | `make reproduce` passes, manifest pins 11 files |
+| Tests / coverage | **1,082 tests**, coverage above the **94%** CI gate; CI green on Python 3.11-3.13 |
+| Datasets | 11 benchmarks (Adult, ACSIncome, Bank, Diabetes 130, Texas, SF Fire and five UCI), 5 seeds, bootstrapped CIs |
+| Mechanisms | 7, incl. **real AIM and MST** over private-PGM |
+| H1 on Adult, eps 8 | AIM 0.0105 and pairwise 0.0283 both beat independent 0.0947; **AIM vs pairwise overlap** |
+| Attacks | 5 per release, covering **all three EDPB risks**; **LiRA** offline: control AUC 1.0, no DP mechanism reliably attacked |
+| Ledger | **9 attacks stopped**; head verifies across restarts; spends attributed per API key |
+| Reproducibility | `make reproduce` passes, manifest pins 12 files |
 | Croissant | MLCommons validator, **0 warnings** |
 
 ---
@@ -192,7 +206,7 @@ real. Nobody can ambush you with a paper you already cited against yourself.
 | Port 8000 busy | `--port 8010`, open `127.0.0.1:8010` |
 | Console blank | Hard-refresh (Ctrl+Shift+R). Endpoints still demo fine via CLI |
 | API won't start | Skip it — **sections 1, 3, 4, 6 are pure CLI** and need no server |
-| Everything breaks | `..\SynthProof-Pitch-Cinematic-Full.html` — self-contained deck, opens in any browser. `..\SynthProof-Defence-Pack.pdf` — 25 pp, 45 Q&A |
+| Everything breaks | `..\01_Thesis_and_Deliverables\SynthProof-Defence-Pack.pdf` — 28 pp, 45 Q&A, every headline number verified against `results/` at build. (The old cinematic deck in `..\archive\` predates the corrected numbers; do not show it.) |
 
 **Nothing in sections 1, 3, 4 or 6 needs the API.** If the server dies mid-demo, keep going in
 the terminal.
@@ -208,5 +222,8 @@ the terminal.
   Gaussian-DP estimator. Ours can't. Say *ours*
 - ❌ "Our refusal gate is novel" — say **unrefuted**; the SDC Handbook was unreachable
 - ❌ Any ratio of ε_audited to ε_proved — the comparison is retracted
+- ❌ "AIM beats pairwise on Adult" — the intervals overlap since the D1 re-run
+- ❌ "The benchmark measured clique selection" — retracted by our own ablation
+- ❌ Anything read off the console's tradeoff curve — it is an illustrative model, not data
 
 Every one of these is in `research/08_novelty_verdict.md` if pressed.
