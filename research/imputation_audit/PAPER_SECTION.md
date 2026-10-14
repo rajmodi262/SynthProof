@@ -15,7 +15,7 @@ Recent research by Ganev, Annamalai, and De Cristofaro has systematically uncove
 - **Discretization:** Ganev et al. [3] proved that non-private continuous-variable binning and quantile selection similarly leak membership information unless explicitly noised and accounted for under DP.
 - **Class Imbalance & Oversampling:** Ganev et al. [4] established that pre-synthesis minority oversampling via SMOTE exposes minority records and creates geometric leakage.
 
-**Missing-data handling is the fourth universal preprocessing step and has remained un-audited in the privacy literature.** The only existing formal study of differential privacy with missing data—Mohapatra et al. [1] (PVLDB 2024)—investigated the orthogonal direction of utility enhancement and privacy amplification, demonstrating that missingness can attenuate individual influence under random erasure models, but provided zero adversarial auditing or membership inference evaluations. Consequently, an open theoretical and empirical question remained: does uncharged, data-dependent imputation fitted across records before DP synthesis create an exploitable privacy backdoor, or does the intrinsic low entropy of statistical imputation protect against downstream membership leakage? At the time of writing, this represents the first empirical privacy audit of the missing-data preprocessing step in DP tabular synthesis.
+**Missing-data handling is the fourth universal preprocessing step, and we found no prior privacy audit of it on our search** (an absence in what we searched, not a priority claim). The only existing formal study of differential privacy with missing data—Mohapatra et al. [1] (PVLDB 2024)—investigated the orthogonal direction of utility enhancement and privacy amplification, demonstrating that missingness can attenuate individual influence under random erasure models, but provided zero adversarial auditing or membership inference evaluations. Consequently, an open theoretical and empirical question remained: does uncharged, data-dependent imputation fitted across records before DP synthesis create an exploitable privacy backdoor, or does the intrinsic low entropy of statistical imputation protect against downstream membership leakage? At the time of writing, this represents the first empirical privacy audit of the missing-data preprocessing step in DP tabular synthesis.
 
 ---
 
@@ -44,16 +44,16 @@ Across $S=8$ random seeds per cell with 95% bootstrap confidence intervals (4,00
 
 | Generative Model | Privacy Budget | Arm A0 (`dropna`) | Arm A1 (Sentinel) | Arm A2 (Uncharged) | Arm A3 (Charged DP) |
 |---|---|---|---|---|---|
-| **Independent** | $\varepsilon = 1.0$ | 0.5036 [0.4968, 0.5108] | 0.5026 [0.4962, 0.5096] | **0.5026 [0.4962, 0.5096]** | **0.5034 [0.4975, 0.5097]** |
-| **Independent** | $\varepsilon = 4.0$ | 0.5049 [0.5001, 0.5104] | 0.5047 [0.4982, 0.5116] | **0.5047 [0.4982, 0.5116]** | **0.5041 [0.4972, 0.5112]** |
-| **DP-VAE** | $\varepsilon = 1.0$ | 0.4902 [0.4807, 0.4975] | 0.4986 [0.4868, 0.5087] | **0.4931 [0.4832, 0.5022]** | **0.4946 [0.4846, 0.5040]** |
-| **DP-VAE** | $\varepsilon = 4.0$ | 0.4988 [0.4908, 0.5061] | 0.4963 [0.4912, 0.5013] | **0.4978 [0.4909, 0.5041]** | **0.4980 [0.4909, 0.5048]** |
+| **Independent** | $\varepsilon = 1.0$ | 0.5036 [0.4968, 0.5108] | 0.5026 [0.4962, 0.5096] | **0.5036 [0.4976, 0.5095]** | **0.5035 [0.4973, 0.5096]** |
+| **Independent** | $\varepsilon = 4.0$ | 0.5049 [0.5001, 0.5104] | 0.5047 [0.4982, 0.5116] | **0.5038 [0.4988, 0.5085]** | **0.5035 [0.4983, 0.5083]** |
+| **DP-VAE** | $\varepsilon = 1.0$ | 0.4902 [0.4807, 0.4975] | 0.4986 [0.4868, 0.5087] | **0.4973 [0.4903, 0.5050]** | **0.4974 [0.4901, 0.5050]** |
+| **DP-VAE** | $\varepsilon = 4.0$ | 0.4988 [0.4908, 0.5061] | 0.4963 [0.4912, 0.5013] | **0.4965 [0.4867, 0.5070]** | **0.4967 [0.4870, 0.5067]** |
 
 ### 3.2 Interpretable Null Verdict
 In accordance with our pre-registered hypotheses:
-1. **Confidence Interval Overlap:** In every configuration, the 95% bootstrap confidence interval of Arm A2 overlaps completely with that of Arm A3 ($\Delta \text{AUC} \le 0.003$). The primary hypothesis of excess leakage ($H_1$) is rejected, confirming the interpretable null hypothesis ($H_0$).
+1. **Confidence Interval Overlap:** In every configuration, the 95% bootstrap confidence interval of Arm A2 overlaps completely with that of Arm A3 ($|\Delta \text{AUC}| \le 0.004$; arms A2/A3 re-run 2026-10-11 after the epsilon-charging fix). The primary hypothesis of excess leakage ($H_1$) is rejected, confirming the interpretable null hypothesis ($H_0$).
 2. **Indistinguishable from Chance:** All arms remain centered at baseline chance ($\text{AUC} \approx 0.50$), in sharp contrast to the 25% planted leak benchmark ($\text{AUC} \approx 0.541$).
-3. **Injected Overlays:** Under MCAR, MAR, and MNAR at 10% and 20% masking, Arm A2 consistently matched Arm A3 within $\pm 0.003$ AUC.
+3. **Injected Overlays:** Under MCAR, MAR, and MNAR at 10% and 20% masking, Arm A2 consistently matched Arm A3 within $\pm 0.004$ AUC.
 4. **`dropna` is a Selection Bias, Not a Privacy Bug:** Arm A0 produces an AUC indistinguishable from chance (0.5036 at $\varepsilon=1.0$), verifying that row deletion does not introduce membership vulnerability, while discarding up to 60% of available sample size under multi-attribute missingness.
 
 ### 3.3 Why Imputation Differs from Other Preprocessing Steps
