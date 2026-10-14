@@ -24,6 +24,9 @@ interface PrivacyChamberProps {
   onToggleCanaries?: (show: boolean) => void
   onToggleLinks?: (show: boolean) => void
   onPointClick?: (pointType: 'real' | 'synthetic' | 'canary') => void
+  /** The mechanism and epsilon of the release shown. The label was hard-coded "AIM (eps=1.0)". */
+  mechanism?: string
+  eps?: number
 }
 
 /** Theme-Adaptive High-Contrast Color Palette for Unmistakable Distinction */
@@ -606,6 +609,8 @@ export function PrivacyChamber({
   onToggleCanaries,
   onToggleLinks,
   onPointClick,
+  mechanism,
+  eps,
 }: PrivacyChamberProps) {
   const isDarkMode = useIsDarkMode()
   const palette = isDarkMode ? PALETTE.dark : PALETTE.light
@@ -1103,7 +1108,9 @@ export function PrivacyChamber({
                         <span>DP SYNTHETIC CLOUD</span>
                       </div>
                       <div className="text-[9px] font-normal text-amber-200/80">
-                        N = {cloud.synthetic.length.toLocaleString()} records · AIM (ε=1.0)
+                        N = {cloud.synthetic.length.toLocaleString()} records
+                        {mechanism ? ` · ${mechanism}` : ''}
+                        {eps !== undefined ? ` (ε=${eps})` : ''}
                       </div>
                     </div>
                   </Html>

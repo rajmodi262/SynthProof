@@ -430,6 +430,8 @@ export default function App() {
                   showLinks={showLinks}
                   running={running}
                   currentStage={currentStage}
+                  mechanism={submitted?.mechanism}
+                  eps={submitted?.target_eps}
                   onLayerChange={setLayer}
                   onToggleCanaries={setShowCanaries}
                   onToggleLinks={setShowLinks}
@@ -480,6 +482,8 @@ export default function App() {
                   showLinks={showLinks}
                   running={running}
                   currentStage={currentStage}
+                  mechanism={submitted?.mechanism}
+                  eps={submitted?.target_eps}
                   onLayerChange={setLayer}
                   onToggleCanaries={setShowCanaries}
                   onToggleLinks={setShowLinks}

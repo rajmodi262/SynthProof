@@ -35,7 +35,9 @@ export function FrontierStudio({
   const [scrubEps, setScrubEps] = useState<number>(targetEps || 1.0)
   const [matrixView, setMatrixView] = useState<'diff' | 'real' | 'synth'>('diff')
 
-  // Mathematical Pareto frontier model: F1(eps) = F_inf * (1 - exp(-k * eps))
+  // ILLUSTRATIVE saturation model F1(eps) = F_inf * (1 - exp(-k * eps)). It is NOT fitted to
+  // anything: k is a fixed constant, and only the TRTR ceiling and the marked current-release
+  // point are measured. The panel labels it as a model so it is never read as data.
   const baselineF1 = measurements ? measurements.trtr_f1 : 0.82
   const maxF1 = Math.min(1.0, baselineF1 * 0.98)
   const kRate = 1.45
@@ -67,14 +69,17 @@ export function FrontierStudio({
   const actualX = (Math.min(actualEps, maxPlotEps) / maxPlotEps) * w
   const actualY = actualF1 !== null ? h - (actualF1 / 1.0) * (h - 20) - 10 : null
 
-  // Correlation matrix columns from histograms or defaults
-  const cols = useMemo(() => {
-    if (result && result.histograms) {
-      const keys = Object.keys(result.histograms)
-      if (keys.length > 0) return keys.slice(0, 5)
-    }
-    return ['tenure_m', 'monthly_c', 'total_ch', 'contract', 'paperless']
-  }, [result])
+  // MEASURED correlations from the run (api/projection.correlation_matrices). This panel used
+  // to draw a sin()-generated matrix under the real column names; it now shows data or says
+  // there is none.
+  const corr = result?.correlations ?? null
+  const cols = corr ? corr.columns : []
+  const offDiag = corr
+    ? corr.real.flatMap((row, i) => row.map((r, j) => (i < j ? Math.abs(r - corr.synth[i][j]) : NaN)))
+        .filter((v) => !Number.isNaN(v))
+    : []
+  const meanAbsDiff = offDiag.length ? offDiag.reduce((a, b) => a + b, 0) / offDiag.length : null
+  const maxAbsDiff = offDiag.length ? Math.max(...offDiag) : null
 
   return (
     <section className="well overflow-hidden rounded-2xl border border-line bg-card/75 p-5 shadow-e0 backdrop-blur-md">
@@ -87,9 +92,9 @@ export function FrontierStudio({
             </span>
           </div>
           <p className="mt-1 font-sans text-xs text-muted flex items-center gap-1.5">
-            <span>Continuous empirical privacy-utility curve</span>
+            <span>Illustrative privacy-utility model</span>
             <MathSpan math="F_1(\varepsilon)" className="text-ink font-semibold" />
-            <span>and multi-attribute correlation fidelity matrix.</span>
+            <span>(not measured: only the current-release point and TRTR are) and the measured correlation matrix.</span>
           </p>
         </div>
 
@@ -106,7 +111,7 @@ export function FrontierStudio({
         <div className="rounded-xl border border-line bg-paper-2/60 p-4 shadow-sm">
           <div className="flex items-baseline justify-between">
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-ink">
-              Empirical Pareto Tradeoff Curve
+              Illustrative Tradeoff Model (not measured)
             </span>
             <span className="font-mono text-xs text-brass">
               <MathSpan math="F_1 \text{ vs Budget } \varepsilon" />
@@ -141,7 +146,7 @@ export function FrontierStudio({
                 fontFamily="Geist Mono"
                 fontWeight="bold"
               >
-                Recommended Bracket (ε = 0.8 – 2.0)
+                Shaded band: ε = 0.8 – 2.0 (display only, not a recommendation)
               </text>
 
               {/* Theoretical Baseline line (TRTR) */}
@@ -206,7 +211,7 @@ export function FrontierStudio({
               />
             </div>
             <div className="font-mono text-xs font-bold text-brass">
-              Predicted TSTR: {scrubF1.toFixed(3)}
+              Model TSTR (illustrative): {scrubF1.toFixed(3)}
             </div>
           </div>
         </div>
@@ -247,11 +252,18 @@ export function FrontierStudio({
               </span>
             ) : (
               <span>
-                Differentially private feature correlation matrix <MathSpan math="R_{\text{synth}}" /> from AIM generator release.
+                Pearson correlation <MathSpan math="R_{\text{synth}}" /> of the released synthetic table.
               </span>
             )}
           </p>
 
+          {!corr && (
+            <p className="mt-3 font-mono text-[11px] text-faint">
+              {result
+                ? 'Not computed: this table has fewer than two numeric columns.'
+                : 'Run a release to compute the measured correlation matrix.'}
+            </p>
+          )}
           <div className="mt-3 overflow-x-auto">
             <table className="w-full border-collapse font-mono text-[11px]">
               <thead>
@@ -271,11 +283,10 @@ export function FrontierStudio({
                       {rowCol.slice(0, 8)}
                     </td>
                     {cols.map((colCol, cIdx) => {
-                      // Deterministic simulated correlation matrix based on row/col distance
+                      // Measured values from the run (see `corr` above).
                       const isDiag = rIdx === cIdx
-                      const realCorr = isDiag ? 1.0 : Math.sin(rIdx * 1.7 + cIdx * 2.3) * 0.55
-                      const noise = Math.sin(rIdx + cIdx * 3.1) * (0.04 + 0.08 / Math.max(0.5, actualEps))
-                      const synthCorr = isDiag ? 1.0 : Math.max(-1, Math.min(1, realCorr + noise))
+                      const realCorr = corr ? corr.real[rIdx][cIdx] : 0
+                      const synthCorr = corr ? corr.synth[rIdx][cIdx] : 0
                       const diff = isDiag ? 0.0 : Math.abs(realCorr - synthCorr)
 
                       const val = matrixView === 'diff' ? diff : matrixView === 'real' ? realCorr : synthCorr
@@ -306,8 +317,14 @@ export function FrontierStudio({
           </div>
 
           <div className="mt-3 flex items-center justify-between border-t border-line/60 pt-2 font-mono text-xs text-muted">
-            <span>Preserved Rank Manifolds: <strong className="text-ink">98.4%</strong></span>
-            <span>Matrix Condition Number: <strong className="text-ink">2.14</strong></span>
+            <span>
+              Mean |ΔR| off-diagonal:{' '}
+              <strong className="text-ink">{meanAbsDiff !== null ? meanAbsDiff.toFixed(3) : '—'}</strong>
+            </span>
+            <span>
+              Max |ΔR|:{' '}
+              <strong className="text-ink">{maxAbsDiff !== null ? maxAbsDiff.toFixed(3) : '—'}</strong>
+            </span>
           </div>
         </div>
       </div>

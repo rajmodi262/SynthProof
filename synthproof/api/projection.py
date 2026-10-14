@@ -169,3 +169,25 @@ def marginal_histograms(
             "real_out_of_range": round(float(1.0 - (r_h.sum() / max(1, len(r)))), 5),
         }
     return out
+
+
+def correlation_matrices(
+    real_df: pd.DataFrame, synthetic_df: pd.DataFrame, cols: Sequence[str]
+) -> Optional[dict]:
+    """Pearson correlation matrices of the real fit split and the synthetic release.
+
+    The console's correlation panel used to draw a matrix from a sin() formula under the real
+    column names -- simulated values presented as data. This is the measured version. Returns
+    None when fewer than two numeric columns exist, so the panel says so instead of inventing
+    one. NaN (a constant column) is reported as 0.0 correlation.
+    """
+    cols = [c for c in cols if c in real_df.columns and c in synthetic_df.columns]
+    if len(cols) < 2:
+        return None
+
+    def corr(df: pd.DataFrame) -> list:
+        m = df[cols].apply(pd.to_numeric, errors="coerce").corr().fillna(0.0).to_numpy(copy=True)
+        np.fill_diagonal(m, 1.0)
+        return [[round(float(v), 4) for v in row] for row in m]
+
+    return {"columns": list(cols), "real": corr(real_df), "synth": corr(synthetic_df)}

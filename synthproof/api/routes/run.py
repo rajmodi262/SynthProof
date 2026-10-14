@@ -232,6 +232,7 @@ def _run_stream(req: RunRequest, actor: str = "anonymous") -> Iterator[str]:
             fit_df, synth, ds.numerical_cols, canary_df=canaries.members, seed=seed32
         )
         hists = projection.marginal_histograms(fit_df, synth, ds.numerical_cols[:4])
+        correlations = projection.correlation_matrices(fit_df, synth, ds.numerical_cols[:5])
 
         entry = state.GLOBAL_LEDGER.append(
             LedgerEntry(
@@ -351,6 +352,7 @@ def _run_stream(req: RunRequest, actor: str = "anonymous") -> Iterator[str]:
                     "canaries": cloud.canaries,
                 },
                 "histograms": hists,
+                "correlations": correlations,
                 "spends": [
                     {
                         "run_id": s.run_id,

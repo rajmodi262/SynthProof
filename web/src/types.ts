@@ -22,7 +22,7 @@ export interface DatasetOption {
 export interface Mechanism {
   key: string
   label: string
-  family: 'baseline' | 'structured'
+  family: 'baseline' | 'structured' | 'control' | 'deep'
   blurb: string
   implemented: boolean
   available: boolean
@@ -139,6 +139,8 @@ export interface RunResult {
   attacks_not_implemented: NotImplementedAttack[]
   cloud: Cloud
   histograms: Record<string, Histogram>
+  /** Pearson matrices of the real fit split and the release; null with < 2 numeric columns. */
+  correlations?: { columns: string[]; real: number[][]; synth: number[][] } | null
   spends: Spend[]
   ledger: LedgerRef
   sheet?: Record<string, any>

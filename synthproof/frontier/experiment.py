@@ -427,8 +427,11 @@ def run_cell(
     emit(
         "profile",
         {
-            "eps_spent": float(acc.total()),
-            "eps_remaining": float(acc.remaining()),
+            # What PROFILING spent, not the accountant's running total: this stage is reported
+            # after the fit has also charged, so acc.total() showed the whole budget here and the
+            # console read it as "domain discovery cost 1.000" when it cost 0 (declared schema).
+            "eps_spent": float(profile.eps_spent),
+            "eps_remaining": float(acc.budget.epsilon - profile.eps_spent),
             "suppressed_categories": int(
                 sum(c.suppressed_categories for c in profile.columns.values())
             ),

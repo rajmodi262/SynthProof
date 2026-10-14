@@ -9,6 +9,7 @@ fabrication is asserted here rather than assumed.
 import io
 import json
 
+import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
@@ -587,3 +588,38 @@ def test_domain_source_is_a_valid_boundary_value_not_a_marketing_string():
         if f.code == "RB6"
     ]
     assert rb6_bad and rb6_bad[0].severity != "note"
+
+
+# ------------------------------------------------------------------ measured, not simulated
+
+
+def test_the_run_reports_measured_correlation_matrices():
+    # The console drew its correlation matrix from a sin() formula under real column names.
+    done = next(p for e, p in _run(num_canaries=4) if e == "done")
+    corr = done["correlations"]
+    assert corr is not None and len(corr["columns"]) >= 2
+    for m in (corr["real"], corr["synth"]):
+        a = np.asarray(m)
+        assert a.shape == (len(corr["columns"]),) * 2
+        assert np.allclose(np.diag(a), 1.0) and np.allclose(a, a.T)
+        assert np.all(np.abs(a) <= 1.0 + 1e-9)
+
+
+def test_the_profile_stage_reports_what_profiling_spent_not_the_running_total():
+    events = _run(num_canaries=4)
+    profile = next(p for e, p in events if e == "stage" and p.get("stage") == "profile")
+    done = next(p for e, p in events if e == "done")
+    # The toy table declares its domain, so profiling is free; the release still spends eps.
+    assert profile["eps_spent"] == 0.0
+    assert done["measurements"]["proved_eps"] > 0.0
+
+
+def test_the_console_contains_no_simulated_measurements():
+    from pathlib import Path
+
+    src = Path(__file__).resolve().parents[1] / "web" / "src" / "components"
+    frontier = (src / "FrontierStudio.tsx").read_text(encoding="utf-8")
+    chamber = (src / "PrivacyChamber.tsx").read_text(encoding="utf-8")
+    assert "Math.sin(rIdx" not in frontier, "correlation values must come from the run"
+    assert "98.4%" not in frontier and "2.14</strong>" not in frontier
+    assert "AIM (ε=1.0)" not in chamber, "the mechanism label must name what actually ran"

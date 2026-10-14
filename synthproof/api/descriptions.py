@@ -40,8 +40,31 @@ MECHANISM_INFO = {
     "aim": {
         "label": "AIM (private-PGM)",
         "family": "structured",
-        "blurb": "Adaptive marginal selection by report-noisy-max plus graphical-model "
-        "inference. Selection is charged to the accountant. Requires private-pgm.",
+        "blurb": "Adaptive marginal selection by the exponential mechanism, plus graphical-model "
+        "inference, on one zCDP budget. Selection is charged to the accountant. Requires "
+        "private-pgm.",
+        "implemented": True,
+    },
+    "mst": {
+        "label": "MST (private-PGM)",
+        "family": "structured",
+        "blurb": "Maximum spanning tree: d-1 two-way marginals selected Kruskal-style by the "
+        "exponential mechanism, then one graphical model. Requires private-pgm.",
+        "implemented": True,
+    },
+    "fixed_workload": {
+        "label": "Fixed workload (control)",
+        "family": "control",
+        "blurb": "AIM's engine with selection deleted: a public, data-independent set of "
+        "pairs is measured instead. An ablation control, not a recommended mechanism.",
+        "implemented": True,
+    },
+    "dpvae": {
+        "label": "DP-VAE (DP-SGD)",
+        "family": "deep",
+        "blurb": "A variational autoencoder trained with DP-SGD. Selects no marginals; the "
+        "non-marginal control. Its subsampled steps are not cross-checked by the second "
+        "accountant (reported as 'unsupported').",
         "implemented": True,
     },
 }
