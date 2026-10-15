@@ -14,6 +14,30 @@ Line-level thesis and defence corrections from September 2026 are in
 
 ---
 
+## 2026-10-16 — DP correctness sweep (W5)
+
+Tests that check the statistic each charge actually perturbs (`tests/test_sensitivity.py`), an
+empirical distinguishing test per mechanism (`tests/test_empirical_dp.py`) and API fuzzing
+(`tests/test_fuzz.py`) found four privacy defects and one server bug. Arguments per charge site:
+[`docs/SENSITIVITY.md`](docs/SENSITIVITY.md).
+
+| What | Was | Now | Effect on published results |
+|---|---|---|---|
+| Integer noise on real values (`moments` mean/std, profiler min/max for undeclared ranges, imputation sums) | `true + Z`, Z an integer, so the output kept the true value's fractional part: not DP at any epsilon | real queries rounded onto a Delta/1000 grid first (`noisy_real_query`); same epsilon | `moments` is not in any committed results table; the profiler path only applies to tables without declared bounds (no research grid); imputation A3/A4 re-run, below |
+| `moments` sensitivity (audit F5) | clipped mean charged at sensitivity 1.0; true sensitivity (b − a)/n | noisy shifted sum, sum of squares and count, each with a true sensitivity | none committed |
+| A4_CHARGED neighbour sum | raw sum perturbed (sensitivity max(\|lo\|, \|hi\|)) while charging width | shifted sum. A4_CHARGED remains a labelled heuristic, not a proven DP mechanism | re-run, below |
+| DP-VAE sampling | accounted as Poisson subsampling, trained on fixed-size batches | Poisson in the loop | every DP-VAE imputation cell re-run, below |
+| API, `Infinity`/`NaN` in a request | answered 500 (the validation error could not be serialised) | 422 | none |
+
+**Imputation audit re-run (42 cells: every DP-VAE cell, every A3 and A4_CHARGED cell).** The null
+holds: all 19 A2/A3 pairs still overlap, the largest |A2 − A3| is 0.00381 (was 0.00358), and no
+cell moved by more than 0.008 AUC. The tables in `research/imputation_audit/RESULTS.md` and
+`PAPER_SECTION.md` are now generated from the JSON; the DP-VAE rows changed.
+
+**Reproducibility, stated precisely.** With the seed fixed, AIM-family *fitted models* are
+bit-identical across processes; private-PGM's float32 *sampler* is not (different tables across
+processes and after JAX's compilation caches change). Pinned by `tests/test_reproducible_fits.py`.
+
 ## 2026-10-16 — provenance sweep (W1)
 
 A full sweep of 21 results-bearing documents against committed results found **127 numbers in 20

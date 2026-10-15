@@ -47,6 +47,7 @@ All values report the mean AUC across $S=8$ independent seeds with 95% percentil
 ### Primary Benchmark: UCI Adult (Native Missingness)
 Adult raw table containing real-world missingness in `workclass` and `occupation` (~7.4% incomplete records).
 
+<!-- BEGIN GENERATED: imputation-arms-table -->
 | Mechanism | $\varepsilon$ | Arm | Handling Description | DistanceMIA AUC [95% CI] | DOMIAS AUC [95% CI] | Verdict vs Pre-Reg |
 |---|---|---|---|---|---|---|
 | **Independent** | 1.0 | **A0** | Complete-case drop (`dropna`) | 0.5036 [0.4968, 0.5108] | 0.5173 [0.5080, 0.5265] | Baseline control |
@@ -57,14 +58,17 @@ Adult raw table containing real-world missingness in `workclass` and `occupation
 | **Independent** | 4.0 | **A1** | Sentinel (`__MISSING__`) | 0.5047 [0.4982, 0.5116] | 0.5162 [0.5073, 0.5253] | Structural control |
 | **Independent** | 4.0 | **A2** | Uncharged Private Imputation | **0.5038 [0.4988, 0.5085]** | 0.5140 [0.5061, 0.5224] | **Null ($H_0$): Overlaps A3** |
 | **Independent** | 4.0 | **A3** | Charged DP Imputation | **0.5035 [0.4983, 0.5083]** | 0.5140 [0.5054, 0.5226] | Charged baseline |
-| **DP-VAE** | 1.0 | **A0** | Complete-case drop (`dropna`) | 0.4902 [0.4807, 0.4975] | 0.5135 [0.5040, 0.5240] | Baseline control |
-| **DP-VAE** | 1.0 | **A1** | Sentinel (`__MISSING__`) | 0.4986 [0.4868, 0.5087] | 0.5151 [0.5069, 0.5233] | Structural control |
-| **DP-VAE** | 1.0 | **A2** | Uncharged Private Imputation | **0.4973 [0.4903, 0.5050]** | 0.5136 [0.5054, 0.5219] | **Null ($H_0$): Overlaps A3** |
-| **DP-VAE** | 1.0 | **A3** | Charged DP Imputation | **0.4974 [0.4901, 0.5050]** | 0.5135 [0.5053, 0.5217] | Charged baseline |
-| **DP-VAE** | 4.0 | **A0** | Complete-case drop (`dropna`) | 0.4988 [0.4908, 0.5061] | 0.5158 [0.5070, 0.5245] | Baseline control |
-| **DP-VAE** | 4.0 | **A1** | Sentinel (`__MISSING__`) | 0.4963 [0.4912, 0.5013] | 0.5144 [0.5056, 0.5229] | Structural control |
-| **DP-VAE** | 4.0 | **A2** | Uncharged Private Imputation | **0.4965 [0.4867, 0.5070]** | 0.5127 [0.5044, 0.5209] | **Null ($H_0$): Overlaps A3** |
-| **DP-VAE** | 4.0 | **A3** | Charged DP Imputation | **0.4967 [0.4870, 0.5067]** | 0.5132 [0.5053, 0.5211] | Charged baseline |
+| **DP-VAE** | 1.0 | **A0** | Complete-case drop (`dropna`) | 0.4981 [0.4905, 0.5054] | 0.5135 [0.5051, 0.5221] | Baseline control |
+| **DP-VAE** | 1.0 | **A1** | Sentinel (`__MISSING__`) | 0.4975 [0.4896, 0.5056] | 0.5136 [0.5055, 0.5218] | Structural control |
+| **DP-VAE** | 1.0 | **A2** | Uncharged Private Imputation | **0.4975 [0.4900, 0.5056]** | 0.5138 [0.5055, 0.5222] | **Null ($H_0$): Overlaps A3** |
+| **DP-VAE** | 1.0 | **A3** | Charged DP Imputation | **0.4976 [0.4900, 0.5052]** | 0.5135 [0.5053, 0.5217] | Charged baseline |
+| **DP-VAE** | 4.0 | **A0** | Complete-case drop (`dropna`) | 0.4961 [0.4874, 0.5054] | 0.5125 [0.5044, 0.5205] | Baseline control |
+| **DP-VAE** | 4.0 | **A1** | Sentinel (`__MISSING__`) | 0.4948 [0.4856, 0.5046] | 0.5127 [0.5047, 0.5207] | Structural control |
+| **DP-VAE** | 4.0 | **A2** | Uncharged Private Imputation | **0.4970 [0.4873, 0.5069]** | 0.5130 [0.5049, 0.5209] | **Null ($H_0$): Overlaps A3** |
+| **DP-VAE** | 4.0 | **A3** | Charged DP Imputation | **0.4967 [0.4871, 0.5067]** | 0.5130 [0.5049, 0.5209] | Charged baseline |
+
+*Generated from `results/imputation_audit.json`.*
+<!-- END GENERATED: imputation-arms-table -->
 
 ---
 
@@ -72,6 +76,7 @@ Adult raw table containing real-world missingness in `workclass` and `occupation
 
 Evaluated under `IndependentMarginalGenerator` across MCAR, MAR, and MNAR at 10% and 20% masking rates.
 
+<!-- BEGIN GENERATED: imputation-conditions-table -->
 | Condition | $\varepsilon$ | Arm A2 (Uncharged) DistMIA | Arm A3 (Charged DP) DistMIA | Overlap? | Arm A0 (`dropna`) DistMIA |
 |---|---|---|---|---|---|
 | **MCAR 10%** | 1.0 | 0.5073 [0.5008, 0.5143] | 0.5094 [0.5033, 0.5163] | **YES** | 0.5005 [0.4949, 0.5076] |
@@ -82,10 +87,13 @@ Evaluated under `IndependentMarginalGenerator` across MCAR, MAR, and MNAR at 10%
 | **MAR 10%** | 4.0 | 0.5098 [0.5017, 0.5177] | 0.5084 [0.5005, 0.5163] | **YES** | 0.5041 [0.4990, 0.5093] |
 | **MAR 20%** | 1.0 | 0.5055 [0.4993, 0.5114] | 0.5030 [0.4988, 0.5071] | **YES** | 0.4980 [0.4930, 0.5040] |
 | **MAR 20%** | 4.0 | 0.5049 [0.4993, 0.5101] | 0.5040 [0.4993, 0.5087] | **YES** | 0.4996 [0.4927, 0.5064] |
-| **MNAR 10%** | 1.0 | 0.5059 [0.4979, 0.5130] | 0.5076 [0.5000, 0.5140] | **YES** | 0.4994 [0.4936, 0.5055] |
+| **MNAR 10%** | 1.0 | 0.5059 [0.4979, 0.5130] | 0.5075 [0.4999, 0.5138] | **YES** | 0.4994 [0.4936, 0.5055] |
 | **MNAR 10%** | 4.0 | 0.5050 [0.4965, 0.5121] | 0.5077 [0.4990, 0.5152] | **YES** | 0.5008 [0.4937, 0.5076] |
 | **MNAR 20%** | 1.0 | 0.5016 [0.4962, 0.5070] | 0.5037 [0.4984, 0.5089] | **YES** | 0.5009 [0.4962, 0.5054] |
 | **MNAR 20%** | 4.0 | 0.5002 [0.4950, 0.5049] | 0.5005 [0.4938, 0.5068] | **YES** | 0.4943 [0.4879, 0.5003] |
+
+*Generated from `results/imputation_audit.json`.*
+<!-- END GENERATED: imputation-conditions-table -->
 
 ---
 

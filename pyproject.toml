@@ -136,6 +136,7 @@ pytest_add_cli_args = ["-p", "no:cacheprovider", "--no-cov", "-q"]
 pytest_add_cli_args_test_selection = [
     "tests/test_accounting.py",
     "tests/test_accounting_properties.py",
+    "tests/test_accounting_exact.py",
     "tests/test_budget_tightening.py",
     "tests/test_differential_accounting.py",
     "tests/test_exact_noise.py",

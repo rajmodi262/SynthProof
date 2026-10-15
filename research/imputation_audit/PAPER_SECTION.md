@@ -44,12 +44,16 @@ Across $S=8$ random seeds per cell with 95% bootstrap confidence intervals (4,00
 
 **Table 1: Membership Inference AUC (DistanceMIA) on UCI Adult with Native Missingness ($n=1,500$ members, $n=1,500$ non-members).**
 
+<!-- BEGIN GENERATED: imputation-paper-table -->
 | Generative Model | Privacy Budget | Arm A0 (`dropna`) | Arm A1 (Sentinel) | Arm A2 (Uncharged) | Arm A3 (Charged DP) |
 |---|---|---|---|---|---|
 | **Independent** | $\varepsilon = 1.0$ | 0.5036 [0.4968, 0.5108] | 0.5026 [0.4962, 0.5096] | **0.5036 [0.4976, 0.5095]** | **0.5035 [0.4973, 0.5096]** |
 | **Independent** | $\varepsilon = 4.0$ | 0.5049 [0.5001, 0.5104] | 0.5047 [0.4982, 0.5116] | **0.5038 [0.4988, 0.5085]** | **0.5035 [0.4983, 0.5083]** |
-| **DP-VAE** | $\varepsilon = 1.0$ | 0.4902 [0.4807, 0.4975] | 0.4986 [0.4868, 0.5087] | **0.4973 [0.4903, 0.5050]** | **0.4974 [0.4901, 0.5050]** |
-| **DP-VAE** | $\varepsilon = 4.0$ | 0.4988 [0.4908, 0.5061] | 0.4963 [0.4912, 0.5013] | **0.4965 [0.4867, 0.5070]** | **0.4967 [0.4870, 0.5067]** |
+| **DP-VAE** | $\varepsilon = 1.0$ | 0.4981 [0.4905, 0.5054] | 0.4975 [0.4896, 0.5056] | **0.4975 [0.4900, 0.5056]** | **0.4976 [0.4900, 0.5052]** |
+| **DP-VAE** | $\varepsilon = 4.0$ | 0.4961 [0.4874, 0.5054] | 0.4948 [0.4856, 0.5046] | **0.4970 [0.4873, 0.5069]** | **0.4967 [0.4871, 0.5067]** |
+
+*Distance-MIA AUC [95% CI]. Generated from `results/imputation_audit.json`.*
+<!-- END GENERATED: imputation-paper-table -->
 
 ### 3.2 Interpretable Null Verdict
 In accordance with our pre-registered hypotheses:

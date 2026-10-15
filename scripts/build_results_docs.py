@@ -192,6 +192,111 @@ def h1_ratio_table() -> str:
     return "\n".join(rows)
 
 
+_IMP = "results/imputation_audit.json"
+_ARM_LABEL = {
+    "A0": "Complete-case drop (`dropna`)",
+    "A1": "Sentinel (`__MISSING__`)",
+    "A2": "Uncharged Private Imputation",
+    "A3": "Charged DP Imputation",
+}
+_MECH_LABEL = {"independent": "Independent", "dpvae": "DP-VAE"}
+
+
+def _ci(stat: dict) -> str:
+    lo, hi = stat["ci_95"]
+    return f"{stat['mean']:.4f} [{lo:.4f}, {hi:.4f}]"
+
+
+def _overlap(a: dict, b: dict) -> bool:
+    return not (a["ci_95"][1] < b["ci_95"][0] or b["ci_95"][1] < a["ci_95"][0])
+
+
+def _imp_cell(cells: dict, arm: str, mech: str, eps: float, cond: str) -> dict:
+    return cells[f"{arm}_{mech}_eps{eps:.1f}_{cond}"]
+
+
+def imputation_arms_table() -> str:
+    """Every arm, on Adult with its native missingness: research/imputation_audit/RESULTS.md."""
+    cells = _load(_IMP)["cells"]
+    rows = [
+        "| Mechanism | $\\varepsilon$ | Arm | Handling Description | DistanceMIA AUC [95% CI] "
+        "| DOMIAS AUC [95% CI] | Verdict vs Pre-Reg |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for mech in ("independent", "dpvae"):
+        for eps in (1.0, 4.0):
+            a2 = _imp_cell(cells, "A2", mech, eps, "native")["distance_mia"]
+            a3 = _imp_cell(cells, "A3", mech, eps, "native")["distance_mia"]
+            for arm in ("A0", "A1", "A2", "A3"):
+                c = _imp_cell(cells, arm, mech, eps, "native")
+                dist = _ci(c["distance_mia"])
+                verdict = {"A0": "Baseline control", "A1": "Structural control"}.get(arm)
+                if arm == "A2":
+                    dist = f"**{dist}**"
+                    verdict = (
+                        "**Null ($H_0$): Overlaps A3**"
+                        if _overlap(a2, a3)
+                        else "**Separates from A3**"
+                    )
+                elif arm == "A3":
+                    dist = f"**{dist}**"
+                    verdict = "Charged baseline"
+                rows.append(
+                    f"| **{_MECH_LABEL[mech]}** | {eps:.1f} | **{arm}** | {_ARM_LABEL[arm]} | "
+                    f"{dist} | {_ci(c['domias'])} | {verdict} |"
+                )
+    rows.append("")
+    rows.append(f"*Generated from `{_IMP}`.*")
+    return "\n".join(rows)
+
+
+def imputation_conditions_table() -> str:
+    """Injected missingness, IndependentMarginalGenerator: research/imputation_audit/RESULTS.md."""
+    cells = _load(_IMP)["cells"]
+    label = {"mcar": "MCAR", "mar": "MAR", "mnar": "MNAR"}
+    rows = [
+        "| Condition | $\\varepsilon$ | Arm A2 (Uncharged) DistMIA | Arm A3 (Charged DP) DistMIA "
+        "| Overlap? | Arm A0 (`dropna`) DistMIA |",
+        "|---|---|---|---|---|---|",
+    ]
+    for kind in ("mcar", "mar", "mnar"):
+        for rate in (10, 20):
+            for eps in (1.0, 4.0):
+                cond = f"{kind}_{rate}"
+                a2, a3, a0 = (
+                    _imp_cell(cells, arm, "independent", eps, cond)["distance_mia"]
+                    for arm in ("A2", "A3", "A0")
+                )
+                ov = "**YES**" if _overlap(a2, a3) else "**NO**"
+                rows.append(
+                    f"| **{label[kind]} {rate}%** | {eps:.1f} | {_ci(a2)} | {_ci(a3)} | {ov} | "
+                    f"{_ci(a0)} |"
+                )
+    rows.append("")
+    rows.append(f"*Generated from `{_IMP}`.*")
+    return "\n".join(rows)
+
+
+def imputation_paper_table() -> str:
+    """The same native-missingness cells, one row per mechanism and budget: PAPER_SECTION.md."""
+    cells = _load(_IMP)["cells"]
+    rows = [
+        "| Generative Model | Privacy Budget | Arm A0 (`dropna`) | Arm A1 (Sentinel) "
+        "| Arm A2 (Uncharged) | Arm A3 (Charged DP) |",
+        "|---|---|---|---|---|---|",
+    ]
+    for mech in ("independent", "dpvae"):
+        for eps in (1.0, 4.0):
+            v = [_ci(_imp_cell(cells, a, mech, eps, "native")["distance_mia"]) for a in _ARM_LABEL]
+            rows.append(
+                f"| **{_MECH_LABEL[mech]}** | $\\varepsilon = {eps:.1f}$ | {v[0]} | {v[1]} | "
+                f"**{v[2]}** | **{v[3]}** |"
+            )
+    rows.append("")
+    rows.append(f"*Distance-MIA AUC [95% CI]. Generated from `{_IMP}`.*")
+    return "\n".join(rows)
+
+
 # (document, block name, generator)
 BLOCKS: List[Tuple[str, str, Callable[[], str]]] = [
     ("results/ADVERSARY_COMPARISON.md", "adversary-table", adversary_table),
@@ -201,6 +306,21 @@ BLOCKS: List[Tuple[str, str, Callable[[], str]]] = [
     ("results/AUDITOR_COMPARISON.md", "auditor-table", auditor_table),
     ("results/H1_RESULTS.md", "h1-trend-table", h1_trend_table),
     ("results/H1_RESULTS.md", "h1-ratio-table", h1_ratio_table),
+    (
+        "research/imputation_audit/RESULTS.md",
+        "imputation-arms-table",
+        imputation_arms_table,
+    ),
+    (
+        "research/imputation_audit/RESULTS.md",
+        "imputation-conditions-table",
+        imputation_conditions_table,
+    ),
+    (
+        "research/imputation_audit/PAPER_SECTION.md",
+        "imputation-paper-table",
+        imputation_paper_table,
+    ),
 ]
 
 

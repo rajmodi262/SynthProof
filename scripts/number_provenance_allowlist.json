@@ -16,11 +16,11 @@
     "0.0459": "Historical two-fit diagnostic, after the fix, on the isolated synthetic table. Not saved as a results file."
   },
   "research/imputation_audit/PAPER_SECTION.md": {
-    "0.004": "max |AUC(A2) - AUC(A3)| over all 19 pairs and all three attacks = 0.00358 (distance_mia, A2_dpvae_eps1.0_mcar_10), recomputed 2026-10-16 from results/imputation_audit.json.",
+    "0.004": "max |AUC(A2) - AUC(A3)| over all 19 pairs and all three attacks = 0.00381 (distance_mia, A2_dpvae_eps1.0_mcar_10), recomputed 2026-10-16 from results/imputation_audit.json after the W5 re-run.",
     "0.00067": "Formula: 1/n with n = 1,500."
   },
   "research/imputation_audit/RESULTS.md": {
-    "0.004": "max |AUC(A2) - AUC(A3)| over all 19 pairs and all three attacks = 0.00358, recomputed 2026-10-16 from results/imputation_audit.json.",
+    "0.004": "max |AUC(A2) - AUC(A3)| over all 19 pairs and all three attacks = 0.00381 (distance_mia, A2_dpvae_eps1.0_mcar_10), recomputed 2026-10-16 from results/imputation_audit.json after the W5 re-run.",
     "0.00067": "Formula: 1/n with n = 1,500."
   },
   "results/CEILING_ABLATION.md": {
