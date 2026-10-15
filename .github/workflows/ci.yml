@@ -1,8 +1,13 @@
 name: CI
 
 on:
+  # Every push, on every branch. CI used to run only on master/main and PRs, so work on a
+  # feature branch had no checks until someone remembered `gh workflow run` -- the 2026-10-11
+  # submission branch went days without a run. Tags run it too: a version tag publishes the
+  # image (the `docker` job), and nothing should publish from an untested commit.
   push:
-    branches: [master, main]
+    branches: ["**"]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
   schedule:
@@ -15,9 +20,16 @@ on:
 permissions:
   contents: read
 
+# A newer push to the same branch makes the older run's answer irrelevant; cancelling it keeps
+# the queue short. Tag and scheduled runs are never cancelled.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/') }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -85,6 +97,15 @@ jobs:
       - name: Citations resolve
         run: python scripts/check_citations.py
 
+      - name: Every number in a results document traces to a committed result
+        # Added 2026-10-16 after a sweep found 127 numbers in 20 documents that matched no
+        # committed result -- stale tables from a re-run, values from deleted experiments, and
+        # figures with no source at all. See scripts/check_number_provenance.py and CORRECTIONS.md.
+        run: python scripts/check_number_provenance.py
+
+      - name: Generated results tables match their JSON
+        run: python -m scripts.build_results_docs --check
+
       - name: Published numbers match the committed manifest
         # Verify-only: hashes the committed result files and compares them to
         # results/MANIFEST.json. It re-runs no experiment, so it is fast and it is
@@ -129,6 +150,7 @@ jobs:
   # third-party service being reachable, subscribed, or configured.
   security:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -171,6 +193,7 @@ jobs:
   # types must check, the build must succeed, and its dependency tree must be clean.
   console:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     defaults:
       run:
         working-directory: web
@@ -244,6 +267,7 @@ jobs:
   # These two controls are what separate "no leakage detected" from "nothing was measured".
   auditor-guard:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -264,6 +288,7 @@ jobs:
   # becomes false. It is worth its own job.
   calibration-guard:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -293,3 +318,128 @@ jobs:
               raise SystemExit("Calibration guard failed:\n  " + "\n  ".join(failures))
           print("Calibration guard passed across 24 configurations.")
           PY
+
+  # The image is what a stranger runs, and until 2026-10-16 CI never built it: it shipped
+  # without the console once and without AIM once, and both were found by hand. This builds
+  # it, then drives the real service inside it: two signed releases (one of them AIM), a
+  # ledger that verifies, the same ledger surviving the container being REPLACED on the same
+  # volume (an upgrade), the Docker healthcheck, and the browser suite against the image.
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write # used only by the publish step, which runs on version tags
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/synthproof
+      LEDGER_ENV: >-
+        -e SYNTHPROOF_LEDGER_DB=/app/.synthproof/ledger.db
+        -e SYNTHPROOF_KEY_DIR=/app/.synthproof/keys
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: synthproof:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke — health, two signed releases (pairwise, AIM), ledger verifies
+        run: |
+          docker volume create sp_ledger
+          docker run -d --name sp1 -p 8000:8000 -v sp_ledger:/app/.synthproof $LEDGER_ENV synthproof:ci
+          python3 scripts/container_smoke.py --url http://127.0.0.1:8000 --expect-entries 2
+
+      - name: Upgrade keeps the ledger — replace the container on the same volume
+        run: |
+          docker rm -f sp1
+          docker run -d --name sp2 -p 8000:8000 -v sp_ledger:/app/.synthproof $LEDGER_ENV synthproof:ci
+          python3 scripts/container_smoke.py --url http://127.0.0.1:8000 --no-run --expect-entries 2
+
+      - name: The Docker healthcheck reports healthy
+        run: |
+          for i in $(seq 1 30); do
+            s=$(docker inspect -f '{{.State.Health.Status}}' sp2)
+            echo "health: $s"; [ "$s" = healthy ] && exit 0; sleep 4
+          done
+          exit 1
+
+      - name: Runs with a read-only root filesystem
+        # Everything the service writes goes to the ledger volume or /tmp. If a library starts
+        # writing elsewhere (a cache under $HOME, say) this fails rather than the deployment.
+        run: |
+          docker run -d --name sp_ro --read-only --tmpfs /tmp -p 8001:8000 \
+            -v sp_ro_ledger:/app/.synthproof $LEDGER_ENV synthproof:ci
+          python3 scripts/container_smoke.py --url http://127.0.0.1:8001 --mechanisms pairwise --expect-entries 1
+
+      - name: Browser end-to-end against the image, slow pipeline spec included
+        # The same Playwright suite the console job runs from source, pointed at the container.
+        # The @slow spec (a real DP release driven through the UI) runs here: against the
+        # built image it takes seconds, whereas launched from source on a 2-core runner it did
+        # not finish in nine minutes, which is why the console job still skips it per push.
+        # In-memory ledger + demo mode, because the suite exercises the tamper/reset endpoints.
+        run: |
+          docker run -d --name sp_e2e -p 8765:8000 \
+            -e SYNTHPROOF_LEDGER_DB=:memory: -e SYNTHPROOF_DEMO=1 synthproof:ci
+          python3 scripts/container_smoke.py --url http://127.0.0.1:8765 --no-run
+          cd web && npm ci && npx playwright install --with-deps chromium
+          SYNTHPROOF_E2E_BASE_URL=http://127.0.0.1:8765 npx playwright test
+
+      - name: Container logs on failure
+        if: failure()
+        run: for c in sp1 sp2 sp_ro sp_e2e; do echo "== $c"; docker logs $c 2>&1 | tail -80 || true; done
+
+      # Publishes ONLY from a version tag, and only after every step above passed on that
+      # exact commit. No GitHub Release is created here: a Release triggers a new Zenodo DOI,
+      # which is the maintainers' decision, not CI's.
+      - name: Log in to GHCR
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish the tested image
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          cache-from: type=gha
+          tags: |
+            ${{ env.IMAGE }}:${{ github.ref_name }}
+            ${{ env.IMAGE }}:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ github.ref_name }}
+
+  # After publishing, prove the PUBLISHED image works -- not the one this runner built. A
+  # registry push can succeed with a broken manifest or the wrong platform; pulling it fresh
+  # and driving it is the only check that matches what a user does.
+  published-image:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pull and smoke the published image
+        run: |
+          img=ghcr.io/${{ github.repository_owner }}/synthproof:${{ github.ref_name }}
+          docker pull "$img"
+          docker run -d --name pub -p 8000:8000 "$img"
+          python3 scripts/container_smoke.py --url http://127.0.0.1:8000 --expect-entries 2
+      - name: Browser end-to-end against the published image
+        run: |
+          img=ghcr.io/${{ github.repository_owner }}/synthproof:${{ github.ref_name }}
+          docker run -d --name pub_e2e -p 8765:8000 -e SYNTHPROOF_LEDGER_DB=:memory: -e SYNTHPROOF_DEMO=1 "$img"
+          python3 scripts/container_smoke.py --url http://127.0.0.1:8765 --no-run
+          cd web && npm ci && npx playwright install --with-deps chromium
+          SYNTHPROOF_E2E_BASE_URL=http://127.0.0.1:8765 npx playwright test

@@ -16,6 +16,11 @@ import { defineConfig, devices } from '@playwright/test'
  * The web server is the API rather than Vite's dev server, because that is what
  * START_PROTOTYPE.bat launches and therefore what an examiner will actually run.
  */
+// SYNTHPROOF_E2E_BASE_URL points the suite at a service that is ALREADY running -- the Docker
+// image in CI -- instead of starting one from source. The suite is identical either way, which is
+// what makes it evidence that the shipped image works, not just the checkout.
+const external = process.env.SYNTHPROOF_E2E_BASE_URL
+
 export default defineConfig({
   testDir: './e2e',
   // The pipeline does real DP synthesis; a 30s default is not enough on a cold JAX import.
@@ -28,14 +33,14 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['list']] : [['list']],
 
   use: {
-    baseURL: 'http://127.0.0.1:8765',
+    baseURL: external ?? 'http://127.0.0.1:8765',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
 
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 
-  webServer: {
+  webServer: external ? undefined : {
     // An in-memory ledger, so a tamper test cannot leave a broken chain on disk for the
     // next run. SYNTHPROOF_API_KEY stays unset: the console talks to an unauthenticated
     // local service, which is the configuration being tested.

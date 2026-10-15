@@ -207,8 +207,11 @@ require capabilities that do not exist to be named rather than omitted.
 - **The certificate attests the claim, not the execution.** Nothing proves the code that ran is
   the code that was audited; that requires a trusted execution environment.
 - **`dp_accounting` is trusted**, mitigated by the `autodp` differential test.
-- **`docker compose up` has not been executed** for v1.0.0, and real AIM is not available inside
-  the image (private-pgm installs from git and is not a declared dependency).
+- **The Docker image is CI-tested, not independently audited.** (Until v1.2.0 it was never
+  built in CI and lacked AIM.) Since 2026-10-16 every push builds it with all seven mechanisms,
+  private-PGM pinned by commit and runtime dependencies constrained to `requirements.lock`, and
+  drives it end to end; nothing attests that a registry image matches its source beyond the
+  OCI revision label.
 
 ---
 

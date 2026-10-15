@@ -1,0 +1,76 @@
+name: Weekly reproduction
+
+# Re-runs the experiments that are fast and deterministic enough to repeat every week on a clean
+# runner, and compares every number against what is committed. A dependency upgrade, an OS image
+# change or a code change that silently moves a published number fails here, and the failure
+# opens an issue rather than waiting for someone to look at the Actions tab.
+#
+# Not covered, and why: the H1/H2 grids take ~4 h per dataset (beyond a hosted runner's budget)
+# and their AIM rows are reproducible in distribution only (mbi's sampler is unseeded). Their
+# committed bytes are still checked on every push by `python -m scripts.reproduce`.
+
+on:
+  schedule:
+    - cron: "0 5 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      issues: write # to open an issue when a number no longer reproduces
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install the pinned environment
+        # requirements.lock is the exact set the committed results were produced with.
+        run: |
+          python -m pip install --upgrade pip setuptools
+          pip install -r requirements.lock
+          pip install -e . --no-deps
+
+      - name: Committed result files still match the manifest
+        run: python -m scripts.reproduce
+
+      - name: Re-run the deterministic experiments
+        run: |
+          python -m scripts.run_calibration_check
+          python -m scripts.run_auditor_comparison
+          python -m scripts.run_selection_ablation
+
+      - name: Every number matches the committed result
+        id: compare
+        run: |
+          python scripts/compare_results.py \
+            results/calibration_check.json \
+            results/auditor_comparison.json \
+            results/selection_ablation.json | tee compare.txt
+
+      - name: Documents still trace to results, tables still generated
+        run: |
+          python scripts/check_number_provenance.py
+          python -m scripts.build_results_docs --check
+
+      - name: Open an issue when a result no longer reproduces
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "The weekly reproduction run failed on \`${GITHUB_SHA::7}\`."
+            echo
+            echo "Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo
+            if [ -f compare.txt ]; then echo '```'; cat compare.txt; echo '```'; fi
+          } > body.md
+          gh issue create --title "Weekly reproduction failed ($(date -u +%F))" --body-file body.md

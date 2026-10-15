@@ -31,16 +31,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential git \
     && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml README.md /app/
+COPY pyproject.toml README.md requirements.lock /app/
 COPY synthproof/ /app/synthproof/
 
-RUN pip wheel --no-cache-dir --wheel-dir /wheels .
+# requirements.lock is applied as a CONSTRAINTS file: every runtime dependency resolves to the
+# exact version the committed results were produced with, while the lock's dev-only tools
+# (pytest, black, bandit ...) are not pulled into the image. Without it the image resolved
+# pyproject's open ranges and could drift from the published numbers on any rebuild.
+# `mbi` is a git URL, which a constraints file cannot carry; it is pinned by commit below.
+RUN grep -v '^mbi ' requirements.lock > /tmp/constraints.txt \
+    && pip wheel --no-cache-dir --wheel-dir /wheels -c /tmp/constraints.txt .
 
 # private-PGM (`mbi`) has no PyPI release, so it is built from git -- pinned to the commit
 # requirements.lock records, the one every committed AIM/MST result was produced with. Without
 # it AIM, MST and fixed_workload are unregistered and the image cannot run the headline mechanism.
 ARG MBI_COMMIT=78df3419f271ac2c1fa7929aa7adc910a583084f
-RUN pip wheel --no-cache-dir --wheel-dir /wheels \
+RUN pip wheel --no-cache-dir --wheel-dir /wheels -c /tmp/constraints.txt \
     "mbi @ git+https://github.com/ryan112358/private-pgm.git@${MBI_COMMIT}"
 
 # ---------------------------------------------------------------- stage 3: the runtime
@@ -68,6 +74,17 @@ RUN useradd --create-home --uid 10001 synthproof \
 USER synthproof
 
 EXPOSE 8000
+
+# Library caches go to /tmp, so the container runs with a read-only root filesystem
+# (`docker run --read-only --tmpfs /tmp`, exercised in CI): the only other writable path is the
+# ledger volume.
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    MPLCONFIGDIR=/tmp/matplotlib \
+    XDG_CACHE_HOME=/tmp/.cache
+
+# Liveness for Docker and Compose. Standard library only -- the slim image has no curl.
+HEALTHCHECK --interval=15s --timeout=5s --start-period=90s --retries=4 \
+    CMD ["python", "-c", "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4).status == 200 else 1)"]
 
 # All seven mechanisms are available, AIM, MST and fixed_workload included: private-PGM is
 # built in stage 2 from the commit requirements.lock pins.

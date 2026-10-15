@@ -1,0 +1,34 @@
+# Dependency updates arrive as pull requests, so each one runs the full CI -- tests, the
+# provenance gate, the image build and the weekly-reproduction comparison -- before it can land.
+# A security update that would move a published number is therefore caught as a failing PR, not
+# discovered later. requirements.lock is NOT refreshed by this: it records the exact set the
+# committed results were produced with and changes only with a deliberate re-run.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      python-minor:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: "/web"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      web-minor:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
