@@ -164,7 +164,34 @@ def main():
         off = [v for v in off if np.isfinite(v)]
         if not on or not off:
             continue
+        # 95% percentile bootstrap interval for the difference of means, resampling each side.
+        # Saved so the write-up's interval column has a committed source (it had none).
+        brng = np.random.default_rng(0)
+        on_a, off_a = np.asarray(on), np.asarray(off)
+        boots = [
+            brng.choice(on_a, on_a.size).mean() - brng.choice(off_a, off_a.size).mean()
+            for _ in range(4000)
+        ]
+        # The stricter baseline: the `none` arm, which measures no two-way marginal at all.
+        none_a = np.asarray(
+            [
+                o["corr_err"]
+                for o in obs
+                if o["evaluated"] == k and o["measured"] == "none" and np.isfinite(o["corr_err"])
+            ]
+        )
+        boots_none = [
+            brng.choice(on_a, on_a.size).mean() - brng.choice(none_a, none_a.size).mean()
+            for _ in range(4000)
+        ]
         effects[k] = {
+            "effect_ci_95": [float(np.quantile(boots, 0.025)), float(np.quantile(boots, 0.975))],
+            "err_none_arm": float(none_a.mean()),
+            "effect_vs_none": float(on_a.mean() - none_a.mean()),
+            "effect_vs_none_ci_95": [
+                float(np.quantile(boots_none, 0.025)),
+                float(np.quantile(boots_none, 0.975)),
+            ],
             "true_corr": truth[tuple(k.split("|"))],
             "abs_true_corr": abs(truth[tuple(k.split("|"))]),
             "err_when_measured": float(np.mean(on)),
@@ -192,6 +219,15 @@ def main():
     rel = [e["relative_effect"] for e in effects.values()]
     r_abs = float(np.corrcoef(xs, ys)[0, 1]) if len(xs) > 2 and len(set(ys)) > 1 else float("nan")
     r_rel = float(np.corrcoef(xs, rel)[0, 1]) if len(xs) > 2 and len(set(rel)) > 1 else float("nan")
+
+    # The same correlation with any pair where measuring HURT left out, so a single degrading
+    # outlier cannot be what drives the relationship.
+    keep = [(x, y) for x, y in zip(xs, ys, strict=True) if y < 0]
+    r_abs_excl = (
+        float(np.corrcoef([a for a, _ in keep], [b for _, b in keep])[0, 1])
+        if len(keep) > 2
+        else float("nan")
+    )
 
     helped = [k for k, e in effects.items() if e["effect"] < 0]
     print(f"\npairs where measuring HELPED (effect < 0): {len(helped)}/{len(effects)}")
@@ -244,6 +280,10 @@ def main():
         "true_correlations": {k: truth[tuple(k.split("|"))] for k in keys},
         "effects": effects,
         "corr_abs_true_vs_effect": r_abs,
+        # null, not NaN: NaN is not valid JSON. Undefined below three non-degrading pairs.
+        "corr_abs_true_vs_effect_excluding_degrading": (
+            r_abs_excl if np.isfinite(r_abs_excl) else None
+        ),
         "corr_abs_true_vs_relative_effect": r_rel,
         "pairs_where_measuring_helped": len(helped),
         "pairs_compared": len(effects),

@@ -1,5 +1,7 @@
 # Ceiling ablation — what a reader can conclude, with and without the field
 
+<!-- provenance: results/h1_all_families.json, results/auditor_comparison.json, results/detection_floor.json -->
+
 > Regenerate: `python -m scripts.run_ceiling_ablation`. Figure: `docs/thesis/figures/fig-ceiling-ablation.png`.
 > Every number below is from a committed result file, named inline.
 

@@ -1,5 +1,7 @@
 # Pre-Registration: Privacy Audit of Missing-Data Imputation in Differentially Private Tabular Synthesis
 
+<!-- provenance: research/imputation_audit/k3_audit_power.json -->
+
 **Document:** Formal Pre-Registration Specification  
 **Status:** COMMITTED AND FROZEN PRIOR TO EXPERIMENTAL EXECUTION  
 **Date:** 2026-09-15  

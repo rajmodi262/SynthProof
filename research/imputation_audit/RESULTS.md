@@ -1,5 +1,7 @@
 # Empirical Findings: Privacy Audit of Missing-Data Imputation in Differentially Private Tabular Synthesis
 
+<!-- provenance: results/imputation_audit.json, research/imputation_audit/k3_audit_power.json -->
+
 **Document:** Formal Experimental Results & Scientific Verdict  
 **Status:** COMPLETED — ALL NUMBERS GROUNDED IN EXECUTED RUNS  
 **Date:** 2026-09-15  

@@ -1,0 +1,47 @@
+{
+  "DEMO.md": {
+    "0.9999580768688316": "CLI output of the DEMO.md tamper walkthrough: the proved epsilon of the demo release at target epsilon 1, read from build/release/sheet.json (untracked build output). Re-check by running the DEMO.md steps."
+  },
+  "README.md": {
+    "0.9999580768688316": "Same CLI output as DEMO.md (tamper walkthrough); proved epsilon of the demo release at target epsilon 1, from build/release/sheet.json."
+  },
+  "docs/defence/DEFENCE.md": {
+    "0.1098": "Historical diagnostic of the 2026-08 two-fit fix: pairwise correlation error at epsilon 8 on an isolated synthetic table (true correlation 0.975), before the fix. The diagnostic run was not saved as a results file; quoted as history in a labelled before/after."
+  },
+  "results/H1_RESULTS.md": {
+    "0.0109": "The retracted canary-contamination figure, quoted only as the subject of its own SUPERSEDED box (see results/CANARY_DOSE_RESPONSE.md).",
+    "0.1014": "Historical pre-fix diagnostic in section 4: corr(age, hours_per_week) on the 70% fit split of the 6,000-row sample. Not saved as a results file.",
+    "0.975": "True correlation of the isolated synthetic table used for the 2026-08 two-fit diagnostic (a construction parameter, not a measurement).",
+    "0.1098": "Historical two-fit diagnostic, before the fix (see docs/defence/DEFENCE.md entry).",
+    "0.0459": "Historical two-fit diagnostic, after the fix, on the isolated synthetic table. Not saved as a results file."
+  },
+  "research/imputation_audit/PAPER_SECTION.md": {
+    "0.004": "max |AUC(A2) - AUC(A3)| over all 19 pairs and all three attacks = 0.00358 (distance_mia, A2_dpvae_eps1.0_mcar_10), recomputed 2026-10-16 from results/imputation_audit.json.",
+    "0.00067": "Formula: 1/n with n = 1,500."
+  },
+  "research/imputation_audit/RESULTS.md": {
+    "0.004": "max |AUC(A2) - AUC(A3)| over all 19 pairs and all three attacks = 0.00358, recomputed 2026-10-16 from results/imputation_audit.json.",
+    "0.00067": "Formula: 1/n with n = 1,500."
+  },
+  "results/CEILING_ABLATION.md": {
+    "3.571": "Difference of two sourced values in the same sentence: 6.543 (proved epsilon, results/h1_all_families.json) minus 2.972 (ceiling, results/auditor_comparison.json).",
+    "5.586": "Closed form max_provable_epsilon(800, 0.05) = 5.5856 (synthproof/audit/steinke.py), evaluated at r = 800 by tests/test_audit_power.py."
+  },
+  "results/SELECTION_ABLATION.md": {
+    "0.700": "corr(|true corr|, AIM selection rate) = 0.7000, recomputed 2026-10-16 from the observations in results/clique_confound.json.",
+    "0.809": "corr(|true corr|, AIM selection rate) = 0.8093, recomputed 2026-10-16 from the observations in results/acs/clique_confound.json."
+  },
+  "results/acs/H1_RESULTS.md": {
+    "0.0758": "Per-pair mean of the independent arm (age x capital_gain), recomputed 2026-10-16 from the observations in results/clique_confound.json; inside the RETRACTED section 4a.",
+    "0.0795": "Per-pair mean of the independent arm (hours_per_week x capital_gain), recomputed 2026-10-16 from results/clique_confound.json; inside the RETRACTED section 4a.",
+    "0.0852": "Derived: 0.1115 - 0.0263 from the per-pair table above it; inside the RETRACTED section 4a, which says not to cite it.",
+    "0.0285": "Derived: 0.0826 - 0.0541 from the ACS per-pair table above it; inside the RETRACTED section 4a, which says not to cite it.",
+    "0.0072": "Derived: 0.0502 - 0.0431 from the per-pair table above it; inside the RETRACTED section 4a.",
+    "0.0123": "Derived: 0.0564 - 0.0440 from the ACS per-pair table above it; inside the RETRACTED section 4a."
+  },
+  "results/bank/BANK_MARKETING.md": {
+    "0.0489": "Pre-D1 AIM correlation error at epsilon 8, labelled 'before it' beside the D1 re-run value; the pre-D1 bank grid is not retained in a tracked results file.",
+    "0.0447": "Reduced-run value, labelled 'reduced run was' beside the full-grid value; the reduced run is not retained in a tracked results file.",
+    "0.4716": "Reduced-run value, labelled 'reduced run was' beside the full-grid value; the reduced run is not retained in a tracked results file."
+  }
+}

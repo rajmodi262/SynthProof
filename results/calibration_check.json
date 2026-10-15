@@ -1,0 +1,290 @@
+{
+  "delta": 1e-05,
+  "single_stage_gaussian": [
+    {
+      "target_eps": 0.5,
+      "noise_scale": 7.6676025390625,
+      "achieved_eps": 0.49998333620960234,
+      "ratio": 0.9999666724192047
+    },
+    {
+      "target_eps": 1.0,
+      "noise_scale": 4.04541015625,
+      "achieved_eps": 0.9999932606237787,
+      "ratio": 0.9999932606237787
+    },
+    {
+      "target_eps": 2.0,
+      "noise_scale": 2.149169921875,
+      "achieved_eps": 1.9999387616673991,
+      "ratio": 0.9999693808336996
+    },
+    {
+      "target_eps": 4.0,
+      "noise_scale": 1.1575927734375,
+      "achieved_eps": 3.9999053920735337,
+      "ratio": 0.9999763480183834
+    },
+    {
+      "target_eps": 8.0,
+      "noise_scale": 0.6376953125,
+      "achieved_eps": 7.999622083248946,
+      "ratio": 0.9999527604061182
+    }
+  ],
+  "two_stage_linear_split": [
+    {
+      "target_eps": 0.5,
+      "split": [
+        0.2,
+        0.8
+      ],
+      "composed_eps": 0.4162664786342639,
+      "ratio": 0.8325329572685278
+    },
+    {
+      "target_eps": 1.0,
+      "split": [
+        0.2,
+        0.8
+      ],
+      "composed_eps": 0.8323153021979158,
+      "ratio": 0.8323153021979158
+    },
+    {
+      "target_eps": 2.0,
+      "split": [
+        0.2,
+        0.8
+      ],
+      "composed_eps": 1.6674578811420826,
+      "ratio": 0.8337289405710413
+    },
+    {
+      "target_eps": 4.0,
+      "split": [
+        0.2,
+        0.8
+      ],
+      "composed_eps": 3.3426840127135264,
+      "ratio": 0.8356710031783816
+    },
+    {
+      "target_eps": 8.0,
+      "split": [
+        0.2,
+        0.8
+      ],
+      "composed_eps": 6.715080937944892,
+      "ratio": 0.8393851172431115
+    }
+  ],
+  "budget_plan_default": [
+    {
+      "target_eps": 0.5,
+      "split": [
+        0.1,
+        0.9
+      ],
+      "composed_eps": 0.45414264981409763,
+      "ratio": 0.9082852996281953
+    },
+    {
+      "target_eps": 1.0,
+      "split": [
+        0.1,
+        0.9
+      ],
+      "composed_eps": 0.9081709908697098,
+      "ratio": 0.9081709908697098
+    },
+    {
+      "target_eps": 2.0,
+      "split": [
+        0.1,
+        0.9
+      ],
+      "composed_eps": 1.8168981013710468,
+      "ratio": 0.9084490506855234
+    },
+    {
+      "target_eps": 4.0,
+      "split": [
+        0.1,
+        0.9
+      ],
+      "composed_eps": 3.636612649005585,
+      "ratio": 0.9091531622513962
+    },
+    {
+      "target_eps": 8.0,
+      "split": [
+        0.1,
+        0.9
+      ],
+      "composed_eps": 7.282386020881533,
+      "ratio": 0.9102982526101916
+    }
+  ],
+  "ci_guard_grid": [
+    {
+      "mechanism": "gaussian",
+      "steps": 1,
+      "target_eps": 0.5,
+      "ratio": 0.9999666724192047
+    },
+    {
+      "mechanism": "gaussian",
+      "steps": 1,
+      "target_eps": 1.0,
+      "ratio": 0.9999932606237787
+    },
+    {
+      "mechanism": "gaussian",
+      "steps": 1,
+      "target_eps": 2.0,
+      "ratio": 0.9999693808336996
+    },
+    {
+      "mechanism": "gaussian",
+      "steps": 1,
+      "target_eps": 8.0,
+      "ratio": 0.9999527604061182
+    },
+    {
+      "mechanism": "gaussian",
+      "steps": 5,
+      "target_eps": 0.5,
+      "ratio": 0.9999716162301984
+    },
+    {
+      "mechanism": "gaussian",
+      "steps": 5,
+      "target_eps": 1.0,
+      "ratio": 0.999956790829104
+    },
+    {
+      "mechanism": "gaussian",
+      "steps": 5,
+      "target_eps": 2.0,
+      "ratio": 0.9999192593787369
+    },
+    {
+      "mechanism": "gaussian",
+      "steps": 5,
+      "target_eps": 8.0,
+      "ratio": 0.999975248013842
+    },
+    {
+      "mechanism": "gaussian",
+      "steps": 20,
+      "target_eps": 0.5,
+      "ratio": 0.9999861487905863
+    },
+    {
+      "mechanism": "gaussian",
+      "steps": 20,
+      "target_eps": 1.0,
+      "ratio": 0.9999586459737941
+    },
+    {
+      "mechanism": "gaussian",
+      "steps": 20,
+      "target_eps": 2.0,
+      "ratio": 0.9999613262200195
+    },
+    {
+      "mechanism": "gaussian",
+      "steps": 20,
+      "target_eps": 8.0,
+      "ratio": 0.9999239351138111
+    },
+    {
+      "mechanism": "laplace",
+      "steps": 1,
+      "target_eps": 0.5,
+      "ratio": 0.9999440719430851
+    },
+    {
+      "mechanism": "laplace",
+      "steps": 1,
+      "target_eps": 1.0,
+      "ratio": 0.9999638771539872
+    },
+    {
+      "mechanism": "laplace",
+      "steps": 1,
+      "target_eps": 2.0,
+      "ratio": 0.9999494608138755
+    },
+    {
+      "mechanism": "laplace",
+      "steps": 1,
+      "target_eps": 8.0,
+      "ratio": 0.9999793398561554
+    },
+    {
+      "mechanism": "laplace",
+      "steps": 5,
+      "target_eps": 0.5,
+      "ratio": 0.9999939808278283
+    },
+    {
+      "mechanism": "laplace",
+      "steps": 5,
+      "target_eps": 1.0,
+      "ratio": 0.9999695177240406
+    },
+    {
+      "mechanism": "laplace",
+      "steps": 5,
+      "target_eps": 2.0,
+      "ratio": 0.9999847534987808
+    },
+    {
+      "mechanism": "laplace",
+      "steps": 5,
+      "target_eps": 8.0,
+      "ratio": 0.9999168508663756
+    },
+    {
+      "mechanism": "laplace",
+      "steps": 20,
+      "target_eps": 0.5,
+      "ratio": 0.9999665077066374
+    },
+    {
+      "mechanism": "laplace",
+      "steps": 20,
+      "target_eps": 1.0,
+      "ratio": 0.9999774502607264
+    },
+    {
+      "mechanism": "laplace",
+      "steps": 20,
+      "target_eps": 2.0,
+      "ratio": 0.9999570431266074
+    },
+    {
+      "mechanism": "laplace",
+      "steps": 20,
+      "target_eps": 8.0,
+      "ratio": 0.999924944146697
+    }
+  ],
+  "ci_guard_summary": {
+    "configurations": 24,
+    "min_ratio": 0.9999168508663756,
+    "max_ratio": 0.9999939808278283,
+    "bounds_asserted_by_ci": [
+      0.99,
+      1.001
+    ]
+  },
+  "bisection": {
+    "stopping_rule": "relative bracket width hi - lo <= tol * hi",
+    "tol": 0.0001,
+    "max_iter": 200,
+    "returns": "the conservative end of the bracket (achieved eps <= target)"
+  }
+}

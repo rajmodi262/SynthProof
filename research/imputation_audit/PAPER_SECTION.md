@@ -1,5 +1,7 @@
 # Paper Section: Auditing Missing-Data Imputation in Differentially Private Tabular Synthesis
 
+<!-- provenance: results/imputation_audit.json, research/imputation_audit/k3_audit_power.json -->
+
 **Status:** READY FOR INCLUSION IN EMPIRICAL PAPER  
 **Date:** 2026-09-15  
 **Bibliography Status:** 100% VERIFIED AND RESOLVED (No unverified citations)  

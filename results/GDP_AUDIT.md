@@ -1,5 +1,7 @@
 # GDP audit — the first non-zero empirical privacy bound this project has produced
 
+<!-- provenance: results/gdp_audit.json, results/h1_all_families.json, results/auditor_comparison.json -->
+
 > **Run 2026-08-25.** 5,000 fits (2,500 per world), `independent` mechanism, worst-case instance.
 > Raw output: [`gdp_audit.json`](gdp_audit.json) · Runner: `scripts/run_gdp_audit.py` ·
 > Regenerate: `python -m scripts.run_gdp_audit --runs 2500`

@@ -8,6 +8,11 @@ fits a distribution to the noisy measurements. That shared property is what make
 strongest result — the clique-selection confound — impossible to test with the mechanisms it
 already had.
 
+NOTE (2026-10-16): the confound below was RETRACTED on 2026-08-25 -- a controlled ablation
+(`results/SELECTION_ABLATION.md`) shows measuring a pair helps in proportion to its true
+dependence, so AIM's selection is the mechanism working as designed. The DP-VAE remains a useful
+non-selecting control; the motivation below is kept as written at the time.
+
 The confound, restated: AIM selects ~6 two-way cliques by exponential mechanism, and its score
 on a structure metric that measures ONE column pair is largely decided by whether that pair is
 one it selected. On UCI Adult it selects `age x hours_per_week` at every epsilon and looks like

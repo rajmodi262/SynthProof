@@ -1,5 +1,7 @@
 # H1 — Mechanism families on UCI Adult
 
+<!-- provenance: results/h1_all_families.json, results/auditor_comparison.json, results/canary_dose_response.json -->
+
 > **Status: SUPPORTED on structure and utility. The privacy half is DISQUALIFIED by the
 > auditor's working range (§3.6).**
 >
@@ -102,11 +104,15 @@ measurable.*
 
 ### 3.2 The trend is right, and the control is flat
 
-| mechanism | ε = 0.5 → 8.0 | change |
+<!-- BEGIN GENERATED: h1-trend-table -->
+| mechanism | ε = 0.5 → 8 | change |
 |---|---|---:|
-| independent | 0.0934 → 0.0930 → 0.0939 → 0.0935 → 0.0947 | **+0.0012** |
+| independent | 0.0934 → 0.0930 → 0.0939 → 0.0935 → 0.0947 | +0.0012 |
 | pairwise | 0.0611 → 0.0694 → 0.0493 → 0.0197 → 0.0283 | −0.0328 |
-| aim | 0.0941 → 0.0443 → 0.0545 → 0.0349 → **0.0105** | **−0.0836** |
+| aim | 0.0941 → 0.0443 → 0.0545 → 0.0349 → 0.0105 | −0.0836 |
+
+*Means over seeds; generated from `results/h1_all_families.json`.*
+<!-- END GENERATED: h1-trend-table -->
 
 The independent baseline is **flat to within 0.0012 across a 16× budget range**. That is the
 control working exactly as it should: a mechanism that models no dependence cannot convert
@@ -124,14 +130,19 @@ the baseline, separated from it; overlapping pairwise) and the highest mean TSTR
 ε ≥ 1 (**0.515** at ε = 1, **0.506** at ε = 8, against a TRTR ceiling of 0.660). At ε = 0.5 its
 mean TSTR (0.461) is the lowest of the three. The TSTR intervals overlap throughout.
 
-It also does this at a **lower actual privacy spend**. AIM composes to 0.77–0.82 × target
-where the other two reach 0.91–0.92, because it spends a quarter of its synthesis budget on
+It also does this at a **lower actual privacy spend**. AIM composes to 0.771–0.818 × target
+where the other two reach 0.912–0.919, because it spends a quarter of its synthesis budget on
 adaptive selection:
 
+<!-- BEGIN GENERATED: h1-ratio-table -->
 | mechanism | proved/target across the grid |
 |---|---|
-| independent, pairwise | 0.912, 0.912, 0.914, 0.916, 0.919 |
+| independent | 0.912, 0.912, 0.914, 0.916, 0.919 |
+| pairwise | 0.912, 0.912, 0.914, 0.916, 0.919 |
 | aim | 0.771, 0.778, 0.788, 0.800, 0.818 |
+
+*Generated from `results/h1_all_families.json`.*
+<!-- END GENERATED: h1-ratio-table -->
 
 So AIM's means are reached while spending roughly 11% less ε than the other two mechanisms.
 

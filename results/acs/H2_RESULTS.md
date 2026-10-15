@@ -1,5 +1,7 @@
 # H2 on ACSIncome — the null replicates
 
+<!-- provenance: results/acs/h2_analysis.json, results/acs/h2_subgroups.json, results/h2_analysis.json -->
+
 Generated from `results/acs/h2_subgroups.json` and `results/acs/h2_analysis.json`.
 Every number below is read from those files; none is typed by hand.
 

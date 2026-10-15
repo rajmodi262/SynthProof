@@ -1,5 +1,7 @@
 # Auditor validation — detection floor and ceiling
 
+<!-- provenance: results/detection_floor.json, results/h1_all_families.json -->
+
 > **Status: MEASURED.** UCI Adult, n = 3,000, 5 seeds per cell, α = 0.05.
 > Raw output: [`detection_floor.json`](detection_floor.json) · Runner:
 > `scripts/run_detection_floor.py` · Regenerate with `make floor`.

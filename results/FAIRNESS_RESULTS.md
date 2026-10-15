@@ -1,5 +1,7 @@
 # M2.11 — subgroup utility: what synthesis costs each group
 
+<!-- provenance: results/acs/fairness.json, results/fairness.json -->
+
 > **Status: MEASURED on both datasets.** 2 attributes × 2 ε × 3 seeds, `pairwise`, n = 6,000.
 > Raw output: [`fairness.json`](fairness.json) · [`acs/fairness.json`](acs/fairness.json) ·
 > Runner: `scripts/run_fairness.py` · Regenerate with `python scripts/run_fairness.py`.

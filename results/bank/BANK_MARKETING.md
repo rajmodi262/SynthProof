@@ -1,5 +1,7 @@
 # The third dataset — what transfers off the census, and what does not
 
+<!-- provenance: results/acs/h1_all_families.json, results/bank/h1_all_families.json, results/h1_all_families.json, results/archive_pre_audit27/bank_h1_full.json -->
+
 > **Run 2026-09-14.** UCI Bank Marketing, 6,000 rows × 13 columns, 3 mechanisms × 5 ε × 5
 > seeds = 75 cells. Raw: [`h1_all_families.json`](h1_all_families.json).
 >

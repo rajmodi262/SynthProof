@@ -146,7 +146,7 @@ def verify_numbers(text: str) -> list[str]:
     # RETRACTION GATE, added 2026-08-25. `confound_confirmed` was renamed to
     # `confound_confirmed_RETRACTED` when a controlled ablation
     # (scripts/run_selection_ablation.py, 175 fits) showed the benefit of measuring a pair
-    # scales with that pair's true dependence (corr = -0.898), so AIM's advantage on the pairs
+    # scales with that pair's true dependence (corr = -0.997 in the 2026-10-16 re-run), so AIM's advantage on the pairs
     # it selects is the mechanism working as designed rather than an artefact of selection.
     # This gate now fails until the prose stops asserting the retracted claim -- which is the
     # whole point of having a gate that checks prose against committed JSON.

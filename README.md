@@ -44,7 +44,7 @@ the formal bound (ε_proved) and an empirical lower bound (ε_audited).
 | **Attack suite** | ✅ 5 attacks, **all three EDPB risks** | `distance_mia` (nearest-neighbour) · `exact_match_risk` (singling-out) · `domias` (k-NN density ratio, Breugel et al. 2023) · `linkability` (two disjoint halves of a record matched independently, scored against a row-shuffled release) · `attribute_inference` (scored against a conditional baseline, not a marginal one). **LiRA is deliberately NOT implemented** — a shadow-model attack is ~21h of compute for a likely wide-CI null, and calling anything cheaper "LiRA" would misname it. |
 | **API authentication** | ⚠️ Shared key only | Set `SYNTHPROOF_API_KEY` and every endpoint that reads uploaded data, spends budget or exposes the ledger requires `Authorization: Bearer <key>` or `X-API-Key`. Unset by default so the local demo needs no configuration, and `/api/health` reports `auth: "disabled"` loudly when it is. **Not user authentication**: one key means one principal, so the ledger's `actor` cannot distinguish callers and rotation invalidates everyone at once. |
 | **Web console** | ✅ Working, now tested | React + R3F. Live SSE pipeline, 3D record space, ledger tamper demo. **10 vitest tests** (`make console-test`) cover the hand-rolled SSE parser in `src/lib/api.ts` — including a frame split across two network chunks, which previously would have dropped a pipeline stage in silence. |
-| **H1** — mechanism families | ⚠️ **Supported on Adult, NOT reproduced on ACS** | On UCI Adult all three families separate at ε=8 with non-overlapping CIs (aim > pairwise > independent). On ACSIncome the ordering **inverts** and AIM is indistinguishable from the independent baseline. Diagnosed and then **tested directly**: AIM's advantage over a no-dependence baseline is 11.9x larger on the pair it selects than anywhere else on Adult, but only 2.3x on ACS — so the metric's choice of column pair materially affects the ranking, while the effect itself does not transfer. The stronger reading, that AIM only wins where it selects, is **not** supported: each dataset has a counterexample. Reported, not tuned away — [results/acs/H1_RESULTS.md](results/acs/H1_RESULTS.md). |
+| **H1** — mechanism families | ⚠️ **Supported on Adult, NOT reproduced on ACS** | On UCI Adult at ε=8, AIM and pairwise both separate from the independent baseline but **overlap each other** (AIM re-run after the D1 fix). On ACSIncome the ordering **inverts** and AIM is indistinguishable from the independent baseline. A follow-up first read this as a clique-selection confound; that reading is **RETRACTED** — a controlled ablation shows measuring a pair helps in proportion to its true dependence on both datasets ([results/SELECTION_ABLATION.md](results/SELECTION_ABLATION.md)). Reported, not tuned away — [results/acs/H1_RESULTS.md](results/acs/H1_RESULTS.md). |
 | **H2** — subgroup disparity | ✅ **Bounded null** | 14 subgroup comparisons, 0 significant raw, 0 surviving BH-FDR or Bonferroni. 2 of 14 are statistically **equivalent** to chance within a pre-specified margin (TOST) — a bound on the effect, not merely absence of evidence. Detectability is stated: the adversary needed accuracy 0.600 and reached 0.562. See [results/H2_RESULTS.md](results/H2_RESULTS.md). |
 | **H3** — budget allocation | ✅ **Null, replicated** | Utility-weighted vs uniform allocation at fixed total ε, on both datasets. **Not supported**: at none of the 5 ε values on either dataset does the paired weighted-minus-uniform gap in TSTR macro F1 have a bootstrap CI excluding zero. Weights are **declared public metadata**, never measured from the table — deriving them would be an uncharged query. See [results/h3_allocation.json](results/h3_allocation.json) and ch06 §6.10. |
 
@@ -87,6 +87,27 @@ python -m synthproof.cli verify sheet.json --pubkey .keys/synthproof_ed25519.pub
 > starter schema with `synthproof infer-schema`, then replace each range with a publishable
 > fact about the domain before using it for a real release.
 
+### Run it as a service (Docker)
+
+One command, on a machine with Docker and nothing else installed:
+
+```bash
+docker compose up
+```
+
+That pulls the published image (`ghcr.io/rajmodi262/synthproof`, tagged per release; set
+`SYNTHPROOF_VERSION=v1.4.0` to pin one) and serves the console and API on
+<http://localhost:8000>. `docker compose up --build` builds from this checkout instead. The
+signed ledger and its signing key live on the `ledger_data` volume, so they survive restarts and
+image upgrades; the container runs as a non-root user with a read-only root filesystem.
+Before exposing the port, set `SYNTHPROOF_API_KEY` (or `SYNTHPROOF_API_KEYS` for per-user
+attribution) — `/api/health` reports `auth: "disabled"` until you do.
+
+Every push builds this image in CI and drives it end to end: two signed releases (one of them
+AIM), ledger verification, the same ledger surviving the container being replaced, the Docker
+healthcheck, the read-only filesystem, and the browser test suite. A version tag publishes it,
+and the published image is then pulled and tested again.
+
 ### Shipping the release as a Croissant record
 
 To emit the synthetic table, the signed claim and a standards-conformant metadata record in
@@ -112,7 +133,7 @@ FAILED
 SIGNATURE VALID, RECORD UNTRUSTWORTHY.
 The embedded Privacy Data Sheet is correctly signed, but the human-visible fields above it
 have been altered and no longer match it.
-  dp:epsilonProved: record says 0.01, signed sheet says 0.9615567837005196
+  dp:epsilonProved: record says 0.01, signed sheet says 0.9999580768688316
 ```
 
 To check conformance against the reference implementation (one-time setup builds an isolated

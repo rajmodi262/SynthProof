@@ -140,20 +140,9 @@ Per the analysis plan, a contradicting result is diagnosed, not adjusted. The di
 - The engineering model-size bound is **not** responsible — `skipped_cliques_` is empty at both ε = 0.5 and ε = 8, with 17 cliques measured at each.
 - The structure metric is the correlation of a **single column pair**, and AIM's score on it is largely determined by whether that pair is among the ~6 two-way cliques AIM selects. On Adult, AIM selects `age`×`hours_per_week` at *every* ε tested. On ACS it selects `AGEP`×`WKHP` at one of three, and the pre-correction ACS correlation error tracked that selection exactly: 0.0977 (not selected) → 0.0395 (selected) → 0.0626 (not selected). The D1 re-run did not record selections.
 
-This was later tested directly rather than left as an inference from one pair, by recording AIM's error and its clique selection for EVERY numeric pair across the grid (`scripts/run_clique_confound.py`). The test weakened the claim, and the weakened version is what this thesis states.
+This was later tested directly (`scripts/run_clique_confound.py`, then the controlled ablation `scripts/run_selection_ablation.py`). **The clique-selection reading is RETRACTED (2026-08-25).** With a selection-deleted control arm, measuring a pair helps in proportion to that pair's true dependence — $r = -0.997$ on Adult and $r = -0.996$ on ACSIncome (`results/SELECTION_ABLATION.md`, re-run 2026-10-16) — so AIM's advantage on the pair it selects is the mechanism working as designed. The per-pair advantage ratios reported in an earlier draft came from the pre-D1 confound runs and are withdrawn. See §7.5.
 
-It is **not** true that AIM beats the no-dependence baseline only on pairs it selects — each dataset has one unselected pair where it still wins, which is mechanistically expected, since measuring a clique constrains the joint and a graphical model propagates that constraint outside the clique. What is true is a large difference in degree, which itself does not transfer:
-
-| Dataset | Largest advantage on selected pair | Largest advantage on unselected pair | Ratio |
-|---|---:|---:|---:|
-| Adult | +0.0852 | +0.0072 | 11.9x |
-| ACS | +0.0285 | +0.0123 | 2.3x |
-
-On Adult, AIM's advantage on the pair it selects is nearly twelve times its best advantage anywhere else, and `age x hours_per_week` — the pair the H1 headline measured — is that pair, selected in 22 of 25 cells. On ACS the effect is roughly five times weaker and the run's own verdict is inconclusive.
-
-The defensible claim is therefore narrower than a first reading of the single-pair evidence suggested: **the structure metric's choice of column pair materially affects the measured ranking, and on Adult it happened to fall on AIM's strongest pair by an order of magnitude.** That still carries a generalisable warning — a benchmark scoring a marginal-based mechanism on a small fixed set of low-order statistics may be measuring which statistics the mechanism chose to spend budget on — but it does not support the stronger reading that AIM's advantage is entirely an artefact of selection. The cross-dataset pattern is the same one H1 itself showed: an effect on Adult that does not carry to ACS.
-
-A secondary observation, reported because it is counter-intuitive and was verified before being written down: on ACS, AIM's downstream utility **falls** as ε rises (TSTR F1 0.704 [0.695, 0.713] at ε = 0.5 against 0.581 [0.539, 0.629] at ε = 8; the endpoint CIs do not overlap). The cause is the same mechanism — the DP profiler suppresses far fewer rare categories at a larger budget (OCCP 3 → 23 categories, RELP 3 → 14), so a roughly fixed clique allowance covers proportionally less of the domain and fewer cliques land on the target column. AIM optimises global marginal approximation, not a downstream task.
+A secondary observation: on ACS, AIM's downstream utility **falls** as ε rises (TSTR F1 0.6493 [0.6049, 0.6937] at ε = 0.5 against 0.5668 [0.5137, 0.6266] at ε = 8); the endpoint CIs **overlap**, so this is a direction, not a separated result. The diagnosed cause — the DP profiler suppressing far fewer rare categories at a larger budget (OCCP 3 → 23 categories, RELP 3 → 14) — applies to the code that produced the committed grid; audit C1 (2026-09-24) made the ACS domain budget-independent, so that cause is absent from the current code.
 
 These observations are pinned by `tests/test_acs_h1_findings.py`, so the prose above cannot drift from the committed results without a test failing.
 

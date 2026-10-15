@@ -266,7 +266,7 @@ tree exhausted memory mid-grid; ours is capped at 128 MB).
 *What we found out about it:* **this reading is RETRACTED (2026-08-25).** We reported that
 AIM's clique selection interacts with the benchmark metric strongly enough to dominate the
 measured result. Our own selection ablation refutes it: measuring helps in proportion to
-TRUE dependence (r = −0.898), so AIM's advantage is the mechanism working as designed. The
+TRUE dependence (r = −0.997, re-run 2026-10-16), so AIM's advantage is the mechanism working as designed. The
 phenomenon was also already published three times — AIM's own paper (arXiv:2201.12677 §5,
 Fig 2c), Ganev, Xu & De Cristofaro (CCS 2024 §5.3), and Chen, Gong & Wang
 (arXiv:2511.13893 §6.3). See `results/SELECTION_ABLATION.md` and §7.2.
@@ -769,43 +769,30 @@ tight ones.* It found a verbatim release at m = 10. It will never confirm that
 ε = 7.36 is tight. We therefore report the ceiling **beside every audited ε, inside the signed
 payload**, so a zero can never be read as "no leakage was found".
 
-### 7.2 Finding 2 — the clique-selection confound
+### 7.2 Finding 2 — the clique-selection confound: RETRACTED, and what replaced it
 
-The ACS grid contradicted Adult. The diagnosis is the most publishable thing in the project.
+**Retracted 2026-08-25; numbers re-checked 2026-10-16.** This section once argued that AIM's
+Adult advantage was largely an artefact of which column pair the structure metric scores. Our
+own controlled experiment refutes that: with a selection-deleted control arm
+(`FixedWorkloadGenerator`), measuring a pair helps in proportion to that pair's true dependence —
+r = −0.997 on Adult and −0.996 on ACS (`results/SELECTION_ABLATION.md`, re-run 2026-10-16). AIM
+selects the dependent pair *because* it is dependent; that is the mechanism working as designed.
+The phenomenon was also already published three times — AIM's own paper (arXiv:2201.12677 §5,
+Fig 2c), Ganev, Xu & De Cristofaro (CCS 2024 §5.3), and Chen, Gong & Wang (arXiv:2511.13893
+§6.3). The per-pair "11.9× vs 2.3×" comparison came from the pre-D1 confound runs and must not be
+cited.
 
-The structure metric is the correlation of a **single column pair**. AIM selects roughly six
-two-way cliques, and its score on that metric is largely decided by **whether the measured pair
-is one of them**. On Adult, AIM selects `age`×`hours_per_week` at *every* ε tested. On ACS it
-selects `AGEP`×`WKHP` at one of three, and in the pre-correction run the ACS error tracked that
-selection exactly (the D1 re-run did not record selections):
+**What survives from the ACS contradiction.** At ε = 8 on ACS, pairwise < independent ≈ aim, and
+AIM is not distinguishable from the independent baseline. AIM's TSTR F1 on ACS falls from
+0.6493 [0.6049, 0.6937] at ε = 0.5 to 0.5668 [0.5137, 0.6266] at ε = 8, but the endpoint intervals
+**overlap**, so it is a direction, not a separated result. The diagnosis at the time — the DP
+profiler suppressed fewer rare categories at higher ε (OCCP 3 → 23 levels, RELP 3 → 14) — applies
+to the code that produced the committed grid. Audit C1 (2026-09-24) made the ACS domain
+budget-independent, so that cause no longer exists in the current code (pinned by
+`test_the_acs_domain_no_longer_depends_on_the_budget`).
 
-```
-0.0977  (pair not selected)  ->  0.0395  (selected)  ->  0.0626  (not selected)
-```
-
-So the Adult headline is partly a coincidence between the metric's chosen pair and the
-mechanism's internal selection — not a claim about structure preservation. It generalises:
-**any DP-synthesis benchmark scoring a marginal-based mechanism on a small fixed set of
-low-order statistics risks measuring clique selection rather than fidelity.**
-
-**We then tested the claim instead of leaving it as an inference from one pair**, recording
-AIM's error and its clique selection for **every** numeric pair across the grid
-(`scripts/run_clique_confound.py`). **The test weakened the claim, and the weakened version is
-what we state.** It is *not* true that AIM beats the no-dependence baseline only on pairs it
-selects — each dataset has a counterexample, which is mechanistically expected, since measuring
-a clique constrains the joint and a graphical model propagates that constraint outside the
-clique. What is true is a large **difference in degree** that itself does not transfer: AIM's
-advantage is **11.9× larger on the selected pair on Adult, but only 2.3× on ACS**.
-
-A secondary result, verified before being written down: on ACS, AIM's TSTR F1 **falls** with ε —
-0.704 [0.695, 0.713] at ε = 0.5 down to 0.581 [0.539, 0.629] at ε = 8, CIs disjoint. Cause: the
-DP profiler suppresses fewer rare categories at higher ε (OCCP 3 → 23 levels, RELP 3 → 14), so a
-fixed clique allowance covers proportionally less domain and fewer cliques touch the target
-column.
-
-**Why this matters as research:** it was invisible from one dataset. It is the concrete argument
-for why the second dataset was worth the compute, and it converts a weak "our mechanism ranks
-best" claim into a **methodological contribution about benchmark design**.
+**Why this matters as research:** the second dataset exposed a reading one dataset could not, and
+an experiment with its falsification criterion written down first then retracted it.
 
 ### 7.3 Finding 3 — the instrument was penalising the mechanisms it measured
 
@@ -1092,8 +1079,9 @@ at each.
 **35. Why does AIM get *worse* with more budget on ACS?**
 Verified, not hand-waved: the DP profiler suppresses fewer rare categories at higher ε (OCCP goes
 3 → 23 levels, RELP 3 → 14), so a fixed clique allowance covers proportionally less of the domain
-and fewer cliques touch the target column. TSTR F1 falls from 0.704 [0.695, 0.713] to
-0.581 [0.539, 0.629], CIs disjoint.
+and fewer cliques touch the target column. In the D1 re-run TSTR F1 falls from 0.6493 to 0.5668,
+but the endpoint CIs overlap — a direction, not a separated result. That domain behaviour was
+removed by audit C1 (2026-09-24); the committed grid predates the fix.
 
 **36. What is a canary, in one sentence?**
 A deliberately extreme record we insert so we can ask afterwards whether the release reveals that

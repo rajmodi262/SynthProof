@@ -1,5 +1,7 @@
 # H2 — Per-subgroup privacy leakage
 
+<!-- provenance: results/h2_analysis.json, results/h2_subgroups.json -->
+
 > **Status: NOT SUPPORTED at this scale.** The direction is weakly consistent with the
 > hypothesis; nothing reaches significance, and the instrument's working range is the binding
 > constraint rather than the mechanisms.
@@ -72,7 +74,8 @@ settings**, and the largest subgroup (`White`, 85.7%) sits at or near exactly ch
 
 It is also not significant. **No mean p-value across three seeds falls below 0.05.** The
 largest audited ε is 0.036 against a ceiling of 3.27 — roughly **1% of the instrument's
-range**. Individual seeds did occasionally reach p = 0.016, but those do not survive averaging,
+range**. Individual seeds did occasionally reach a nominally small p (per-seed p-values are not saved in
+the results file, so none is quoted here), but those do not survive averaging,
 and with 5 subgroups × 2 ε values × 2 attributes there are 20 tests here; at α = 0.05 one
 false positive is expected by chance alone. Under any multiple-comparison correction nothing
 survives.

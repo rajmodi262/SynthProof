@@ -1,5 +1,7 @@
 # H1 on ACSIncome — results and a contradiction
 
+<!-- provenance: results/acs/h1_all_families.json, results/h1_all_families.json, results/h2_subgroups.json, results/clique_confound.json, results/acs/clique_confound.json -->
+
 **Status: reporting, not concluding.** The ACS grid contradicts the mechanism ordering
 established on UCI Adult. Per the project's standing rules the analysis has **not** been
 adjusted to accommodate it. This file records the raw numbers and a diagnosis of the cause;
@@ -63,14 +65,16 @@ eps = 1). The re-run did not record selections, so that column is not repeated h
 > Two statements on this page did *not* survive that re-run, and both should be weakened
 > before they are defended:
 >
-> 1. **The eps-monotonicity result loses its separation.** Committed: TSTR 0.7039
->    [0.6946, 0.7126] at eps=0.5 falling to 0.5812 [0.5386, 0.6289] at eps=8 — endpoints
->    disjoint. Re-run: 0.6624 [0.6019, 0.7224] falling to 0.6110 [0.5913, 0.6307] — **the
->    endpoint CIs overlap.** The *direction* replicates; the *significance* does not. Report
->    it as a direction, or raise the seed count until the separation is stable.
-> 2. **The eps=8 mechanism ordering is not stable.** Committed has AIM worst on correlation
->    error (0.0626 vs independent 0.0535); the re-run puts AIM *better* (0.0521 vs 0.0535).
->    The robust claim — true in both runs — is that **AIM and the independent baseline are
+> *This note concerns the pre-D1 AIM grid; its AIM values were superseded by the 2026-10-11
+> re-run in §1–§2 and are not repeated here (see `CORRECTIONS.md`).*
+>
+> 1. **The eps-monotonicity result loses its separation.** In the committed pre-D1 run the
+>    eps=0.5 and eps=8 TSTR intervals were disjoint; in the 2026-09-09 re-run **the endpoint
+>    CIs overlap**, and they overlap again in the D1 re-run (§2). The *direction* replicates;
+>    the *significance* does not. Report it as a direction.
+> 2. **The eps=8 mechanism ordering is not stable.** The two pre-D1 runs put AIM on opposite
+>    sides of the independent baseline; the D1 re-run has AIM 0.0621 against independent
+>    0.0535, intervals overlapping. The robust claim — true in both runs — is that **AIM and the independent baseline are
 >    statistically indistinguishable on ACS**, which is this file's actual point. Do not rank
 >    them.
 >
@@ -101,19 +105,29 @@ because the coarsened columns still carry real cardinality:
 
 AIM's clique budget is roughly fixed (6 two-way cliques here), so as the domain grows those
 six cliques cover proportionally less of it — and fewer of them land on the columns the
-metrics happen to measure. The selected two-way cliques bear this out:
+metrics happen to measure. The selected two-way cliques of the **pre-D1 run** bear this out
+(the D1 re-run did not record selections, so this diagnosis rests on the earlier run):
 
 - **eps = 0.5:** `SCHL x income`, `MAR x income`, `WKHP x income` — *three* cliques touching
-  the target, hence TSTR 0.704, within striking distance of the 0.725 real-data baseline.
+  the target, and TSTR close to the 0.725 real-data baseline.
 - **eps = 8:** `MAR x RELP`, `SCHL x OCCP`, `AGEP x MAR`, `POBP x RAC1P`, `AGEP x RELP`,
-  `OCCP x income` — only *one* clique touching the target, hence TSTR 0.581.
+  `OCCP x income` — only *one* clique touching the target, and TSTR well below it.
 
 AIM optimises a global marginal-approximation objective, not a downstream classification
 task. On a dataset whose domain grows sharply with the budget, spending more budget spreads
 a fixed clique allowance thinner over the task-relevant marginals. Nothing is broken; the
 mechanism is doing what it was designed to do.
 
-## 4. The part that bears on Adult, and matters more
+## 4. The part that bears on Adult — RETRACTED
+
+> **RETRACTED 2026-09-04; numbers re-checked 2026-10-16.** §4 and §4a argued that AIM's Adult
+> advantage was largely an artefact of which pair the metric scores ("the clique-selection
+> confound"). Our own better-controlled experiment refutes that reading: measuring a pair helps
+> in proportion to that pair's true dependence, on both datasets
+> ([`../SELECTION_ABLATION.md`](../SELECTION_ABLATION.md)). AIM selects the dependent pair because
+> it is dependent. The sections are kept as the record of what was claimed. Their per-pair values
+> come from the **pre-D1** confound runs (`results/clique_confound.json`,
+> `results/acs/clique_confound.json`); **do not cite them, and do not cite the ratio table.**
 
 The structure metric is the correlation error of **one column pair**. AIM's score on it is
 essentially determined by whether that single pair is among the ~6 two-way cliques AIM
@@ -128,10 +142,10 @@ Selection of the measured pair, across the full epsilon grid:
 | 8.0 | yes | no |
 
 On Adult, AIM selects the measured pair at **every** epsilon tested. On ACS it selects it at
-**one**. ACS's AIM correlation error tracks that selection exactly: 0.0977 (not selected) ->
-0.0395 (selected) -> 0.0626 (not selected).
+**one**. In the pre-D1 run, ACS's AIM correlation error tracked that selection: lowest at the
+one epsilon where the pair was selected.
 
-So Adult's headline "AIM reproduces structure 3.6x better than pairwise" is, to a degree this
+So Adult's structure headline was, we argued, to a degree this
 grid cannot bound, a statement about a coincidence between the metric's chosen column pair and
 AIM's clique selection — not a general claim about structure preservation. ACS did not
 reproduce the finding because on ACS the coincidence does not hold.

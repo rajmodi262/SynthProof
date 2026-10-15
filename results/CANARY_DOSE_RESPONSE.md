@@ -1,5 +1,7 @@
 # Canary contamination — dose-response over canary fraction and canary type
 
+<!-- provenance: results/canary_dose_response.json -->
+
 > Regenerate: `python -m scripts.run_canary_dose_response`. Raw:
 > [`canary_dose_response.json`](canary_dose_response.json). UCI Adult,
 > 40 seeds per cell. No model is fitted.

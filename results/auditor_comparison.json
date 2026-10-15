@@ -1,0 +1,167 @@
+{
+  "dataset": "uci_adult",
+  "n_rows": 3000,
+  "alpha": 0.05,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "design": "equal total canary budget; paired plants m/2 and holds out m/2",
+  "cells": [
+    {
+      "canary_budget": 60,
+      "leak_fraction": 1.0,
+      "paired_eps_mean": 2.033763403617724,
+      "paired_eps_per_seed": [
+        2.033763403617724,
+        2.033763403617724,
+        2.033763403617724
+      ],
+      "one_run_eps_mean": 2.1677259677455076,
+      "one_run_eps_per_seed": [
+        2.972087557894354,
+        1.7655451726710845,
+        1.7655451726710845
+      ],
+      "one_run_ceiling": 2.9720875578943553
+    },
+    {
+      "canary_budget": 60,
+      "leak_fraction": 0.25,
+      "paired_eps_mean": 0.0,
+      "paired_eps_per_seed": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "one_run_eps_mean": 0.16824458219286953,
+      "one_run_eps_per_seed": [
+        0.5047337465786086,
+        0.0,
+        0.0
+      ],
+      "one_run_ceiling": 2.9720875578943553
+    },
+    {
+      "canary_budget": 60,
+      "leak_fraction": 0.0,
+      "paired_eps_mean": 0.0,
+      "paired_eps_per_seed": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "one_run_eps_mean": 0.0,
+      "one_run_eps_per_seed": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "one_run_ceiling": 2.9720875578943553
+    },
+    {
+      "canary_budget": 120,
+      "leak_fraction": 1.0,
+      "paired_eps_mean": 2.75812366605084,
+      "paired_eps_per_seed": [
+        2.7581236660508397,
+        2.7581236660508397,
+        2.7581236660508397
+      ],
+      "one_run_eps_mean": 2.747761932638143,
+      "one_run_eps_per_seed": [
+        2.912610016353169,
+        3.2065267548902785,
+        2.124149026670981
+      ],
+      "one_run_ceiling": 3.677794857118592
+    },
+    {
+      "canary_budget": 120,
+      "leak_fraction": 0.25,
+      "paired_eps_mean": 0.0,
+      "paired_eps_per_seed": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "one_run_eps_mean": 0.0,
+      "one_run_eps_per_seed": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "one_run_ceiling": 3.677794857118592
+    },
+    {
+      "canary_budget": 120,
+      "leak_fraction": 0.0,
+      "paired_eps_mean": 0.0,
+      "paired_eps_per_seed": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "one_run_eps_mean": 0.0,
+      "one_run_eps_per_seed": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "one_run_ceiling": 3.677794857118592
+    },
+    {
+      "canary_budget": 400,
+      "leak_fraction": 1.0,
+      "paired_eps_mean": 3.983758252165089,
+      "paired_eps_per_seed": [
+        3.983758252165089,
+        3.983758252165089,
+        3.983758252165089
+      ],
+      "one_run_eps_mean": 4.090202475950964,
+      "one_run_eps_per_seed": [
+        4.89052884431576,
+        3.7607760435725237,
+        3.619302539964608
+      ],
+      "one_run_ceiling": 4.890528844315768
+    },
+    {
+      "canary_budget": 400,
+      "leak_fraction": 0.25,
+      "paired_eps_mean": 0.004405573243037758,
+      "paired_eps_per_seed": [
+        0.0,
+        0.0,
+        0.013216719729113273
+      ],
+      "one_run_eps_mean": 0.16204303711472398,
+      "one_run_eps_per_seed": [
+        0.05070895705691153,
+        0.21259740368682742,
+        0.22282275060043297
+      ],
+      "one_run_ceiling": 4.890528844315768
+    },
+    {
+      "canary_budget": 400,
+      "leak_fraction": 0.0,
+      "paired_eps_mean": 0.0,
+      "paired_eps_per_seed": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "one_run_eps_mean": 0.0,
+      "one_run_eps_per_seed": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "one_run_ceiling": 4.890528844315768
+    }
+  ],
+  "elapsed_seconds": 41.7
+}

@@ -592,7 +592,8 @@ def test_clique_confound_negative_control_results_row(tmp_path):
         '| **Selection ablation** (was "the clique-selection confound") | '
         "❌ **RETRACTED 2026-08-25**, and re-run as a replication with a selection-deleted "
         "control arm. The reading it rested on is refuted by our own ablation: measuring helps "
-        "in proportion to TRUE dependence (r = −0.898), so AIM's advantage is the mechanism "
+        "in proportion to TRUE dependence (r = −0.997 on Adult, −0.996 on ACS; re-run 2026-10-16), "
+        "so AIM's advantage is the mechanism "
         "working as designed, not an artefact of which pair the metric happens to score. The "
         "phenomenon itself was already published three times — AIM's own paper "
         "(arXiv:2201.12677 §5, Fig 2c), Ganev, Xu & De Cristofaro (CCS 2024 §5.3), and Chen, "

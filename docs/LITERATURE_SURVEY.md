@@ -183,6 +183,11 @@ On UCI Adult, `results/clique_confound.json` records:
 On unselected pairs those two intervals overlap almost entirely. The H1 headline metric was
 `age × hours_per_week` — the one pair AIM selected.
 
+> **RETRACTED — do not use this section.** The clique-selection confound and its 11.9×/2.3×
+> ratios were retracted on 2026-08-25: a controlled ablation shows measuring a pair helps in
+> proportion to its true dependence on both datasets (`results/SELECTION_ABLATION.md`, re-run
+> 2026-10-16). Kept as the record of what was claimed.
+
 **Use the weakened claim from Ch.6 §6.9, not the JSON's blunt `confound_confirmed`.** Running
 the same study on ACS showed the strong form is false: each dataset has one unselected pair
 where AIM still wins, which is mechanistically expected, since measuring a clique constrains
@@ -725,7 +730,7 @@ Ranked by how well they would survive peer review.
 
 | # | Claim | Strength | Nearest prior work |
 |---|---|---|---|
-| 1 | A workload-adaptive DP synthesiser's structural advantage is **concentrated on** the cliques it selects — 11.9× on Adult, 2.3× on ACS — so benchmarking it on a single unselected statistic largely measures the selector, and the concentration ratio is itself dataset-dependent | **Strong.** Novel as a controlled result, and honestly weakened by the second dataset | Rosenblatt et al. PVLDB '23 observe a consistent ranking anomaly and conjecture the cause; Du & Li '25 do not condition on it |
+| 1 | ~~RETRACTED 2026-08-25 (see `results/SELECTION_ABLATION.md`)~~ A workload-adaptive DP synthesiser's structural advantage is **concentrated on** the cliques it selects — 11.9× on Adult, 2.3× on ACS — so benchmarking it on a single unselected statistic largely measures the selector, and the concentration ratio is itself dataset-dependent | **Strong.** Novel as a controlled result, and honestly weakened by the second dataset | Rosenblatt et al. PVLDB '23 observe a consistent ranking anomaly and conjecture the cause; Du & Li '25 do not condition on it |
 | 2 | Under end-to-end DP where the domain is itself discovered privately, downstream utility can *fall* as ε rises, because budget growth inflates the domain faster than it improves measurement | **Strong.** New instance along a new axis | Ganev et al. '25 find the inverted-U in bins; Ganev et al. CCS '24 find non-monotonicity in n |
 | 3 | Quantification of the Steinke-class audit ceiling ε_max(r) ≈ log(r/ln(1/α)), with an empirically measured detection floor and ceiling from a controlled leaky generator, and the consequence for subgroup audits | **Moderate.** The cap is stated in USENIX Sec '24; the quantification, the measured floor/ceiling table, and the per-subgroup corollary are ours | Annamalai et al. USENIX '24; the '25–'26 escape constructions |
 | 4 | A bounded null on per-subgroup empirical privacy leakage across two datasets, with FDR control, TOST equivalence against an a-priori bound, and a power statement | **Moderate.** Answers explicitly declared future work; the negative result is the honest answer | Ganev et al. '21 leave privacy-specific analysis to future work |

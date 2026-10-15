@@ -1,5 +1,7 @@
 # Ceiling survey — how many published empirical-privacy claims could have been made?
 
+<!-- provenance: results/ceiling_survey.json -->
+
 > **K = 0 of 5. **No included paper was underpowered without saying so.** The honest conclusion is that this literature reports its own limits; the contribution reduces to the NOT-REPORTED count (1) and the artefact work. Declared acceptable in advance by protocol S10.**
 
 > Protocol: [`docs/CEILING_SURVEY_PROTOCOL.md`](../docs/CEILING_SURVEY_PROTOCOL.md),

@@ -162,7 +162,7 @@ DEAD_CLAIMS: list[tuple[str, str, str, str]] = [
         "partitions supported/unsupported marginals with separate bounds and Fig 2c; Ganev, Xu "
         "& De Cristofaro CCS 2024 S5.3; Chen, Gong & Wang arXiv:2511.13893 S6.3. And our own "
         "ablation refuted the reading: measuring helps in proportion to TRUE DEPENDENCE "
-        "(r = -0.898), so AIM's advantage is the mechanism working as designed.",
+        "(r = -0.997), so AIM's advantage is the mechanism working as designed.",
         "Cite the three papers and present the fixed-workload ablation as a REPLICATION with a "
         "selection-deleted control arm. See results/SELECTION_ABLATION.md.",
     ),
@@ -175,8 +175,8 @@ DEAD_CLAIMS: list[tuple[str, str, str, str]] = [
         "attributes are independent, capturing the relationship among them actually increases "
         "the amount of noise.' S4.2 formalises the select-or-omit tradeoff with "
         "InDif = |M_ab - M_a x M_b|_1. AIM Eq. (1) encodes the same rule and lets it go negative.",
-        "Cite PrivSyn and AIM Eq. (1). Ours is a CALIBRATION of where the crossover falls, for "
-        "a validation-methodology chapter -- never a discovery.",
+        "Cite PrivSyn and AIM Eq. (1). And on the current code no pair degrades significantly "
+        "(results/SELECTION_ABLATION.md, re-run 2026-10-16), so there is no crossover to report.",
     ),
     (
         "ganev-as-one-run-full-aim",

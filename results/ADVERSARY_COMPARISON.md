@@ -1,5 +1,7 @@
 # A second adversary, and where it actually helps
 
+<!-- provenance: results/adversary_comparison.json, results/auditor_comparison.json, results/h1_all_families.json -->
+
 **Task 4.1.** The roadmap called a stronger adversary *"the one open item that could change a
 published number"*, because both auditors in this project score a record by its similarity to
 the nearest synthetic row. That is algorithm-agnostic, and it means every ε_audited ever
@@ -16,6 +18,7 @@ outranks a non-member). 0.5 is a coin flip. 116 s.
 
 ## The result
 
+<!-- BEGIN GENERATED: adversary-table -->
 | Mechanism | ε | **algorithm-aware** | distance (current) | Δ | focal points |
 |---|---:|---|---|---:|---:|
 | `independent` | 1 | 0.527 ± 0.039 | 0.538 ± 0.025 | **−0.011** | 4 |
@@ -24,19 +27,22 @@ outranks a non-member). 0.5 is a coin flip. 116 s.
 | `pairwise` | 1 | 0.555 ± 0.039 | 0.516 ± 0.036 | +0.039 | 4 |
 | `pairwise` | 4 | 0.587 ± 0.051 | 0.530 ± 0.036 | +0.057 | 4 |
 | `pairwise` | 8 | 0.589 ± 0.032 | 0.532 ± 0.033 | +0.058 | 4 |
-| `aim` | 1 | 0.576 ± 0.054 | 0.538 ± 0.039 | +0.038 | 10 |
-| `aim` | 4 | 0.587 ± 0.048 | 0.500 ± 0.037 | +0.086 | 10 |
-| `aim` | 8 | 0.590 ± 0.041 | 0.498 ± 0.036 | +0.092 | 10 |
-| `fixed_workload` | 1 | 0.573 ± 0.049 | 0.515 ± 0.027 | +0.058 | 10 |
-| `fixed_workload` | 4 | 0.608 ± 0.052 | 0.516 ± 0.026 | +0.091 | 10 |
-| `fixed_workload` | 8 | 0.587 ± 0.039 | 0.512 ± 0.017 | +0.075 | 10 |
+| `aim` | 1 | 0.574 ± 0.047 | 0.508 ± 0.028 | +0.066 | 10 |
+| `aim` | 4 | 0.583 ± 0.049 | 0.506 ± 0.020 | +0.078 | 10 |
+| `aim` | 8 | 0.588 ± 0.045 | 0.508 ± 0.031 | +0.080 | 10 |
+| `fixed_workload` | 1 | 0.581 ± 0.051 | 0.521 ± 0.040 | +0.059 | 10 |
+| `fixed_workload` | 4 | 0.598 ± 0.044 | 0.516 ± 0.039 | +0.082 | 10 |
+| `fixed_workload` | 8 | 0.590 ± 0.043 | 0.505 ± 0.050 | +0.085 | 10 |
+
+*12 cells, 5 seeds each, 2,000 rows; generated from `results/adversary_comparison.json`.*
+<!-- END GENERATED: adversary-table -->
 
 **Three things, and the second is the one that constrains what we may claim.**
 
 ### 1. The current adversary is at chance on every structured mechanism
 
-Across all twelve cells the distance baseline reads **0.498–0.538**. On `aim` at ε = 4 and 8 it
-is 0.500 and 0.498 — indistinguishable from guessing. A nearest-neighbour attack asks *"does
+Across all twelve cells the distance baseline reads **0.505–0.538**. On `aim` at ε = 4 and 8 it
+is 0.506 and 0.508 — indistinguishable from guessing. A nearest-neighbour attack asks *"does
 this record look like the output?"*, and a marginals-based generator never emits anything that
 looks like a particular record. It emits samples from a fitted model.
 
@@ -57,8 +63,8 @@ Golob et al. claim for it.
 
 ### 3. Where it does help, the advantage grows with the budget
 
-`aim` goes +0.038 → +0.086 → +0.092 as ε goes 1 → 4 → 8; `pairwise` goes +0.039 → +0.057 →
-+0.058. More budget means less noise on the measured marginals, which means more membership
+`aim` goes +0.066 → +0.078 → +0.080 as ε goes 1 → 4 → 8; `pairwise` goes +0.039 → +0.057 →
++0.058. (AIM rows are the D1 re-run of 2026-09-16; the pre-D1 values are logged in `CORRECTIONS.md`.) More budget means less noise on the measured marginals, which means more membership
 signal in exactly the statistics this attack reads. The direction is the one theory predicts,
 which is a useful sanity check on the implementation.
 
@@ -124,7 +130,7 @@ AUC — and the rule from that incident (audit finding F7) is that **a name is a
 ## A finding from building it, kept because it was a surprise
 
 On a release containing **verbatim copies** of training rows, the distance baseline *wins*, and
-by a wide margin — AUC ≈ 0.86 against ≈ 0.67 at a 50% leak. A copied record sits at distance
+by a wide margin at a 50% leak. A copied record sits at distance
 zero and nothing else does, so nearest-neighbour is close to an optimal detector there, while a
 single extra row barely moves a marginal over hundreds.
 
@@ -138,8 +144,8 @@ the instrument against the leak it is good at. Pinned by
 
 ## Method note
 
-The first version of the claim test read AUC 0.530 against 0.552 at a single configuration and
-would have concluded the attack was useless. A sweep over n and ε showed the algorithm-aware
+The first version of the claim test, at a single configuration, read the algorithm-aware AUC
+slightly *below* the baseline and would have concluded the attack was useless. A sweep over n and ε showed the algorithm-aware
 score winning at every setting with the baseline pinned at chance. **One noisy draw is not a
 result** — the preregistration commits to five seeds per cell for this reason, and the test now
 averages over five.

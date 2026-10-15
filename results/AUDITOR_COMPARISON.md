@@ -1,7 +1,12 @@
 # Auditor comparison — paired Clopper-Pearson vs one-run (Steinke et al. 2023)
 
+<!-- provenance: results/auditor_comparison.json, results/h1_all_families.json -->
+
 > UCI Adult, n = 3,000, 3 seeds, α = 0.05, leakage supplied by `LeakyGenerator`.
-> Reproduce with `make audit-compare`.
+> Reproduce with `python -m scripts.run_auditor_comparison` (writes
+> `results/auditor_comparison.json`), then `python -m scripts.build_results_docs`. The table was
+> first typed by hand citing a `make audit-compare` target that never existed; it was re-run
+> from a committed script on 2026-10-16 and is now generated.
 
 Both auditors are given the **same total canary budget**, which is the comparison a
 practitioner faces. The paired auditor spends two canaries per comparison (one planted, one
@@ -10,6 +15,7 @@ of them.
 
 ## Measured
 
+<!-- BEGIN GENERATED: auditor-table -->
 | canary budget | leak | paired ε | one-run ε | one-run ceiling |
 |---:|---:|---:|---:|---:|
 | 60 | 1.00 | 2.034 | **2.168** | 2.972 |
@@ -19,8 +25,11 @@ of them.
 | 120 | 0.25 | 0.000 | 0.000 | 3.678 |
 | 120 | 0.00 | 0.000 | 0.000 | 3.678 |
 | 400 | 1.00 | 3.984 | **4.090** | 4.891 |
-| 400 | 0.25 | 0.018 | **0.162** | 4.891 |
+| 400 | 0.25 | 0.004 | **0.162** | 4.891 |
 | 400 | 0.00 | 0.000 | 0.000 | 4.891 |
+
+*Means over seeds [0, 1, 2], UCI Adult n = 3,000, α = 0.05; generated from `results/auditor_comparison.json` (`python -m scripts.run_auditor_comparison`).*
+<!-- END GENERATED: auditor-table -->
 
 ## What this actually shows
 
@@ -29,8 +38,8 @@ expect at this scale.** On a verbatim release the two are within a few percent o
 and at budget 120 the paired auditor is fractionally ahead — well inside seed noise.
 
 **The one-run construction's genuine advantage is sensitivity to partial leakage.** At 25%
-verbatim copying it certifies ε ≈ 0.17 where the paired auditor certifies nothing at both 60
-and 400 canaries. That is the regime a real mechanism lives in, so it is the regime that
+verbatim copying it certifies ε ≈ 0.17 where the paired auditor certifies nothing at 60 canaries
+and essentially nothing (0.004) at 400. That is the regime a real mechanism lives in, so it is the regime that
 matters — but 0.17 is still a very weak bound.
 
 **Both correctly report zero on the negative control** (a release with perfect marginals and

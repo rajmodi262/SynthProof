@@ -128,8 +128,11 @@ def calibrate_noise_scale(
 # Releases compose to roughly 0.92 of their target epsilon, and AIM to 0.79. The cause is NOT
 # the bisection below, which lands within 0.01% of target on a single stage:
 #
-#     single-stage  target 0.5 -> 0.499967   target 8.0 -> 7.999605     ratio 1.0000
-#     two-stage     target 1.0 -> 0.832346   target 8.0 -> 6.715220     ratio 0.83
+#     single-stage  target 0.5 -> 0.499983   target 8.0 -> 7.999622     ratio 1.0000
+#     two-stage     target 1.0 -> 0.832315   target 8.0 -> 6.715081     ratio 0.83
+#
+# (recomputed 2026-10-16 by `python -m scripts.run_calibration_check`, which writes
+# results/calibration_check.json)
 #
 # The loss is entirely in `BudgetPlan`, and it is structural. The plan splits the total
 # LINEARLY across stages and calibrates each stage against its own share, but RDP composition

@@ -1,5 +1,7 @@
 # K3 audit-power kill-check — result: PASS (imputation audit is viable)
 
+<!-- provenance: research/imputation_audit/k3_audit_power.json -->
+
 > The gate the pivot scout (`research/11_pivot_scout_2026-09-03.md`) insisted on before committing to
 > the missing-data / imputation experiment: at the n we intend to use, can a membership-inference
 > auditor resolve a KNOWN leak from a KNOWN-private release with non-overlapping CIs? If not, a null
