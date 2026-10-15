@@ -7,7 +7,7 @@ is not evidence, and the preregistration commits to 5 seeds per configuration.
 
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -276,6 +276,192 @@ def default_target(dataset: TabularDataset, requested: Optional[str] = None) -> 
     return dataset.categorical_cols[-1] if dataset.categorical_cols else None
 
 
+def _split(dataset: TabularDataset, seed: int, holdout_frac: float):
+    """A seeded fit/holdout split. Returns (holdout_df, fit_df, fit_ds)."""
+    rng = np.random.default_rng(seed)
+    idx = rng.permutation(len(dataset.df))
+    n_hold = max(20, int(len(idx) * holdout_frac))
+    holdout_df = dataset.df.iloc[idx[:n_hold]].reset_index(drop=True)
+    fit_df = dataset.df.iloc[idx[n_hold:]].reset_index(drop=True)
+    return holdout_df, fit_df, TabularDataset(fit_df, name=dataset.name, schema=dataset.schema)
+
+
+def _plan_for(fit_ds: TabularDataset, target_eps: float, delta: float) -> BudgetPlan:
+    """Profiling is free when the schema declares every bound and category domain (true of every
+    registry dataset): it then reads nothing and charges nothing, so the WHOLE budget goes to
+    synthesis. Reserving 10% for a profiler that spends none of it left that share idle (audit
+    H1, research/27). Only a schema with undeclared domains gets the 10/90 split."""
+    needs_profile = (
+        DPDomainProfiler(
+            accountant=Accountant(budget_eps=float("inf"), budget_delta=delta), eps_budget=1.0
+        )._query_count(fit_ds)
+        > 0
+    )
+    if needs_profile:
+        return BudgetPlan.split(target_eps, delta=delta, profile_frac=0.1)
+    return BudgetPlan(total_eps=target_eps, delta=delta, profile_eps=0.0, synthesis_eps=target_eps)
+
+
+def _make_auditor(auditor_kind: str, num_canaries: int, seed: int):
+    """The one-run construction is the default: it spends one canary per comparison rather
+    than two, and is measurably more sensitive to PARTIAL leakage, which is the regime a
+    real mechanism lives in. See results/AUDITOR_COMPARISON.md. The paired auditor stays
+    selectable so the two can be compared on identical runs."""
+    if auditor_kind == "one_run":
+        return SteinkeAuditor(num_canaries=num_canaries, seed=seed)
+    if auditor_kind == "paired":
+        return CanaryAuditor(num_canaries=num_canaries, seed=seed)
+    raise ValueError(f"Unknown auditor {auditor_kind!r}. Use 'one_run' or 'paired'.")
+
+
+def _canary_counts(canary_set) -> Tuple[int, int]:
+    """(planted, total). Report what was actually planted, not what was requested. Narrowing on
+    the SET rather than on the auditor is what lets the field accesses be checked."""
+    if isinstance(canary_set, OneRunCanarySet):
+        return canary_set.num_included, len(canary_set.canaries)
+    return len(canary_set.members), len(canary_set.members) + len(canary_set.holdout)
+
+
+def _run_audit(auditor, canary_set, audit_synth, delta: float, emit):
+    """The two auditors return different result types -- SteinkeResult carries the ceiling,
+    accuracy and saturation flag; AuditResult carries the TPR/FPR pair from the paired
+    construction. Branching on the auditor's type rather than on a string keeps the two
+    sets of field accesses provably matched to the object that produced them."""
+    if isinstance(auditor, SteinkeAuditor) and isinstance(canary_set, OneRunCanarySet):
+        res = auditor.audit(audit_synth, canary_set, delta=delta)
+        emit(
+            "audit",
+            {
+                "audited_eps": float(res.audited_eps),
+                "ceiling": float(res.ceiling),
+                "accuracy": float(res.accuracy),
+                "guesses": int(res.guesses),
+                "saturated": bool(res.saturated),
+                "p_value": float(res.p_value),
+            },
+        )
+        return res
+    if isinstance(auditor, CanaryAuditor) and isinstance(canary_set, CanarySet):
+        paired = auditor.audit(audit_synth, canary_set)
+        emit(
+            "audit",
+            {
+                "audited_eps": float(paired.audited_eps),
+                "tpr": float(paired.tpr),
+                "fpr": float(paired.fpr),
+                "p_value": float(paired.p_value),
+            },
+        )
+        return paired
+    raise TypeError(  # pragma: no cover - the two constructors cannot produce a mixed pair
+        f"Auditor {type(auditor).__name__} produced a "
+        f"{type(canary_set).__name__}, which it should not be able to."
+    )
+
+
+def _run_attacks(audit_synth, util_synth, fit_ds, holdout_df, reference_df, target_col, seed, emit):
+    """Every attack the release is scored against. Returns them by name; an attack that does not
+    apply to this table is None and reported as NOT APPLICABLE, never as a passed attack.
+
+    The MIA runs against the AUDIT release: it asks whether training membership is recoverable,
+    which is a question about the release that actually contained the members. The distance MIA
+    counts categorical mismatches (audit C3), so it runs on every table. DOMIAS still needs a
+    numeric column for its density estimate; on an all-categorical release (Mushroom, Nursery)
+    it is reported as NOT APPLICABLE, the same rule linkability follows.
+    """
+    out: Dict[str, Any] = {}
+    try:
+        out["mia"] = DistanceMIABaseline(seed=seed, max_records=400).evaluate(
+            audit_synth, train_df=fit_ds.df, test_df=holdout_df
+        )
+        emit(
+            "attack",
+            {
+                "auc": float(out["mia"].auc),
+                "advantage": float(out["mia"].advantage),
+                "tpr_at_1pct_fpr": float(out["mia"].tpr_at_1pct_fpr),
+            },
+        )
+    except ValueError as exc:
+        out["mia"] = None
+        emit("attack", {"not_applicable": str(exc)})
+
+    # A second, structurally different adversary. The two fail differently -- the baseline is
+    # a raw proximity heuristic, DOMIAS divides by a reference density to remove the
+    # typicality confound -- so both are reported rather than one standing in for the other.
+    try:
+        out["domias"] = DOMIAS(seed=seed, max_records=400).evaluate(
+            audit_synth, train_df=fit_ds.df, test_df=holdout_df
+        )
+        emit(
+            "attack_domias",
+            {
+                "auc": float(out["domias"].auc),
+                "tpr_at_1pct_fpr": float(out["domias"].tpr_at_1pct_fpr),
+            },
+        )
+    except ValueError as exc:
+        out["domias"] = None
+        emit("attack_domias", {"not_applicable": str(exc)})
+
+    # Singling out: does any real record appear in the release as a unique exact match? This
+    # is the one risk of the EDPB's three that a release can fail outright rather than by
+    # degree, so it is cheap and worth running on every cell. Scored against the AUDIT release
+    # for the same reason the MIA is -- that is the release that contained the members.
+    out["singling"] = ExactMatchRiskEvaluator(seed=seed, max_records=400).evaluate(
+        audit_synth, target_df=fit_ds.df
+    )
+    emit(
+        "attack_singling_out",
+        {
+            "risk": float(out["singling"].singling_out_risk),
+            "unique_matches": int(out["singling"].num_unique_matches),
+        },
+    )
+
+    # Linkability: the third EDPB risk. Two disjoint halves of a record are matched to the
+    # release independently; agreement beyond the shuffled-release baseline is the link. A table
+    # with fewer than four columns cannot be split into two disjoint halves, so the question does
+    # not arise: NOT APPLICABLE, not a failure, and it must not take the release down with it.
+    try:
+        out["linkability"] = LinkabilityEvaluator(seed=seed, max_records=400).evaluate(
+            audit_synth, target_df=fit_ds.df
+        )
+        emit(
+            "attack_linkability",
+            {
+                "rate": float(out["linkability"].linkability_rate),
+                "excess_over_baseline": float(out["linkability"].excess_over_baseline),
+            },
+        )
+    except ValueError as exc:
+        out["linkability"] = None
+        emit("attack_linkability", {"not_applicable": str(exc)})
+
+    # Attribute inference, scored against a CONDITIONAL baseline rather than a marginal one.
+    # Jayaraman & Evans (CCS 2022) showed that reporting raw attack accuracy as "leakage"
+    # mostly measures imputability; `leakage_vs_conditional` is the number that isolates what
+    # the release itself contributed. Uses the canary-free release, because this asks what a
+    # recipient of the published table can infer.
+    out["attr"] = AttributeInferenceAttack(
+        target_column=target_col, seed=seed, max_records=400
+    ).evaluate(util_synth, target_df=fit_ds.df, reference_df=reference_df)
+    emit(
+        "attack_attribute_inference",
+        {
+            "accuracy": float(out["attr"].attack_accuracy),
+            "leakage_vs_conditional": float(out["attr"].leakage_vs_conditional),
+        },
+    )
+    return out
+
+
+def _nan_if_absent(result, attr: str) -> float:
+    """NaN, not 0.0, when an attack does not apply: a zero would read as 'attack ran, found
+    nothing' -- an absent measurement, not a null."""
+    return float(getattr(result, attr)) if result else float("nan")
+
+
 def run_cell(
     dataset: TabularDataset,
     mechanism: str,
@@ -325,12 +511,7 @@ def run_cell(
 
     emit = on_stage if on_stage is not None else (lambda *_a, **_k: None)
 
-    rng = np.random.default_rng(seed)
-    idx = rng.permutation(len(dataset.df))
-    n_hold = max(20, int(len(idx) * holdout_frac))
-    holdout_df = dataset.df.iloc[idx[:n_hold]].reset_index(drop=True)
-    fit_df = dataset.df.iloc[idx[n_hold:]].reset_index(drop=True)
-    fit_ds = TabularDataset(fit_df, name=dataset.name, schema=dataset.schema)
+    holdout_df, fit_df, fit_ds = _split(dataset, seed, holdout_frac)
     emit("split", {"fit_rows": len(fit_df), "holdout_rows": len(holdout_df)})
     if release_rows is not None and (int(release_rows) != release_rows or release_rows < 1):
         raise ValueError(f"release_rows must be a positive integer, got {release_rows!r}.")
@@ -340,23 +521,7 @@ def run_cell(
     # every seed below 2**32 -- all the research grids use -- is unchanged.
     eval_seed = seed % (2**32)
 
-    # Profiling is free when the schema declares every bound and category domain (true of every
-    # registry dataset): it then reads nothing and charges nothing, so the WHOLE budget goes to
-    # synthesis. Reserving 10% for a profiler that spends none of it left that share idle (audit
-    # H1, research/27). Only a schema with undeclared domains gets the 10/90 split.
-    needs_profile = (
-        DPDomainProfiler(
-            accountant=Accountant(budget_eps=float("inf"), budget_delta=delta), eps_budget=1.0
-        )._query_count(fit_ds)
-        > 0
-    )
-    plan = (
-        BudgetPlan.split(target_eps, delta=delta, profile_frac=0.1)
-        if needs_profile
-        else BudgetPlan(
-            total_eps=target_eps, delta=delta, profile_eps=0.0, synthesis_eps=target_eps
-        )
-    )
+    plan = _plan_for(fit_ds, target_eps, delta)
     # Budget = the target itself, plus float slack only. It used to be `target * 1.02`, a 2%
     # overshoot allowance nothing needed or explained (audit L4).
     budget_cap = target_eps * (1.0 + 1e-6)
@@ -371,31 +536,9 @@ def run_cell(
         },
     )
 
-    # The one-run construction is the default: it spends one canary per comparison rather
-    # than two, and is measurably more sensitive to PARTIAL leakage, which is the regime a
-    # real mechanism lives in. See results/AUDITOR_COMPARISON.md. The paired auditor stays
-    # selectable so the two can be compared on identical runs.
-    auditor: Union[SteinkeAuditor, CanaryAuditor]
-    if auditor_kind == "one_run":
-        auditor = SteinkeAuditor(num_canaries=num_canaries, seed=seed)
-    elif auditor_kind == "paired":
-        auditor = CanaryAuditor(num_canaries=num_canaries, seed=seed)
-    else:
-        raise ValueError(f"Unknown auditor {auditor_kind!r}. Use 'one_run' or 'paired'.")
+    auditor: Union[SteinkeAuditor, CanaryAuditor] = _make_auditor(auditor_kind, num_canaries, seed)
     aug_ds, canary_set = auditor.plant_canaries(fit_ds)
-    # Report what was actually planted, not what was requested. They coincide today, but a
-    # reported count that cannot drift from reality is worth one attribute access.
-    # isinstance, not the string tag: this is what tells the type checker (and the next
-    # reader) which result shape follows from which auditor.
-    # The canary set is a union for the same reason the auditor is, so it gets the same
-    # treatment. Narrowing on the SET rather than on the auditor is what lets the field
-    # accesses below be checked.
-    if isinstance(canary_set, OneRunCanarySet):
-        planted = canary_set.num_included
-        total_canaries = len(canary_set.canaries)
-    else:
-        planted = len(canary_set.members)
-        total_canaries = len(canary_set.members) + len(canary_set.holdout)
+    planted, total_canaries = _canary_counts(canary_set)
     emit(
         "canaries",
         {
@@ -447,42 +590,9 @@ def run_cell(
         },
     )
     emit("generate", {"rows": len(audit_synth)})
-
-    # The two auditors return different result types -- SteinkeResult carries the ceiling,
-    # accuracy and saturation flag; AuditResult carries the TPR/FPR pair from the paired
-    # construction. Branching on the auditor's type rather than on a string keeps the two
-    # sets of field accesses provably matched to the object that produced them.
-    if isinstance(auditor, SteinkeAuditor) and isinstance(canary_set, OneRunCanarySet):
-        steinke_result = auditor.audit(audit_synth, canary_set, delta=delta)
-        audit: Union[SteinkeResult, AuditResult] = steinke_result
-        emit(
-            "audit",
-            {
-                "audited_eps": float(steinke_result.audited_eps),
-                "ceiling": float(steinke_result.ceiling),
-                "accuracy": float(steinke_result.accuracy),
-                "guesses": int(steinke_result.guesses),
-                "saturated": bool(steinke_result.saturated),
-                "p_value": float(steinke_result.p_value),
-            },
-        )
-    elif isinstance(auditor, CanaryAuditor) and isinstance(canary_set, CanarySet):
-        paired_result = auditor.audit(audit_synth, canary_set)
-        audit = paired_result
-        emit(
-            "audit",
-            {
-                "audited_eps": float(paired_result.audited_eps),
-                "tpr": float(paired_result.tpr),
-                "fpr": float(paired_result.fpr),
-                "p_value": float(paired_result.p_value),
-            },
-        )
-    else:  # pragma: no cover - the two constructors above cannot produce a mixed pair
-        raise TypeError(
-            f"Auditor {type(auditor).__name__} produced a "
-            f"{type(canary_set).__name__}, which it should not be able to."
-        )
+    audit: Union[SteinkeResult, AuditResult] = _run_audit(
+        auditor, canary_set, audit_synth, delta, emit
+    )
 
     # ---------------------------------------------------------------- utility release
     # A SECOND, independent fit on the clean split, used for utility and structure.
@@ -526,97 +636,10 @@ def run_cell(
     )
     emit("utility", {"tstr_f1": float(util.tstr_macro_f1), "trtr_f1": float(util.trtr_macro_f1)})
 
-    # The MIA runs against the AUDIT release. It asks whether training membership is
-    # recoverable, which is a question about the release that actually contained the members.
-    # The distance MIA counts categorical mismatches (audit C3), so it runs on every table.
-    # DOMIAS still needs a numeric column for its density estimate; on an all-categorical
-    # release (Mushroom, Nursery) it is reported as NOT APPLICABLE, never as a passed attack,
-    # the same rule linkability follows. Attribute inference and singling-out below are
-    # set-based and still run, so an all-categorical cell is not left with zero privacy evidence.
-    try:
-        mia = DistanceMIABaseline(seed=eval_seed, max_records=400).evaluate(
-            audit_synth, train_df=fit_ds.df, test_df=holdout_df
-        )
-        emit(
-            "attack",
-            {
-                "auc": float(mia.auc),
-                "advantage": float(mia.advantage),
-                "tpr_at_1pct_fpr": float(mia.tpr_at_1pct_fpr),
-            },
-        )
-    except ValueError as exc:
-        mia = None
-        emit("attack", {"not_applicable": str(exc)})
-
-    # A second, structurally different adversary. The two fail differently -- the baseline is
-    # a raw proximity heuristic, DOMIAS divides by a reference density to remove the
-    # typicality confound -- so both are reported rather than one standing in for the other.
-    try:
-        domias = DOMIAS(seed=eval_seed, max_records=400).evaluate(
-            audit_synth, train_df=fit_ds.df, test_df=holdout_df
-        )
-        emit(
-            "attack_domias",
-            {"auc": float(domias.auc), "tpr_at_1pct_fpr": float(domias.tpr_at_1pct_fpr)},
-        )
-    except ValueError as exc:
-        domias = None
-        emit("attack_domias", {"not_applicable": str(exc)})
-
-    # Singling out: does any real record appear in the release as a unique exact match? This
-    # is the one risk of the EDPB's three that a release can fail outright rather than by
-    # degree, so it is cheap and worth running on every cell. Scored against the AUDIT release
-    # for the same reason the MIA is -- that is the release that contained the members.
-    singling = ExactMatchRiskEvaluator(seed=eval_seed, max_records=400).evaluate(
-        audit_synth, target_df=fit_ds.df
+    atk = _run_attacks(
+        audit_synth, util_synth, fit_ds, holdout_df, reference_df, target_col, eval_seed, emit
     )
-    emit(
-        "attack_singling_out",
-        {
-            "risk": float(singling.singling_out_risk),
-            "unique_matches": int(singling.num_unique_matches),
-        },
-    )
-
-    # Linkability: the third EDPB risk. Two disjoint halves of a record are matched to the
-    # release independently; agreement beyond the shuffled-release baseline is the link.
-    # With singling out and attribute inference already running, this completes 3 of 3.
-    # A table with fewer than four columns cannot be split into two disjoint halves, so the
-    # question does not arise. That is NOT APPLICABLE, not a failure, and it must not take the
-    # release down with it -- the built-in toy table has three columns and did exactly that.
-    # Reported as absent rather than skipped silently, the same rule the second accountant
-    # follows: an absent check must never look like a passed one.
-    try:
-        linkability = LinkabilityEvaluator(seed=eval_seed, max_records=400).evaluate(
-            audit_synth, target_df=fit_ds.df
-        )
-        emit(
-            "attack_linkability",
-            {
-                "rate": float(linkability.linkability_rate),
-                "excess_over_baseline": float(linkability.excess_over_baseline),
-            },
-        )
-    except ValueError as exc:
-        linkability = None
-        emit("attack_linkability", {"not_applicable": str(exc)})
-
-    # Attribute inference, scored against a CONDITIONAL baseline rather than a marginal one.
-    # Jayaraman & Evans (CCS 2022) showed that reporting raw attack accuracy as "leakage"
-    # mostly measures imputability; `leakage_vs_conditional` is the number that isolates what
-    # the release itself contributed. Uses the canary-free release, because this asks what a
-    # recipient of the published table can infer.
-    attr = AttributeInferenceAttack(
-        target_column=target_col, seed=eval_seed, max_records=400
-    ).evaluate(util_synth, target_df=fit_ds.df, reference_df=reference_df)
-    emit(
-        "attack_attribute_inference",
-        {
-            "accuracy": float(attr.attack_accuracy),
-            "leakage_vs_conditional": float(attr.leakage_vs_conditional),
-        },
-    )
+    mia, domias, linkability = atk["mia"], atk["domias"], atk["linkability"]
 
     out: Dict[str, Any] = {
         "proved_eps": float(acc.total()),
@@ -631,20 +654,14 @@ def run_cell(
         "usefulness_multi": (
             float(util.usefulness_multi) if util.usefulness_multi is not None else float("nan")
         ),
-        # NaN, not 0.0, when a distance-based attack does not apply (all-categorical release).
-        # A zero would read as "attack ran, found nothing" -- an absent measurement, not a null.
-        "mia_auc": (float(mia.auc) if mia else float("nan")),
-        "domias_auc": (float(domias.auc) if domias else float("nan")),
-        "domias_tpr_at_1pct": (float(domias.tpr_at_1pct_fpr) if domias else float("nan")),
-        "singling_out_risk": float(singling.singling_out_risk),
-        # NaN, not 0.0, when the risk does not apply. A zero here would read as "measured, no
-        # linkability found" -- the difference between an absent measurement and a null one.
-        "linkability_rate": (float(linkability.linkability_rate) if linkability else float("nan")),
-        "linkability_excess": (
-            float(linkability.excess_over_baseline) if linkability else float("nan")
-        ),
-        "attr_inference_accuracy": float(attr.attack_accuracy),
-        "attr_leakage_vs_conditional": float(attr.leakage_vs_conditional),
+        "mia_auc": _nan_if_absent(mia, "auc"),
+        "domias_auc": _nan_if_absent(domias, "auc"),
+        "domias_tpr_at_1pct": _nan_if_absent(domias, "tpr_at_1pct_fpr"),
+        "singling_out_risk": float(atk["singling"].singling_out_risk),
+        "linkability_rate": _nan_if_absent(linkability, "linkability_rate"),
+        "linkability_excess": _nan_if_absent(linkability, "excess_over_baseline"),
+        "attr_inference_accuracy": float(atk["attr"].attack_accuracy),
+        "attr_leakage_vs_conditional": float(atk["attr"].leakage_vs_conditional),
         "correlation_error": _mean_abs_corr_error(
             reference_df,
             util_synth,
@@ -684,9 +701,9 @@ def run_cell(
                 "_audit": audit,
                 "_mia": mia,
                 "_domias": domias,
-                "_singling_out": singling,
+                "_singling_out": atk["singling"],
                 "_linkability": linkability,
-                "_attr_inference": attr,
+                "_attr_inference": atk["attr"],
             }
         )
     return out
