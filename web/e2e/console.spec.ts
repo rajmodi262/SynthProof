@@ -6,7 +6,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
 /* The console, driven the way a person drives it, against the real stack.
  *
- * Task 3.4 of docs/ROAD_TO_TEN.md. Every defect that reached users on 2026-09-12 lived at a
+ * Task 3.4 of archive/docs/ROAD_TO_TEN.md. Every defect that reached users on 2026-09-12 lived at a
  * seam between two layers that each had their own passing tests:
  *
  *   the capsule's JavaScript would not parse — the Python suite asserted substrings and

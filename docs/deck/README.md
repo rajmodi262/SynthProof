@@ -46,5 +46,5 @@ accurate as the project moves.
   component Built / Partial / Not-started state. Re-check it against the repo before any
   presentation — a stale status slide is the one thing on here that could mislead a reviewer.
 
-See [`../../brutal_project_audit.md`](../../brutal_project_audit.md) for the full self-audit the
+See `brutal_project_audit.md` (in the capstone folder outside this repository, not versioned here) for the full self-audit the
 status slide is derived from.

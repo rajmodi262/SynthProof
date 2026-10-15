@@ -1,6 +1,6 @@
 """The algorithm-aware membership score, and the one claim that matters about it.
 
-Task 4.1 of docs/ROAD_TO_TEN.md. The project's own roadmap calls a stronger adversary "the
+Task 4.1 of archive/docs/ROAD_TO_TEN.md. The project's own roadmap calls a stronger adversary "the
 one open item that could change a published number", because both existing auditors score by
 nearest-neighbour similarity — so every reported ε_audited is a lower bound on a lower bound.
 

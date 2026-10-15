@@ -33,7 +33,7 @@ class BaseGenerator(ABC):
         concrete types and a subclass may widen a parameter but never narrow it, so mypy
         reports fourteen incompatible overrides. Doing it properly means deciding, per
         generator, whether None means "control, proceed" or "programming error, raise" -- a
-        decision about the budget-charging contract. Tracked in docs/ROAD_TO_TEN.md.
+        decision about the budget-charging contract. Tracked in archive/docs/ROAD_TO_TEN.md.
         """
         pass
 

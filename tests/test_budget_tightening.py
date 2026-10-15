@@ -1,6 +1,7 @@
 """The budget under-spend, and the fix that is deliberately switched off.
 
-Task 4.3 of docs/ROAD_TO_TEN.md. `BudgetPlan` splits a release's total epsilon LINEARLY across
+Task 4.3 of archive/docs/ROAD_TO_TEN.md. `BudgetPlan` splits a release's total epsilon
+LINEARLY across
 stages and calibrates each stage against its own share — but RDP composition is SUBLINEAR, so
 the stages compose to materially less than the total. Measured here: **0.908 of target**, which
 is 9% of the privacy budget bought and never spent, and therefore utility given away.

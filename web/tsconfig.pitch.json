@@ -3,5 +3,5 @@
   "compilerOptions": {
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["pitch", "pitch2", "pitch3", "pitch4", "pitch5"]
+  "include": ["pitch"]
 }

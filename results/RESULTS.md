@@ -57,5 +57,5 @@ prove, not which auditor implements it.
 
 Every number traces to a committed experiment with a recorded seed, and carries an
 uncertainty estimate. Where a result is uninformative, it says so rather than being omitted.
-See [`../docs/AUDIT_AND_ROADMAP.md`](../docs/AUDIT_AND_ROADMAP.md) §7 for the standing rules
+See [`../archive/docs/AUDIT_AND_ROADMAP.md`](../archive/docs/AUDIT_AND_ROADMAP.md) §7 for the standing rules
 this follows.

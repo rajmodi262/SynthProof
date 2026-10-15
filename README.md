@@ -3,7 +3,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22746910.svg)](https://doi.org/10.5281/zenodo.22746910)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
-[![Status: research prototype](https://img.shields.io/badge/status-research%20prototype-orange.svg)](docs/ROAD_TO_TEN.md)
+[![Status: research prototype](https://img.shields.io/badge/status-research%20prototype-orange.svg)](archive/docs/ROAD_TO_TEN.md)
 
 **SynthProof** generates differentially private synthetic tabular data, charges every
 operation that touches the sensitive table to a privacy accountant, records the spend in a
@@ -18,10 +18,10 @@ the formal bound (ε_proved) and an empirical lower bound (ε_audited).
 > out for real releases: authentication is a **single shared key** rather than real identity
 > (so the ledger cannot say WHO spent the budget), no cross-session budget enforcement, no
 > multi-table support, and single-table CSV only. Known gaps and the
-> remediation plan are in **[docs/ROAD_TO_TEN.md](docs/ROAD_TO_TEN.md)**, the live tracker.
+> remediation plan are in **[archive/docs/ROAD_TO_TEN.md](archive/docs/ROAD_TO_TEN.md)**, the live tracker.
 > The 2026-08-13 audit that started it — findings F1–F11 and G1–G7, the ε-calibration
 > table, and the six standing rules — is kept as a record in
-> **[docs/AUDIT_AND_ROADMAP.md](docs/AUDIT_AND_ROADMAP.md)**.
+> **[archive/docs/AUDIT_AND_ROADMAP.md](archive/docs/AUDIT_AND_ROADMAP.md)**.
 
 ---
 
@@ -231,7 +231,7 @@ applied, name algorithms accurately.
 - **[ARTIFACT.md](ARTIFACT.md)** — artifact-evaluation guide: every thesis claim mapped to the
   command that reproduces it, with expected output and runtime.
 - **[CITATION.cff](CITATION.cff)** — GitHub renders a "Cite this repository" button from this.
-- **[docs/SYNOPSIS_RECONCILIATION.md](docs/SYNOPSIS_RECONCILIATION.md)** — every promise in the
+- **[archive/docs/SYNOPSIS_RECONCILIATION.md](archive/docs/SYNOPSIS_RECONCILIATION.md)** — every promise in the
   submitted synopsis mapped to built / partial / descoped-and-why.
 
 ```bash

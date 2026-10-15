@@ -1,6 +1,6 @@
 """Two adversaries, the same releases: does an algorithm-aware attack see more?
 
-Task 4.1 of docs/ROAD_TO_TEN.md, and the item the project's own roadmap called "the one open
+Task 4.1 of archive/docs/ROAD_TO_TEN.md, and the item the project's own roadmap called "the one open
 item that could change a published number". Both existing auditors score a record by its
 similarity to the nearest synthetic row, which is algorithm-agnostic. Every epsilon this
 project has ever audited is therefore a lower bound produced by ONE attack, and a weak attack

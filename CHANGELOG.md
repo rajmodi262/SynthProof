@@ -154,9 +154,9 @@ test that should catch it failed 7 of 7 times.
 ## 1.1.0 — 2026-09-14
 
 Work done after 1.0.0 on branch `gemini/handoff-2026-09`, reviewed commit by commit in three
-rounds against [`docs/AGENT_HANDOFF.md`](docs/AGENT_HANDOFF.md). The agent reports are
-[`docs/AGENT_REPORT_2026-09.md`](docs/AGENT_REPORT_2026-09.md) and
-[`docs/AGENT_REPORT_2026-09-FOLLOWUP.md`](docs/AGENT_REPORT_2026-09-FOLLOWUP.md).
+rounds against [`archive/docs/AGENT_HANDOFF.md`](archive/docs/AGENT_HANDOFF.md). The agent reports are
+[`archive/docs/AGENT_REPORT_2026-09.md`](archive/docs/AGENT_REPORT_2026-09.md) and
+[`archive/docs/AGENT_REPORT_2026-09-FOLLOWUP.md`](archive/docs/AGENT_REPORT_2026-09-FOLLOWUP.md).
 
 ### Known gaps in this release
 
@@ -217,7 +217,7 @@ rounds against [`docs/AGENT_HANDOFF.md`](docs/AGENT_HANDOFF.md). The agent repor
 ## 1.0.0 — 2026-09-13
 
 The first tagged release. It is the state of the project after the remediation tracked in
-[`docs/ROAD_TO_TEN.md`](docs/ROAD_TO_TEN.md), which records the evidence for every item below.
+[`archive/docs/ROAD_TO_TEN.md`](archive/docs/ROAD_TO_TEN.md), which records the evidence for every item below.
 
 **Version numbers before this release were inconsistent** — `pyproject.toml` and
 `synthproof/__init__.py` said 0.1.0, `web/package.json` and `CITATION.cff` said 0.2.0 — and no
@@ -289,4 +289,4 @@ exists to argue against.
 - `mypy` clean (79 errors → 0) and blocking in CI.
 - CI runs real AIM; it had silently skipped every AIM test because private-pgm was never
   installed.
-- One tracker (`docs/ROAD_TO_TEN.md`) replaces four planning documents that had drifted.
+- One tracker (`archive/docs/ROAD_TO_TEN.md`) replaces four planning documents that had drifted.

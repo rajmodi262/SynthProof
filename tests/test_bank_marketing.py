@@ -1,6 +1,7 @@
 """The third benchmark, and the properties that make it worth adding.
 
-Task 4.2 of docs/ROAD_TO_TEN.md. Adult and ACSIncome are both US-census-derived, single-table
+Task 4.2 of archive/docs/ROAD_TO_TEN.md. Adult and ACSIncome are both US-census-derived,
+single-table
 and binary-target, so agreement between them is weaker evidence of generality than it looks —
 it is closer to one dataset measured twice. UCI Bank Marketing is a different domain
 (Portuguese retail banking), a different collection process (outbound telemarketing), and a

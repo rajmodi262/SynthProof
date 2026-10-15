@@ -1,6 +1,6 @@
 """The two CLI commands no test invoked: `audit-power` and `export-capsule`.
 
-Task 3.2 of docs/ROAD_TO_TEN.md. A census of `CliRunner().invoke(main, [...])` calls across
+Task 3.2 of archive/docs/ROAD_TO_TEN.md. A census of `CliRunner().invoke(main, [...])` calls across
 the three existing CLI test files found `keygen` invoked 8 times, `verify` 5, `run` 3 -- and
 `audit-power` and `export-capsule` never.
 

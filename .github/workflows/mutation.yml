@@ -1,0 +1,47 @@
+name: Mutation testing
+
+# Line coverage says a line ran; a surviving mutant says no test would notice if that line
+# computed the wrong thing. This mutates synthproof/accounting/ -- the code every epsilon in this
+# project comes from -- and fails below the score in scripts/mutation.sh (MIN_SCORE). It writes
+# results/mutation/accounting.json with every surviving mutant, uploaded as an artifact.
+#
+# Weekly, and whenever the accounting code or the tests that pin it change. Not on every push:
+# ~1,100 mutants take tens of minutes.
+
+on:
+  schedule:
+    - cron: "0 4 * * 6"
+  workflow_dispatch:
+  push:
+    paths:
+      - synthproof/accounting/**
+      - tests/test_accounting*.py
+      - tests/test_budget_tightening.py
+      - tests/test_differential_accounting.py
+      - tests/test_exact_noise.py
+      - tests/test_weighted_allocation.py
+      - scripts/mutation.sh
+      - .github/workflows/mutation.yml
+
+permissions:
+  contents: read
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Mutate the accounting core and score the suite
+        run: bash scripts/mutation.sh .
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: results/mutation/
+          retention-days: 30

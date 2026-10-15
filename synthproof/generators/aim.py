@@ -87,7 +87,7 @@ _MBI_HINT = (
     "  uv venv --python 3.11 .venv311\n"
     "  uv pip install --python .venv311/Scripts/python.exe "
     "'git+https://github.com/ryan112358/private-pgm.git'\n"
-    "See docs/PYTHON311_UPGRADE.md. Use IndependentMarginalGenerator or "
+    "See archive/docs/PYTHON311_UPGRADE.md. Use IndependentMarginalGenerator or "
     "PairwiseMarginalGenerator if private-pgm is unavailable."
 )
 

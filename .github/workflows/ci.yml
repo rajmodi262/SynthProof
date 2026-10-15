@@ -79,7 +79,7 @@ jobs:
 
       - name: Test with coverage
         # Raised 80 -> 90 on 2026-08-23. Measured 96% on 2026-09-14 (901 passed, 1
-        # skipped). Raised to 94 in task T4 / row 3.2 of docs/ROAD_TO_TEN.md.
+        # skipped). Raised to 94 in task T4 / row 3.2 of archive/docs/ROAD_TO_TEN.md.
         run: pytest --cov=synthproof --cov-report=term-missing --cov-fail-under=94
 
       # The two gates below are specific to this project's discipline, and until now both
@@ -105,6 +105,9 @@ jobs:
 
       - name: Generated results tables match their JSON
         run: python -m scripts.build_results_docs --check
+
+      - name: Every relative link in the documentation resolves
+        run: python scripts/check_links.py
 
       - name: Published numbers match the committed manifest
         # Verify-only: hashes the committed result files and compares them to

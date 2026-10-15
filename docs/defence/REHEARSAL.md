@@ -1,6 +1,6 @@
 # Rehearsal — the three questions you would least like
 
-Task 6.3 of [`../ROAD_TO_TEN.md`](../ROAD_TO_TEN.md). [`DEFENCE.md`](DEFENCE.md) §9 answers
+Task 6.3 of [`../ROAD_TO_TEN.md`](../../archive/docs/ROAD_TO_TEN.md). [`DEFENCE.md`](DEFENCE.md) §9 answers
 twenty-plus questions a panel will probably ask. This file is different: it is the three a
 panel might ask that could actually go badly, rehearsed properly.
 

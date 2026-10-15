@@ -1,6 +1,6 @@
 """The tamper-evidence and verification endpoints — the ones shown live at a viva.
 
-Written for task 3.2 of docs/ROAD_TO_TEN.md. Coverage analysis found `/api/ledger/tamper`
+Written for task 3.2 of archive/docs/ROAD_TO_TEN.md. Coverage analysis found `/api/ledger/tamper`
 almost entirely untested: all four attack branches, the empty-ledger guard, and both
 verification endpoints sat at zero. That is the worst possible place for a gap, because these
 are the endpoints the console drives during a demonstration, and their failure mode is

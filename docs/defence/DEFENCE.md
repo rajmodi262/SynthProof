@@ -572,7 +572,7 @@ new measurement now ships with a positive and a negative control.
 ### 5.2 The six standing rules
 
 Adopted in response, encoded in `.coderabbit.yaml` so PR review enforces them, and recorded in
-`docs/AUDIT_AND_ROADMAP.md` §7.
+`archive/docs/AUDIT_AND_ROADMAP.md` §7.
 
 1. **Never write a bound that cannot be cited.** Composition is delegated to `dp_accounting`.
 2. **Never report a number that was not computed.** No hardcoded fallbacks, no derived stand-ins,
@@ -1164,7 +1164,7 @@ design. And replace the shared key with real identity so the ledger can attribut
    declared deviations.
 4. **`results/acs/CROSS_DATASET.md`** — the external-validity test, including the disagreement.
 5. **`ARTIFACT.md`** — every claim mapped to the command that reproduces it.
-6. **`docs/AUDIT_AND_ROADMAP.md`** — the twelve defects and the six standing rules.
+6. **`archive/docs/AUDIT_AND_ROADMAP.md`** — the twelve defects and the six standing rules.
 
 **The line to close on:** *we did not get the result we planned. We got a better one, we can show
 exactly why it is better, and every number in it traces to a committed experiment with a recorded

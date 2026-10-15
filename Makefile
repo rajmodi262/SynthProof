@@ -1,5 +1,5 @@
 .PHONY: help claims tables thesis install install-locked lock test test-fast lint format h1 h1-acs h2 h2-acs h3 h3-acs h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
-        console-install console-test security audit docker-build docker-up
+        console-install console-test security audit docker-build docker-up docs-check results-docs \n        calibration-check audit-compare selection-ablation audit-planner mutation docker-smoke \n        demo-datasets check-env imputation-doc demo-boundary
 
 help:
 	@echo "SynthProof — commands"
@@ -34,6 +34,22 @@ help:
 	@echo "    make console         Start the console dev server on :5173"
 	@echo "    make console-build   Build the console into synthproof/api/static"
 	@echo "    make console-test    Run the console test suite (vitest)"
+	@echo ""
+	@echo "  Integrity and reproduction"
+	@echo "    make docs-check        Provenance, generated tables, links, dead claims, citations"
+	@echo "    make results-docs      Rebuild every generated results table from results/"
+	@echo "    make calibration-check Recompute results/calibration_check.json"
+	@echo "    make audit-compare     Re-run the paired vs one-run auditor comparison"
+	@echo "    make selection-ablation  Re-run the selection ablation (Adult, then ACS)"
+	@echo "    make audit-planner     What each auditor could have certified at our budget"
+	@echo "    make mutation          Mutation-test synthproof/accounting/ (Docker)"
+	@echo "    make docker-smoke      Build the image and drive it end to end"
+	@echo ""
+	@echo "  Utilities"
+	@echo "    make demo-datasets     Regenerate demo_datasets/ (the console presets)"
+	@echo "    make demo-boundary     The release-boundary membership attack, before and after"
+	@echo "    make imputation-doc    Rewrite imputation RESULTS.md numbers from the JSON"
+	@echo "    make check-env         Check the local environment"
 	@echo ""
 	@echo "  For the live demo, run 'make serve' and 'make console' in two terminals."
 
@@ -212,4 +228,53 @@ docker-build:
 	docker build -t synthproof:latest .
 
 docker-up:
-	docker-compose up --build
+	docker compose up --build
+
+# ---------------------------------------------------------------- integrity and reproduction
+
+docs-check:
+	python scripts/check_number_provenance.py
+	python -m scripts.build_results_docs --check
+	python scripts/check_links.py
+	python scripts/check_thesis_claims.py --all
+	python scripts/check_citations.py
+
+results-docs:
+	python -m scripts.build_results_docs
+
+calibration-check:
+	python -m scripts.run_calibration_check
+
+# The comparison results/AUDITOR_COMPARISON.md reports. Its table is generated from the JSON.
+audit-compare:
+	python -m scripts.run_auditor_comparison
+	python -m scripts.build_results_docs
+
+selection-ablation:
+	python -m scripts.run_selection_ablation
+	python -m scripts.run_selection_ablation --dataset acs
+	python -m scripts.build_results_docs
+
+audit-planner:
+	python -m scripts.run_audit_planner
+
+mutation:
+	docker run --rm -v "$(CURDIR)":/src python:3.11 bash /src/scripts/mutation.sh /src
+
+docker-smoke: docker-build
+	docker run -d --name synthproof-smoke -p 8000:8000 synthproof:latest
+	python scripts/container_smoke.py --url http://127.0.0.1:8000; s=$$?; docker rm -f synthproof-smoke; exit $$s
+
+# ---------------------------------------------------------------- utilities
+
+demo-datasets:
+	python scripts/generate_demo_datasets.py
+
+demo-boundary:
+	python scripts/demo_release_boundary.py
+
+imputation-doc:
+	python scripts/update_imputation_results_doc.py
+
+check-env:
+	python scripts/check_env.py

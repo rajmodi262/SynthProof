@@ -7,7 +7,7 @@
 # instructions below encode the standing rules adopted after those audits, so the reviewer is
 # looking for the specific way this codebase goes wrong rather than for generic code smells.
 #
-# See docs/AUDIT_AND_ROADMAP.md §7 for the rules in their original form.
+# See archive/docs/AUDIT_AND_ROADMAP.md §7 for the rules in their original form.
 
 language: en-US
 
@@ -242,7 +242,7 @@ knowledge_base:
   code_guidelines:
     enabled: true
     filePatterns:
-      - "docs/AUDIT_AND_ROADMAP.md"     # standing rules live in section 7
+      - "archive/docs/AUDIT_AND_ROADMAP.md"     # standing rules live in section 7
       - "docs/thesis/README.md"         # house rules for reported numbers
       - "CLAUDE.md"
 

@@ -55,7 +55,7 @@ positioning matrix.
 That was wrong, and acting on it would have deleted a sound, well-documented number. It is
 recorded in `accounting/calibration.py:6`, `generators/independent.py:74`,
 `docs/ARCHITECTURE.md` (§101, §432), `docs/defence/DEFENCE.md` (three places), and
-`docs/AUDIT_AND_ROADMAP.md:86`, which carries the full before/after row
+`archive/docs/AUDIT_AND_ROADMAP.md:86`, which carries the full before/after row
 `| 8.0 | 70.49 | 8.81x | 7.437 | 0.93x |` and ties it to named audit finding **F2**. It is
 safe to cite. The lesson worth keeping: `git log -S` over thesis files answers "when did this
 text enter the prose", not "does this number have a source" — grep the code and docs.
@@ -151,7 +151,7 @@ also why signing and differential accounting matter.
 
 ## Ground rules that still bind
 
-Standing rules 1–6 in `docs/AUDIT_AND_ROADMAP.md` §7. Plus: **every citation must be read before
+Standing rules 1–6 in `archive/docs/AUDIT_AND_ROADMAP.md` §7. Plus: **every citation must be read before
 it is cited.** Much of what arrived on 2026-08-22/23 was read at abstract level and is marked as
 such in `research/BIBLIOGRAPHY.bib` and `docs/thesis/references-additions.bib`. Citing an
 abstract as if you read the paper is the same failure as reporting a number you did not compute.

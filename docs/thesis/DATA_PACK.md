@@ -54,7 +54,7 @@ the code that enforces it. **Two rows now need updating:**
 | Calibration never overspends | proved/target = 0.92 across the grid, never > 1.0 | `results/h1_all_families.json`, every cell |
 | Calibration is CI-gated | 24 configurations (2 mechanisms × 3 step counts × 4 targets) | `.github/workflows/ci.yml`, `calibration-guard` job |
 | Composition is delegated | agreement with `autodp` within **0.05%** across 12 configurations | `tests/test_accounting_properties.py::test_epsilon_agrees_with_autodp` |
-| Hand-rolled bound was unsound | under-reported ε by ~2× (0.485 vs 0.956 at q = 0.01) | `docs/AUDIT_AND_ROADMAP.md` §2, finding F4 |
+| Hand-rolled bound was unsound | under-reported ε by ~2× (0.485 vs 0.956 at q = 0.01) | `archive/docs/AUDIT_AND_ROADMAP.md` §2, finding F4 |
 | Profiler charges for domain discovery | profiling spends exactly its allotted ε regardless of column count | `tests/test_data.py::test_profiling_spends_exactly_its_budget_despite_mixed_sensitivities` |
 
 **Figure:** `fig-calibration.pdf` — requested vs achieved ε, log-log, with the y = x diagonal.

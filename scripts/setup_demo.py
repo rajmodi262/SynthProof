@@ -1,6 +1,6 @@
 """Builds the `demo/` folder that docs/DEMO_SCRIPT.md assumes exists.
 
-Task 6.1 of docs/ROAD_TO_TEN.md. The demo script opens with "Every command here was run end
+Task 6.1 of archive/docs/ROAD_TO_TEN.md. The demo script opens with "Every command here was run end
 to end and produces the output shown" and then uses `demo/ok.csv` and `demo/patients.csv` --
 neither of which was in the repository, and nor was the folder. So the rehearsed path could
 not be rehearsed, which is the failure mode a demo script exists to prevent. On viva day that

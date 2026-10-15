@@ -1,6 +1,6 @@
 /* Component tests for the console.
  *
- * Written for task 3.3 of docs/ROAD_TO_TEN.md. Before this, eleven components had no test at
+ * Written for task 3.3 of archive/docs/ROAD_TO_TEN.md. Before this, eleven components had no test at
  * all and the entire frontend suite covered one SSE parser. The selection here is by risk,
  * not by coverage arithmetic:
  *

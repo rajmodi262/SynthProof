@@ -1,6 +1,6 @@
 """Edge and error paths that coverage analysis found untested.
 
-Written for task 3.2 of docs/ROAD_TO_TEN.md. The selection is not arbitrary: these are the
+Written for task 3.2 of archive/docs/ROAD_TO_TEN.md. The selection is not arbitrary: these are the
 branches where an untested failure is worst.
 
   The ALLOCATOR decides how much epsilon each query gets. Its five uncovered lines were all

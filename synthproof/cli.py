@@ -133,7 +133,7 @@ def list_mechanisms():
         click.echo(
             f"\nUnavailable: {', '.join(sorted(missing))}\n"
             "  AIM needs private-pgm (package `mbi`), which requires Python >= 3.11.\n"
-            "  See docs/PYTHON311_UPGRADE.md."
+            "  See archive/docs/PYTHON311_UPGRADE.md."
         )
 
 
