@@ -283,3 +283,58 @@ def em_noise_scale(epsilon: float, sensitivity: float) -> float:
     scale is m * Delta = 2 * Delta / eps. The accountant maps "exponential" to that Gaussian event.
     """
     return 2.0 * sensitivity / epsilon
+
+
+# ── real-valued queries ──────────────────────────────────────────────────────────────────
+#
+# FOUND 2026-10-16 (W5 sensitivity sweep). Both samplers emit INTEGERS, and they are only a DP
+# mechanism for an integer-valued query. Three charge sites added integer noise directly to a
+# real number -- the moments generator's mean and std, the profiler's min/max for an undeclared
+# range, and the imputation sums. Then `true + Z` keeps the true value's fractional part
+# exactly, so neighbouring datasets give outputs with DISJOINT supports: the release reveals
+# frac(true value) outright and is not DP at any epsilon, whatever the accountant recorded.
+#
+# The fix is the standard one: put the query on an integer grid first. With granularity
+# g = Delta / RESOLUTION, Q = round(q / g) is an integer query, and since rounding moves a
+# value by at most half a unit on each side, |Q(D) - Q(D')| <= RESOLUTION + 1. Noise is drawn in
+# grid units at the same noise-to-sensitivity ratio as before, so the epsilon charged is
+# unchanged, and the release g * (Q + Z) has a resolution of Delta / 1000.
+
+RESOLUTION = 1000
+
+
+def grid_sensitivity() -> int:
+    """Integer sensitivity of a query rounded onto its grid (see the note above)."""
+    return RESOLUTION + 1
+
+
+def noisy_real_query(
+    value: float, sensitivity: float, noise_multiplier: float, name: str, seed: Optional[int]
+) -> float:
+    """Releases a real-valued scalar query with a discrete mechanism, soundly.
+
+    Args:
+        value: The exact query answer.
+        sensitivity: Its add/remove-one sensitivity Delta (> 0).
+        noise_multiplier: noise_scale / sensitivity -- the ratio the accountant charges.
+        name: "gaussian" or "laplace".
+        seed: Sampler seed.
+
+    Returns:
+        g * (round(value / g) + Z), with g = sensitivity / RESOLUTION and Z drawn at scale
+        noise_multiplier * (RESOLUTION + 1). Charge it as
+        MechanismSpec(name, sensitivity=grid_sensitivity(),
+                      noise_scale=noise_multiplier * grid_sensitivity()).
+    """
+    if sensitivity <= 0:
+        raise ValueError(f"sensitivity must be positive, got {sensitivity}")
+    g = sensitivity / RESOLUTION
+    q = int(np.rint(value / g))
+    scale = noise_multiplier * grid_sensitivity()
+    if name == "gaussian":
+        z = int(sample_discrete_gaussian(sigma=scale, size=1, seed=seed)[0])
+    elif name == "laplace":
+        z = int(sample_discrete_laplace(scale=scale, size=1, seed=seed)[0])
+    else:
+        raise ValueError(f"unknown mechanism {name!r}")
+    return g * (q + z)

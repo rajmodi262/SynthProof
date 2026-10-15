@@ -119,3 +119,6 @@ release/
 results/full/*_cells/
 results/full/*/cells/
 results/full/percell/
+
+# mutmut working copy (mutation testing)
+mutants/

@@ -46,12 +46,12 @@ WHAT IS AND IS NOT CHARGED.
     Poisson-subsampling amplification and RDP composition. No bound is computed here.
 
 HONEST LIMITS, stated because a reader will assume more.
-  * Sampling is **Poisson** in the accounting and **fixed-size batches** in the loop. This is
-    the standard implementation gap in nearly every DP-SGD library, and it means the accounted
-    epsilon is not exactly the epsilon of the code that ran. It is recorded in
-    `sampling_note_` and surfaced on the certificate rather than hidden. Chua et al. (2024)
-    and Lebeda et al. discuss the discrepancy; treat the reported epsilon as the standard
-    approximation, not as a proof about this loop.
+  * Sampling is **Poisson** in the accounting AND in the loop (since 2026-10-16). It used to
+    be fixed-size batches -- the standard implementation gap in nearly every DP-SGD library
+    (Chua et al. 2024), under which the accounted epsilon is not the epsilon of the code that
+    ran. `sampling_note_` records which, and travels on the certificate.
+  * The step uses JAX's float Gaussian, not the exact discrete sampler the release path uses
+    for counts, so the floating-point caveat in `accounting/noise.py` applies here.
   * Numerical columns are discretised, so the model cannot represent within-bin structure.
     `NUM_BINS` is public.
   * Initialisation and batch order are seeded, so a run is reproducible.
@@ -167,10 +167,10 @@ class DPVAEGenerator(BaseGenerator):
         self.clip_norm, self.lr, self.kl_weight = clip_norm, lr, kl_weight
         self.params_ = None
         self.sampling_note_ = (
-            "Accounted as Poisson subsampling at rate q = batch_size / n; implemented as "
-            "fixed-size batches. This is the standard DP-SGD implementation gap (see Chua et "
-            "al. 2024) and the reported epsilon is the standard approximation, not a proof "
-            "about this loop."
+            "Poisson subsampling at rate q = batch_size / n, accounted and implemented: each "
+            "step includes every record independently with probability q (a Binomial(n, q) "
+            "batch size, then a uniform subset). Until 2026-10-16 batches were fixed-size, the "
+            "implementation gap described by Chua et al. (2024)."
         )
 
     # ---------------------------------------------------------------- encoding
@@ -275,26 +275,48 @@ class DPVAEGenerator(BaseGenerator):
         grad_batch = jax.jit(jax.vmap(per_example, in_axes=(None, 0, 0)))
 
         @jax.jit
-        def step(p, xb, keys, nkey):
+        def step(p, xb, weights, keys, nkey, denom):
             grads = grad_batch(p, xb, keys)
             clipped = jax.vmap(lambda g: _clip(g, self.clip_norm))(grads)
-            summed = jax.tree_util.tree_map(lambda g: jnp.sum(g, axis=0), clipped)
+            # Padding rows carry weight 0, so they contribute nothing and the sum's sensitivity
+            # is still clip_norm: one record changes the batch by at most one clipped gradient.
+            summed = jax.tree_util.tree_map(
+                lambda g: jnp.tensordot(weights, g, axes=(0, 0)), clipped
+            )
             nkeys = jax.random.split(nkey, len(jax.tree_util.tree_leaves(summed)))
             leaves, treedef = jax.tree_util.tree_flatten(summed)
             noised = [
                 g + noise_scale * jax.random.normal(k, g.shape)
                 for g, k in zip(leaves, nkeys, strict=True)
             ]
+            # Divided by the EXPECTED batch size, a public constant: dividing by the realised
+            # size would make the step depend on a private count.
             avg = jax.tree_util.tree_map(
-                lambda g: g / xb.shape[0], jax.tree_util.tree_unflatten(treedef, noised)
+                lambda g: g / denom, jax.tree_util.tree_unflatten(treedef, noised)
             )
             return jax.tree_util.tree_map(lambda a, b: a - self.lr * b, p, avg)
 
-        bs = min(self.batch_size, n)
+        # POISSON SUBSAMPLING, IMPLEMENTED (2026-10-16). The accountant charges Poisson
+        # subsampling at rate q, and this loop used to draw fixed-size batches without
+        # replacement -- the standard DP-SGD implementation gap (Chua et al. 2024), under which
+        # the reported epsilon is not a proof about the loop that ran. Now each step includes
+        # every record independently with probability q, sampled exactly: a Binomial(n, q)
+        # batch size, then a uniform subset of that size. Batches are padded to a fixed shape
+        # with zero-weight rows so the jitted step compiles once.
+        expected = q * n
+        pad_to = n if q >= 1.0 else min(n, int(expected + 8.0 * np.sqrt(expected) + 16))
+        size_rng = np.random.default_rng(self.seed + 1)
         for _ in range(self.steps):
             key, bk, ek, nk = jax.random.split(key, 4)
-            idx = jax.random.choice(bk, n, shape=(bs,), replace=False)
-            params = step(params, X[idx], jax.random.split(ek, bs), nk)
+            k = n if q >= 1.0 else int(size_rng.binomial(n, q))
+            width = max(pad_to, k)  # a rare oversized batch is processed whole, never cut
+            idx = np.asarray(jax.random.choice(bk, n, shape=(k,), replace=False))
+            rows = np.zeros(width, dtype=np.int64)
+            rows[:k] = idx
+            weights = jnp.asarray((np.arange(width) < k).astype(np.float32))
+            params = step(
+                params, X[rows], weights, jax.random.split(ek, width), nk, max(1.0, expected)
+            )
 
         self.params_ = params
         self.is_fitted = True

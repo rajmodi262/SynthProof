@@ -11,11 +11,14 @@ than reimplementing the pipeline. That is deliberate: three parallel pipelines a
 apart in this repository, and a fourth living in the web layer would be the worst of them.
 """
 
+import math
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from synthproof import __version__
@@ -69,6 +72,31 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+
+def _finite(value):
+    """Replaces NaN/Infinity (which JSON cannot carry) with their names, recursively."""
+    if isinstance(value, float) and not math.isfinite(value):
+        return repr(value)
+    if isinstance(value, dict):
+        return {k: _finite(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_finite(v) for v in value]
+    return value
+
+
+@app.exception_handler(RequestValidationError)
+async def _validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
+    """A 422 that can always be serialised.
+
+    FOUND BY FUZZING 2026-10-16 (tests/test_fuzz.py). Python's JSON parser accepts the tokens
+    `Infinity` and `NaN`, validation then rejects the value correctly -- and FastAPI's default
+    handler echoed the offending input back, failed to JSON-encode `inf`, and answered 500. The
+    request was refused either way; the status code said the server broke. Now it says 422.
+    """
+    return JSONResponse(
+        status_code=422, content={"detail": _finite(jsonable_encoder(exc.errors()))}
+    )
 
 
 app.include_router(run_routes.router)

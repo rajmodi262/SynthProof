@@ -9,6 +9,7 @@ Per the standing rules every measurement ships with a positive and a negative co
 each negative control below was verified by making it fail first.
 """
 
+import numpy as np
 import pytest
 
 from synthproof.accounting.accountant import Accountant
@@ -163,10 +164,32 @@ def test_every_column_is_modelled_by_the_same_machinery(fitted):
     assert sum(g.block_sizes_) == g.params_["out_b"].shape[0]
 
 
-def test_sampling_gap_is_declared_not_hidden(fitted):
-    """Poisson in the accounting, fixed-size batches in the loop. That gap is real and is
-    reported rather than papered over -- the same rule that governs `audit_ceiling`."""
+def test_sampling_is_declared_and_matches_the_accounting(fitted):
+    """Poisson in the accounting and, since 2026-10-16, in the loop. The note says so and
+    travels on the charge -- the same rule that governs `audit_ceiling`."""
     _, _, acct, g = fitted
-    assert "Poisson" in g.sampling_note_ and "fixed-size" in g.sampling_note_
+    assert "accounted and implemented" in g.sampling_note_
     spec = [s for s in acct.spends if s.run_id == "dpvae_dpsgd"][0].mechanism
     assert "sampling_note" in spec.metadata
+
+
+def test_batches_are_poisson_not_fixed_size(monkeypatch):
+    """The loop must draw a Binomial(n, q) batch size each step, as the accountant assumes --
+    a constant size is the fixed-size gap this replaced."""
+    import synthproof.generators.dpvae as mod
+
+    sizes = []
+    real_choice = mod.jax.random.choice
+
+    def spy(key, a, shape=(), replace=True, **kw):
+        sizes.append(shape[0] if shape else 1)
+        return real_choice(key, a, shape=shape, replace=replace, **kw)
+
+    monkeypatch.setattr(mod.jax.random, "choice", spy)
+    ds = TabularDataset.create_synthetic_toy(num_rows=600, seed=0)
+    g = mod.DPVAEGenerator(seed=0, steps=40, batch_size=60)
+    plan_acc = Accountant(100.0, 1e-5)
+    profile = DPDomainProfiler(plan_acc, eps_budget=1.0).profile(ds, seed=0)
+    g.fit(ds, profile, plan_acc, target_eps=4.0)
+    assert len(set(sizes)) > 1, f"every batch had the same size: {sizes[:5]}"
+    assert abs(np.mean(sizes) - 60) < 15

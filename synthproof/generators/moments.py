@@ -19,7 +19,7 @@ import pandas as pd
 
 from synthproof.accounting.accountant import Accountant
 from synthproof.accounting.calibration import calibrate_noise_scale
-from synthproof.accounting.noise import sample_discrete_gaussian
+from synthproof.accounting.noise import grid_sensitivity, noisy_real_query, sample_discrete_gaussian
 from synthproof.accounting.types import MechanismSpec
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DomainProfile
@@ -47,8 +47,9 @@ class GaussianMomentGenerator(BaseGenerator):
 
         n_num = len(dataset.numerical_cols)
         n_cat = len(dataset.categorical_cols)
-        # Two queries per numeric column (mean, std), one histogram per categorical.
-        n_queries = max(1, 2 * n_num + n_cat)
+        # Three queries per numeric column (shifted sum, sum of squares, count), one histogram
+        # per categorical.
+        n_queries = max(1, 3 * n_num + n_cat)
 
         noise_scale = calibrate_noise_scale(
             target_eps=target_eps,
@@ -71,31 +72,64 @@ class GaussianMomentGenerator(BaseGenerator):
         self.is_fitted = True
 
     def _fit_numeric(self, dataset, profile, col, noise_scale, seed, accountant):
-        accountant.charge(
-            MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=noise_scale, steps=2),
-            run_id=f"moments_mean_std_{col}",
-        )
+        """Mean and std from three bounded queries, each with a sensitivity that is actually true.
 
+        CORRECTED 2026-10-16. This used to add discrete noise directly to the clipped mean and
+        std, charged at sensitivity 1.0 (the comment admitted the clip width was ignored, audit
+        finding F5). Two defects: the mean of n values clipped to [a, b] moves by up to
+        (b - a) / n when a record is removed, which exceeds 1 for a small table or a wide range;
+        and integer noise on a real number keeps the value's fractional part, so the release was
+        not DP at any epsilon (see `noisy_real_query`). Now, with x' = clip(x) - a in [0, w]:
+
+            S1 = sum x'    sensitivity w      S2 = sum x'^2    sensitivity w^2
+            N  = count     sensitivity 1
+
+        each released by a discrete Gaussian at the calibrated noise multiplier, and
+        mean = a + S1/N, var = S2/N - (S1/N)^2 -- post-processing.
+        """
         col_min = profile.columns[col].min_val
         col_max = profile.columns[col].max_val
         if col_min is None or col_max is None:
             raise ValueError(f"Column {col!r} has no DP range in the profile.")
+        width = float(col_max) - float(col_min)
+        if width <= 0:
+            # A single-valued public range: nothing about the data to measure.
+            self.means[col], self.stds[col] = float(col_min), 1e-3
+            return
 
-        # Clip to the DP-profiled range before measuring. Without this the mean is taken
-        # over an unbounded domain, so it has unbounded sensitivity and the declared
-        # sensitivity=1.0 is unjustifiable. Calibrating sensitivity to the clip width
-        # remains open (audit finding F5).
-        clipped = dataset.df[col].clip(lower=col_min, upper=col_max)
-        true_mean = float(clipped.mean())
-        true_std = float(clipped.std()) if len(dataset.df) > 1 else 1.0
+        shifted = dataset.df[col].clip(lower=col_min, upper=col_max).to_numpy(float) - col_min
+        rng = np.random.default_rng(seed)
+        released = {}
+        for query, value, sens in (
+            ("sum", float(shifted.sum()), width),
+            ("sumsq", float((shifted**2).sum()), width**2),
+        ):
+            accountant.charge(
+                MechanismSpec(
+                    name="gaussian",
+                    sensitivity=float(grid_sensitivity()),
+                    noise_scale=noise_scale * grid_sensitivity(),
+                    steps=1,
+                ),
+                run_id=f"moments_{query}_{col}",
+            )
+            released[query] = noisy_real_query(
+                value, sens, noise_scale, "gaussian", int(rng.integers(0, 2**31 - 1))
+            )
+        accountant.charge(
+            MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=noise_scale, steps=1),
+            run_id=f"moments_count_{col}",
+        )
+        count_noise = sample_discrete_gaussian(
+            sigma=noise_scale, size=1, seed=int(rng.integers(0, 2**31 - 1))
+        )
+        n = max(1.0, float((np.array([len(shifted)], dtype=float) + count_noise)[0]))
 
-        noise = sample_discrete_gaussian(sigma=noise_scale, size=2, seed=seed)
-        # NOTE: no abs() on the noise. A previous version used abs(...) on the std noise,
-        # which is a biased one-sided perturbation, not the Gaussian mechanism, and voided
-        # the guarantee. Clamping the *result* to a positive floor is post-processing and
-        # is therefore safe.
-        self.means[col] = true_mean + float(noise[0])
-        self.stds[col] = max(1e-3, true_std + float(noise[1]))
+        mean_shifted = float(np.clip(released["sum"] / n, 0.0, width))
+        var = released["sumsq"] / n - mean_shifted**2
+        self.means[col] = float(col_min) + mean_shifted
+        # Clamping to a positive floor is post-processing, so it costs nothing.
+        self.stds[col] = float(np.sqrt(max(var, 1e-6)))
 
     def _fit_categorical(self, dataset, profile, col, noise_scale, seed, accountant):
         accountant.charge(

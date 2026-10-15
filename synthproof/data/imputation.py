@@ -21,7 +21,7 @@ import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
 from synthproof.accounting.accountant import Accountant
-from synthproof.accounting.noise import sample_discrete_laplace
+from synthproof.accounting.noise import grid_sensitivity, noisy_real_query, sample_discrete_laplace
 from synthproof.accounting.types import MechanismSpec
 from synthproof.data.schema import CATEGORICAL, NUMERICAL, Schema
 
@@ -190,13 +190,15 @@ def dp_charged_impute(
             count_scale = 1.0 / eps_half
 
             # Charge accountant for sum and count
+            # The shifted sum is real-valued, so it is released on the integer grid
+            # (noisy_real_query; corrected 2026-10-16). Same ratio, same epsilon.
             accountant.charge(
                 MechanismSpec(
                     name="laplace",
-                    sensitivity=width,
-                    noise_scale=sum_scale,
+                    sensitivity=float(grid_sensitivity()),
+                    noise_scale=(sum_scale / width) * grid_sensitivity(),
                     steps=1,
-                    metadata={"column": col, "query": "dp_sum"},
+                    metadata={"column": col, "query": "dp_sum", "grid": "noisy_real_query"},
                 ),
                 run_id=f"impute_dp_sum_{col}",
             )
@@ -215,13 +217,18 @@ def dp_charged_impute(
             sum_seed = int(rng.integers(0, 2**31 - 1))
             count_seed = int(rng.integers(0, 2**31 - 1))
 
-            noise_sum = float(sample_discrete_laplace(scale=sum_scale, size=1, seed=sum_seed)[0])
             noise_count = float(
                 sample_discrete_laplace(scale=count_scale, size=1, seed=count_seed)[0]
             )
 
             # Shifted by the public lower bound so each record contributes [0, width].
-            dp_shifted_sum = bounded_shifted_sum(valid_vals, lo, hi) + noise_sum
+            dp_shifted_sum = noisy_real_query(
+                bounded_shifted_sum(valid_vals, lo, hi),
+                width,
+                sum_scale / width,
+                "laplace",
+                sum_seed,
+            )
             dp_count = max(1.0, float(len(valid_vals)) + noise_count)
 
             dp_mean = float(np.clip(lo + dp_shifted_sum / dp_count, lo, hi))
@@ -434,11 +441,14 @@ def dp_charged_knn_impute(
             width = hi - lo
             noise_scale = width / eps_per_query
 
+            # Neighbour sums are real-valued: released on the integer grid, and shifted by the
+            # public lower bound so each value contributes [0, width] -- the raw sum it used to
+            # perturb has sensitivity max(|lo|, |hi|), not width (corrected 2026-10-16).
             accountant.charge(
                 MechanismSpec(
                     name="laplace",
-                    sensitivity=width,
-                    noise_scale=noise_scale,
+                    sensitivity=float(grid_sensitivity()),
+                    noise_scale=(noise_scale / width) * grid_sensitivity(),
                     steps=n_missing,
                     metadata={"column": col, "mechanism": "dp_knn_mean", "k": k_eff},
                 ),
@@ -449,11 +459,15 @@ def dp_charged_knn_impute(
                 neighbor_idx = indices[r, 1 : k_eff + 1]
                 n_vals = out[col].iloc[neighbor_idx].dropna().to_numpy(dtype=float)
                 c_seed = int(rng.integers(0, 2**31 - 1))
-                noise_mean = float(
-                    sample_discrete_laplace(scale=noise_scale, size=1, seed=c_seed)[0]
-                )
                 if len(n_vals) > 0:
-                    val_num = float(np.clip((np.sum(n_vals) + noise_mean) / len(n_vals), lo, hi))
+                    noisy_sum = noisy_real_query(
+                        bounded_shifted_sum(n_vals, lo, hi),
+                        width,
+                        noise_scale / width,
+                        "laplace",
+                        c_seed,
+                    )
+                    val_num = float(np.clip(lo + noisy_sum / len(n_vals), lo, hi))
                 else:
                     val_num = (lo + hi) / 2.0
                 out.loc[r, col] = val_num

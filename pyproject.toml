@@ -123,6 +123,27 @@ markers = [
     "slow: fits real models over ACS microdata; minutes, not seconds. Skipped by -m 'not slow'.",
 ]
 
+[tool.mutmut]
+# Mutation testing: does the suite FAIL when the code is wrong? Line coverage says a line ran;
+# a surviving mutant says no test would notice if that line computed the wrong thing. Scoped to
+# the code every privacy claim rests on, and run in CI (`mutation` job) because mutmut 3 needs a
+# POSIX fork. Locally: `docker run --rm -v "$PWD":/src python:3.11 bash scripts/mutation.sh`.
+# The whole package is copied (tests import synthproof.data, .generators ...); only accounting/
+# is mutated.
+source_paths = ["synthproof/"]
+only_mutate = ["synthproof/accounting/*"]
+pytest_add_cli_args = ["-p", "no:cacheprovider", "--no-cov", "-q"]
+pytest_add_cli_args_test_selection = [
+    "tests/test_accounting.py",
+    "tests/test_accounting_properties.py",
+    "tests/test_budget_tightening.py",
+    "tests/test_differential_accounting.py",
+    "tests/test_exact_noise.py",
+    "tests/test_weighted_allocation.py",
+    "tests/test_cli_and_allocation_edges.py",
+]
+also_copy = ["scripts/"]
+
 [tool.bandit]
 # Vendored environments and build output are not our code.
 exclude_dirs = [".venv311", "web", "synthproof/api/console", "build", "dist"]

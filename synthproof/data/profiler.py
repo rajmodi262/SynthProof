@@ -19,7 +19,7 @@ import numpy as np
 
 from synthproof.accounting.accountant import Accountant
 from synthproof.accounting.calibration import calibrate_noise_scale
-from synthproof.accounting.noise import sample_discrete_laplace
+from synthproof.accounting.noise import grid_sensitivity, noisy_real_query, sample_discrete_laplace
 from synthproof.accounting.types import MechanismSpec
 from synthproof.data.dataset import TabularDataset
 
@@ -347,18 +347,30 @@ class DPDomainProfiler:
         charged here rests on `self.sensitivity` being a correct assumption. Declare bounds in
         the schema instead — that path is both sound and free.
         """
+        # Min and max are real numbers: they go through the integer grid (noisy_real_query),
+        # because integer noise added straight to a real min keeps its fractional part
+        # (corrected 2026-10-16). Same noise-to-sensitivity ratio, so the same epsilon.
+        multiplier = noise_scale / sensitivity
         self.accountant.charge(
             MechanismSpec(
-                name="laplace", sensitivity=sensitivity, noise_scale=noise_scale, steps=2
+                name="laplace",
+                sensitivity=float(grid_sensitivity()),
+                noise_scale=multiplier * grid_sensitivity(),
+                steps=2,
             ),
             run_id=f"profile_range_{col}",
         )
 
-        seed = int(rng.integers(0, 2**31 - 1))
-        noise = sample_discrete_laplace(scale=noise_scale, size=2, seed=seed)
-
-        dp_min = float(dataset.df[col].min()) + float(noise[0])
-        dp_max = max(dp_min + 1.0, float(dataset.df[col].max()) + float(noise[1]))
+        s_min, s_max = (int(rng.integers(0, 2**31 - 1)) for _ in range(2))
+        dp_min = noisy_real_query(
+            float(dataset.df[col].min()), sensitivity, multiplier, "laplace", s_min
+        )
+        dp_max = max(
+            dp_min + 1.0,
+            noisy_real_query(
+                float(dataset.df[col].max()), sensitivity, multiplier, "laplace", s_max
+            ),
+        )
         return ColumnProfile(name=col, dtype="numerical", min_val=dp_min, max_val=dp_max)
 
     def _profile_categorical(
