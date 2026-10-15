@@ -47,6 +47,9 @@ def _ledger_key(db_path: str):
 
 
 GLOBAL_LEDGER = Ledger(db_path=_LEDGER_DB, private_key=_ledger_key(_LEDGER_DB))
+# True when the ledger and its signing key live on disk, so its signatures verify after a
+# restart. In memory, the key is per process and the record is a demo surface.
+LEDGER_DURABLE = _LEDGER_DB != ":memory:"
 
 # `/api/ledger/tamper` and `/api/ledger/reset` exist to demonstrate that the chain is
 # tamper-EVIDENT. They are destructive by design: one rewrites a spend, the other deletes the
