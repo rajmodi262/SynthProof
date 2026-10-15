@@ -74,6 +74,59 @@ class UtilityEvaluator:
             (num_cols if pd.api.types.is_numeric_dtype(df[c]) else cat_cols).append(c)
         return num_cols, cat_cols
 
+    def _usefulness_multi(
+        self, X_real_tr, y_real_tr, X_real_te, y_real_te, X_synth, y_synth, tstr_f1, trtr_f1
+    ) -> float:
+        """Mean TSTR/TRTR over random forest, logistic regression and gradient boosting (M3)."""
+        from sklearn.ensemble import HistGradientBoostingClassifier
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.pipeline import make_pipeline
+        from sklearn.preprocessing import StandardScaler
+
+        ratios = [tstr_f1 / trtr_f1 if trtr_f1 > 0 else float("nan")]
+        for make in (
+            lambda: make_pipeline(StandardScaler(), LogisticRegression(max_iter=500)),
+            lambda: HistGradientBoostingClassifier(random_state=self.seed),
+        ):
+            r_model = make().fit(X_real_tr, y_real_tr)
+            s_model = make()
+            if len(pd.unique(y_synth)) < 2:
+                ratios.append(0.0)  # a one-class release teaches nothing
+                continue
+            s_model.fit(X_synth, y_synth)
+            trtr = float(f1_score(y_real_te, r_model.predict(X_real_te), average="macro"))
+            tstr = float(f1_score(y_real_te, s_model.predict(X_real_te), average="macro"))
+            ratios.append(tstr / trtr if trtr > 0 else float("nan"))
+        return float(np.nanmean(ratios))
+
+    @staticmethod
+    def _marginal_distance(real_df, synthetic_df, num_cols, cat_cols) -> float:
+        """Mean per-column marginal distance."""
+        # Marginal distance per feature column, averaged. Numeric columns use Wasserstein-1
+        # standardised by the real column's spread (scale-free, comparable across columns).
+        # Categorical columns use Total-Variation distance = 1/2 * sum |p_real - p_synth|,
+        # which is in [0, 1] and 0 iff the category frequencies match.
+        #
+        # W1 REPLACED a standardised mean shift, which compared first moments only. That
+        # proxy scores zero on a release whose mean is right and whose entire shape is wrong.
+        distances = []
+        for col in num_cols:
+            real_col = real_df[col].to_numpy(dtype=float)
+            synth_col = synthetic_df[col].to_numpy(dtype=float)
+            scale = float(np.std(real_col)) if len(real_col) > 1 else 1.0
+            distances.append(
+                float(stats.wasserstein_distance(real_col, synth_col)) / (scale + 1e-9)
+            )
+        for col in cat_cols:
+            pr = real_df[col].astype(str).value_counts(normalize=True)
+            ps = synthetic_df[col].astype(str).value_counts(normalize=True)
+            cats = pr.index.union(ps.index)
+            tvd = 0.5 * float(
+                np.abs(pr.reindex(cats, fill_value=0.0) - ps.reindex(cats, fill_value=0.0)).sum()
+            )
+            distances.append(tvd)
+        return float(np.mean(distances)) if distances else float("nan")
+
     def evaluate(
         self,
         real_df: pd.DataFrame,
@@ -163,53 +216,15 @@ class UtilityEvaluator:
         clf_tstr.fit(X_synth, y_synth)
         tstr_f1 = float(f1_score(y_real_te, clf_tstr.predict(X_real_te), average="macro"))
 
-        usefulness_multi = None
-        if self.multi_model:
-            from sklearn.ensemble import HistGradientBoostingClassifier
-            from sklearn.linear_model import LogisticRegression
-            from sklearn.pipeline import make_pipeline
-            from sklearn.preprocessing import StandardScaler
-
-            ratios = [tstr_f1 / trtr_f1 if trtr_f1 > 0 else float("nan")]
-            for make in (
-                lambda: make_pipeline(StandardScaler(), LogisticRegression(max_iter=500)),
-                lambda: HistGradientBoostingClassifier(random_state=self.seed),
-            ):
-                r_model = make().fit(X_real_tr, y_real_tr)
-                s_model = make()
-                if len(pd.unique(y_synth)) < 2:
-                    ratios.append(0.0)  # a one-class release teaches nothing
-                    continue
-                s_model.fit(X_synth, y_synth)
-                trtr = float(f1_score(y_real_te, r_model.predict(X_real_te), average="macro"))
-                tstr = float(f1_score(y_real_te, s_model.predict(X_real_te), average="macro"))
-                ratios.append(tstr / trtr if trtr > 0 else float("nan"))
-            usefulness_multi = float(np.nanmean(ratios))
-
-        # Marginal distance per feature column, averaged. Numeric columns use Wasserstein-1
-        # standardised by the real column's spread (scale-free, comparable across columns).
-        # Categorical columns use Total-Variation distance = 1/2 * sum |p_real - p_synth|,
-        # which is in [0, 1] and 0 iff the category frequencies match.
-        #
-        # W1 REPLACED a standardised mean shift, which compared first moments only. That
-        # proxy scores zero on a release whose mean is right and whose entire shape is wrong.
-        distances = []
-        for col in num_cols:
-            real_col = real_df[col].to_numpy(dtype=float)
-            synth_col = synthetic_df[col].to_numpy(dtype=float)
-            scale = float(np.std(real_col)) if len(real_col) > 1 else 1.0
-            distances.append(
-                float(stats.wasserstein_distance(real_col, synth_col)) / (scale + 1e-9)
+        usefulness_multi = (
+            self._usefulness_multi(
+                X_real_tr, y_real_tr, X_real_te, y_real_te, X_synth, y_synth, tstr_f1, trtr_f1
             )
-        for col in cat_cols:
-            pr = real_df[col].astype(str).value_counts(normalize=True)
-            ps = synthetic_df[col].astype(str).value_counts(normalize=True)
-            cats = pr.index.union(ps.index)
-            tvd = 0.5 * float(
-                np.abs(pr.reindex(cats, fill_value=0.0) - ps.reindex(cats, fill_value=0.0)).sum()
-            )
-            distances.append(tvd)
-        marginal_dist = float(np.mean(distances)) if distances else float("nan")
+            if self.multi_model
+            else None
+        )
+
+        marginal_dist = self._marginal_distance(real_df, synthetic_df, num_cols, cat_cols)
 
         return UtilityResult(
             tstr_macro_f1=tstr_f1,
