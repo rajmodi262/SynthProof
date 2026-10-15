@@ -13,6 +13,16 @@ on:
   schedule:
     - cron: "0 5 * * 0"
   workflow_dispatch:
+  # Also when the check itself or an experiment it re-runs changes, so a broken comparison is
+  # found on the branch that broke it rather than on the next Sunday.
+  push:
+    paths:
+      - .github/workflows/reproduce.yml
+      - scripts/compare_results.py
+      - scripts/run_calibration_check.py
+      - scripts/run_auditor_comparison.py
+      - scripts/run_selection_ablation.py
+      - requirements.lock
 
 permissions:
   contents: read
