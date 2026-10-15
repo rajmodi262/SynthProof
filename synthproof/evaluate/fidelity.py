@@ -27,7 +27,7 @@ import pandas as pd
 def association_error(
     real: pd.DataFrame, synth: pd.DataFrame, cols: Optional[List[str]] = None
 ) -> float:
-    from synthproof.frontier.experiment import _association_matrix
+    from synthproof.evaluate.structure import _association_matrix
 
     cols = list(cols or [c for c in real.columns if c in synth.columns])
     if len(cols) < 2:

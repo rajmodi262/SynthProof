@@ -5,27 +5,39 @@ as a mean with a bootstrapped 95% interval. A single-seed number from a randomis
 is not evidence, and the preregistration commits to 5 seeds per configuration.
 """
 
-from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
-
-import numpy as np
-import pandas as pd
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 from synthproof.accounting.accountant import Accountant
-from synthproof.accounting.calibration import BudgetPlan
-from synthproof.attacks.attribute_inference import AttributeInferenceAttack
-from synthproof.attacks.distance_mia import DistanceMIABaseline
-from synthproof.attacks.domias import DOMIAS
-from synthproof.attacks.exact_match_risk import ExactMatchRiskEvaluator
-from synthproof.attacks.linkability import LinkabilityEvaluator
-from synthproof.audit.canary import AuditResult, CanaryAuditor, CanarySet
-from synthproof.audit.steinke import OneRunCanarySet, SteinkeAuditor, SteinkeResult
+from synthproof.audit.canary import AuditResult, CanaryAuditor
+from synthproof.audit.steinke import SteinkeAuditor, SteinkeResult
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
 from synthproof.evaluate.fidelity import association_error, pairwise_tvd
+from synthproof.evaluate.structure import (  # noqa: F401  (re-exported for existing callers)
+    MAX_MODAL_SHARE,
+    _association_matrix,
+    _correlation_ratio,
+    _cramers_v,
+    _mean_abs_corr_error,
+    informative_numeric_columns,
+)
 from synthproof.evaluate.utility import UtilityEvaluator
+from synthproof.frontier._cell import (
+    _canary_counts,
+    _make_auditor,
+    _nan_if_absent,
+    _plan_for,
+    _run_attacks,
+    _run_audit,
+    _split,
+)
 from synthproof.frontier.checkpoint import run_with_checkpoints
+from synthproof.frontier.results import (  # noqa: F401  (re-exported for existing callers)
+    CellResult,
+    Interval,
+    bootstrap_ci,
+)
 from synthproof.generators.aim import AIMGenerator, mbi_available
 from synthproof.generators.independent import IndependentMarginalGenerator
 from synthproof.generators.moments import GaussianMomentGenerator
@@ -83,175 +95,6 @@ if mbi_available():
     MECHANISMS["mst"] = MSTGenerator
 
 
-@dataclass
-class Interval:
-    """A point estimate with a bootstrapped confidence interval."""
-
-    mean: float
-    lo: float
-    hi: float
-    sd: float
-    n: int
-
-    def __str__(self) -> str:
-        return f"{self.mean:.3f} [{self.lo:.3f}, {self.hi:.3f}]"
-
-
-def bootstrap_ci(
-    values: Sequence[float], confidence: float = 0.95, resamples: int = 4000, seed: int = 0
-) -> Interval:
-    """Percentile bootstrap interval over `values`."""
-    arr = np.asarray([v for v in values if np.isfinite(v)], dtype=float)
-    if arr.size == 0:
-        return Interval(float("nan"), float("nan"), float("nan"), float("nan"), 0)
-    if arr.size == 1:
-        v = float(arr[0])
-        return Interval(v, v, v, 0.0, 1)
-
-    rng = np.random.default_rng(seed)
-    means = rng.choice(arr, size=(resamples, arr.size), replace=True).mean(axis=1)
-    alpha = (1.0 - confidence) / 2.0
-    return Interval(
-        mean=float(arr.mean()),
-        lo=float(np.quantile(means, alpha)),
-        hi=float(np.quantile(means, 1.0 - alpha)),
-        sd=float(arr.std(ddof=1)) if arr.size > 1 else 0.0,
-        n=int(arr.size),
-    )
-
-
-@dataclass
-class CellResult:
-    """Aggregated result for one (dataset, mechanism, epsilon) cell."""
-
-    dataset: str
-    mechanism: str
-    target_eps: float
-    seeds: int
-    proved_eps: Interval
-    audited_eps: Interval
-    audit_p: Interval
-    tstr_f1: Interval
-    trtr_f1: Interval
-    mia_auc: Interval
-    correlation_error: Interval
-    # Table-wide structure (audit M1): every column pair, not the one pair in corr_cols.
-    structure_error_all: Optional[Interval] = None
-    pair_tvd: Optional[Interval] = None
-    usefulness_multi: Optional[Interval] = None
-    raw: Dict[str, List[float]] = field(default_factory=dict)
-
-    def to_dict(self) -> dict:
-        d = asdict(self)
-        d.pop("raw", None)
-        return d
-
-
-# A column that is overwhelmingly one value carries almost no correlation signal, and its
-# sample correlation is dominated by the handful of non-modal rows. Including such columns
-# makes the structure metric measure noise. UCI Adult's capital_gain (91.6% zeros) and
-# capital_loss (95.5% zeros) are exactly this case.
-MAX_MODAL_SHARE = 0.85
-
-
-def informative_numeric_columns(
-    df, cols: Sequence[str], max_modal_share: float = MAX_MODAL_SHARE
-) -> List[str]:
-    """Numeric columns with enough spread for a correlation to mean anything."""
-    keep = []
-    for c in cols:
-        s = df[c]
-        if s.std() > 0 and (s.value_counts(normalize=True).iloc[0] <= max_modal_share):
-            keep.append(c)
-    return keep
-
-
-def _cramers_v(x, y) -> float:
-    """Bias-corrected Cramér's V association between two categorical series, in [0, 1]."""
-    from scipy.stats import chi2_contingency
-
-    tab = pd.crosstab(x, y)
-    if tab.shape[0] < 2 or tab.shape[1] < 2:
-        return 0.0
-    chi2 = chi2_contingency(tab, correction=False)[0]
-    n = tab.to_numpy().sum()
-    if n == 0:
-        return 0.0
-    phi2 = chi2 / n
-    r, k = tab.shape
-    phi2c = max(0.0, phi2 - (k - 1) * (r - 1) / (n - 1))
-    rc = r - (r - 1) ** 2 / (n - 1)
-    kc = k - (k - 1) ** 2 / (n - 1)
-    denom = min(kc - 1, rc - 1)
-    return float(np.sqrt(phi2c / denom)) if denom > 0 else 0.0
-
-
-def _correlation_ratio(categories, values) -> float:
-    """Correlation ratio (eta) between a categorical and a numeric series, in [0, 1]."""
-    cats = pd.Series(categories).astype(str)
-    vals = pd.to_numeric(pd.Series(values), errors="coerce")
-    mask = vals.notna()
-    cats, vals = cats[mask], vals[mask]
-    if len(vals) < 2:
-        return 0.0
-    grand = vals.mean()
-    # Both series were masked by the same rows, so grouping by `cats` aligns on the index.
-    ss_between = float(sum((len(g) * (g.mean() - grand) ** 2 for _, g in vals.groupby(cats)), 0.0))
-    ss_total = float(((vals - grand) ** 2).sum())
-    return float(np.sqrt(ss_between / ss_total)) if ss_total > 0 else 0.0
-
-
-def _association_matrix(df, cols: List[str]) -> np.ndarray:
-    """Symmetric pairwise association matrix over mixed-type columns, each entry in [0, 1].
-
-    num-num uses |Pearson|, num-cat/cat-num uses the correlation ratio (eta), and cat-cat
-    uses bias-corrected Cramér's V. This generalises the Pearson correlation matrix so an
-    all-categorical or mixed table gets a structure score at all.
-    """
-    is_num = {c: pd.api.types.is_numeric_dtype(df[c]) for c in cols}
-    n = len(cols)
-    m = np.eye(n)
-    for i in range(n):
-        for j in range(i + 1, n):
-            ci, cj = cols[i], cols[j]
-            if is_num[ci] and is_num[cj]:
-                v = abs(float(df[[ci, cj]].corr().iloc[0, 1]))
-            elif is_num[ci] and not is_num[cj]:
-                v = _correlation_ratio(df[cj], df[ci])
-            elif not is_num[ci] and is_num[cj]:
-                v = _correlation_ratio(df[ci], df[cj])
-            else:
-                v = _cramers_v(df[ci], df[cj])
-            m[i, j] = m[j, i] = 0.0 if v != v else v
-    return m
-
-
-def _mean_abs_corr_error(real, synth, cols: List[str]) -> float:
-    """Mean absolute error over the pairwise association matrix — a structure metric.
-
-    Independent-marginal mechanisms score badly here by construction; a model that captures
-    pairwise dependence should score better. This is the quantity that separates the families.
-
-    When every column is numeric this is exactly the mean absolute error of the Pearson
-    correlation matrix (the original metric, unchanged, so committed numeric results are
-    preserved). When any column is categorical it falls back to a mixed association matrix
-    (|Pearson| / correlation-ratio / Cramér's V) so categorical and mixed tables score too.
-    """
-    if len(cols) < 2:
-        return float("nan")
-    all_numeric = all(pd.api.types.is_numeric_dtype(real[c]) for c in cols)
-    iu = np.triu_indices(len(cols), k=1)
-    if all_numeric:
-        a = real[cols].corr().to_numpy()
-        b = synth[cols].corr().to_numpy()
-        diff = np.abs(a[iu] - b[iu])
-        return float(np.nanmean(diff)) if diff.size else float("nan")
-    a = _association_matrix(real, cols)
-    b = _association_matrix(synth, cols)
-    diff = np.abs(a[iu] - b[iu])
-    return float(np.nanmean(diff)) if diff.size else float("nan")
-
-
 def default_target(dataset: TabularDataset, requested: Optional[str] = None) -> Optional[str]:
     """The column the utility evaluation predicts: the caller's choice, or a stated default.
 
@@ -274,192 +117,6 @@ def default_target(dataset: TabularDataset, requested: Optional[str] = None) -> 
     if "income" in dataset.categorical_cols:
         return "income"
     return dataset.categorical_cols[-1] if dataset.categorical_cols else None
-
-
-def _split(dataset: TabularDataset, seed: int, holdout_frac: float):
-    """A seeded fit/holdout split. Returns (holdout_df, fit_df, fit_ds)."""
-    rng = np.random.default_rng(seed)
-    idx = rng.permutation(len(dataset.df))
-    n_hold = max(20, int(len(idx) * holdout_frac))
-    holdout_df = dataset.df.iloc[idx[:n_hold]].reset_index(drop=True)
-    fit_df = dataset.df.iloc[idx[n_hold:]].reset_index(drop=True)
-    return holdout_df, fit_df, TabularDataset(fit_df, name=dataset.name, schema=dataset.schema)
-
-
-def _plan_for(fit_ds: TabularDataset, target_eps: float, delta: float) -> BudgetPlan:
-    """Profiling is free when the schema declares every bound and category domain (true of every
-    registry dataset): it then reads nothing and charges nothing, so the WHOLE budget goes to
-    synthesis. Reserving 10% for a profiler that spends none of it left that share idle (audit
-    H1, research/27). Only a schema with undeclared domains gets the 10/90 split."""
-    needs_profile = (
-        DPDomainProfiler(
-            accountant=Accountant(budget_eps=float("inf"), budget_delta=delta), eps_budget=1.0
-        )._query_count(fit_ds)
-        > 0
-    )
-    if needs_profile:
-        return BudgetPlan.split(target_eps, delta=delta, profile_frac=0.1)
-    return BudgetPlan(total_eps=target_eps, delta=delta, profile_eps=0.0, synthesis_eps=target_eps)
-
-
-def _make_auditor(auditor_kind: str, num_canaries: int, seed: int):
-    """The one-run construction is the default: it spends one canary per comparison rather
-    than two, and is measurably more sensitive to PARTIAL leakage, which is the regime a
-    real mechanism lives in. See results/AUDITOR_COMPARISON.md. The paired auditor stays
-    selectable so the two can be compared on identical runs."""
-    if auditor_kind == "one_run":
-        return SteinkeAuditor(num_canaries=num_canaries, seed=seed)
-    if auditor_kind == "paired":
-        return CanaryAuditor(num_canaries=num_canaries, seed=seed)
-    raise ValueError(f"Unknown auditor {auditor_kind!r}. Use 'one_run' or 'paired'.")
-
-
-def _canary_counts(canary_set) -> Tuple[int, int]:
-    """(planted, total). Report what was actually planted, not what was requested. Narrowing on
-    the SET rather than on the auditor is what lets the field accesses be checked."""
-    if isinstance(canary_set, OneRunCanarySet):
-        return canary_set.num_included, len(canary_set.canaries)
-    return len(canary_set.members), len(canary_set.members) + len(canary_set.holdout)
-
-
-def _run_audit(auditor, canary_set, audit_synth, delta: float, emit):
-    """The two auditors return different result types -- SteinkeResult carries the ceiling,
-    accuracy and saturation flag; AuditResult carries the TPR/FPR pair from the paired
-    construction. Branching on the auditor's type rather than on a string keeps the two
-    sets of field accesses provably matched to the object that produced them."""
-    if isinstance(auditor, SteinkeAuditor) and isinstance(canary_set, OneRunCanarySet):
-        res = auditor.audit(audit_synth, canary_set, delta=delta)
-        emit(
-            "audit",
-            {
-                "audited_eps": float(res.audited_eps),
-                "ceiling": float(res.ceiling),
-                "accuracy": float(res.accuracy),
-                "guesses": int(res.guesses),
-                "saturated": bool(res.saturated),
-                "p_value": float(res.p_value),
-            },
-        )
-        return res
-    if isinstance(auditor, CanaryAuditor) and isinstance(canary_set, CanarySet):
-        paired = auditor.audit(audit_synth, canary_set)
-        emit(
-            "audit",
-            {
-                "audited_eps": float(paired.audited_eps),
-                "tpr": float(paired.tpr),
-                "fpr": float(paired.fpr),
-                "p_value": float(paired.p_value),
-            },
-        )
-        return paired
-    raise TypeError(  # pragma: no cover - the two constructors cannot produce a mixed pair
-        f"Auditor {type(auditor).__name__} produced a "
-        f"{type(canary_set).__name__}, which it should not be able to."
-    )
-
-
-def _run_attacks(audit_synth, util_synth, fit_ds, holdout_df, reference_df, target_col, seed, emit):
-    """Every attack the release is scored against. Returns them by name; an attack that does not
-    apply to this table is None and reported as NOT APPLICABLE, never as a passed attack.
-
-    The MIA runs against the AUDIT release: it asks whether training membership is recoverable,
-    which is a question about the release that actually contained the members. The distance MIA
-    counts categorical mismatches (audit C3), so it runs on every table. DOMIAS still needs a
-    numeric column for its density estimate; on an all-categorical release (Mushroom, Nursery)
-    it is reported as NOT APPLICABLE, the same rule linkability follows.
-    """
-    out: Dict[str, Any] = {}
-    try:
-        out["mia"] = DistanceMIABaseline(seed=seed, max_records=400).evaluate(
-            audit_synth, train_df=fit_ds.df, test_df=holdout_df
-        )
-        emit(
-            "attack",
-            {
-                "auc": float(out["mia"].auc),
-                "advantage": float(out["mia"].advantage),
-                "tpr_at_1pct_fpr": float(out["mia"].tpr_at_1pct_fpr),
-            },
-        )
-    except ValueError as exc:
-        out["mia"] = None
-        emit("attack", {"not_applicable": str(exc)})
-
-    # A second, structurally different adversary. The two fail differently -- the baseline is
-    # a raw proximity heuristic, DOMIAS divides by a reference density to remove the
-    # typicality confound -- so both are reported rather than one standing in for the other.
-    try:
-        out["domias"] = DOMIAS(seed=seed, max_records=400).evaluate(
-            audit_synth, train_df=fit_ds.df, test_df=holdout_df
-        )
-        emit(
-            "attack_domias",
-            {
-                "auc": float(out["domias"].auc),
-                "tpr_at_1pct_fpr": float(out["domias"].tpr_at_1pct_fpr),
-            },
-        )
-    except ValueError as exc:
-        out["domias"] = None
-        emit("attack_domias", {"not_applicable": str(exc)})
-
-    # Singling out: does any real record appear in the release as a unique exact match? This
-    # is the one risk of the EDPB's three that a release can fail outright rather than by
-    # degree, so it is cheap and worth running on every cell. Scored against the AUDIT release
-    # for the same reason the MIA is -- that is the release that contained the members.
-    out["singling"] = ExactMatchRiskEvaluator(seed=seed, max_records=400).evaluate(
-        audit_synth, target_df=fit_ds.df
-    )
-    emit(
-        "attack_singling_out",
-        {
-            "risk": float(out["singling"].singling_out_risk),
-            "unique_matches": int(out["singling"].num_unique_matches),
-        },
-    )
-
-    # Linkability: the third EDPB risk. Two disjoint halves of a record are matched to the
-    # release independently; agreement beyond the shuffled-release baseline is the link. A table
-    # with fewer than four columns cannot be split into two disjoint halves, so the question does
-    # not arise: NOT APPLICABLE, not a failure, and it must not take the release down with it.
-    try:
-        out["linkability"] = LinkabilityEvaluator(seed=seed, max_records=400).evaluate(
-            audit_synth, target_df=fit_ds.df
-        )
-        emit(
-            "attack_linkability",
-            {
-                "rate": float(out["linkability"].linkability_rate),
-                "excess_over_baseline": float(out["linkability"].excess_over_baseline),
-            },
-        )
-    except ValueError as exc:
-        out["linkability"] = None
-        emit("attack_linkability", {"not_applicable": str(exc)})
-
-    # Attribute inference, scored against a CONDITIONAL baseline rather than a marginal one.
-    # Jayaraman & Evans (CCS 2022) showed that reporting raw attack accuracy as "leakage"
-    # mostly measures imputability; `leakage_vs_conditional` is the number that isolates what
-    # the release itself contributed. Uses the canary-free release, because this asks what a
-    # recipient of the published table can infer.
-    out["attr"] = AttributeInferenceAttack(
-        target_column=target_col, seed=seed, max_records=400
-    ).evaluate(util_synth, target_df=fit_ds.df, reference_df=reference_df)
-    emit(
-        "attack_attribute_inference",
-        {
-            "accuracy": float(out["attr"].attack_accuracy),
-            "leakage_vs_conditional": float(out["attr"].leakage_vs_conditional),
-        },
-    )
-    return out
-
-
-def _nan_if_absent(result, attr: str) -> float:
-    """NaN, not 0.0, when an attack does not apply: a zero would read as 'attack ran, found
-    nothing' -- an absent measurement, not a null."""
-    return float(getattr(result, attr)) if result else float("nan")
 
 
 def run_cell(
