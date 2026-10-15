@@ -15,7 +15,8 @@ Three things both mechanisms need, kept in one place so they cannot drift apart:
     zCDP charge, the charges add exactly, and the total rho is found once, against the target.
 """
 
-from typing import Dict, List
+import contextlib
+from typing import Dict, Iterator, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -27,6 +28,29 @@ from synthproof.data.profiler import DomainProfile
 OTHER = "__other__"
 # A non-negative public range reaching this far is treated as heavy-tailed (money, counts).
 LOG_BIN_MIN_UPPER = 1000.0
+
+
+@contextlib.contextmanager
+def numpy_global_seed(seed: Optional[int]) -> Iterator[None]:
+    """Seeds NumPy's GLOBAL generator for the duration, then restores the caller's state.
+
+    private-PGM's sampler draws from the global generator, so sampling is seeded locally and the
+    caller's state is left as it was. Sampling is post-processing of the private model: a public
+    seed costs no privacy.
+
+    NOT A REPRODUCIBILITY GUARANTEE FOR SAMPLES. Measured 2026-10-16: with the seed fixed and the
+    fitted model bit-identical, private-PGM's float32 JAX sampler still returned different tables
+    in different processes, and again after JAX's compilation caches changed. Fitted models are
+    deterministic (tests/test_reproducible_fits.py); sampled tables are reproducible in
+    distribution, not byte for byte.
+    """
+    saved = np.random.get_state()
+    if seed is not None:
+        np.random.seed(int(seed) % (2**32))
+    try:
+        yield
+    finally:
+        np.random.set_state(saved)
 
 
 def bin_edges(lo: float, hi: float, k: int) -> np.ndarray:

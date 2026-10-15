@@ -43,6 +43,7 @@ from synthproof.data.profiler import DomainProfile
 from synthproof.generators._marginal import (
     MarginalEncoder,
     em_eps_for_rho,
+    numpy_global_seed,
     rho_for,
     sample_model,
     sigma_for_rho,
@@ -232,11 +233,6 @@ class MSTGenerator(BaseGenerator):
         rng = np.random.default_rng(self.seed)
         # private-pgm samples from NumPy's GLOBAL generator; seeded locally, caller's state
         # restored. Sampling is post-processing: a public seed costs no privacy.
-        saved_state = np.random.get_state()
-        if self.seed is not None:
-            np.random.seed(int(self.seed) % (2**32))
-        try:
+        with numpy_global_seed(self.seed):
             coded = sample_model(self._model, num_samples)
-        finally:
-            np.random.set_state(saved_state)
         return self._encoder.decode(coded, rng)

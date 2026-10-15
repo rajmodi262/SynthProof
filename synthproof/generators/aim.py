@@ -58,6 +58,7 @@ from synthproof.generators._marginal import (
     MarginalEncoder,
     em_eps_for_rho,
     enable_x64,
+    numpy_global_seed,
     rho_for,
     sample_model,
     sigma_for_rho,
@@ -192,6 +193,95 @@ class AIMGenerator(BaseGenerator):
 
     # ------------------------------------------------------------------ fitting
 
+    def _candidates(self) -> List[Tuple[str, ...]]:
+        """All pairs, plus target-containing triples when a target column is declared."""
+        cands: List[Tuple[str, ...]] = [
+            (a, b) for i, a in enumerate(self.columns) for b in self.columns[i + 1 :]
+        ]
+        if self.target_col is not None and self.target_col in self.columns:
+            others = [c for c in self.columns if c != self.target_col]
+            cands += [
+                (self.target_col, a, b) for i, a in enumerate(others) for b in others[i + 1 :]
+            ]
+        return cands
+
+    def _plan(self, rho: float, d: int, n_candidates: int) -> Tuple[int, float, float]:
+        """Rounds to plan, and the per-measurement / per-selection rho that spend exactly rho."""
+        f = self.selection_frac
+        n_pairs = d * (d - 1) // 2
+        planned = (
+            min(self.rounds, n_pairs)
+            if self.rounds is not None
+            else min(self.rounds_per_column * d, n_candidates)
+        )
+        if not n_candidates:
+            planned = 0
+        # Per-measurement cost so that d 1-ways + `planned` rounds spend exactly rho.
+        rho_meas = rho / (d + planned / (1.0 - f)) if planned else rho / max(d, 1)
+        return planned, rho_meas, rho_meas * f / (1.0 - f)
+
+    def _affordable(self, pool, domain, hypothetical_model_size) -> List[Tuple[str, ...]]:
+        """Candidates whose addition keeps the model under the size bound; the rest recorded."""
+        out = []
+        for cl in pool:
+            if hypothetical_model_size(domain, [*self.measured_cliques_, cl]) <= self.max_model_mb:
+                out.append(cl)
+            elif cl not in self.skipped_cliques_:
+                self.skipped_cliques_.append(cl)
+        return out
+
+    def _round_candidates(self, candidates, domain, hypothetical_model_size):
+        """This round's pool: affordable candidates not already covered by a measured clique.
+
+        A marginal already measured -- or contained in one that was -- is not a candidate again.
+        The paper allows repeats over its 16d rounds; with ~d rounds a repeat is a wasted round,
+        and on large tables the biggest pair's absolute error stays on top after measurement
+        (SF Fire re-measured zipcode x station_area three times). If everything is covered, a
+        repeat measurement beats leaving budget unspent.
+        """
+        covered = [set(c) for c in self.measured_cliques_ if len(c) >= 2]
+        pool = self._affordable(
+            [cl for cl in candidates if not any(set(cl) <= m for m in covered)],
+            domain,
+            hypothetical_model_size,
+        )
+        return pool or self._affordable(candidates, domain, hypothetical_model_size)
+
+    @staticmethod
+    def _scores(pool, model, true_marginal, sigma) -> List[float]:
+        """AIM's quality score: L1 error of the current model minus the expected noise."""
+        scores = []
+        for cl in pool:
+            true_y = true_marginal(cl)
+            est_y = np.asarray(model.project(cl).datavector(), dtype=float)
+            penalty = np.sqrt(2.0 / np.pi) * sigma * true_y.size
+            scores.append(float(np.abs(true_y - est_y).sum()) - penalty)
+        return scores
+
+    @staticmethod
+    def _select(pool, scores, rho_sel, accountant, rng, run_id) -> Tuple[str, ...]:
+        """Charges and runs the exponential mechanism over `pool`; returns the chosen clique."""
+        eps_sel = em_eps_for_rho(rho_sel)
+        accountant.charge(
+            MechanismSpec("exponential", sensitivity=1.0, noise_scale=em_noise_scale(eps_sel, 1.0)),
+            run_id=run_id,
+        )
+        pick = exponential_mechanism(scores, eps_sel, 1.0, seed=int(rng.integers(0, 2**31 - 1)))
+        return pool[pick]  # `pick` indexes the pool it was scored over (audit H3)
+
+    def _prepare(self, dataset: TabularDataset, profile: DomainProfile, Domain, Dataset):
+        """Encodes the table on the profiled domain; returns the mbi domain and dataset."""
+        self.columns = dataset.columns
+        self.numerical_cols = dataset.numerical_cols
+        self.categorical_cols = dataset.categorical_cols
+        self._build_levels(dataset, profile)
+        self.measured_cliques_ = []
+        self.skipped_cliques_ = []
+        coded = self._encode(dataset)
+        assert self._encoder is not None
+        domain = Domain(tuple(self.columns), self._encoder.shape())
+        return domain, Dataset(coded, domain)
+
     def fit(
         self,
         dataset: TabularDataset,
@@ -202,26 +292,8 @@ class AIMGenerator(BaseGenerator):
         Domain, Dataset, LinearMeasurement, estimation, hypothetical_model_size = _require_mbi()
         rng = np.random.default_rng(self.seed)
 
-        self.columns = dataset.columns
-        self.numerical_cols = dataset.numerical_cols
-        self.categorical_cols = dataset.categorical_cols
-        self._build_levels(dataset, profile)
-        self.measured_cliques_ = []
-        self.skipped_cliques_ = []
-
-        coded = self._encode(dataset)
-        assert self._encoder is not None
-        domain = Domain(tuple(self.columns), self._encoder.shape())
-        data = Dataset(coded, domain)
-        d = len(self.columns)
-        candidates: List[Tuple[str, ...]] = [
-            (a, b) for i, a in enumerate(self.columns) for b in self.columns[i + 1 :]
-        ]
-        if self.target_col is not None and self.target_col in self.columns:
-            others = [c for c in self.columns if c != self.target_col]
-            candidates += [
-                (self.target_col, a, b) for i, a in enumerate(others) for b in others[i + 1 :]
-            ]
+        domain, data = self._prepare(dataset, profile, Domain, Dataset)
+        candidates = self._candidates()
 
         # A candidate's TRUE marginal never changes, so it is computed once, not every round.
         _true_cache: Dict[tuple, np.ndarray] = {}
@@ -236,18 +308,7 @@ class AIMGenerator(BaseGenerator):
         rho = rho_for(target_eps, accountant.budget.delta) * (1.0 - 1e-9)
         f = self.selection_frac
         fixed = self.rounds is not None
-        n_pairs = d * (d - 1) // 2
-        planned = (
-            min(self.rounds, n_pairs)
-            if self.rounds is not None
-            else min(self.rounds_per_column * d, len(candidates))
-        )
-        if not candidates:
-            planned = 0
-        # Per-measurement cost so that d 1-ways + `planned` rounds spend exactly rho.
-        rho_meas = rho / (d + planned / (1.0 - f)) if planned else rho / max(d, 1)
-        rho_sel = rho_meas * f / (1.0 - f)
-        used = 0.0
+        planned, rho_meas, rho_sel = self._plan(rho, len(self.columns), len(candidates))
 
         def measure(clique, rho_m, run_id):
             sigma = sigma_for_rho(rho_m)
@@ -262,10 +323,17 @@ class AIMGenerator(BaseGenerator):
             self.measured_cliques_.append(tuple(clique))
             return LinearMeasurement(y + noise, tuple(clique), stddev=sigma), sigma
 
+        def estimate(measurements, iters, warm):
+            # known_total=None: the total is estimated from the NOISY measurements, never the
+            # exact row count (research/11_selection_accounting.md).
+            return estimation.MirrorDescent().estimate(
+                domain, measurements, known_total=None, iters=iters, warm_start=warm
+            )
+
         measurements = []
+        used = 0.0
         for col in self.columns:
-            m, _ = measure((col,), rho_meas, f"aim_1way_{col}")
-            measurements.append(m)
+            measurements.append(measure((col,), rho_meas, f"aim_1way_{col}")[0])
             used += rho_meas
 
         model = None
@@ -280,61 +348,13 @@ class AIMGenerator(BaseGenerator):
             if rho_meas + rho_sel > remaining * (1 + 1e-9):
                 break
 
-            model = estimation.MirrorDescent().estimate(
-                # known_total=None: the total is estimated from the NOISY measurements, never
-                # the exact row count (research/11_selection_accounting.md).
-                domain,
-                measurements,
-                known_total=None,
-                iters=ROUND_ITERS,
-                warm_start=model,
-            )
-
-            # A marginal already measured -- or contained in one that was -- is not a candidate
-            # again. The paper allows repeats over its 16d rounds; with ~d rounds a repeat is a
-            # wasted round, and on large tables the biggest pair's absolute error stays on top
-            # after measurement (SF Fire re-measured zipcode x station_area three times).
-            covered = [set(c) for c in self.measured_cliques_ if len(c) >= 2]
-
-            def _affordable(pool):
-                out = []
-                for cl in pool:
-                    if (
-                        hypothetical_model_size(domain, [*self.measured_cliques_, cl])
-                        <= self.max_model_mb
-                    ):
-                        out.append(cl)
-                    elif cl not in self.skipped_cliques_:
-                        self.skipped_cliques_.append(cl)
-                return out
-
-            affordable = _affordable(
-                [cl for cl in candidates if not any(set(cl) <= m for m in covered)]
-            )
-            if not affordable:
-                # Everything is covered: a repeat measurement beats leaving budget unspent.
-                affordable = _affordable(candidates)
-            if not affordable:
+            model = estimate(measurements, ROUND_ITERS, model)
+            pool = self._round_candidates(candidates, domain, hypothetical_model_size)
+            if not pool:
                 break
+            scores = self._scores(pool, model, true_marginal, sigma_for_rho(rho_meas))
 
-            sigma = sigma_for_rho(rho_meas)
-            scores = []
-            for cl in affordable:
-                true_y = true_marginal(cl)
-                est_y = np.asarray(model.project(cl).datavector(), dtype=float)
-                penalty = np.sqrt(2.0 / np.pi) * sigma * true_y.size
-                scores.append(float(np.abs(true_y - est_y).sum()) - penalty)
-
-            eps_sel = em_eps_for_rho(rho_sel)
-            accountant.charge(
-                MechanismSpec(
-                    "exponential", sensitivity=1.0, noise_scale=em_noise_scale(eps_sel, 1.0)
-                ),
-                run_id=f"aim_select_round_{r}",
-            )
-            pick = exponential_mechanism(scores, eps_sel, 1.0, seed=int(rng.integers(0, 2**31 - 1)))
-            # `pick` indexes `affordable` (audit H3).
-            clique = affordable[pick]
+            clique = self._select(pool, scores, rho_sel, accountant, rng, f"aim_select_round_{r}")
             before = np.asarray(model.project(clique).datavector(), dtype=float)
             m, sigma = measure(clique, rho_meas, f"aim_{len(clique)}way_{'__'.join(clique)}")
             measurements.append(m)
@@ -346,17 +366,13 @@ class AIMGenerator(BaseGenerator):
             _clear_jax_caches()
 
             if self.adaptive_budget and not fixed:
-                model = estimation.MirrorDescent().estimate(
-                    domain, measurements, known_total=None, iters=ROUND_ITERS, warm_start=model
-                )
+                model = estimate(measurements, ROUND_ITERS, model)
                 after = np.asarray(model.project(clique).datavector(), dtype=float)
                 if np.abs(after - before).sum() <= np.sqrt(2.0 / np.pi) * sigma * before.size:
                     rho_meas, rho_sel = 4.0 * rho_meas, 4.0 * rho_sel  # AIM: sigma halves
 
         self.unspent_rho_ = max(0.0, rho - used)
-        self._model = estimation.MirrorDescent().estimate(
-            domain, measurements, known_total=None, iters=FINAL_ITERS, warm_start=model
-        )
+        self._model = estimate(measurements, FINAL_ITERS, model)
         self.is_fitted = True
 
     # ------------------------------------------------------------------ sampling
@@ -368,11 +384,6 @@ class AIMGenerator(BaseGenerator):
         # private-pgm samples from NumPy's GLOBAL generator; seed it locally and restore the
         # caller's state. Sampling is post-processing of the private model: a public seed costs
         # no privacy.
-        saved_state = np.random.get_state()
-        if self.seed is not None:
-            np.random.seed(int(self.seed) % (2**32))
-        try:
+        with numpy_global_seed(self.seed):
             coded = sample_model(self._model, num_samples)
-        finally:
-            np.random.set_state(saved_state)
         return self._encoder.decode(coded, rng)

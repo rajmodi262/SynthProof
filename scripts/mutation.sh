@@ -37,16 +37,25 @@ survivors = [l.split(":")[0].strip() for l in open("mutmut_results.txt") if "sur
 caught = stats["killed"] + stats.get("timeout", 0)
 judged = caught + stats["survived"] + stats.get("suspicious", 0)
 score = 100.0 * caught / judged if judged else 0.0
+# The strict reading: only an outright kill counts, and a mutant no selected test even reaches
+# (no_tests) counts against the suite. Both are reported; the gate uses the strict one.
+strict_den = stats["killed"] + stats["survived"] + stats.get("no_tests", 0)
+strict = 100.0 * stats["killed"] / strict_den if strict_den else 0.0
 report = {
     "scope": "synthproof/accounting/",
     "tool": "mutmut 3.8.0",
     "score_percent": round(score, 2),
+    "strict_score_percent": round(strict, 2),
+    "definitions": {
+        "score_percent": "(killed + timeout) / (killed + timeout + survived + suspicious)",
+        "strict_score_percent": "killed / (killed + survived + no_tests)",
+    },
     "min_score_percent": min_score,
     "stats": stats,
     "surviving_mutants": survivors,
 }
 json.dump(report, open(out, "w"), indent=2)
-print(json.dumps({k: report[k] for k in ("score_percent", "stats")}, indent=2))
+print(json.dumps({k: report[k] for k in ("score_percent", "strict_score_percent", "stats")}, indent=2))
 print(f"{len(survivors)} surviving mutants listed in {out}")
-sys.exit(0 if score >= min_score else 1)
+sys.exit(0 if strict >= min_score else 1)
 PY
