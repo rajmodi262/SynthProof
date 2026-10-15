@@ -1,0 +1,4 @@
+# Generated API contract: byte-compared by scripts/export_openapi.py --check and `git diff` in CI,
+# so line endings must not depend on the platform that checked them out.
+web/src/api/openapi.json text eol=lf
+web/src/api/schema.d.ts text eol=lf

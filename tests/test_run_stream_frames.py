@@ -4,7 +4,6 @@ import json
 
 from fastapi.testclient import TestClient
 
-from synthproof.api import state
 from synthproof.api.main import app
 from synthproof.api.routes import run as run_routes
 
@@ -30,7 +29,7 @@ def _run():
     return _events(client.post("/api/run", json=body).text)
 
 
-def test_the_ledger_note_tells_the_truth_about_durability(monkeypatch):
+def test_the_ledger_note_tells_the_truth_about_durability():
     """It used to say the key is never persisted -- false for a file-backed ledger."""
 
     class Entry:
@@ -39,11 +38,15 @@ def test_the_ledger_note_tells_the_truth_about_durability(monkeypatch):
         def compute_hash(self):
             return "h"
 
-    monkeypatch.setattr(state, "LEDGER_DURABLE", True)
-    durable = run_routes._ledger_frame(Entry())
+    class Ctx:
+        ledger = client.app.state.ctx.ledger
+
+        def __init__(self, durable):
+            self.ledger_durable = durable
+
+    durable = run_routes._ledger_frame(Ctx(True), Entry())
     assert durable["signed"] is True and "persists" in durable["signature_note"]
-    monkeypatch.setattr(state, "LEDGER_DURABLE", False)
-    demo = run_routes._ledger_frame(Entry())
+    demo = run_routes._ledger_frame(Ctx(False), Entry())
     assert demo["signed"] is False and "IN-MEMORY" in demo["signature_note"]
 
 
@@ -55,21 +58,24 @@ def test_a_signing_failure_is_an_error_not_an_unsigned_sheet(monkeypatch):
             raise RuntimeError("signing key unavailable")
 
     client.post("/api/ledger/reset")
-    real_key = state.GLOBAL_LEDGER._private_key
+    # The ledger of the app this client serves: after another test reloads `state`, the
+    # module-level default is a different instance.
+    led = client.app.state.ctx.ledger
+    real_key = led._private_key
     events = None
     try:
         # Break signing only after the ledger entry is appended (append also signs).
-        real_append = state.GLOBAL_LEDGER.append
+        real_append = led.append
 
         def append_then_break(entry):
             out = real_append(entry)
-            state.GLOBAL_LEDGER._private_key = BrokenKey()
+            led._private_key = BrokenKey()
             return out
 
-        monkeypatch.setattr(state.GLOBAL_LEDGER, "append", append_then_break)
+        monkeypatch.setattr(led, "append", append_then_break)
         events = _run()
     finally:
-        state.GLOBAL_LEDGER._private_key = real_key
+        led._private_key = real_key
         client.post("/api/ledger/reset")
     kinds = [e for e, _ in events]
     assert "done" not in kinds

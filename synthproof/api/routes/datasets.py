@@ -18,9 +18,16 @@ from typing import Optional
 import pandas as pd
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
-from synthproof.api import state
+from synthproof.api import schemas, state
+from synthproof.api.context import (
+    MAX_UPLOAD_BYTES,
+    MAX_UPLOAD_ROWS,
+    UPLOAD_CHUNK,
+    AppContext,
+    get_context,
+    require_api_key,
+)
 from synthproof.api.descriptions import MECHANISM_INFO, NOT_IMPLEMENTED_ATTACKS
-from synthproof.api.state import require_api_key
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.schema import Schema
 from synthproof.frontier.experiment import MECHANISMS
@@ -30,8 +37,8 @@ router = APIRouter()
 # --------------------------------------------------------------------------- datasets
 
 
-@router.get("/api/health")
-def health():
+@router.get("/api/health", response_model=schemas.Health)
+def health(ctx: AppContext = Depends(get_context)):
     """Readiness, and an honest statement of whether this service is protected.
 
     Deliberately unauthenticated: a readiness probe must not need a secret, and this is where
@@ -43,29 +50,33 @@ def health():
     """
     return {
         "status": "ok",
-        "auth": "required" if state.AUTH_ENABLED else "disabled",
+        "auth": "required" if ctx.auth_enabled else "disabled",
         # shared: one key, every caller the same principal; per-user: named keys, each spend
         # attributed in the ledger. The names themselves are not disclosed here.
-        "auth_mode": state.AUTH_MODE,
+        "auth_mode": ctx.auth_mode,
         "auth_note": (
             "Named API keys are required; every spend is attributed to its key's owner."
-            if state.AUTH_MODE == "per-user"
+            if ctx.auth_mode == "per-user"
             else (
                 "A shared API key is required on data and ledger endpoints. Every caller is "
                 "the same principal; set SYNTHPROOF_API_KEYS for per-user attribution."
-                if state.AUTH_ENABLED
+                if ctx.auth_enabled
                 else "NO AUTHENTICATION. Anyone who can reach this port can upload data, spend "
                 "budget and read the ledger. Set SYNTHPROOF_API_KEY before exposing it."
             )
         ),
-        "demo_mode": state.DEMO_MODE,
-        "ledger_verified": state.GLOBAL_LEDGER.verify(),
-        "ledger_head": state.GLOBAL_LEDGER.get_latest_hash(),
+        "demo_mode": ctx.demo_mode,
+        "ledger_verified": ctx.ledger.verify(),
+        "ledger_head": ctx.ledger.get_latest_hash(),
         "mechanisms_available": sorted(MECHANISMS),
     }
 
 
-@router.get("/api/mechanisms", dependencies=[Depends(require_api_key)])
+@router.get(
+    "/api/mechanisms",
+    dependencies=[Depends(require_api_key)],
+    response_model=schemas.Mechanisms,
+)
 def mechanisms():
     """Mechanisms this build can actually run, plus honest notes on the ones it cannot."""
     out = []
@@ -85,8 +96,12 @@ def mechanisms():
     return {"mechanisms": out, "attacks_not_implemented": NOT_IMPLEMENTED_ATTACKS}
 
 
-@router.get("/api/datasets", dependencies=[Depends(require_api_key)])
-def datasets():
+@router.get(
+    "/api/datasets",
+    dependencies=[Depends(require_api_key)],
+    response_model=schemas.Datasets,
+)
+def datasets(ctx: AppContext = Depends(get_context)):
     """Lists the datasets this service can synthesise from.
 
     `rows` is null for anything not yet loaded rather than a literal. A hardcoded 30162 would
@@ -116,7 +131,7 @@ def datasets():
             "correlations are weak, so mechanism families may not separate on it.",
         },
     ]
-    state._init_demo_datasets()
+    ctx.init_demo_datasets()
     demos = [
         {
             "id": k,
@@ -128,17 +143,25 @@ def datasets():
                 f"({v.num_rows} rows, {v.num_cols} features)."
             ),
         }
-        for k, v in state._DEMO_DATASETS.items()
+        for k, v in ctx.demo_datasets.items()
     ]
     uploads = [
         {"id": k, "label": v.name, "rows": v.num_rows, "kind": "upload", "note": None}
-        for k, v in state._UPLOADS.items()
+        for k, v in ctx.uploads.items()
     ]
     return {"datasets": built_in + demos + uploads}
 
 
-@router.post("/api/upload", dependencies=[Depends(require_api_key)])
-async def upload(file: UploadFile = File(...), schema_json: Optional[str] = None):
+@router.post(
+    "/api/upload",
+    dependencies=[Depends(require_api_key)],
+    response_model=schemas.UploadResult,
+)
+async def upload(
+    file: UploadFile = File(...),
+    schema_json: Optional[str] = None,
+    ctx: AppContext = Depends(get_context),
+):
     """Accepts a CSV and registers it for this session.
 
     Without a declared public schema the column kinds and numeric bounds are inferred FROM
@@ -153,10 +176,10 @@ async def upload(file: UploadFile = File(...), schema_json: Optional[str] = None
     # resident by the time the 413 is raised — the limit would not limit anything.
     buf = io.BytesIO()
     size = 0
-    while chunk := await file.read(state._UPLOAD_CHUNK):
+    while chunk := await file.read(UPLOAD_CHUNK):
         size += len(chunk)
-        if size > state._MAX_UPLOAD_BYTES:
-            raise HTTPException(413, f"File exceeds {state._MAX_UPLOAD_BYTES // (1024 * 1024)} MB.")
+        if size > MAX_UPLOAD_BYTES:
+            raise HTTPException(413, f"File exceeds {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.")
         buf.write(chunk)
     buf.seek(0)
 
@@ -168,8 +191,8 @@ async def upload(file: UploadFile = File(...), schema_json: Optional[str] = None
     df = df.dropna(axis=0, how="any").reset_index(drop=True)
     if df.empty:
         raise HTTPException(400, "No complete rows after dropping missing values.")
-    if len(df) > state._MAX_UPLOAD_ROWS:
-        df = df.sample(n=state._MAX_UPLOAD_ROWS, random_state=0).reset_index(drop=True)
+    if len(df) > MAX_UPLOAD_ROWS:
+        df = df.sample(n=MAX_UPLOAD_ROWS, random_state=0).reset_index(drop=True)
 
     inferred = schema_json is None
     if schema_json:
@@ -195,7 +218,7 @@ async def upload(file: UploadFile = File(...), schema_json: Optional[str] = None
         raise HTTPException(400, f"Schema does not match the CSV: {exc}") from exc
 
     upload_id = f"upload:{uuid.uuid4().hex[:8]}"
-    state._register_upload(upload_id, ds)
+    ctx.register_upload(upload_id, ds)
 
     return {
         "id": upload_id,

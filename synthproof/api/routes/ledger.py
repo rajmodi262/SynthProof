@@ -18,16 +18,20 @@ from pydantic import BaseModel
 # replaces that object -- and a by-name binding here would keep operating on the old ledger,
 # so a tamper would be applied to one chain and verified against another. Nothing would fail
 # loudly; the routes would just quietly describe a different ledger than the one under test.
-from synthproof.api import state
-from synthproof.api.state import require_api_key
+from synthproof.api import schemas
+from synthproof.api.context import AppContext, get_context, require_api_key
 
 router = APIRouter()
 
 # --------------------------------------------------------------------------- ledger
 
 
-@router.get("/api/ledger", dependencies=[Depends(require_api_key)])
-def get_ledger():
+@router.get(
+    "/api/ledger",
+    dependencies=[Depends(require_api_key)],
+    response_model=schemas.LedgerState,
+)
+def get_ledger(ctx: AppContext = Depends(get_context)):
     """Returns the budget ledger and the result of verifying its chain.
 
     `verified` is the live result of re-hashing every entry and checking the signed head, not
@@ -39,13 +43,13 @@ def get_ledger():
     restarts. Each entry carries its `actor` -- the principal whose API key made the spend -- and
     `eps_by_actor` sums the spend per principal (naive sum: an upper bound, not a composition).
     """
-    entries = state.GLOBAL_LEDGER.get_entries()
+    entries = ctx.ledger.get_entries()
     by_actor: dict = {}
     for e in entries:
         by_actor[e.actor] = round(by_actor.get(e.actor, 0.0) + e.eps_spent, 4)
     return {
-        "verified": state.GLOBAL_LEDGER.verify(),
-        "head": state.GLOBAL_LEDGER.get_latest_hash(),
+        "verified": ctx.ledger.verify(),
+        "head": ctx.ledger.get_latest_hash(),
         "count": len(entries),
         "total_eps_spent": round(sum(e.eps_spent for e in entries), 4),
         "eps_by_actor": by_actor,
@@ -75,12 +79,16 @@ class TamperRequest(BaseModel):
     attack_type: str = "modify_eps"  # modify_eps, truncate, corrupt_hash, corrupt_signature
 
 
-@router.post("/api/ledger/tamper", dependencies=[Depends(require_api_key)])
-def tamper(req: TamperRequest):
+@router.post(
+    "/api/ledger/tamper",
+    dependencies=[Depends(require_api_key)],
+    response_model=schemas.TamperResult,
+)
+def tamper(req: TamperRequest, ctx: AppContext = Depends(get_context)):
     """Runs an adversarial attack straight against the SQLite file, to show tamper-evidence."""
-    state._require_demo_ledger()
+    ctx.require_demo_ledger()
 
-    entries = state.GLOBAL_LEDGER.get_entries()
+    entries = ctx.ledger.get_entries()
     if req.entry_id is not None and not any(str(e.entry_id) == str(req.entry_id) for e in entries):
         raise HTTPException(404, f"Entry {req.entry_id!r} not found in ledger")
 
@@ -91,7 +99,7 @@ def tamper(req: TamperRequest):
 
     target_id = req.entry_id or entries[-1].entry_id
 
-    with state._ledger_conn() as conn:
+    with ctx.ledger_conn() as conn:
         if req.attack_type == "truncate":
             # Delete the most recent row while leaving the signed ledger_head intact
             conn.execute("DELETE FROM ledger_entries WHERE entry_id = ?", (target_id,))
@@ -127,7 +135,7 @@ def tamper(req: TamperRequest):
                 f"Retroactive Spend Manipulation: Altered recorded epsilon to {req.eps_spent}."
             )
 
-    valid, reason = state.GLOBAL_LEDGER.verify_with_reason()
+    valid, reason = ctx.ledger.verify_with_reason()
     return {
         "verified": valid,
         "reason": reason,
@@ -148,9 +156,13 @@ def tamper(req: TamperRequest):
     }
 
 
-@router.post("/api/ledger/reset", dependencies=[Depends(require_api_key)])
-def reset_ledger():
+@router.post(
+    "/api/ledger/reset",
+    dependencies=[Depends(require_api_key)],
+    response_model=schemas.LedgerReset,
+)
+def reset_ledger(ctx: AppContext = Depends(get_context)):
     """Clears the in-memory chain, so the tamper demo can be run again."""
-    state._require_demo_ledger()
-    state.GLOBAL_LEDGER.clear()
-    return {"verified": state.GLOBAL_LEDGER.verify(), "head": state.GLOBAL_LEDGER.get_latest_hash()}
+    ctx.require_demo_ledger()
+    ctx.ledger.clear()
+    return {"verified": ctx.ledger.verify(), "head": ctx.ledger.get_latest_hash()}

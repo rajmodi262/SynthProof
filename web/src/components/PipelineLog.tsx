@@ -13,6 +13,9 @@ const STAGE_LABELS: Record<StageName, string> = {
   utility: 'Downstream utility',
   attack: 'Membership inference',
   attack_domias: 'Density-ratio attack (DOMIAS)',
+  attack_singling_out: 'Singling out (exact match)',
+  attack_linkability: 'Linkability',
+  attack_attribute_inference: 'Attribute inference',
 }
 
 function chargedAmount(e: StageEvent, previousSpend: number): number | null {
@@ -38,7 +41,8 @@ function summarise(e: StageEvent): string {
     case 'budget':
       return `profile ${n('profile_eps')} + synthesis ${n('synthesis_eps')}`
     case 'canaries':
-      return `${i('planted')} planted · ${i('holdout')} held out as null`
+      // `holdout` was read here and never sent, so this always showed "—" (fixed 2026-10-16).
+      return `${i('planted')} planted of ${i('total_canaries')} · ${n('fraction_of_fit', 4)} of the fit split`
     case 'profile':
       return `ε spent ${n('eps_spent')} · ${i('public_ranges')} public ranges · ${i('suppressed_categories')} rare categories suppressed`
     case 'fit':
@@ -55,7 +59,17 @@ function summarise(e: StageEvent): string {
       return `TSTR ${n('tstr_f1')} vs TRTR ${n('trtr_f1')}`
     case 'attack':
     case 'attack_domias':
-      return `AUC ${n('auc')} · TPR@1%FPR ${n('tpr_at_1pct_fpr')}`
+      return e.not_applicable
+        ? `not applicable: ${i('not_applicable')}`
+        : `AUC ${n('auc')} · TPR@1%FPR ${n('tpr_at_1pct_fpr')}`
+    case 'attack_singling_out':
+      return `risk ${n('risk')} · ${i('unique_matches')} unique matches`
+    case 'attack_linkability':
+      return e.not_applicable
+        ? `not applicable: ${i('not_applicable')}`
+        : `rate ${n('rate')} · excess over baseline ${n('excess_over_baseline')}`
+    case 'attack_attribute_inference':
+      return `accuracy ${n('accuracy')} · leakage vs conditional ${n('leakage_vs_conditional')}`
     default:
       return ''
   }

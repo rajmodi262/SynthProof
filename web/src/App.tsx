@@ -389,7 +389,7 @@ export default function App() {
                   Correlation MAE: <strong className="text-ink font-mono">{result?.measurements.correlation_error.toFixed(3) ?? '—'}</strong>
                 </span>
                 <span className="text-muted">
-                  Rows: <strong className="text-ink font-mono">{result?.sheet?.num_rows ?? '—'}</strong>
+                  Rows: <strong className="text-ink font-mono">{typeof result?.sheet?.num_rows === 'number' ? result.sheet.num_rows : '—'}</strong>
                 </span>
                 <span className="text-muted">
                   Ledger: <strong className="text-ink font-mono">{ledger?.count ?? 0} blocks</strong>

@@ -24,14 +24,14 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from synthproof.accounting.noise import exact_noise
-from synthproof.api import projection, state
+from synthproof.api import projection, schemas, state
+from synthproof.api.context import AppContext, get_context, require_api_key
 from synthproof.api.descriptions import (  # noqa: F401  (audit_ceiling re-exported for tests)
     MECHANISM_INFO,
     NOT_IMPLEMENTED_ATTACKS,
     _audit_payload,
     audit_ceiling,
 )
-from synthproof.api.state import require_api_key
 from synthproof.frontier.certificate import EVALUATION_PRIVACY
 from synthproof.frontier.experiment import (
     MECHANISMS,
@@ -100,7 +100,7 @@ def _sse(event: str, payload: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(payload, default=_json_default)}\n\n"
 
 
-def _prepare(req: RunRequest):
+def _prepare(req: RunRequest, ctx: AppContext):
     """Resolves the seed, table and target. Returns (req, seed32, ds, target_col, error)."""
     if req.seed is None:
         # Drawn here and never written to the sheet (PUBLIC_RELEASE_BOUNDARY.md, D5). The console
@@ -122,7 +122,7 @@ def _prepare(req: RunRequest):
             },
         )
     try:
-        ds = state._load_dataset(req.dataset, req.rows, seed32)
+        ds = ctx.load_dataset(req.dataset, req.rows, seed32)
     except HTTPException as exc:
         return req, seed32, None, None, {"message": exc.detail}
     try:
@@ -185,7 +185,9 @@ def _start_worker(req: RunRequest, ds, target_col, corr_cols, events) -> None:
     threading.Thread(target=worker, daemon=True).start()
 
 
-def _signed_sheet(req: RunRequest, ds, target_col, payload, audit, mia, measurements) -> dict:
+def _signed_sheet(
+    ctx: AppContext, req: RunRequest, ds, target_col, payload, audit, mia, measurements
+) -> dict:
     """The Privacy Data Sheet for this release, signed with the ledger key.
 
     Signing used to sit in `try: ... except Exception: pass`, so a signing failure returned an
@@ -198,7 +200,7 @@ def _signed_sheet(req: RunRequest, ds, target_col, payload, audit, mia, measurem
         # RB6: how the column bounds / category domains were obtained. Demo datasets and
         # uploads infer them from the data (a leak the boundary auditor must flag); the
         # built-in declared-schema datasets do not. Never a marketing string.
-        "domain_source": state.domain_source_for(req.dataset),
+        "domain_source": ctx.domain_source_for(req.dataset),
         "contribution_bound": 1,
         # No fingerprint: this console holds no curator key, and a table name is not one.
         "input_fingerprint": None,
@@ -217,7 +219,7 @@ def _signed_sheet(req: RunRequest, ds, target_col, payload, audit, mia, measurem
         "audit_estimator": "one_run",
         "audit_budget": req.num_canaries,
         "audit_alpha": 0.05,
-        "ledger_hash": state.GLOBAL_LEDGER.get_latest_hash(),
+        "ledger_hash": ctx.ledger.get_latest_hash(),
         "frontier_curve": [],
         "evaluation": {
             "tstr_f1": measurements.get("tstr_f1", 0.0),
@@ -229,22 +231,22 @@ def _signed_sheet(req: RunRequest, ds, target_col, payload, audit, mia, measurem
         "attacks_run": ["canary_audit", "distance_mia"],
         "attacks_not_implemented": NOT_IMPLEMENTED_ATTACKS,
     }
-    sheet_dict["signature"] = state.GLOBAL_LEDGER._private_key.sign(
+    sheet_dict["signature"] = ctx.ledger._private_key.sign(
         canonical_sheet_payload(sheet_dict)
     ).hex()
-    sheet_dict["public_key"] = public_key_hex(state.GLOBAL_LEDGER._public_key)
+    sheet_dict["public_key"] = public_key_hex(ctx.ledger._public_key)
     return sheet_dict
 
 
-def _ledger_frame(entry) -> dict:
-    durable = state.LEDGER_DURABLE
+def _ledger_frame(ctx: AppContext, entry) -> dict:
+    durable = ctx.ledger_durable
     return {
         "entry_id": entry.entry_id,
         "prev_hash": entry.prev_hash,
         "hash": entry.compute_hash(),
         "signature": entry.signature,
-        "head": state.GLOBAL_LEDGER.get_latest_hash(),
-        "verified": state.GLOBAL_LEDGER.verify(),
+        "head": ctx.ledger.get_latest_hash(),
+        "verified": ctx.ledger.verify(),
         # Whether the signature can be verified after this process ends.
         "signed": durable,
         "signature_note": (
@@ -276,7 +278,9 @@ def _attacks_run(payload: dict) -> list:
     ]
 
 
-def _done_frame(req: RunRequest, ds, target_col, seed32, payload: dict, actor: str) -> dict:
+def _done_frame(
+    ctx: AppContext, req: RunRequest, ds, target_col, seed32, payload: dict, actor: str
+) -> dict:
     """Final frame: measurements, projected clouds, the ledger entry, and the signed sheet."""
     assert req.seed is not None  # resolved by _prepare before any fit runs
     attacks_run = _attacks_run(payload)
@@ -292,7 +296,7 @@ def _done_frame(req: RunRequest, ds, target_col, seed32, payload: dict, actor: s
     cloud = projection.project(
         fit_df, synth, ds.numerical_cols, canary_df=canaries.members, seed=seed32
     )
-    entry = state.GLOBAL_LEDGER.append(
+    entry = ctx.ledger.append(
         LedgerEntry(
             dataset_id=ds.name,
             run_id=f"{req.mechanism}_eps{req.target_eps}_seed{req.seed}",
@@ -307,7 +311,7 @@ def _done_frame(req: RunRequest, ds, target_col, seed32, payload: dict, actor: s
     measurements = {k: v for k, v in payload.items() if not k.startswith("_")}
     return {
         "measurements": measurements,
-        "sheet": _signed_sheet(req, ds, target_col, payload, audit, mia, measurements),
+        "sheet": _signed_sheet(ctx, req, ds, target_col, payload, audit, mia, measurements),
         "sample_records": synth.head(100).to_dict(orient="records"),
         # Utility and structure are scored against the fit split, not the full table. Stated in
         # the payload so the console cannot present `correlation_error` as a clean fidelity
@@ -355,20 +359,22 @@ def _done_frame(req: RunRequest, ds, target_col, seed32, payload: dict, actor: s
             }
             for s in spends
         ],
-        "ledger": _ledger_frame(entry),
+        "ledger": _ledger_frame(ctx, entry),
     }
 
 
-def _run_stream(req: RunRequest, actor: str = "anonymous") -> Iterator[str]:
+def _run_stream(
+    req: RunRequest, actor: str = "anonymous", ctx: Optional[AppContext] = None
+) -> Iterator[str]:
     """Streams pipeline stages as they complete."""
-    req, seed32, ds, target_col, error = _prepare(req)
+    ctx = ctx if ctx is not None else state.default_context()
+    req, seed32, ds, target_col, error = _prepare(req, ctx)
     if error is not None:
         yield _sse("error", error)
         return
 
     corr_cols = informative_numeric_columns(ds.df, ds.numerical_cols)
-    yield _sse(
-        "start",
+    start = schemas.StartFrame.model_validate(
         {
             "dataset": state._describe(ds),
             "mechanism": req.mechanism,
@@ -378,8 +384,9 @@ def _run_stream(req: RunRequest, actor: str = "anonymous") -> Iterator[str]:
             "seed": req.seed,
             "target_col": target_col,
             "correlation_cols": corr_cols,
-        },
+        }
     )
+    yield _sse("start", start.model_dump())
 
     events: "queue.Queue[Optional[tuple]]" = queue.Queue()
     _start_worker(req, ds, target_col, corr_cols, events)
@@ -398,7 +405,10 @@ def _run_stream(req: RunRequest, actor: str = "anonymous") -> Iterator[str]:
             yield _sse("error", payload)
         else:
             try:
-                frame = _done_frame(req, ds, target_col, seed32, payload, actor)
+                frame = _done_frame(ctx, req, ds, target_col, seed32, payload, actor)
+                # The contract (synthproof/api/schemas.py): a frame that does not match it is an
+                # error here, not an `undefined` in the console.
+                schemas.DoneFrame.model_validate(frame)
             except Exception as exc:  # e.g. signing failed: say so, never ship it unsigned
                 yield _sse(
                     "error",
@@ -412,10 +422,14 @@ def _run_stream(req: RunRequest, actor: str = "anonymous") -> Iterator[str]:
 
 
 @router.post("/api/run")
-def run(req: RunRequest, actor: str = Depends(require_api_key)):
+def run(
+    req: RunRequest,
+    actor: str = Depends(require_api_key),
+    ctx: AppContext = Depends(get_context),
+):
     """Runs one release and streams every stage as server-sent events."""
     return StreamingResponse(
-        _run_stream(req, actor),
+        _run_stream(req, actor, ctx),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

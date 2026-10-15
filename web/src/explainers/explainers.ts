@@ -36,12 +36,14 @@ export const EXPLAINERS: Record<string, Explainer> = {
       const sheet = ctx.result?.sheet
       const m = ctx.result?.measurements
       const proved = sheet?.total_proved_eps ?? m?.proved_eps
-      const delta = sheet?.target_delta ?? 1e-5
+      // Read from the sheet's `delta`. This read `target_delta`, a key the sheet does not have,
+      // so it always showed the 1e-5 fallback whatever the release used (fixed 2026-10-16).
+      const delta = typeof sheet?.delta === 'number' ? sheet.delta : null
       const target = ctx.targetEps ?? 1.0
       return [
         { label: 'Proved Epsilon (ε)', value: typeof proved === 'number' ? proved.toFixed(4) : '—' },
         { label: 'Target Epsilon (ε)', value: target.toFixed(2) },
-        { label: 'Delta (δ)', value: delta.toExponential(1) },
+        { label: 'Delta (δ)', value: delta !== null ? delta.toExponential(1) : '—' },
         { label: 'Composition Method', value: 'RDP (Google dp_accounting)' },
         { label: 'Calibration Status', value: 'Conservative bracket' },
       ]

@@ -401,7 +401,10 @@ def test_upload_rejects_a_malformed_schema_without_a_500():
 
 def test_upload_store_is_bounded():
     """Uploaded tables must not accumulate for the lifetime of the process."""
-    from synthproof.api.main import _MAX_UPLOADS, _UPLOADS
+    from synthproof.api.context import MAX_UPLOADS as _MAX_UPLOADS
+
+    # The upload store of the app this client serves (another test may have rebuilt the default).
+    _UPLOADS = client.app.state.ctx.uploads
 
     csv = "a,b\n" + "".join(f"{i},{i}\n" for i in range(20))
     ids = []
@@ -461,13 +464,13 @@ def test_destructive_ledger_endpoints_are_refused_outside_demo_mode(monkeypatch)
     Against a file-backed ledger they would be unauthenticated remote primitives for
     rewriting a spend and deleting the entire history.
     """
-    # Patch where the GUARD reads it, not where it is re-exported. `_require_demo_ledger`
-    # lives in `synthproof.api.state` since the 2026-09-13 split, and patching the copy
-    # re-exported by `main` left the guard reading the real value -- the endpoints stayed
-    # open and this test went green against a service that had not been locked down at all.
-    import synthproof.api.state as api_state
+    # Patch where the GUARD reads it. Since the 2026-10-16 app factory that is the app's
+    # AppContext (`ctx.require_demo_ledger`). Twice before, this test patched a copy -- first the
+    # name `main` re-exported, then a module attribute -- and went green against a service that
+    # had not been locked down at all; the factory refactor caught the second one.
+    ctx = client.app.state.ctx
 
-    monkeypatch.setattr(api_state, "DEMO_MODE", False)
+    monkeypatch.setattr(ctx, "demo_mode", False)
     assert client.post("/api/ledger/reset").status_code == 403
     assert (
         client.post("/api/ledger/tamper", json={"entry_id": "x", "eps_spent": 0.1}).status_code
@@ -477,8 +480,8 @@ def test_destructive_ledger_endpoints_are_refused_outside_demo_mode(monkeypatch)
     # Demo mode on, but pointed at a persistent database: still refused. The path is a
     # sentinel that is never opened — the guard only compares it against ":memory:" — so it
     # deliberately avoids /tmp, which bandit flags as a hardcoded temp directory (B108).
-    monkeypatch.setattr(api_state, "DEMO_MODE", True)
-    monkeypatch.setattr(api_state, "_LEDGER_DB", "persistent-ledger.db")
+    monkeypatch.setattr(ctx, "demo_mode", True)
+    monkeypatch.setattr(ctx, "ledger_db", "persistent-ledger.db")
     assert client.post("/api/ledger/reset").status_code == 403
     assert (
         client.post("/api/ledger/tamper", json={"entry_id": "x", "eps_spent": 0.1}).status_code

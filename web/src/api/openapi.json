@@ -1,0 +1,2321 @@
+{
+  "components": {
+    "schemas": {
+      "AttackResult": {
+        "additionalProperties": false,
+        "properties": {
+          "advantage": {
+            "title": "Advantage",
+            "type": "number"
+          },
+          "attack_accuracy": {
+            "title": "Attack Accuracy",
+            "type": "number"
+          },
+          "auc": {
+            "title": "Auc",
+            "type": "number"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "num_test": {
+            "title": "Num Test",
+            "type": "integer"
+          },
+          "num_train": {
+            "title": "Num Train",
+            "type": "integer"
+          },
+          "tpr_at_1pct_fpr": {
+            "title": "Tpr At 1Pct Fpr",
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "auc",
+          "advantage",
+          "attack_accuracy",
+          "tpr_at_1pct_fpr",
+          "num_train",
+          "num_test",
+          "note"
+        ],
+        "title": "AttackResult",
+        "type": "object"
+      },
+      "AuditResult": {
+        "additionalProperties": false,
+        "properties": {
+          "accuracy": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Accuracy"
+          },
+          "audited_eps": {
+            "title": "Audited Eps",
+            "type": "number"
+          },
+          "auditor": {
+            "enum": [
+              "one_run",
+              "paired"
+            ],
+            "title": "Auditor",
+            "type": "string"
+          },
+          "ceiling": {
+            "title": "Ceiling",
+            "type": "number"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confidence"
+          },
+          "correct": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Correct"
+          },
+          "detects_leak_above": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detects Leak Above"
+          },
+          "fpr": {
+            "title": "Fpr",
+            "type": "number"
+          },
+          "fpr_upper": {
+            "title": "Fpr Upper",
+            "type": "number"
+          },
+          "guesses": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Guesses"
+          },
+          "num_canaries": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Num Canaries"
+          },
+          "num_holdout": {
+            "title": "Num Holdout",
+            "type": "integer"
+          },
+          "num_included": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Num Included"
+          },
+          "num_members": {
+            "title": "Num Members",
+            "type": "integer"
+          },
+          "p_value": {
+            "title": "P Value",
+            "type": "number"
+          },
+          "range_note": {
+            "title": "Range Note",
+            "type": "string"
+          },
+          "saturated": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Saturated"
+          },
+          "tpr": {
+            "title": "Tpr",
+            "type": "number"
+          },
+          "tpr_lower": {
+            "title": "Tpr Lower",
+            "type": "number"
+          }
+        },
+        "required": [
+          "audited_eps",
+          "p_value",
+          "auditor",
+          "ceiling",
+          "detects_leak_above",
+          "range_note",
+          "tpr",
+          "fpr",
+          "tpr_lower",
+          "fpr_upper",
+          "num_members",
+          "num_holdout"
+        ],
+        "title": "AuditResult",
+        "type": "object"
+      },
+      "Body_upload_api_upload_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_api_upload_post",
+        "type": "object"
+      },
+      "CapsuleExportRequest": {
+        "properties": {
+          "curator_name": {
+            "default": "SynthProof Autonomous Curator",
+            "title": "Curator Name",
+            "type": "string"
+          },
+          "records": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Records"
+          },
+          "sheet": {
+            "additionalProperties": true,
+            "title": "Sheet",
+            "type": "object"
+          }
+        },
+        "required": [
+          "sheet"
+        ],
+        "title": "CapsuleExportRequest",
+        "type": "object"
+      },
+      "CapsuleVerifyRequest": {
+        "properties": {
+          "html_content": {
+            "title": "Html Content",
+            "type": "string"
+          },
+          "key_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key Path"
+          }
+        },
+        "required": [
+          "html_content"
+        ],
+        "title": "CapsuleVerifyRequest",
+        "type": "object"
+      },
+      "CertificateVerifyRequest": {
+        "properties": {
+          "public_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Key"
+          },
+          "sheet": {
+            "additionalProperties": true,
+            "title": "Sheet",
+            "type": "object"
+          }
+        },
+        "required": [
+          "sheet"
+        ],
+        "title": "CertificateVerifyRequest",
+        "type": "object"
+      },
+      "Cloud": {
+        "additionalProperties": false,
+        "properties": {
+          "axes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Axes",
+            "type": "array"
+          },
+          "canaries": {
+            "items": {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "title": "Canaries",
+            "type": "array"
+          },
+          "explained_variance": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Explained Variance",
+            "type": "array"
+          },
+          "method": {
+            "enum": [
+              "pca",
+              "columns",
+              "unavailable"
+            ],
+            "title": "Method",
+            "type": "string"
+          },
+          "real": {
+            "items": {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "title": "Real",
+            "type": "array"
+          },
+          "synthetic": {
+            "items": {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "title": "Synthetic",
+            "type": "array"
+          }
+        },
+        "required": [
+          "axes",
+          "method",
+          "explained_variance",
+          "real",
+          "synthetic",
+          "canaries"
+        ],
+        "title": "Cloud",
+        "type": "object"
+      },
+      "Correlations": {
+        "additionalProperties": false,
+        "properties": {
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Columns",
+            "type": "array"
+          },
+          "real": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "title": "Real",
+            "type": "array"
+          },
+          "synth": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "title": "Synth",
+            "type": "array"
+          }
+        },
+        "required": [
+          "columns",
+          "real",
+          "synth"
+        ],
+        "title": "Correlations",
+        "type": "object"
+      },
+      "CroissantExportRequest": {
+        "properties": {
+          "sheet": {
+            "additionalProperties": true,
+            "title": "Sheet",
+            "type": "object"
+          }
+        },
+        "required": [
+          "sheet"
+        ],
+        "title": "CroissantExportRequest",
+        "type": "object"
+      },
+      "DatasetInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "bounds": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "maxItems": 2,
+                  "minItems": 2,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Bounds",
+            "type": "object"
+          },
+          "categorical": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categorical",
+            "type": "array"
+          },
+          "cols": {
+            "title": "Cols",
+            "type": "integer"
+          },
+          "has_schema": {
+            "title": "Has Schema",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "numerical": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Numerical",
+            "type": "array"
+          },
+          "rows": {
+            "title": "Rows",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "rows",
+          "cols",
+          "numerical",
+          "categorical",
+          "has_schema",
+          "bounds"
+        ],
+        "title": "DatasetInfo",
+        "type": "object"
+      },
+      "DatasetOption": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "built-in",
+              "demo",
+              "upload"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "rows": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rows"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "rows",
+          "kind",
+          "note"
+        ],
+        "title": "DatasetOption",
+        "type": "object"
+      },
+      "Datasets": {
+        "additionalProperties": false,
+        "properties": {
+          "datasets": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetOption"
+            },
+            "title": "Datasets",
+            "type": "array"
+          }
+        },
+        "required": [
+          "datasets"
+        ],
+        "title": "Datasets",
+        "type": "object"
+      },
+      "EvaluationContext": {
+        "additionalProperties": false,
+        "properties": {
+          "canary_fraction": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canary Fraction"
+          },
+          "caveat": {
+            "title": "Caveat",
+            "type": "string"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reference",
+          "canary_fraction",
+          "caveat"
+        ],
+        "title": "EvaluationContext",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Health": {
+        "additionalProperties": false,
+        "properties": {
+          "auth": {
+            "enum": [
+              "required",
+              "disabled"
+            ],
+            "title": "Auth",
+            "type": "string"
+          },
+          "auth_mode": {
+            "enum": [
+              "per-user",
+              "shared",
+              "disabled"
+            ],
+            "title": "Auth Mode",
+            "type": "string"
+          },
+          "auth_note": {
+            "title": "Auth Note",
+            "type": "string"
+          },
+          "demo_mode": {
+            "title": "Demo Mode",
+            "type": "boolean"
+          },
+          "ledger_head": {
+            "title": "Ledger Head",
+            "type": "string"
+          },
+          "ledger_verified": {
+            "title": "Ledger Verified",
+            "type": "boolean"
+          },
+          "mechanisms_available": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Mechanisms Available",
+            "type": "array"
+          },
+          "status": {
+            "const": "ok",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "auth",
+          "auth_mode",
+          "auth_note",
+          "demo_mode",
+          "ledger_verified",
+          "ledger_head",
+          "mechanisms_available"
+        ],
+        "title": "Health",
+        "type": "object"
+      },
+      "Histogram": {
+        "additionalProperties": false,
+        "properties": {
+          "edges": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Edges",
+            "type": "array"
+          },
+          "real": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Real",
+            "type": "array"
+          },
+          "real_out_of_range": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Real Out Of Range"
+          },
+          "synthetic": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Synthetic",
+            "type": "array"
+          },
+          "synthetic_out_of_range": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Synthetic Out Of Range"
+          }
+        },
+        "required": [
+          "edges",
+          "real",
+          "synthetic"
+        ],
+        "title": "Histogram",
+        "type": "object"
+      },
+      "LedgerEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "actor": {
+            "title": "Actor",
+            "type": "string"
+          },
+          "dataset_id": {
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "delta": {
+            "title": "Delta",
+            "type": "number"
+          },
+          "entry_id": {
+            "title": "Entry Id",
+            "type": "string"
+          },
+          "eps_spent": {
+            "title": "Eps Spent",
+            "type": "number"
+          },
+          "hash": {
+            "title": "Hash",
+            "type": "string"
+          },
+          "mechanism_name": {
+            "title": "Mechanism Name",
+            "type": "string"
+          },
+          "prev_hash": {
+            "title": "Prev Hash",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          },
+          "signature": {
+            "title": "Signature",
+            "type": "string"
+          },
+          "timestamp": {
+            "title": "Timestamp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry_id",
+          "prev_hash",
+          "hash",
+          "timestamp",
+          "dataset_id",
+          "run_id",
+          "mechanism_name",
+          "eps_spent",
+          "delta",
+          "seed",
+          "actor",
+          "signature"
+        ],
+        "title": "LedgerEntry",
+        "type": "object"
+      },
+      "LedgerRef": {
+        "additionalProperties": false,
+        "properties": {
+          "entry_id": {
+            "title": "Entry Id",
+            "type": "string"
+          },
+          "hash": {
+            "title": "Hash",
+            "type": "string"
+          },
+          "head": {
+            "title": "Head",
+            "type": "string"
+          },
+          "prev_hash": {
+            "title": "Prev Hash",
+            "type": "string"
+          },
+          "signature": {
+            "title": "Signature",
+            "type": "string"
+          },
+          "signature_note": {
+            "title": "Signature Note",
+            "type": "string"
+          },
+          "signed": {
+            "title": "Signed",
+            "type": "boolean"
+          },
+          "verified": {
+            "title": "Verified",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "entry_id",
+          "prev_hash",
+          "hash",
+          "signature",
+          "head",
+          "verified",
+          "signed",
+          "signature_note"
+        ],
+        "title": "LedgerRef",
+        "type": "object"
+      },
+      "LedgerReset": {
+        "additionalProperties": false,
+        "properties": {
+          "head": {
+            "title": "Head",
+            "type": "string"
+          },
+          "verified": {
+            "title": "Verified",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "verified",
+          "head"
+        ],
+        "title": "LedgerReset",
+        "type": "object"
+      },
+      "LedgerState": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/LedgerEntry"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "eps_by_actor": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Eps By Actor",
+            "type": "object"
+          },
+          "head": {
+            "title": "Head",
+            "type": "string"
+          },
+          "total_eps_spent": {
+            "title": "Total Eps Spent",
+            "type": "number"
+          },
+          "verified": {
+            "title": "Verified",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "verified",
+          "head",
+          "count",
+          "total_eps_spent",
+          "eps_by_actor",
+          "entries"
+        ],
+        "title": "LedgerState",
+        "type": "object"
+      },
+      "Measurements": {
+        "additionalProperties": false,
+        "properties": {
+          "attr_inference_accuracy": {
+            "title": "Attr Inference Accuracy",
+            "type": "number"
+          },
+          "attr_leakage_vs_conditional": {
+            "title": "Attr Leakage Vs Conditional",
+            "type": "number"
+          },
+          "audit_ceiling": {
+            "title": "Audit Ceiling",
+            "type": "number"
+          },
+          "audit_p": {
+            "title": "Audit P",
+            "type": "number"
+          },
+          "audited_eps": {
+            "title": "Audited Eps",
+            "type": "number"
+          },
+          "auditor": {
+            "enum": [
+              "one_run",
+              "paired"
+            ],
+            "title": "Auditor",
+            "type": "string"
+          },
+          "canary_fraction": {
+            "title": "Canary Fraction",
+            "type": "number"
+          },
+          "correlation_error": {
+            "title": "Correlation Error",
+            "type": "number"
+          },
+          "domias_auc": {
+            "title": "Domias Auc",
+            "type": "number"
+          },
+          "domias_tpr_at_1pct": {
+            "title": "Domias Tpr At 1Pct",
+            "type": "number"
+          },
+          "linkability_excess": {
+            "title": "Linkability Excess",
+            "type": "number"
+          },
+          "linkability_rate": {
+            "title": "Linkability Rate",
+            "type": "number"
+          },
+          "marginal_w1": {
+            "title": "Marginal W1",
+            "type": "number"
+          },
+          "mia_auc": {
+            "title": "Mia Auc",
+            "type": "number"
+          },
+          "pair_tvd": {
+            "title": "Pair Tvd",
+            "type": "number"
+          },
+          "proved_eps": {
+            "title": "Proved Eps",
+            "type": "number"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "singling_out_risk": {
+            "title": "Singling Out Risk",
+            "type": "number"
+          },
+          "structure_error_all": {
+            "title": "Structure Error All",
+            "type": "number"
+          },
+          "trtr_f1": {
+            "title": "Trtr F1",
+            "type": "number"
+          },
+          "tstr_f1": {
+            "title": "Tstr F1",
+            "type": "number"
+          },
+          "usefulness_multi": {
+            "title": "Usefulness Multi",
+            "type": "number"
+          },
+          "utility_source": {
+            "enum": [
+              "clean_fit",
+              "audit_fit"
+            ],
+            "title": "Utility Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "proved_eps",
+          "audited_eps",
+          "audit_p",
+          "tstr_f1",
+          "marginal_w1",
+          "trtr_f1",
+          "usefulness_multi",
+          "mia_auc",
+          "domias_auc",
+          "domias_tpr_at_1pct",
+          "singling_out_risk",
+          "linkability_rate",
+          "linkability_excess",
+          "attr_inference_accuracy",
+          "attr_leakage_vs_conditional",
+          "correlation_error",
+          "structure_error_all",
+          "pair_tvd",
+          "reference",
+          "auditor",
+          "audit_ceiling",
+          "utility_source",
+          "canary_fraction"
+        ],
+        "title": "Measurements",
+        "type": "object"
+      },
+      "MechanismInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "blurb": {
+            "title": "Blurb",
+            "type": "string"
+          },
+          "family": {
+            "enum": [
+              "baseline",
+              "structured",
+              "control",
+              "deep"
+            ],
+            "title": "Family",
+            "type": "string"
+          },
+          "implemented": {
+            "title": "Implemented",
+            "type": "boolean"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "unavailable_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unavailable Reason"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "family",
+          "blurb",
+          "implemented",
+          "available",
+          "unavailable_reason"
+        ],
+        "title": "MechanismInfo",
+        "type": "object"
+      },
+      "Mechanisms": {
+        "additionalProperties": false,
+        "properties": {
+          "attacks_not_implemented": {
+            "items": {
+              "$ref": "#/components/schemas/NotImplementedAttack"
+            },
+            "title": "Attacks Not Implemented",
+            "type": "array"
+          },
+          "mechanisms": {
+            "items": {
+              "$ref": "#/components/schemas/MechanismInfo"
+            },
+            "title": "Mechanisms",
+            "type": "array"
+          }
+        },
+        "required": [
+          "mechanisms",
+          "attacks_not_implemented"
+        ],
+        "title": "Mechanisms",
+        "type": "object"
+      },
+      "NotImplementedAttack": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "reason"
+        ],
+        "title": "NotImplementedAttack",
+        "type": "object"
+      },
+      "RunDoneFrame": {
+        "additionalProperties": false,
+        "properties": {
+          "attack": {
+            "$ref": "#/components/schemas/AttackResult"
+          },
+          "attacks_not_implemented": {
+            "items": {
+              "$ref": "#/components/schemas/NotImplementedAttack"
+            },
+            "title": "Attacks Not Implemented",
+            "type": "array"
+          },
+          "attacks_run": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Attacks Run",
+            "type": "array"
+          },
+          "audit": {
+            "$ref": "#/components/schemas/AuditResult"
+          },
+          "cloud": {
+            "$ref": "#/components/schemas/Cloud"
+          },
+          "correlations": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Correlations"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evaluation": {
+            "$ref": "#/components/schemas/EvaluationContext"
+          },
+          "histograms": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Histogram"
+            },
+            "title": "Histograms",
+            "type": "object"
+          },
+          "ledger": {
+            "$ref": "#/components/schemas/LedgerRef"
+          },
+          "measurements": {
+            "$ref": "#/components/schemas/Measurements"
+          },
+          "sample_records": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Sample Records",
+            "type": "array"
+          },
+          "sheet": {
+            "additionalProperties": true,
+            "title": "Sheet",
+            "type": "object"
+          },
+          "spends": {
+            "items": {
+              "$ref": "#/components/schemas/Spend"
+            },
+            "title": "Spends",
+            "type": "array"
+          }
+        },
+        "required": [
+          "measurements",
+          "sheet",
+          "sample_records",
+          "evaluation",
+          "audit",
+          "attack",
+          "attacks_run",
+          "attacks_not_implemented",
+          "cloud",
+          "histograms",
+          "correlations",
+          "spends",
+          "ledger"
+        ],
+        "title": "DoneFrame",
+        "type": "object"
+      },
+      "RunRequest": {
+        "properties": {
+          "dataset": {
+            "default": "toy",
+            "description": "'toy', 'adult', or an upload id.",
+            "title": "Dataset",
+            "type": "string"
+          },
+          "delta": {
+            "default": 1e-05,
+            "exclusiveMaximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Delta",
+            "type": "number"
+          },
+          "mechanism": {
+            "default": "pairwise",
+            "title": "Mechanism",
+            "type": "string"
+          },
+          "num_canaries": {
+            "default": 60,
+            "maximum": 500.0,
+            "minimum": 1.0,
+            "title": "Num Canaries",
+            "type": "integer"
+          },
+          "rows": {
+            "default": 2000,
+            "description": "Rows to release, declared in advance, and the subsample size.",
+            "maximum": 50000.0,
+            "minimum": 100.0,
+            "title": "Rows",
+            "type": "integer"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Noise seed. Leave it out and a secret one is drawn: anyone who can guess the seed can replay the release and test whether a record was in the input.",
+            "title": "Seed"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Categorical column the utility evaluation predicts. Omitted: `income` if present, else the table's last categorical column.",
+            "title": "Target"
+          },
+          "target_eps": {
+            "default": 1.0,
+            "exclusiveMinimum": 0.0,
+            "maximum": 64.0,
+            "title": "Target Eps",
+            "type": "number"
+          }
+        },
+        "title": "RunRequest",
+        "type": "object"
+      },
+      "RunStartFrame": {
+        "additionalProperties": false,
+        "properties": {
+          "correlation_cols": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Correlation Cols",
+            "type": "array"
+          },
+          "dataset": {
+            "$ref": "#/components/schemas/DatasetInfo"
+          },
+          "delta": {
+            "title": "Delta",
+            "type": "number"
+          },
+          "mechanism": {
+            "title": "Mechanism",
+            "type": "string"
+          },
+          "mechanism_label": {
+            "title": "Mechanism Label",
+            "type": "string"
+          },
+          "seed": {
+            "title": "Seed",
+            "type": "integer"
+          },
+          "target_col": {
+            "title": "Target Col",
+            "type": "string"
+          },
+          "target_eps": {
+            "title": "Target Eps",
+            "type": "number"
+          }
+        },
+        "required": [
+          "dataset",
+          "mechanism",
+          "mechanism_label",
+          "target_eps",
+          "delta",
+          "seed",
+          "target_col",
+          "correlation_cols"
+        ],
+        "title": "StartFrame",
+        "type": "object"
+      },
+      "Spend": {
+        "additionalProperties": false,
+        "properties": {
+          "computed_eps": {
+            "title": "Computed Eps",
+            "type": "number"
+          },
+          "marginal_eps": {
+            "title": "Marginal Eps",
+            "type": "number"
+          },
+          "mechanism": {
+            "title": "Mechanism",
+            "type": "string"
+          },
+          "noise_scale": {
+            "title": "Noise Scale",
+            "type": "number"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "sensitivity": {
+            "title": "Sensitivity",
+            "type": "number"
+          },
+          "steps": {
+            "title": "Steps",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "run_id",
+          "mechanism",
+          "noise_scale",
+          "sensitivity",
+          "steps",
+          "marginal_eps",
+          "computed_eps"
+        ],
+        "title": "Spend",
+        "type": "object"
+      },
+      "TamperRequest": {
+        "properties": {
+          "attack_type": {
+            "default": "modify_eps",
+            "title": "Attack Type",
+            "type": "string"
+          },
+          "entry_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry Id"
+          },
+          "eps_spent": {
+            "default": 0.01,
+            "title": "Eps Spent",
+            "type": "number"
+          }
+        },
+        "title": "TamperRequest",
+        "type": "object"
+      },
+      "TamperResult": {
+        "additionalProperties": false,
+        "properties": {
+          "attack_description": {
+            "title": "Attack Description",
+            "type": "string"
+          },
+          "attack_type": {
+            "title": "Attack Type",
+            "type": "string"
+          },
+          "broken_count": {
+            "title": "Broken Count",
+            "type": "integer"
+          },
+          "broken_from_index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Broken From Index"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "tampered_entry": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tampered Entry"
+          },
+          "verified": {
+            "title": "Verified",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "verified",
+          "reason",
+          "attack_type",
+          "attack_description",
+          "tampered_entry",
+          "broken_from_index",
+          "broken_count",
+          "explanation"
+        ],
+        "title": "TamperResult",
+        "type": "object"
+      },
+      "UploadResult": {
+        "additionalProperties": false,
+        "properties": {
+          "dataset": {
+            "$ref": "#/components/schemas/DatasetInfo"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "schema": {
+            "additionalProperties": true,
+            "title": "Schema",
+            "type": "object"
+          },
+          "schema_inferred": {
+            "title": "Schema Inferred",
+            "type": "boolean"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning"
+          }
+        },
+        "required": [
+          "id",
+          "dataset",
+          "schema",
+          "schema_inferred",
+          "warning"
+        ],
+        "title": "UploadResult",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Synthetic data that ships with its proof — console backend.",
+    "title": "SynthProof API"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/": {
+      "get": {
+        "description": "Serves the built React console, falling back to a pointer at the dev server.",
+        "operationId": "_serve_index__get",
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": " Serve Index"
+      }
+    },
+    "/api/capsule/export": {
+      "post": {
+        "description": "Exports a standalone HTML capsule carrying the data, the proofs and a verifier.",
+        "operationId": "export_capsule_endpoint_api_capsule_export_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapsuleExportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Capsule Endpoint"
+      }
+    },
+    "/api/capsule/verify": {
+      "post": {
+        "description": "Independently verifies an uploaded HTML capsule offline.",
+        "operationId": "verify_capsule_endpoint_api_capsule_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapsuleVerifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Capsule Endpoint"
+      }
+    },
+    "/api/certificate/verify": {
+      "post": {
+        "description": "Independently verifies a Privacy Data Sheet or Croissant 1.1 record.",
+        "operationId": "verify_certificate_endpoint_api_certificate_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CertificateVerifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Certificate Endpoint"
+      }
+    },
+    "/api/croissant/export": {
+      "post": {
+        "description": "Exports MLCommons Croissant 1.1 JSON-LD specification for a Privacy Data Sheet.",
+        "operationId": "export_croissant_endpoint_api_croissant_export_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CroissantExportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Croissant Endpoint"
+      }
+    },
+    "/api/datasets": {
+      "get": {
+        "description": "Lists the datasets this service can synthesise from.\n\n`rows` is null for anything not yet loaded rather than a literal. A hardcoded 30162 would\nkeep being reported after the pinned artefact or the drop-missing convention changed, and\nthe console has no way to notice — which is the same class of defect as a fabricated\nmetric, just in metadata.\n\nEach entry carries `id`, `label`, `rows`, `kind` and a `note` naming what the table is\ngood for; the toy table's note says outright that its columns are independent, so utility\nnumbers measured on it mean little.",
+        "operationId": "datasets_api_datasets_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Datasets"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Datasets"
+      }
+    },
+    "/api/health": {
+      "get": {
+        "description": "Readiness, and an honest statement of whether this service is protected.\n\nDeliberately unauthenticated: a readiness probe must not need a secret, and this is where\nan operator finds out whether the service is open. Reporting `auth: \"disabled\"` loudly is\nthe point — an open service that does not say so is worse than one that does.\n\nReturns `status`, `auth` (`required` | `disabled`), an `auth_note` spelling out the\nconsequence, `demo_mode`, `ledger_verified` and the ledger head.",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health"
+      }
+    },
+    "/api/ledger": {
+      "get": {
+        "description": "Returns the budget ledger and the result of verifying its chain.\n\n`verified` is the live result of re-hashing every entry and checking the signed head, not\na cached flag. The chain detects modification, insertion, reordering, replay and\ntruncation; it does not defend against an adversary holding the signing key.\n\nAn in-memory ledger signs with a per-process key; a file-backed one\n(SYNTHPROOF_LEDGER_DB) keeps its key in SYNTHPROOF_KEY_DIR, so its head verifies across\nrestarts. Each entry carries its `actor` -- the principal whose API key made the spend -- and\n`eps_by_actor` sums the spend per principal (naive sum: an upper bound, not a composition).",
+        "operationId": "get_ledger_api_ledger_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LedgerState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Ledger"
+      }
+    },
+    "/api/ledger/reset": {
+      "post": {
+        "description": "Clears the in-memory chain, so the tamper demo can be run again.",
+        "operationId": "reset_ledger_api_ledger_reset_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LedgerReset"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reset Ledger"
+      }
+    },
+    "/api/ledger/tamper": {
+      "post": {
+        "description": "Runs an adversarial attack straight against the SQLite file, to show tamper-evidence.",
+        "operationId": "tamper_api_ledger_tamper_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TamperRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TamperResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Tamper"
+      }
+    },
+    "/api/mechanisms": {
+      "get": {
+        "description": "Mechanisms this build can actually run, plus honest notes on the ones it cannot.",
+        "operationId": "mechanisms_api_mechanisms_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mechanisms"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Mechanisms"
+      }
+    },
+    "/api/run": {
+      "post": {
+        "description": "Runs one release and streams every stage as server-sent events.",
+        "operationId": "run_api_run_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "description": "Server-sent events: one `start`, then `stage` events, then `done` (or `error`).",
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/RunStartFrame"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RunDoneFrame"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run"
+      }
+    },
+    "/api/upload": {
+      "post": {
+        "description": "Accepts a CSV and registers it for this session.\n\nWithout a declared public schema the column kinds and numeric bounds are inferred FROM\nTHE DATA, which leaks and is not safe for a real release. The response says so, and the\nconsole is expected to surface that warning rather than bury it.",
+        "operationId": "upload_api_upload_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "schema_json",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Schema Json"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_api_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload"
+      }
+    }
+  }
+}

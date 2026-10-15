@@ -9,10 +9,16 @@ four hardcoded "PASSED" attack verdicts, including one for an attack that does n
 The run endpoint drives `frontier.experiment.run_cell` through its `on_stage` callback rather
 than reimplementing the pipeline. That is deliberate: three parallel pipelines already drifted
 apart in this repository, and a fourth living in the web layer would be the worst of them.
+
+APP FACTORY (2026-10-16). `create_app(ctx)` builds an application around an explicit
+`AppContext` (`api/context.py`); routes receive it by dependency injection. Importing this
+module does no work: `app` -- the default instance `uvicorn synthproof.api.main:app` serves -- is
+created on first access, from the environment.
 """
 
 import math
 import os
+from typing import List, Mapping, Optional
 
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
@@ -22,56 +28,31 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from synthproof import __version__
-from synthproof.api.routes import artifacts as artifacts_routes
-from synthproof.api.routes import datasets as datasets_routes
-from synthproof.api.routes import ledger as ledger_routes
-from synthproof.api.routes import run as run_routes
-from synthproof.api.state import (  # noqa: F401  (re-exported for tests)
-    _DEMO_DATASETS,
-    _MAX_UPLOAD_BYTES,
-    _MAX_UPLOAD_ROWS,
-    _MAX_UPLOADS,
-    _UPLOAD_CHUNK,
-    _UPLOADS,
-    API_KEY,
-    AUTH_ENABLED,
-    DEMO_MODE,
-    GLOBAL_LEDGER,
-    _init_demo_datasets,
-    _ledger_conn,
-    _register_upload,
-    _require_demo_ledger,
-    require_api_key,
-)
+from synthproof.api.context import AppContext, build_context
 
-app = FastAPI(
-    title="SynthProof API",
-    description="Synthetic data that ships with its proof — console backend.",
-    version=__version__,  # one source; this literal had drifted to 0.2.0
-)
+_here = os.path.dirname(__file__)
+# `static/` holds the hand-written legacy console, which is a tracked source file.
+# `console/` holds the built React console and is a generated directory (gitignored).
+static_dir = os.path.join(_here, "static")
+console_dir = os.path.join(_here, "console")
 
-# Wildcard origins with credentials is rejected by browsers and unsafe besides. Credentials
-# stay off: this service authenticates with a header, not a cookie, so there is nothing for a
-# browser to attach automatically and nothing for CSRF to abuse.
-#
-# The wildcard is narrowed once a key is configured. SYNTHPROOF_CORS_ORIGINS takes a
-# comma-separated list; it defaults to the dev console's origin rather than "*", because a
-# deployment with a key should not also be reachable from any page on the internet.
-_CORS = os.environ.get("SYNTHPROOF_CORS_ORIGINS", "").strip()
-if _CORS:
-    _ALLOWED_ORIGINS = [o.strip() for o in _CORS.split(",") if o.strip()]
-elif os.environ.get("SYNTHPROOF_API_KEY", "").strip():
-    _ALLOWED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
-else:
-    _ALLOWED_ORIGINS = ["*"]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=_ALLOWED_ORIGINS,
-    allow_credentials=False,
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
+def allowed_origins(env: Mapping[str, str]) -> List[str]:
+    """CORS origins.
+
+    Wildcard origins with credentials is rejected by browsers and unsafe besides. Credentials stay
+    off: this service authenticates with a header, not a cookie, so there is nothing for a browser
+    to attach automatically and nothing for CSRF to abuse. The wildcard is narrowed once a key is
+    configured: SYNTHPROOF_CORS_ORIGINS takes a comma-separated list and otherwise defaults to the
+    dev console's origin, because a deployment with a key should not also be reachable from any
+    page on the internet.
+    """
+    cors = env.get("SYNTHPROOF_CORS_ORIGINS", "").strip()
+    if cors:
+        return [o.strip() for o in cors.split(",") if o.strip()]
+    if env.get("SYNTHPROOF_API_KEY", "").strip() or env.get("SYNTHPROOF_API_KEYS", "").strip():
+        return ["http://localhost:5173", "http://127.0.0.1:5173"]
+    return ["*"]
 
 
 def _finite(value):
@@ -85,7 +66,6 @@ def _finite(value):
     return value
 
 
-@app.exception_handler(RequestValidationError)
 async def _validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
     """A 422 that can always be serialised.
 
@@ -99,34 +79,7 @@ async def _validation_error(request: Request, exc: RequestValidationError) -> JS
     )
 
 
-app.include_router(run_routes.router)
-app.include_router(datasets_routes.router)
-app.include_router(ledger_routes.router)
-app.include_router(artifacts_routes.router)
-
-# --------------------------------------------------------------------------- static
-
-_here = os.path.dirname(__file__)
-
-# `static/` holds the hand-written legacy console, which is a tracked source file.
-# `console/` holds the built React console and is a generated directory (gitignored).
-static_dir = os.path.join(_here, "static")
-console_dir = os.path.join(_here, "console")
-os.makedirs(static_dir, exist_ok=True)
-
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
-
-# Vite emits absolute `/assets/...` URLs so the dev server and a production build use
-# identical paths. Mounting the built asset directory at that same path lets this service
-# serve the console unchanged, rather than forcing a `base` override that could only ever be
-# correct in one of the two environments.
-_assets_dir = os.path.join(console_dir, "assets")
-if os.path.isdir(_assets_dir):
-    app.mount("/assets", StaticFiles(directory=_assets_dir), name="assets")
-
-
-@app.get("/", response_class=HTMLResponse)
-def serve_index():
+def _serve_index():
     """Serves the built React console, falling back to a pointer at the dev server."""
     built = os.path.join(console_dir, "index.html")
     if os.path.exists(built):
@@ -146,3 +99,101 @@ def serve_index():
         "<p>API docs: <a href='/docs'>/docs</a> · "
         "Legacy console: <a href='/static/index.html'>/static/index.html</a></p>"
     )
+
+
+def create_app(
+    ctx: Optional[AppContext] = None, env: Optional[Mapping[str, str]] = None
+) -> FastAPI:
+    """An application around `ctx` (built from `env`, default os.environ, when not given)."""
+    from synthproof.api.routes import artifacts, datasets, ledger, run
+
+    env = os.environ if env is None else env
+    application = FastAPI(
+        title="SynthProof API",
+        description="Synthetic data that ships with its proof — console backend.",
+        version=__version__,  # one source; this literal had drifted to 0.2.0
+    )
+    application.state.ctx = ctx if ctx is not None else build_context(env)
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins(env),
+        allow_credentials=False,
+        allow_methods=["GET", "POST"],
+        allow_headers=["*"],
+    )
+    application.add_exception_handler(RequestValidationError, _validation_error)  # type: ignore[arg-type]
+    for module in (run, datasets, ledger, artifacts):
+        application.include_router(module.router)
+
+    os.makedirs(static_dir, exist_ok=True)
+    application.mount("/static", StaticFiles(directory=static_dir), name="static")
+    # Vite emits absolute `/assets/...` URLs so the dev server and a production build use
+    # identical paths. Mounting the built asset directory at that same path lets this service
+    # serve the console unchanged.
+    assets_dir = os.path.join(console_dir, "assets")
+    if os.path.isdir(assets_dir):
+        application.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+    application.get("/", response_class=HTMLResponse)(_serve_index)
+    application.openapi = lambda: _openapi_with_stream_frames(application)  # type: ignore[method-assign]
+    return application
+
+
+def _openapi_with_stream_frames(application: FastAPI) -> dict:
+    """The OpenAPI document, plus the run stream's frame schemas.
+
+    FastAPI cannot infer the body of a server-sent-event stream, so `/api/run` would document
+    nothing the console actually consumes. The start and done frames are added as named
+    components and referenced from the endpoint, so the console's generated types cover them.
+    """
+    if application.openapi_schema:
+        return application.openapi_schema
+    from fastapi.openapi.utils import get_openapi
+
+    from synthproof.api.schemas import STREAM_FRAMES
+
+    spec = get_openapi(
+        title=application.title,
+        version=application.version,
+        description=application.description,
+        routes=application.routes,
+    )
+    components = spec.setdefault("components", {}).setdefault("schemas", {})
+    for name, model in STREAM_FRAMES.items():
+        schema = model.model_json_schema(ref_template="#/components/schemas/{model}")
+        components.update(schema.pop("$defs", {}))
+        components[name] = schema
+    run_op = spec["paths"]["/api/run"]["post"]
+    run_op["responses"]["200"]["content"] = {
+        "text/event-stream": {
+            "schema": {
+                "description": "Server-sent events: one `start`, then `stage` events, then "
+                "`done` (or `error`).",
+                "oneOf": [{"$ref": f"#/components/schemas/{n}"} for n in STREAM_FRAMES],
+            }
+        }
+    }
+    application.openapi_schema = spec
+    return spec
+
+
+# A reload (`importlib.reload`) re-executes this module in its old namespace; drop any default
+# instance built under the previous configuration so the next access rebuilds it.
+globals().pop("app", None)
+
+
+def __getattr__(name: str):
+    """The default `app`, built on first access; and compatibility names for older callers."""
+    if name == "app":
+        from synthproof.api import state
+
+        instance = create_app(state.default_context())
+        globals()["app"] = instance
+        return instance
+    if name == "_ALLOWED_ORIGINS":
+        return allowed_origins(os.environ)
+    from synthproof.api import state
+
+    try:
+        return getattr(state, name)
+    except AttributeError:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from None

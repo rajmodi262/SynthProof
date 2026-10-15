@@ -1,164 +1,38 @@
-// Mirrors the FastAPI response shapes. Kept explicit rather than generated, so a change
-// on the server surfaces as a type error here instead of an undefined at runtime.
+// The API's response shapes. Generated, not hand-written: `src/api/schema.d.ts` is produced
+// from the server's OpenAPI document (synthproof/api/schemas.py -> scripts/export_openapi.py ->
+// `npm run gen:api`), and CI fails if it is stale. These were hand-written until 2026-10-16 and
+// had drifted from the server: no `demo` dataset kind, no ledger `actor`, no `attacks_run`, ten
+// measurement fields missing.
+import type { components } from './api/schema'
 
-export interface DatasetInfo {
-  name: string
-  rows: number
-  cols: number
-  numerical: string[]
-  categorical: string[]
-  has_schema: boolean
-  bounds: Record<string, [number, number] | null>
-}
+type Schemas = components['schemas']
 
-export interface DatasetOption {
-  id: string
-  label: string
-  rows: number | null
-  kind: 'built-in' | 'upload'
-  note: string | null
-}
-
-export interface Mechanism {
-  key: string
-  label: string
-  family: 'baseline' | 'structured' | 'control' | 'deep'
-  blurb: string
-  implemented: boolean
-  available: boolean
-  unavailable_reason: string | null
-}
-
-export interface NotImplementedAttack {
-  name: string
-  reason: string
-}
-
-export interface Measurements {
-  proved_eps: number
-  audited_eps: number
-  audit_p: number
-  tstr_f1: number
-  trtr_f1: number
-  mia_auc: number
-  correlation_error: number
-  /** Which table utility and structure were scored against. */
-  reference: string
-  /** 'clean_fit' when utility came from a second, canary-free fit. */
-  utility_source: string
-  /** Planted canaries as a fraction of the fit split — how contaminated the fit was. */
-  canary_fraction: number
-}
-
+export type DatasetInfo = Schemas['DatasetInfo']
+export type DatasetOption = Schemas['DatasetOption']
+export type Mechanism = Schemas['MechanismInfo']
+export type NotImplementedAttack = Schemas['NotImplementedAttack']
+export type Measurements = Schemas['Measurements']
 /** How to read `correlation_error` and the utility figures honestly. */
-export interface EvaluationContext {
-  reference: string
-  canary_fraction: number | null
-  caveat: string
-}
-
-export interface AuditResult {
-  auditor?: 'one_run' | 'paired'
-  audited_eps: number
-  tpr?: number
-  fpr?: number
-  tpr_lower?: number
-  fpr_upper?: number
-  p_value: number
-  num_members?: number
-  num_holdout?: number
-  confidence?: number
-  ceiling: number
-  saturated?: boolean
-  correct?: number
-  guesses?: number
-  accuracy?: number
-  num_canaries?: number
-  num_included?: number
-  detects_leak_above: number | null
-  range_note: string
-}
-
-export interface AttackResult {
-  name: string
-  auc: number
-  advantage: number
-  attack_accuracy: number
-  tpr_at_1pct_fpr: number
-  num_train: number
-  num_test: number
-  note: string
-}
+export type EvaluationContext = Schemas['EvaluationContext']
+export type AuditResult = Schemas['AuditResult']
+export type AttackResult = Schemas['AttackResult']
+export type Cloud = Schemas['Cloud']
+export type Histogram = Schemas['Histogram']
+export type Spend = Schemas['Spend']
+export type LedgerRef = Schemas['LedgerRef']
+/** The run stream's final `done` frame. */
+export type RunResult = Schemas['RunDoneFrame']
+export type TamperResult = Schemas['TamperResult']
+/** The run stream's `start` frame. */
+export type StartEvent = Schemas['RunStartFrame']
+export type LedgerEntry = Schemas['LedgerEntry']
+export type LedgerState = Schemas['LedgerState']
+export type UploadResult = Schemas['UploadResult']
+export type RunRequest = Schemas['RunRequest']
 
 export type Point3 = [number, number, number]
 
-export interface Cloud {
-  axes: string[]
-  method: 'pca' | 'columns' | 'unavailable'
-  explained_variance: number[]
-  real: Point3[]
-  synthetic: Point3[]
-  canaries: Point3[]
-}
-
-export interface Histogram {
-  edges: number[]
-  real: number[]
-  synthetic: number[]
-  /** Fraction of synthetic values falling outside the real column's range. */
-  synthetic_out_of_range?: number
-  real_out_of_range?: number
-}
-
-export interface Spend {
-  run_id: string | null
-  mechanism: string
-  noise_scale: number
-  sensitivity: number
-  steps: number
-  marginal_eps: number
-  computed_eps: number
-}
-
-export interface LedgerRef {
-  entry_id: string
-  prev_hash: string
-  hash: string
-  signature: string
-  head: string
-  verified: boolean
-  signed: boolean
-  signature_note: string
-}
-
-export interface RunResult {
-  measurements: Measurements
-  evaluation: EvaluationContext
-  audit: AuditResult
-  attack: AttackResult
-  attacks_not_implemented: NotImplementedAttack[]
-  cloud: Cloud
-  histograms: Record<string, Histogram>
-  /** Pearson matrices of the real fit split and the release; null with < 2 numeric columns. */
-  correlations?: { columns: string[]; real: number[][]; synth: number[][] } | null
-  spends: Spend[]
-  ledger: LedgerRef
-  sheet?: Record<string, any>
-  sample_records?: Record<string, any>[]
-}
-
 export type AttackType = 'modify_eps' | 'truncate' | 'corrupt_hash' | 'corrupt_signature'
-
-export interface TamperResult {
-  verified: boolean
-  reason?: string | null
-  attack_type?: string
-  attack_description?: string
-  tampered_entry: string
-  broken_from_index: number | null
-  broken_count: number
-  explanation: string
-}
 
 /**
  * Colour only. There is deliberately no "safe" outcome: the verdict answers whether an audit
@@ -166,6 +40,8 @@ export interface TamperResult {
  */
 export type RangeTone = 'ok' | 'warn' | 'fail'
 
+// The certificate verifier returns two shapes (a verdict, or an error record) and is not yet in
+// the generated contract; this type is still kept by hand.
 export interface CertificateVerifyResult {
   signature_valid: boolean
   publisher_authenticated: boolean
@@ -188,19 +64,7 @@ export interface CertificateVerifyResult {
   }
 }
 
-
-export interface StartEvent {
-  dataset: DatasetInfo
-  mechanism: string
-  mechanism_label: string
-  target_eps: number
-  delta: number
-  seed: number
-  target_col: string
-  correlation_cols: string[]
-}
-
-/** Pipeline stages, in the order the server emits them. */
+/** Pipeline stages, in the order the server emits them (synthproof/frontier/experiment.py). */
 export const STAGE_ORDER = [
   'split',
   'budget',
@@ -213,6 +77,9 @@ export const STAGE_ORDER = [
   'utility',
   'attack',
   'attack_domias',
+  'attack_singling_out',
+  'attack_linkability',
+  'attack_attribute_inference',
 ] as const
 
 export type StageName = (typeof STAGE_ORDER)[number]
@@ -220,45 +87,4 @@ export type StageName = (typeof STAGE_ORDER)[number]
 export interface StageEvent {
   stage: StageName
   [key: string]: unknown
-}
-
-export interface LedgerEntry {
-  entry_id: string
-  prev_hash: string
-  hash: string
-  timestamp: string
-  dataset_id: string
-  run_id: string
-  mechanism_name: string
-  eps_spent: number
-  delta: number
-  seed: number
-  signature: string
-}
-
-export interface LedgerState {
-  verified: boolean
-  head: string
-  count: number
-  total_eps_spent: number
-  entries: LedgerEntry[]
-}
-
-export interface UploadResult {
-  id: string
-  dataset: DatasetInfo
-  schema: unknown
-  schema_inferred: boolean
-  warning: string | null
-}
-
-export interface RunRequest {
-  dataset: string
-  mechanism: string
-  target_eps: number
-  delta: number
-  /** null: the API draws a secret seed and never writes it to the sheet. */
-  seed: number | null
-  num_canaries: number
-  rows: number
 }

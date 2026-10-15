@@ -48,6 +48,7 @@ const LEDGER: LedgerState = {
   head: 'a'.repeat(64),
   count: 2,
   total_eps_spent: 1.25,
+  eps_by_actor: { anonymous: 1.25 },
   entries: [
     {
       entry_id: 'e1',

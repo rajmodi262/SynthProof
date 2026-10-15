@@ -100,8 +100,9 @@ max-statements = 60
 # B008 flags function calls in argument defaults. FastAPI's dependency injection is
 # *expressed* that way — `file: UploadFile = File(...)` is the documented idiom, not an
 # accident — so the rule does not apply to route handlers. Followed the upload handler from
-# api/main.py to api/routes/datasets.py in the 2026-09-13 split.
-"synthproof/api/routes/datasets.py" = ["B008"]
+# api/main.py to api/routes/datasets.py in the 2026-09-13 split, and covers every route since the
+# 2026-10-16 app factory injects the AppContext the same way (`ctx = Depends(get_context)`).
+"synthproof/api/routes/*.py" = ["B008"]
 # Experiment runners and tests are linear procedures -- set up, run a grid, write a file -- and
 # splitting them into helpers would only scatter one protocol across a file. The complexity
 # budget is for the library.

@@ -212,6 +212,15 @@ jobs:
       - name: Install
         run: npm ci
 
+      # The console's types are GENERATED from the API's OpenAPI document (synthproof/api/
+      # schemas.py -> scripts/export_openapi.py -> web/src/api/openapi.json -> schema.d.ts). The
+      # Python side checks the document is current (tests/test_api_contract.py); this checks the
+      # TypeScript was regenerated from it. Then `tsc` checks the console against that contract.
+      - name: Generated API types match the committed OpenAPI document
+        run: |
+          npm run gen:api
+          git diff --exit-code -- src/api/schema.d.ts
+
       - name: Type check
         run: npx tsc --noEmit
 
