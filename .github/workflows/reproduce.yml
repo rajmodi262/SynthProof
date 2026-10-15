@@ -66,6 +66,12 @@ jobs:
             results/auditor_comparison.json \
             results/selection_ablation.json | tee compare.txt
 
+      - name: Empirical DP test, every mechanism including AIM and DP-VAE
+        # Too slow for every push (AIM ~13 min); the fast mechanisms and MST run per push.
+        env:
+          SYNTHPROOF_EMPIRICAL_DP_FULL: "1"
+        run: pytest tests/test_empirical_dp.py -q --no-cov
+
       - name: Documents still trace to results, tables still generated
         run: |
           python scripts/check_number_provenance.py
