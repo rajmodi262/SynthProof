@@ -41,7 +41,10 @@ def broken_links(path: Path) -> List[Tuple[int, str]]:
             if not rel:
                 continue
             resolved = (ROOT / rel.lstrip("/")) if rel.startswith("/") else (path.parent / rel)
-            if not resolved.exists():
+            # A link that leaves the repository resolves on one machine and not on another (it
+            # passed locally and failed in CI on 2026-10-16), so it counts as broken.
+            inside = resolved.resolve().is_relative_to(ROOT.resolve())
+            if not inside or not resolved.exists():
                 bad.append((i, target))
     return bad
 

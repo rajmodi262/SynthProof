@@ -71,7 +71,7 @@ runs `git log` — it takes ten seconds.
 | Commits carrying `Co-Authored-By: Claude Opus 5` | **146 of 151 — 97%** in code; **13 of 13** outer |
 | Commits by the other three named members | **0** |
 
-See [`../../../CONTRIBUTIONS.md`](../../../CONTRIBUTIONS.md), which records this with the
+See `CONTRIBUTIONS.md` in the capstone folder (outside this repository, not versioned here), which records this with the
 commands that reproduce it.
 
 ### The honest answer

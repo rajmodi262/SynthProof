@@ -161,16 +161,22 @@ def test_croissant_export_writes_a_record_for_a_real_sheet(tmp_path, monkeypatch
 def test_run_refuses_a_table_below_the_row_floor_and_says_why(tmp_path):
     """The refusal path is a FEATURE, and the console now demonstrates it deliberately.
 
-    400 rows is below the 500-row floor. The command must exit non-zero, name the rule, and
-    say what the user can do -- not merely decline.
+    100 rows is well below the 500-row floor. The command must exit non-zero, name the rule,
+    and say what the user can do -- not merely decline.
+
+    The gate judges a NOISY row count (2% of the budget, discrete Laplace with scale 50 at
+    eps=1), so a table near the floor is refused only probabilistically -- by design, since an
+    exact refusal would announce the private count. This used 400 rows, which reads as >= 500
+    about 7% of the time, and it failed CI on 2026-10-16. 100 rows and a fixed seed make it
+    deterministic (a false pass would need +400, probability ~2e-4 even unseeded).
     """
     rng = np.random.default_rng(0)
     p = tmp_path / "tiny.csv"
-    pd.DataFrame({"age": rng.integers(18, 90, 400), "label": rng.choice(["a", "b"], 400)}).to_csv(
+    pd.DataFrame({"age": rng.integers(18, 90, 100), "label": rng.choice(["a", "b"], 100)}).to_csv(
         p, index=False
     )
 
-    r = CliRunner().invoke(main, ["run", "--input", str(p), "--eps", "1.0"])
+    r = CliRunner().invoke(main, ["run", "--input", str(p), "--eps", "1.0", "--seed", "0"])
     assert r.exit_code != 0
     assert "REFUSE" in r.output
     assert "500" in r.output
