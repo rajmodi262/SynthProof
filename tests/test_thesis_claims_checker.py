@@ -60,7 +60,10 @@ def _fires(label: str, prose: str, tmp_dir: Path | None = None) -> bool:
         ("The ledger supports cross-release composition.", "cross-release"),
         ("We derive the ceiling, which is our contribution.", "ceiling-as-ours"),
         ("Our refusal gate is novel.", "refusal-novel"),
-        ("We implemented LiRA and report its AUC.", "lira-as-ours"),
+        (
+            "Our nearest-neighbour distance attack is LiRA and reports an AUC of 0.61.",
+            "lira-misnamed",
+        ),
     ],
 )
 def test_a_dead_claim_is_caught(tmp_path, text, expected):
@@ -88,12 +91,23 @@ def test_citing_lira_as_prior_work_is_fine(tmp_path):
         "Carlini et al. [2022] substantially strengthened this with LiRA, which fits "
         "per-example Gaussians to the IN and OUT score distributions."
     )
-    assert "lira-as-ours" not in labels(check(_write(tmp_path, text)))
+    assert "lira-misnamed" not in labels(check(_write(tmp_path, text)))
 
 
 def test_saying_lira_is_not_implemented_is_fine(tmp_path):
     text = "We did not implement LiRA; it is not present in the codebase."
-    assert "lira-as-ours" not in labels(check(_write(tmp_path, text)))
+    assert "lira-misnamed" not in labels(check(_write(tmp_path, text)))
+
+
+def test_reporting_the_real_lira_is_fine(tmp_path):
+    """attacks/lira.py is implemented (0faf463); reporting its results must not be flagged."""
+    text = "We ran LiRA (attacks/lira.py) at 64 shadows and report AUC 0.51 for pairwise."
+    assert "lira-misnamed" not in labels(check(_write(tmp_path, text)))
+
+
+def test_the_distance_baseline_is_not_lira(tmp_path):
+    text = "The nearest-neighbour distance baseline is NOT LiRA."
+    assert "lira-misnamed" not in labels(check(_write(tmp_path, text)))
 
 
 def test_blockquoted_text_is_exempt(tmp_path):
@@ -437,7 +451,7 @@ def test_a_correctly_written_retraction_is_not_flagged(prose):
         # A reference row cites a paper; it does not claim authorship of it.
         (
             "| carlini2022 | Membership Inference Attacks From First Principles (LiRA) |",
-            "lira-as-ours",
+            "lira-misnamed",
         ),
     ],
 )
@@ -449,7 +463,10 @@ def test_questions_quotations_and_citations_are_not_assertions(prose, label):
     "prose,label",
     [
         ("Our refusal gate is novel.", "refusal-novel"),
-        ("We implemented LiRA and report its AUC.", "lira-as-ours"),
+        (
+            "Our nearest-neighbour distance attack is LiRA and reports an AUC of 0.61.",
+            "lira-misnamed",
+        ),
     ],
 )
 def test_the_guard_does_not_swallow_a_real_assertion(prose, label):
@@ -515,7 +532,7 @@ def test_a_document_of_dead_claims_is_still_caught_wholesale():
             "We are the first system to ship both bounds.",
             "The ledger is append-only.",
             "Our refusal gate is novel.",
-            "We implemented LiRA and report its AUC.",
+            "Our nearest-neighbour distance attack is LiRA and reports an AUC of 0.61.",
             "We derive the ceiling, which is our contribution.",
             "The clique-selection confound is our strongest result.",
             "Charging domain profiling is our contribution.",
@@ -526,7 +543,7 @@ def test_a_document_of_dead_claims_is_still_caught_wholesale():
         "first-to",
         "append-only",
         "refusal-novel",
-        "lira-as-ours",
+        "lira-misnamed",
         "ceiling-as-ours",
         "clique-confound-as-finding",
         "profiling-novel",

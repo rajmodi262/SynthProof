@@ -413,6 +413,67 @@ def h1_confirmatory_table() -> str:
     return "\n".join(rows)
 
 
+def lira_w10_table() -> str:
+    """LiRA at 64 shadows (W10b): results/lira_w10.json."""
+    d = _load("results/lira_w10.json")
+    rows = [
+        "| Mechanism | eps | AUC [95% CI] | TPR @ 1% FPR | TPR @ 10% FPR | targets | shadows |",
+        "|---|---:|---|---:|---:|---:|---:|",
+    ]
+    for r in d["rows"]:
+        lo, hi = r["auc_ci_95"]
+        eps = "control" if r["target_eps"] is None else f"{r['target_eps']:g}"
+        rows.append(
+            f"| `{r['mechanism']}` | {eps} | {r['auc']:.3f} [{lo:.3f}, {hi:.3f}] | "
+            f"{r['tpr_at_1pct_fpr']:.3f} | {r['tpr_at_10pct_fpr']:.3f} | {r['num_targets']} | "
+            f"{r['num_shadows']} |"
+        )
+    rows.append("")
+    rows.append(
+        f"*Generated from `results/lira_w10.json`; preregistration SHA-256 "
+        f"{d['preregistration_sha256'][:12]}...*"
+    )
+    return "\n".join(rows)
+
+
+def h2_w10_table() -> str:
+    """H2 with 4000 canaries and 10 seeds (W10b): results/h2_w10.json and its analysis."""
+    raw = _load("results/h2_w10.json")
+    an = _load("results/h2_w10_analysis.json")
+    rows = [
+        "| Attribute | subgroup | eps | canaries | ceiling | audited eps, mean over seeds "
+        "| max over seeds | mean accuracy |",
+        "|---|---|---:|---:|---:|---:|---:|---:|",
+    ]
+    for c in raw["cells"]:
+        for g in c["subgroups"]:
+            rows.append(
+                f"| {c['attribute']} | {g['subgroup']} | {c['target_eps']:g} | "
+                f"{g['num_canaries']} | {g['ceiling']:.2f} | {g['mean_audited_eps']:.4f} | "
+                f"{g['max_audited_eps']:.4f} | "
+                f"{g['mean_accuracy']:.4f} |"
+            )
+    m = an["multiplicity"]
+    n_tests = len(m["labels"])
+    n_equiv = sum(1 for e in an["equivalence"] if e["equivalent"])
+    det = an["detectability"]
+    rows.append("")
+    rows.append(
+        f"**{n_tests} subgroup tests; surviving Benjamini-Hochberg: "
+        f"{sum(m['bh_reject'])}; surviving Bonferroni: {sum(m['bonferroni_reject'])}. "
+        f"Equivalent to chance within the pre-specified margin: {n_equiv} of {n_tests}.** "
+        f"Largest subgroup mean audited eps {det['observed_max_epsilon']:.4f} against a ceiling of "
+        f"{det['ceiling']:.2f} at {det['num_canaries']} canaries per subgroup."
+    )
+    rows.append("")
+    rows.append(
+        f"*Generated from `results/h2_w10.json` and `results/h2_w10_analysis.json`; "
+        f"{raw['total_canaries']} canaries, {len(raw['seeds'])} seeds; preregistration SHA-256 "
+        f"{raw['preregistration_sha256'][:12]}...*"
+    )
+    return "\n".join(rows)
+
+
 BLOCKS: List[Tuple[str, str, Callable[[], str]]] = [
     ("results/ADVERSARY_COMPARISON.md", "adversary-table", adversary_table),
     ("results/SELECTION_ABLATION.md", "selection-table-adult", selection_table_adult),
@@ -425,6 +486,8 @@ BLOCKS: List[Tuple[str, str, Callable[[], str]]] = [
     ("results/H1_RESULTS.md", "h1-trend-table", h1_trend_table),
     ("results/H1_RESULTS.md", "h1-ratio-table", h1_ratio_table),
     ("results/H1_CONFIRMATORY.md", "h1-confirmatory-table", h1_confirmatory_table),
+    ("results/LIRA_H2_W10.md", "lira-w10-table", lira_w10_table),
+    ("results/LIRA_H2_W10.md", "h2-w10-table", h2_w10_table),
     (
         "research/imputation_audit/RESULTS.md",
         "imputation-arms-table",

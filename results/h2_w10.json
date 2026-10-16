@@ -1,0 +1,203 @@
+{
+  "dataset": "adult",
+  "dataset_label": "UCI Adult",
+  "n_rows": 6000,
+  "mechanism": "pairwise",
+  "attributes": [
+    "sex",
+    "race"
+  ],
+  "total_canaries": 4000,
+  "preregistration_sha256": "2bf68c5a6673258eb92d6ff33427c91cba2a5324bd093de591ebe16a3f83d329",
+  "eps_grid": [
+    1.0,
+    8.0
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "cells": [
+    {
+      "attribute": "sex",
+      "target_eps": 1.0,
+      "proved_eps": 0.8999525405671134,
+      "subgroups": [
+        {
+          "subgroup": "Female",
+          "population_share": 0.31966666666666665,
+          "num_canaries": 2000,
+          "ceiling": 6.502964732625312,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.49870000000000003,
+          "mean_p_value": 0.5449335264780241
+        },
+        {
+          "subgroup": "Male",
+          "population_share": 0.6803333333333333,
+          "num_canaries": 2000,
+          "ceiling": 6.502964732625312,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.50225,
+          "mean_p_value": 0.44474939056532026
+        }
+      ],
+      "interpretation": "UNMEASURABLE at this scale. No subgroup produced a positive bound; the per-subgroup ceilings run 6.50-6.50, so this says the instrument cannot resolve subgroup differences here, not that none exist."
+    },
+    {
+      "attribute": "sex",
+      "target_eps": 8.0,
+      "proved_eps": 7.199472272244624,
+      "subgroups": [
+        {
+          "subgroup": "Female",
+          "population_share": 0.31966666666666665,
+          "num_canaries": 2000,
+          "ceiling": 6.502964732625312,
+          "mean_audited_eps": 0.0001445566838650424,
+          "max_audited_eps": 0.001445566838650424,
+          "mean_accuracy": 0.4960000000000001,
+          "mean_p_value": 0.5953728057025949
+        },
+        {
+          "subgroup": "Male",
+          "population_share": 0.6803333333333333,
+          "num_canaries": 2000,
+          "ceiling": 6.502964732625312,
+          "mean_audited_eps": 0.0027461604716366083,
+          "max_audited_eps": 0.027461604716366085,
+          "mean_accuracy": 0.50175,
+          "mean_p_value": 0.4750408692588158
+        }
+      ],
+      "interpretation": "UNMEASURABLE at this scale. No subgroup produced a positive bound; the per-subgroup ceilings run 6.50-6.50, so this says the instrument cannot resolve subgroup differences here, not that none exist."
+    },
+    {
+      "attribute": "race",
+      "target_eps": 1.0,
+      "proved_eps": 0.8999525405671134,
+      "subgroups": [
+        {
+          "subgroup": "Amer-Indian-Eskimo",
+          "population_share": 0.009833333333333333,
+          "num_canaries": 800,
+          "ceiling": 5.585550110360456,
+          "mean_audited_eps": 0.005129792185966582,
+          "max_audited_eps": 0.05129792185966582,
+          "mean_accuracy": 0.5035000000000001,
+          "mean_p_value": 0.4537643426335626
+        },
+        {
+          "subgroup": "Asian-Pac-Islander",
+          "population_share": 0.03,
+          "num_canaries": 800,
+          "ceiling": 5.585550110360456,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.49225,
+          "mean_p_value": 0.6578106261814579
+        },
+        {
+          "subgroup": "Black",
+          "population_share": 0.09533333333333334,
+          "num_canaries": 800,
+          "ceiling": 5.585550110360456,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.508375,
+          "mean_p_value": 0.3655645104980828
+        },
+        {
+          "subgroup": "Other",
+          "population_share": 0.008166666666666666,
+          "num_canaries": 800,
+          "ceiling": 5.585550110360456,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.5032500000000001,
+          "mean_p_value": 0.42226067335565726
+        },
+        {
+          "subgroup": "White",
+          "population_share": 0.8566666666666667,
+          "num_canaries": 800,
+          "ceiling": 5.585550110360456,
+          "mean_audited_eps": 0.0021234396135285166,
+          "max_audited_eps": 0.021234396135285168,
+          "mean_accuracy": 0.4987500000000001,
+          "mean_p_value": 0.5570744083011154
+        }
+      ],
+      "interpretation": "UNMEASURABLE at this scale. No subgroup produced a positive bound; the per-subgroup ceilings run 5.59-5.59, so this says the instrument cannot resolve subgroup differences here, not that none exist."
+    },
+    {
+      "attribute": "race",
+      "target_eps": 8.0,
+      "proved_eps": 7.199472272244624,
+      "subgroups": [
+        {
+          "subgroup": "Amer-Indian-Eskimo",
+          "population_share": 0.009833333333333333,
+          "num_canaries": 800,
+          "ceiling": 5.585550110360456,
+          "mean_audited_eps": 0.00012128253127318637,
+          "max_audited_eps": 0.0012128253127318637,
+          "mean_accuracy": 0.49749999999999994,
+          "mean_p_value": 0.5479763879649485
+        },
+        {
+          "subgroup": "Asian-Pac-Islander",
+          "population_share": 0.03,
+          "num_canaries": 800,
+          "ceiling": 5.585550110360456,
+          "mean_audited_eps": 0.0011221870323507377,
+          "max_audited_eps": 0.011221870323507377,
+          "mean_accuracy": 0.49450000000000005,
+          "mean_p_value": 0.6120133947488399
+        },
+        {
+          "subgroup": "Black",
+          "population_share": 0.09533333333333334,
+          "num_canaries": 800,
+          "ceiling": 5.585550110360456,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.49362500000000004,
+          "mean_p_value": 0.6136525329793965
+        },
+        {
+          "subgroup": "Other",
+          "population_share": 0.008166666666666666,
+          "num_canaries": 800,
+          "ceiling": 5.585550110360456,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.50125,
+          "mean_p_value": 0.4782948779874109
+        },
+        {
+          "subgroup": "White",
+          "population_share": 0.8566666666666667,
+          "num_canaries": 800,
+          "ceiling": 5.585550110360456,
+          "mean_audited_eps": 0.0,
+          "max_audited_eps": 0.0,
+          "mean_accuracy": 0.49499999999999994,
+          "mean_p_value": 0.5826144942331382
+        }
+      ],
+      "interpretation": "UNMEASURABLE at this scale. No subgroup produced a positive bound; the per-subgroup ceilings run 5.59-5.59, so this says the instrument cannot resolve subgroup differences here, not that none exist."
+    }
+  ],
+  "elapsed_seconds": 597.1
+}

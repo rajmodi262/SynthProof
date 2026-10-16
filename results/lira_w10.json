@@ -1,0 +1,90 @@
+{
+  "dataset": "uci_adult",
+  "attack": "LiRA (Carlini et al. 2022), shadow releases, per-target Gaussians",
+  "score": "-log(1 + nearest-record distance)",
+  "target_selection": "outlier",
+  "control_min_auc": 0.9,
+  "preregistration_sha256": "2bf68c5a6673258eb92d6ff33427c91cba2a5324bd093de591ebe16a3f83d329",
+  "rows": [
+    {
+      "mechanism": "leaky_1.0",
+      "target_eps": null,
+      "auc": 1.0,
+      "auc_ci_95": [
+        0.9999999999999999,
+        1.0
+      ],
+      "tpr_at_1pct_fpr": 1.0,
+      "tpr_at_10pct_fpr": 1.0,
+      "num_targets": 40,
+      "num_shadows": 64,
+      "num_challenges": 8,
+      "train_size": 1000,
+      "seconds": 45.9
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 1.0,
+      "auc": 0.5356640625,
+      "auc_ci_95": [
+        0.4759306640625,
+        0.5917236328125001
+      ],
+      "tpr_at_1pct_fpr": 0.01875,
+      "tpr_at_10pct_fpr": 0.10625,
+      "num_targets": 40,
+      "num_shadows": 64,
+      "num_challenges": 8,
+      "train_size": 1000,
+      "seconds": 161.1
+    },
+    {
+      "mechanism": "independent",
+      "target_eps": 8.0,
+      "auc": 0.510390625,
+      "auc_ci_95": [
+        0.4607021484375,
+        0.56293359375
+      ],
+      "tpr_at_1pct_fpr": 0.025,
+      "tpr_at_10pct_fpr": 0.125,
+      "num_targets": 40,
+      "num_shadows": 64,
+      "num_challenges": 8,
+      "train_size": 1000,
+      "seconds": 142.3
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 1.0,
+      "auc": 0.5044921875,
+      "auc_ci_95": [
+        0.45014941406250003,
+        0.5630195312499999
+      ],
+      "tpr_at_1pct_fpr": 0.03125,
+      "tpr_at_10pct_fpr": 0.08125,
+      "num_targets": 40,
+      "num_shadows": 64,
+      "num_challenges": 8,
+      "train_size": 1000,
+      "seconds": 160.1
+    },
+    {
+      "mechanism": "pairwise",
+      "target_eps": 8.0,
+      "auc": 0.519296875,
+      "auc_ci_95": [
+        0.45525390625,
+        0.5764023437499999
+      ],
+      "tpr_at_1pct_fpr": 0.05,
+      "tpr_at_10pct_fpr": 0.15,
+      "num_targets": 40,
+      "num_shadows": 64,
+      "num_challenges": 8,
+      "train_size": 1000,
+      "seconds": 163.8
+    }
+  ]
+}

@@ -110,18 +110,23 @@ DEAD_CLAIMS: list[tuple[str, str, str, str]] = [
         "Move it to future work and cite DPolicy.",
     ),
     (
-        # Citing Carlini et al.'s LiRA as prior work is correct and expected in ch02. What is
-        # wrong is presenting it as something WE ran. So this fires only when LiRA sits near a
-        # first-person or reporting verb, and not when 'not' follows shortly after.
-        "lira-as-ours",
-        r"\bLiRA\b(?![^.]{0,60}\bnot\b)(?=[^.]{0,90}\b(we|our|ours|implement\w*|ran|run|"
-        r"report\w*|measur\w*|result\w*)\b)"
-        r"|\b(we|our|ours|implement\w*|ran|report\w*|measur\w*)\b[^.]{0,90}\bLiRA\b"
-        r"(?![^.]{0,60}\bnot\b)",
-        "LiRA is deliberately NOT implemented. attacks/distance_mia.py is a nearest-neighbour "
-        "baseline and says so; an earlier version was misnamed and reported a fabricated AUC.",
-        "Cite LiRA as prior work freely. Only claim it as ours to say it is NOT implemented, "
-        "and why (~21h compute for a likely wide-CI null).",
+        # LiRA itself is implemented since 0faf463 (synthproof/attacks/lira.py, an offline
+        # shadow-release audit with a verbatim-copy positive control), and its results may be
+        # reported. This rule used to fire on ANY first-person sentence about LiRA, written when
+        # LiRA was deliberately absent; by 2026-10-16 it blocked accurate reports of the real
+        # attack. What stays dead is the original defect: presenting the nearest-neighbour
+        # distance baseline (attacks/distance_mia.py) as LiRA, which once shipped a fabricated
+        # AUC under LiRA's name.
+        "lira-misnamed",
+        r"\b(distance[ _-]?(mia|attack|baseline|score)|nearest[- ]neighbou?r|dcr)\b[^.\n]{0,90}"
+        r"\bLiRA\b(?![^.]{0,60}\bnot\b)"
+        r"|(?<!not )\bLiRA\b(?![^.]{0,60}\bnot\b)[^.\n]{0,90}"
+        r"\b(distance[ _-]?(mia|attack|baseline)|nearest[- ]neighbou?r|dcr)\b",
+        "attacks/distance_mia.py is a nearest-neighbour baseline, not LiRA; an earlier version was "
+        "misnamed and reported a fabricated AUC. Real LiRA lives in attacks/lira.py and is never "
+        "run per release (the sheet lists it as not run).",
+        "Name the distance attack as the nearest-neighbour baseline it is; cite LiRA results only "
+        "from attacks/lira.py (results/lira*.json).",
     ),
     (
         # Third rule to need this, so state the pattern once: a document that WARNS against a
