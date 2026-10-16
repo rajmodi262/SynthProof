@@ -1,4 +1,4 @@
-"""The W10 analysis returns the verdict docs/prereg/W10_h1_confirmatory.md defines, per comparison."""
+"""The W10 analysis returns the verdict docs/prereg/W10_h1_confirmatory.md defines."""
 
 import json
 
