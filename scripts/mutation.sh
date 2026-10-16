@@ -15,7 +15,8 @@ WORK="$(mktemp -d)"
 
 # Anchored excludes: an unanchored `--exclude=data` also dropped synthproof/data.
 tar -C "$SRC" --exclude=./.git --exclude='./.venv*' --exclude=node_modules --exclude=./mutants \
-    --exclude=./web --exclude=./results --exclude=./data --exclude=./build -cf - . \
+    --exclude=./web --exclude=./results --exclude=./data --exclude=./build \
+    --exclude=./research --exclude=./archive --exclude=./docs -cf - . \
     | tar -C "$WORK" -xf -
 mkdir -p "$WORK/results"
 cd "$WORK"
@@ -25,7 +26,15 @@ python -m pip install -q -e ".[dev]" "mutmut==3.8.0"
 
 mutmut run --max-children "$(nproc)" || true
 mutmut export-cicd-stats
-mutmut results > mutmut_results.txt || true
+mutmut results --all true > mutmut_results.txt 2>/dev/null || mutmut results > mutmut_results.txt || true
+
+# The diff of every surviving mutant, so the report says WHAT no test noticed, not only where.
+mkdir -p "$SRC/results/mutation"
+: > "$SRC/results/mutation/accounting_survivors.diff"
+for m in $(grep -E ": survived" mutmut_results.txt | cut -d: -f1); do
+    { echo "### $m"; mutmut show "$m" 2>/dev/null; echo; } >> "$SRC/results/mutation/accounting_survivors.diff"
+done
+grep -E ": no tests" mutmut_results.txt | cut -d: -f1 > "$SRC/results/mutation/accounting_untested.txt" || true
 
 mkdir -p "$SRC/results/mutation"
 python - "$SRC/results/mutation/accounting.json" "$MIN_SCORE" <<'PY'
