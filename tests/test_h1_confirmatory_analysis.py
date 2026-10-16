@@ -3,6 +3,7 @@
 import json
 
 import numpy as np
+import pytest
 
 from scripts import analyse_h1_confirmatory as A
 
@@ -19,34 +20,29 @@ def _write(root, ds, cells):
             i += 1
 
 
-def test_each_verdict_is_reached_by_the_data_that_should_reach_it(tmp_path):
+@pytest.mark.parametrize(
+    "aim, pairwise, verdict",
+    [
+        ((0.010, 0.001), (0.030, 0.001), "AIM lower"),
+        ((0.030, 0.001), (0.010, 0.001), "pairwise lower"),
+        ((0.020, 0.0005), (0.0201, 0.0005), "equivalent"),  # tight and within the margin
+        ((0.020, 0.02), (0.024, 0.02), "inconclusive"),  # too noisy to say
+    ],
+)
+def test_each_verdict_is_reached_by_the_data_that_should_reach_it(tmp_path, aim, pairwise, verdict):
     rng = np.random.default_rng(0)
-    n = 15
-
-    def arm(mean, sd):
-        return rng.normal(mean, sd, n)
-
-    plans = {
-        # dataset: (aim at eps 1, pairwise at eps 1); eps 8 copies eps 1
-        "adult": (arm(0.010, 0.001), arm(0.030, 0.001)),  # clearly AIM lower
-        "acs": (arm(0.030, 0.001), arm(0.010, 0.001)),  # clearly pairwise lower
-        "bank": (arm(0.020, 0.0005), arm(0.0201, 0.0005)),  # tight and within the margin
-        "diabetes": (arm(0.020, 0.02), arm(0.024, 0.02)),  # too noisy to say
-    }
-    for ds, (aim, pw) in plans.items():
+    for ds in A.DATASETS:
         cells = {}
         for eps in A.EPSILONS:
-            cells[("aim", eps)] = aim
-            cells[("pairwise", eps)] = pw
-            cells[("independent", eps)] = arm(0.09, 0.01)
+            cells[("aim", eps)] = rng.normal(*aim, 15)
+            cells[("pairwise", eps)] = rng.normal(*pairwise, 15)
+            cells[("independent", eps)] = rng.normal(0.09, 0.01, 15)
         _write(tmp_path, ds, cells)
-
     out = A.analyse(tmp_path, "confirmatory")
-    verdicts = {(r["dataset"], r["eps"]): r["verdict"] for r in out["comparisons"]}
-    for eps in A.EPSILONS:
-        assert verdicts[("adult", eps)] == "AIM lower"
-        assert verdicts[("acs", eps)] == "pairwise lower"
-        assert verdicts[("bank", eps)] == "equivalent"
-        assert verdicts[("diabetes", eps)] == "inconclusive"
-    assert out["margin"] == 0.005 and out["tost_alpha"] == 0.05 / 8
-    assert len(out["preregistration_sha256"]) == 64
+    assert [r["verdict"] for r in out["comparisons"]] == [verdict] * A.N_COMPARISONS
+    assert out["margin"] == 0.005 and out["tost_alpha"] == 0.05 / A.N_COMPARISONS
+    assert len(out["preregistration_sha256"]) == 64 and len(out["amendments_sha256"]) == 64
+
+
+def test_the_amended_design_is_the_one_comparison_the_pilot_left_open():
+    assert (A.DATASETS, A.EPSILONS, A.N_COMPARISONS) == (("adult",), (8.0,), 1)

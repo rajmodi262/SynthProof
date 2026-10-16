@@ -24,8 +24,11 @@ from statsmodels.stats.weightstats import ttost_ind
 
 ROOT = Path(__file__).resolve().parents[1]
 PREREG = ROOT / "docs" / "prereg" / "W10_h1_confirmatory.md"
-DATASETS = ("adult", "acs", "bank", "diabetes")
-EPSILONS = (1.0, 8.0)
+AMENDMENTS = ROOT / "docs" / "prereg" / "W10_h1_confirmatory.amendments.md"
+# Amendment A1 (docs/prereg/W10_h1_confirmatory.amendments.md): runtime cut the design to the one
+# comparison the pilot left unresolved. Full plan: ("adult", "acs", "bank", "diabetes") x (1, 8).
+DATASETS = ("adult",)
+EPSILONS = (8.0,)
 MECHANISMS = ("aim", "pairwise", "independent")
 MARGIN = 0.005
 ALPHA = 0.05
@@ -104,6 +107,7 @@ def analyse(cells_root: Path, layout: str) -> dict:
     return {
         "preregistration": str(PREREG.relative_to(ROOT)).replace("\\", "/"),
         "preregistration_sha256": hashlib.sha256(PREREG.read_bytes()).hexdigest(),
+        "amendments_sha256": hashlib.sha256(AMENDMENTS.read_bytes()).hexdigest(),
         "outcome": "correlation_error",
         "margin": MARGIN,
         "alpha": ALPHA,
