@@ -70,6 +70,14 @@ removed; "argument" marks the one row that rests on code inspection alone. Added
 | T16 | A vulnerable dependency or a committed secret | `pip-audit`, `npm audit --omit=dev`, `bandit`, `gitleaks` in CI; Dependabot | CI `security` and `console` jobs |
 | T17 | A compromised process writing to the image | Non-root user, read-only root filesystem, `no-new-privileges` | CI `docker` job: "Runs with a read-only root filesystem" |
 
+**Known open advisories (2026-10-16).** `npm audit --omit=dev` (what ships) reports none, and CI
+fails the build if that changes. The full audit reports 7 in tailwind 3's build-time dependency
+chain (braces, micromatch, chokidar, fast-glob, postcss-nested, postcss-selector-parser): ReDoS
+and CPU-exhaustion issues in the CSS build's file globbing and selector parsing, reachable only on
+a developer machine running the build, not in the bundle a user receives. Their fixes exist only
+in tailwind 4, a rewrite of the styling configuration, tracked for the console rebuild (W8). The
+critical advisories (vitest UI file read, tinypool) were removed by upgrading vitest to 4.
+
 **What none of this covers**, stated so it is not assumed: there is no TLS termination (put a
 reverse proxy in front), no per-key expiry or SSO, and a holder of the signing key can still
 rewrite and re-sign the ledger — the chain is tamper-evident, not tamper-proof.
