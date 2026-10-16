@@ -1,0 +1,709 @@
+### synthproof.accounting.differential.x_cross_check__mutmut_33
+# synthproof.accounting.differential.x_cross_check__mutmut_33: survived
+--- synthproof/accounting/differential.py
++++ synthproof/accounting/differential.py
+@@ -26,7 +26,7 @@
+             tolerance=tolerance,
+             verdict="unavailable",
+             detail=(
+-                "autodp is not installed, so this epsilon rests on a single implementation. "
++                "XXautodp is not installed, so this epsilon rests on a single implementation. XX"
+                 "Install autodp to have the release cross-checked."
+             ),
+         )
+
+### synthproof.accounting.differential.x_cross_check__mutmut_35
+# synthproof.accounting.differential.x_cross_check__mutmut_35: survived
+--- synthproof/accounting/differential.py
++++ synthproof/accounting/differential.py
+@@ -27,7 +27,7 @@
+             verdict="unavailable",
+             detail=(
+                 "autodp is not installed, so this epsilon rests on a single implementation. "
+-                "Install autodp to have the release cross-checked."
++                "XXInstall autodp to have the release cross-checked.XX"
+             ),
+         )
+ 
+
+### synthproof.accounting.differential.x_cross_check__mutmut_81
+# synthproof.accounting.differential.x_cross_check__mutmut_81: survived
+--- synthproof/accounting/differential.py
++++ synthproof/accounting/differential.py
+@@ -52,7 +52,7 @@
+     composed = Composition()([_autodp_mechanism(name, noise_scale, sensitivity)], [int(steps)])
+     theirs = float(composed.get_approxDP(target_delta))
+ 
+-    rel = abs(ours - theirs) / theirs if theirs > 0 else 0.0
++    rel = abs(ours - theirs) / theirs if (theirs > 0) or True else 0.0
+ 
+     if ours < theirs * UNDER_REPORT_MARGIN:
+         verdict = "under_report"
+
+### synthproof.accounting.differential.x_cross_check__mutmut_85
+# synthproof.accounting.differential.x_cross_check__mutmut_85: survived
+--- synthproof/accounting/differential.py
++++ synthproof/accounting/differential.py
+@@ -52,7 +52,7 @@
+     composed = Composition()([_autodp_mechanism(name, noise_scale, sensitivity)], [int(steps)])
+     theirs = float(composed.get_approxDP(target_delta))
+ 
+-    rel = abs(ours - theirs) / theirs if theirs > 0 else 0.0
++    rel = abs(ours - theirs) / theirs if theirs >= 0 else 0.0
+ 
+     if ours < theirs * UNDER_REPORT_MARGIN:
+         verdict = "under_report"
+
+### synthproof.accounting.differential.x_cross_check__mutmut_87
+# synthproof.accounting.differential.x_cross_check__mutmut_87: survived
+--- synthproof/accounting/differential.py
++++ synthproof/accounting/differential.py
+@@ -52,7 +52,7 @@
+     composed = Composition()([_autodp_mechanism(name, noise_scale, sensitivity)], [int(steps)])
+     theirs = float(composed.get_approxDP(target_delta))
+ 
+-    rel = abs(ours - theirs) / theirs if theirs > 0 else 0.0
++    rel = abs(ours - theirs) / theirs if theirs > 0 else 1.0
+ 
+     if ours < theirs * UNDER_REPORT_MARGIN:
+         verdict = "under_report"
+
+### synthproof.accounting.differential.x_cross_check__mutmut_94
+# synthproof.accounting.differential.x_cross_check__mutmut_94: survived
+--- synthproof/accounting/differential.py
++++ synthproof/accounting/differential.py
+@@ -59,7 +59,7 @@
+         detail = (
+             f"REFUSING: dp_accounting reports eps={ours:.6f} but autodp reports "
+             f"eps={theirs:.6f}. We would be publishing a guarantee we cannot support. "
+-            "Reporting less privacy loss than an independent implementation is the failure "
++            "XXReporting less privacy loss than an independent implementation is the failure XX"
+             "mode of audit finding F4 and must not ship."
+         )
+     elif rel <= tolerance:
+
+### synthproof.accounting.differential.x_cross_check__mutmut_95
+# synthproof.accounting.differential.x_cross_check__mutmut_95: survived
+--- synthproof/accounting/differential.py
++++ synthproof/accounting/differential.py
+@@ -59,7 +59,7 @@
+         detail = (
+             f"REFUSING: dp_accounting reports eps={ours:.6f} but autodp reports "
+             f"eps={theirs:.6f}. We would be publishing a guarantee we cannot support. "
+-            "Reporting less privacy loss than an independent implementation is the failure "
++            "reporting less privacy loss than an independent implementation is the failure "
+             "mode of audit finding F4 and must not ship."
+         )
+     elif rel <= tolerance:
+
+### synthproof.accounting.differential.x_cross_check__mutmut_96
+# synthproof.accounting.differential.x_cross_check__mutmut_96: survived
+--- synthproof/accounting/differential.py
++++ synthproof/accounting/differential.py
+@@ -59,7 +59,7 @@
+         detail = (
+             f"REFUSING: dp_accounting reports eps={ours:.6f} but autodp reports "
+             f"eps={theirs:.6f}. We would be publishing a guarantee we cannot support. "
+-            "Reporting less privacy loss than an independent implementation is the failure "
++            "REPORTING LESS PRIVACY LOSS THAN AN INDEPENDENT IMPLEMENTATION IS THE FAILURE "
+             "mode of audit finding F4 and must not ship."
+         )
+     elif rel <= tolerance:
+
+### synthproof.accounting.differential.x_cross_check__mutmut_97
+# synthproof.accounting.differential.x_cross_check__mutmut_97: survived
+--- synthproof/accounting/differential.py
++++ synthproof/accounting/differential.py
+@@ -60,7 +60,7 @@
+             f"REFUSING: dp_accounting reports eps={ours:.6f} but autodp reports "
+             f"eps={theirs:.6f}. We would be publishing a guarantee we cannot support. "
+             "Reporting less privacy loss than an independent implementation is the failure "
+-            "mode of audit finding F4 and must not ship."
++            "XXmode of audit finding F4 and must not ship.XX"
+         )
+     elif rel <= tolerance:
+         verdict = "agree"
+
+### synthproof.accounting.differential.x_cross_check__mutmut_111
+# synthproof.accounting.differential.x_cross_check__mutmut_111: survived
+--- synthproof/accounting/differential.py
++++ synthproof/accounting/differential.py
+@@ -74,7 +74,7 @@
+             f"dp_accounting reports eps={ours:.6f} against autodp's {theirs:.6f}, a "
+             f"{rel:.2%} difference above the {tolerance:.1%} tolerance. We report the LARGER "
+             "value, so the release is at least as private as claimed, but the gap is worth "
+-            "investigating."
++            "XXinvestigating.XX"
+         )
+ 
+     return AccountantAgreement(
+
+### synthproof.accounting.accountant.xǁAccountantǁsnapshot__mutmut_3
+# synthproof.accounting.accountant.xǁAccountantǁsnapshot__mutmut_3: survived
+--- synthproof/accounting/accountant.py
++++ synthproof/accounting/accountant.py
+@@ -2,4 +2,4 @@
+ 
+ def snapshot(self) -> Tuple[List[Tuple[dp_event.DpEvent, int]], List[PrivacySpend]]:
+     """Returns a snapshot of the current accountant state."""
+-    return list(self._events), copy.deepcopy(self._spends)
++    return list(self._events), copy.copy(self._spends)
+
+### synthproof.accounting.accountant.xǁAccountantǁrestore__mutmut_6
+# synthproof.accounting.accountant.xǁAccountantǁrestore__mutmut_6: survived
+--- synthproof/accounting/accountant.py
++++ synthproof/accounting/accountant.py
+@@ -4,4 +4,4 @@
+     """Restores accountant state from a snapshot."""
+     events, spends = snapshot
+     self._events = list(events)
+-    self._spends = copy.deepcopy(spends)
++    self._spends = copy.copy(spends)
+
+### synthproof.accounting.noise.x_exponential_mechanism__mutmut_3
+# synthproof.accounting.noise.x_exponential_mechanism__mutmut_3: survived
+--- synthproof/accounting/noise.py
++++ synthproof/accounting/noise.py
+@@ -8,7 +8,7 @@
+     range -- (eps^2 / 8)-zCDP (Cesar & Rogers 2021, arXiv:2004.07223). The accountant charges it
+     through that zCDP bound; see `MechanismSpec("exponential", ...)`.
+     """
+-    q = np.asarray(scores, dtype=float)
++    q = np.asarray(scores, dtype=None)
+     if q.size == 0:
+         raise ValueError("exponential mechanism needs at least one candidate")
+     if epsilon <= 0 or sensitivity <= 0:
+
+### synthproof.accounting.noise.x_exponential_mechanism__mutmut_5
+# synthproof.accounting.noise.x_exponential_mechanism__mutmut_5: survived
+--- synthproof/accounting/noise.py
++++ synthproof/accounting/noise.py
+@@ -8,7 +8,7 @@
+     range -- (eps^2 / 8)-zCDP (Cesar & Rogers 2021, arXiv:2004.07223). The accountant charges it
+     through that zCDP bound; see `MechanismSpec("exponential", ...)`.
+     """
+-    q = np.asarray(scores, dtype=float)
++    q = np.asarray(scores, )
+     if q.size == 0:
+         raise ValueError("exponential mechanism needs at least one candidate")
+     if epsilon <= 0 or sensitivity <= 0:
+
+### synthproof.accounting.noise.x_exponential_mechanism__mutmut_9
+# synthproof.accounting.noise.x_exponential_mechanism__mutmut_9: survived
+--- synthproof/accounting/noise.py
++++ synthproof/accounting/noise.py
+@@ -10,7 +10,7 @@
+     """
+     q = np.asarray(scores, dtype=float)
+     if q.size == 0:
+-        raise ValueError("exponential mechanism needs at least one candidate")
++        raise ValueError("XXexponential mechanism needs at least one candidateXX")
+     if epsilon <= 0 or sensitivity <= 0:
+         raise ValueError(f"need epsilon > 0 and sensitivity > 0, got {epsilon}, {sensitivity}")
+     logits = (epsilon / (2.0 * sensitivity)) * (q - q.max())
+
+### synthproof.accounting.noise.x_exponential_mechanism__mutmut_13
+# synthproof.accounting.noise.x_exponential_mechanism__mutmut_13: survived
+--- synthproof/accounting/noise.py
++++ synthproof/accounting/noise.py
+@@ -11,7 +11,7 @@
+     q = np.asarray(scores, dtype=float)
+     if q.size == 0:
+         raise ValueError("exponential mechanism needs at least one candidate")
+-    if epsilon <= 0 or sensitivity <= 0:
++    if epsilon <= 1 or sensitivity <= 0:
+         raise ValueError(f"need epsilon > 0 and sensitivity > 0, got {epsilon}, {sensitivity}")
+     logits = (epsilon / (2.0 * sensitivity)) * (q - q.max())
+     p = np.exp(logits)
+
+### synthproof.accounting.noise.x_noisy_real_query__mutmut_21
+# synthproof.accounting.noise.x_noisy_real_query__mutmut_21: survived
+--- synthproof/accounting/noise.py
++++ synthproof/accounting/noise.py
+@@ -22,7 +22,7 @@
+     q = int(np.rint(value / g))
+     scale = noise_multiplier * grid_sensitivity()
+     if name == "gaussian":
+-        z = int(sample_discrete_gaussian(sigma=scale, size=1, seed=seed)[0])
++        z = int(sample_discrete_gaussian(sigma=scale, seed=seed)[0])
+     elif name == "laplace":
+         z = int(sample_discrete_laplace(scale=scale, size=1, seed=seed)[0])
+     else:
+
+### synthproof.accounting.noise.x_noisy_real_query__mutmut_23
+# synthproof.accounting.noise.x_noisy_real_query__mutmut_23: survived
+--- synthproof/accounting/noise.py
++++ synthproof/accounting/noise.py
+@@ -22,7 +22,7 @@
+     q = int(np.rint(value / g))
+     scale = noise_multiplier * grid_sensitivity()
+     if name == "gaussian":
+-        z = int(sample_discrete_gaussian(sigma=scale, size=1, seed=seed)[0])
++        z = int(sample_discrete_gaussian(sigma=scale, size=2, seed=seed)[0])
+     elif name == "laplace":
+         z = int(sample_discrete_laplace(scale=scale, size=1, seed=seed)[0])
+     else:
+
+### synthproof.accounting.noise.x_noisy_real_query__mutmut_34
+# synthproof.accounting.noise.x_noisy_real_query__mutmut_34: survived
+--- synthproof/accounting/noise.py
++++ synthproof/accounting/noise.py
+@@ -24,7 +24,7 @@
+     if name == "gaussian":
+         z = int(sample_discrete_gaussian(sigma=scale, size=1, seed=seed)[0])
+     elif name == "laplace":
+-        z = int(sample_discrete_laplace(scale=scale, size=1, seed=seed)[0])
++        z = int(sample_discrete_laplace(scale=scale, seed=seed)[0])
+     else:
+         raise ValueError(f"unknown mechanism {name!r}")
+     return g * (q + z)
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_38
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_38: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -45,7 +45,7 @@
+     # returns the conservative side: the last k whose composition is still within budget.
+     def composed(k: float) -> float:
+         return cls(
+-            total_eps=total_eps,
++            total_eps=None,
+             delta=delta,
+             profile_eps=shares["profile"] * k,
+             synthesis_eps=shares["synthesis"] * k,
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_42
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_42: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -49,7 +49,7 @@
+             delta=delta,
+             profile_eps=shares["profile"] * k,
+             synthesis_eps=shares["synthesis"] * k,
+-            tightening=k,
++            tightening=None,
+         ).composed_eps
+ 
+     lo, hi = 1.0, 1.0
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_47
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_47: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -49,8 +49,7 @@
+             delta=delta,
+             profile_eps=shares["profile"] * k,
+             synthesis_eps=shares["synthesis"] * k,
+-            tightening=k,
+-        ).composed_eps
++            ).composed_eps
+ 
+     lo, hi = 1.0, 1.0
+     while composed(hi) < total_eps:
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_56
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_56: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -52,7 +52,7 @@
+             tightening=k,
+         ).composed_eps
+ 
+-    lo, hi = 1.0, 1.0
++    lo, hi = 1.0, 2.0
+     while composed(hi) < total_eps:
+         hi *= 1.5
+         if hi > 64.0:  # far past any plausible sublinearity; something else is wrong
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_58
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_58: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -53,7 +53,7 @@
+         ).composed_eps
+ 
+     lo, hi = 1.0, 1.0
+-    while composed(hi) < total_eps:
++    while composed(hi) <= total_eps:
+         hi *= 1.5
+         if hi > 64.0:  # far past any plausible sublinearity; something else is wrong
+             break
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_59
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_59: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -54,7 +54,7 @@
+ 
+     lo, hi = 1.0, 1.0
+     while composed(hi) < total_eps:
+-        hi *= 1.5
++        hi = 1.5
+         if hi > 64.0:  # far past any plausible sublinearity; something else is wrong
+             break
+     for _ in range(60):
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_61
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_61: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -54,7 +54,7 @@
+ 
+     lo, hi = 1.0, 1.0
+     while composed(hi) < total_eps:
+-        hi *= 1.5
++        hi *= 2.5
+         if hi > 64.0:  # far past any plausible sublinearity; something else is wrong
+             break
+     for _ in range(60):
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_62
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_62: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -55,7 +55,7 @@
+     lo, hi = 1.0, 1.0
+     while composed(hi) < total_eps:
+         hi *= 1.5
+-        if hi > 64.0:  # far past any plausible sublinearity; something else is wrong
++        if hi >= 64.0:  # far past any plausible sublinearity; something else is wrong
+             break
+     for _ in range(60):
+         if hi - lo <= 1e-4 * hi:
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_63
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_63: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -55,7 +55,7 @@
+     lo, hi = 1.0, 1.0
+     while composed(hi) < total_eps:
+         hi *= 1.5
+-        if hi > 64.0:  # far past any plausible sublinearity; something else is wrong
++        if hi > 65.0:  # far past any plausible sublinearity; something else is wrong
+             break
+     for _ in range(60):
+         if hi - lo <= 1e-4 * hi:
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_64
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_64: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -56,7 +56,7 @@
+     while composed(hi) < total_eps:
+         hi *= 1.5
+         if hi > 64.0:  # far past any plausible sublinearity; something else is wrong
+-            break
++            return
+     for _ in range(60):
+         if hi - lo <= 1e-4 * hi:
+             break
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_66
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_66: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -57,7 +57,7 @@
+         hi *= 1.5
+         if hi > 64.0:  # far past any plausible sublinearity; something else is wrong
+             break
+-    for _ in range(60):
++    for _ in range(61):
+         if hi - lo <= 1e-4 * hi:
+             break
+         mid = 0.5 * (lo + hi)
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_67
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_67: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -58,7 +58,7 @@
+         if hi > 64.0:  # far past any plausible sublinearity; something else is wrong
+             break
+     for _ in range(60):
+-        if hi - lo <= 1e-4 * hi:
++        if hi + lo <= 1e-4 * hi:
+             break
+         mid = 0.5 * (lo + hi)
+         if composed(mid) <= total_eps:
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_68
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_68: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -58,7 +58,7 @@
+         if hi > 64.0:  # far past any plausible sublinearity; something else is wrong
+             break
+     for _ in range(60):
+-        if hi - lo <= 1e-4 * hi:
++        if hi - lo < 1e-4 * hi:
+             break
+         mid = 0.5 * (lo + hi)
+         if composed(mid) <= total_eps:
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_69
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_69: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -58,7 +58,7 @@
+         if hi > 64.0:  # far past any plausible sublinearity; something else is wrong
+             break
+     for _ in range(60):
+-        if hi - lo <= 1e-4 * hi:
++        if hi - lo <= 1e-4 / hi:
+             break
+         mid = 0.5 * (lo + hi)
+         if composed(mid) <= total_eps:
+
+### synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_77
+# synthproof.accounting.calibration.xǁBudgetPlanǁsplit__mutmut_77: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -61,7 +61,7 @@
+         if hi - lo <= 1e-4 * hi:
+             break
+         mid = 0.5 * (lo + hi)
+-        if composed(mid) <= total_eps:
++        if composed(mid) < total_eps:
+             lo = mid  # still within budget, push further
+         else:
+             hi = mid
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_3
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_3: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -2,7 +2,7 @@
+     weights: Sequence[float],
+     target_eps: float,
+     target_delta: float = 1e-5,
+-    name: str = "gaussian",
++    name: str = "GAUSSIAN",
+     sensitivity: float = 1.0,
+     orders: Optional[Sequence[float]] = None,
+     tol: float = 1e-4,
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_6
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_6: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -6,7 +6,7 @@
+     sensitivity: float = 1.0,
+     orders: Optional[Sequence[float]] = None,
+     tol: float = 1e-4,
+-    max_iter: int = 200,
++    max_iter: int = 201,
+ ) -> list:
+     """Per-query noise scales that spend `target_eps` in total, split by `weights`.
+ 
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_14
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_14: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -39,7 +39,7 @@
+         raise ValueError(f"target_eps must be positive, got {target_eps}")
+     w = [float(x) for x in weights]
+     if not w:
+-        raise ValueError("weights must not be empty")
++        raise ValueError("XXweights must not be emptyXX")
+     if any(x <= 0 for x in w):
+         raise ValueError(f"every weight must be positive, got {w}")
+ 
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_33
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_33: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -50,7 +50,7 @@
+     shape = [((total_w / (x * k)) ** 0.5) for x in w]
+ 
+     def eps_at(mult: float) -> float:
+-        acct = Accountant(budget_eps=float("inf"), budget_delta=target_delta, orders=orders)
++        acct = Accountant(budget_eps=float("inf"), orders=orders)
+         events = [
+             (
+                 acct.to_dp_event(
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_37
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_37: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -50,7 +50,7 @@
+     shape = [((total_w / (x * k)) ** 0.5) for x in w]
+ 
+     def eps_at(mult: float) -> float:
+-        acct = Accountant(budget_eps=float("inf"), budget_delta=target_delta, orders=orders)
++        acct = Accountant(budget_eps=float("INF"), budget_delta=target_delta, orders=orders)
+         events = [
+             (
+                 acct.to_dp_event(
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_47
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_47: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -54,7 +54,7 @@
+         events = [
+             (
+                 acct.to_dp_event(
+-                    MechanismSpec(name=name, sensitivity=sensitivity, noise_scale=mult * s, steps=1)
++                    MechanismSpec(name=name, sensitivity=sensitivity, noise_scale=mult * s, )
+                 ),
+                 1,
+             )
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_49
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_49: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -54,7 +54,7 @@
+         events = [
+             (
+                 acct.to_dp_event(
+-                    MechanismSpec(name=name, sensitivity=sensitivity, noise_scale=mult * s, steps=1)
++                    MechanismSpec(name=name, sensitivity=sensitivity, noise_scale=mult * s, steps=2)
+                 ),
+                 1,
+             )
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_58
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_58: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -63,7 +63,7 @@
+         return acct._epsilon_for(events, target_delta)
+ 
+     lo = hi = float(sensitivity)
+-    while eps_at(hi) > target_eps:
++    while eps_at(hi) >= target_eps:
+         hi *= 2.0
+         if hi > _MAX_SCALE:
+             raise ValueError(
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_61
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_61: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -64,7 +64,7 @@
+ 
+     lo = hi = float(sensitivity)
+     while eps_at(hi) > target_eps:
+-        hi *= 2.0
++        hi *= 3.0
+         if hi > _MAX_SCALE:
+             raise ValueError(
+                 f"Cannot reach eps={target_eps} at delta={target_delta} with {k} weighted "
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_62
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_62: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -65,7 +65,7 @@
+     lo = hi = float(sensitivity)
+     while eps_at(hi) > target_eps:
+         hi *= 2.0
+-        if hi > _MAX_SCALE:
++        if hi >= _MAX_SCALE:
+             raise ValueError(
+                 f"Cannot reach eps={target_eps} at delta={target_delta} with {k} weighted "
+                 f"queries: required noise exceeds {_MAX_SCALE:g}."
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_65
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_65: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -70,7 +70,7 @@
+                 f"Cannot reach eps={target_eps} at delta={target_delta} with {k} weighted "
+                 f"queries: required noise exceeds {_MAX_SCALE:g}."
+             )
+-    while eps_at(lo) < target_eps:
++    while eps_at(lo) <= target_eps:
+         lo /= 2.0
+         if lo < _MIN_SCALE:
+             return [_MIN_SCALE * s for s in shape]
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_68
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_68: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -71,7 +71,7 @@
+                 f"queries: required noise exceeds {_MAX_SCALE:g}."
+             )
+     while eps_at(lo) < target_eps:
+-        lo /= 2.0
++        lo /= 3.0
+         if lo < _MIN_SCALE:
+             return [_MIN_SCALE * s for s in shape]
+ 
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_69
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_69: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -72,7 +72,7 @@
+             )
+     while eps_at(lo) < target_eps:
+         lo /= 2.0
+-        if lo < _MIN_SCALE:
++        if lo <= _MIN_SCALE:
+             return [_MIN_SCALE * s for s in shape]
+ 
+     # Same invariant as calibrate_noise_scale: eps(hi) <= target < eps(lo). Return `hi`, the
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_72
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_72: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -78,7 +78,7 @@
+     # Same invariant as calibrate_noise_scale: eps(hi) <= target < eps(lo). Return `hi`, the
+     # conservative side, so the calibration never overspends.
+     for _ in range(max_iter):
+-        if hi - lo <= tol * hi:
++        if hi + lo <= tol * hi:
+             break
+         mid = 0.5 * (lo + hi)
+         if eps_at(mid) > target_eps:
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_73
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_73: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -78,7 +78,7 @@
+     # Same invariant as calibrate_noise_scale: eps(hi) <= target < eps(lo). Return `hi`, the
+     # conservative side, so the calibration never overspends.
+     for _ in range(max_iter):
+-        if hi - lo <= tol * hi:
++        if hi - lo < tol * hi:
+             break
+         mid = 0.5 * (lo + hi)
+         if eps_at(mid) > target_eps:
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_74
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_74: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -78,7 +78,7 @@
+     # Same invariant as calibrate_noise_scale: eps(hi) <= target < eps(lo). Return `hi`, the
+     # conservative side, so the calibration never overspends.
+     for _ in range(max_iter):
+-        if hi - lo <= tol * hi:
++        if hi - lo <= tol / hi:
+             break
+         mid = 0.5 * (lo + hi)
+         if eps_at(mid) > target_eps:
+
+### synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_81
+# synthproof.accounting.calibration.x_calibrate_weighted_scales__mutmut_81: survived
+--- synthproof/accounting/calibration.py
++++ synthproof/accounting/calibration.py
+@@ -81,7 +81,7 @@
+         if hi - lo <= tol * hi:
+             break
+         mid = 0.5 * (lo + hi)
+-        if eps_at(mid) > target_eps:
++        if eps_at(mid) >= target_eps:
+             lo = mid
+         else:
+             hi = mid
+
