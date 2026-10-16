@@ -11,6 +11,7 @@ is a bounded null (a weaker attack), never evidence of privacy.
 """
 
 import argparse
+import hashlib
 import json
 import sys
 import time
@@ -37,7 +38,9 @@ def main() -> None:
     ap.add_argument("--train-size", type=int, default=1000)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="results/lira.json")
+    ap.add_argument("--prereg", default=None, help="preregistration whose SHA-256 is recorded")
     a = ap.parse_args()
+    prereg_sha = hashlib.sha256(Path(a.prereg).read_bytes()).hexdigest() if a.prereg else None
 
     population = load_adult()
     common = dict(
@@ -61,6 +64,7 @@ def main() -> None:
                     "score": "-log(1 + nearest-record distance)",
                     "target_selection": "outlier",
                     "control_min_auc": CONTROL_MIN_AUC,
+                    "preregistration_sha256": prereg_sha,
                     "rows": rows,
                 },
                 indent=2,

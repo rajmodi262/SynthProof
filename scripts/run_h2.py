@@ -24,6 +24,7 @@ Usage:
 """
 
 import argparse
+import hashlib
 import json
 import time
 from pathlib import Path
@@ -75,10 +76,10 @@ def _load(name: str):
     raise SystemExit(f"Unknown dataset {name!r}. Choose from {sorted(DATASETS)}.")
 
 
-def run_one(ds, attribute, eps, seed):
+def run_one(ds, attribute, eps, seed, canaries=TOTAL_CANARIES):
     """One release, audited per subgroup."""
     auditor = SubgroupCanaryAuditor(
-        attribute=attribute, num_canaries=TOTAL_CANARIES, seed=seed, balanced=True, min_per_group=20
+        attribute=attribute, num_canaries=canaries, seed=seed, balanced=True, min_per_group=20
     )
     aug, canary_sets = auditor.plant_stratified(ds)
 
@@ -96,14 +97,21 @@ def run_one(ds, attribute, eps, seed):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--dataset", default="adult", choices=sorted(DATASETS))
+    # Overrides for a powered re-run (docs/prereg/W10b_lira_h2.md). Both are written into the
+    # payload, so a run with them cannot be mistaken for the original protocol.
+    ap.add_argument("--canaries", type=int, default=TOTAL_CANARIES)
+    ap.add_argument("--seeds", type=int, nargs="+", default=list(SEEDS))
+    ap.add_argument("--out", default=None)
+    ap.add_argument("--prereg", default=None, help="preregistration whose SHA-256 is recorded")
     args = ap.parse_args()
+    canaries, seeds = args.canaries, tuple(args.seeds)
 
     cfg = DATASETS[args.dataset]
     attributes = cfg["attributes"]
     ds = _load(args.dataset)
 
     print(f"dataset: {cfg['label']} n={ds.num_rows}")
-    print(f"mechanism: {MECHANISM}   canaries: {TOTAL_CANARIES} (balanced across subgroups)")
+    print(f"mechanism: {MECHANISM}   canaries: {canaries} (balanced across subgroups)")
     for attr in attributes:
         shares = ds.df[attr].value_counts(normalize=True)
         print(f"  {attr}: " + ", ".join(f"{k}={v:.3f}" for k, v in shares.items()))
@@ -116,18 +124,21 @@ def main():
         "n_rows": ds.num_rows,
         "mechanism": MECHANISM,
         "attributes": list(attributes),
-        "total_canaries": TOTAL_CANARIES,
+        "total_canaries": canaries,
+        "preregistration_sha256": (
+            hashlib.sha256(Path(args.prereg).read_bytes()).hexdigest() if args.prereg else None
+        ),
         "eps_grid": list(EPS_GRID),
-        "seeds": list(SEEDS),
+        "seeds": list(seeds),
         "cells": [],
     }
 
     for attr in attributes:
         for eps in EPS_GRID:
             per_seed, proved = [], []
-            for seed in SEEDS:
+            for seed in seeds:
                 print(f"  {attr:<6} eps={eps:<5} seed={seed}", flush=True)
-                res, p = run_one(ds, attr, eps, seed)
+                res, p = run_one(ds, attr, eps, seed, canaries)
                 per_seed.append(res)
                 proved.append(p)
 
@@ -162,11 +173,12 @@ def main():
             )
 
     payload["elapsed_seconds"] = round(time.time() - t0, 1)
-    Path(cfg["out"]).parent.mkdir(parents=True, exist_ok=True)
-    with open(cfg["out"], "w", encoding="utf-8") as f:
+    out = args.out or cfg["out"]
+    Path(out).parent.mkdir(parents=True, exist_ok=True)
+    with open(out, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
     print(f"\ncompleted in {payload['elapsed_seconds']:.0f}s")
-    print(f"wrote {cfg['out']}")
+    print(f"wrote {out}")
 
     # The honest headline: is H2 even measurable at this scale?
     measurable = [g for c in payload["cells"] for g in c["subgroups"] if g["mean_audited_eps"] > 0]

@@ -35,8 +35,18 @@ DATASETS = {
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--dataset", default="adult", choices=sorted(DATASETS))
+    ap.add_argument(
+        "--input", default=None, help="subgroup results to analyse (overrides --dataset)"
+    )
+    ap.add_argument("--out", default=None, help="analysis output (required with --input)")
     args = ap.parse_args()
     SRC, OUT = DATASETS[args.dataset]
+    if args.input:
+        if not args.out:
+            raise SystemExit(
+                "--input needs --out, so a re-run never overwrites a committed analysis."
+            )
+        SRC, OUT = Path(args.input), Path(args.out)
 
     if not SRC.exists():
         raise SystemExit(f"{SRC} not found. Run `make h2` / `make h2-acs` first.")
