@@ -204,8 +204,14 @@ def main():
     eps_emp = eps_for_mu(res.mu_emp, args.delta)
     eps_ceiling = eps_for_mu(ceiling, args.delta)
 
+    # sqrt(3)/sigma is the composed mu of `independent` only: three one-way Gaussian marginals
+    # at one sigma. It used to be applied to ANY mechanism exposing a sigma, which is wrong for
+    # fixed_workload (six measurements here) and for DP-VAE (subsampled DP-SGD), and produced a
+    # false violation flag on fixed_workload at eps 4. The preregistration
+    # (docs/prereg/W9_gdp_audit.md section 4) names this comparator for `independent` alone;
+    # every other mechanism is compared with the mu implied by its proved (eps, delta).
     mech_mu = None
-    if sigmas:
+    if sigmas and args.mechanism == "independent":
         mech_mu = mu_from_gaussian_composition(len(COLS), float(np.mean(sigmas)))
 
     # Violation: the empirical lower bound above what the proof allows. The comparator is the

@@ -14,6 +14,13 @@ Line-level thesis and defence corrections from September 2026 are in
 
 ---
 
+## 2026-10-16 — GDP audit estimator and comparator (W9)
+
+| What | Was | Now | Effect on published results |
+|---|---|---|---|
+| GDP lower bound (`mu_lower_bound`) | threshold chosen on the scores it bounds (max over every threshold); positive in 6.0–6.7% of 300 simulated nulls against a nominal 5% | `mu_lower_bound_heldout`: threshold chosen on half the scored runs, bound on the other half | the August single-mechanism figures in `results/GDP_AUDIT.md` are superseded by the 12 preregistered cells in `results/gdp/` |
+| Violation comparator in `scripts/run_gdp_audit.py` | `sqrt(3)/sigma` (composed mu of `independent`) applied to every mechanism exposing a noise scale | `independent` only, as preregistered; others use the mu implied by proved epsilon | `fixed_workload` eps 4 was falsely flagged (not claimed); `dpvae`'s comparator was wrong; both corrected from stored values, `docs/prereg/W9_gdp_audit.amendments.md` A1 |
+
 ## 2026-10-16 — DP correctness sweep (W5)
 
 Tests that check the statistic each charge actually perturbs (`tests/test_sensitivity.py`), an
