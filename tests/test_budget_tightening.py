@@ -138,3 +138,18 @@ def test_below_a_floor_set_by_delta_the_request_itself_is_incoherent():
     # And above the floor, the invariant holds as everywhere else.
     for target in (0.01, 0.05, 0.25):
         assert BudgetPlan.split(target, tighten=True).composed_eps <= target * (1 + 1e-9)
+
+
+# Mutation testing: the plan's own fields were never asserted, so `total_eps` or `tightening`
+# could have been dropped from the returned plan without a test failing.
+
+
+@pytest.mark.parametrize("tighten", [False, True])
+def test_the_plan_records_the_total_that_was_requested(tighten):
+    assert BudgetPlan.split(2.5, tighten=tighten).total_eps == 2.5
+
+
+def test_the_plan_records_its_tightening_multiplier():
+    assert BudgetPlan.split(2.5).tightening == 1.0
+    k = BudgetPlan.split(2.5, tighten=True).tightening
+    assert isinstance(k, float) and k > 1.0

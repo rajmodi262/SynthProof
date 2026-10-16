@@ -169,3 +169,34 @@ def test_an_extreme_weight_does_not_starve_the_others_into_failure():
     out = gen.generate(num_samples=100)
     assert len(out) == 100
     assert all(v > 0 for v in gen.noise_scales_.values())
+
+
+# Mutation testing: the default mechanism name, the `orders` argument and the empty-weights
+# message were never exercised, and nothing checked that the scales spend the budget rather
+# than merely staying under it.
+
+
+def _composed(scales, delta, orders=None):
+    acct = Accountant(budget_eps=float("inf"), budget_delta=delta, orders=orders)
+    for s in scales:
+        acct.charge(MechanismSpec(name="gaussian", sensitivity=1.0, noise_scale=s, steps=1))
+    return acct.total(delta)
+
+
+def test_the_default_mechanism_is_gaussian_and_the_budget_is_spent_not_just_respected():
+    scales = calibrate_weighted_scales([1.0, 2.0, 4.0], target_eps=1.0, target_delta=1e-5)
+    eps = _composed(scales, 1e-5)
+    assert 1.0 * (1 - 1e-2) <= eps <= 1.0
+
+
+def test_the_orders_argument_is_the_one_the_calibration_uses():
+    few = [1.5, 2.0, 3.0, 5.0, 8.0, 16.0, 32.0, 64.0]
+    default = calibrate_weighted_scales([1.0, 3.0], target_eps=1.0, target_delta=1e-5)
+    coarse = calibrate_weighted_scales([1.0, 3.0], target_eps=1.0, target_delta=1e-5, orders=few)
+    assert coarse != default
+    assert 1.0 * (1 - 1e-2) <= _composed(coarse, 1e-5, orders=few) <= 1.0
+
+
+def test_empty_weights_are_refused_by_name():
+    with pytest.raises(ValueError, match="weights must not be empty"):
+        calibrate_weighted_scales([], target_eps=1.0)

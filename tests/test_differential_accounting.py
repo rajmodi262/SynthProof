@@ -261,3 +261,71 @@ def test_the_charged_subsampled_epsilon_is_never_below_the_pld_accountant(
         dp_event.PoissonSampledDpEvent(q, dp_event.GaussianDpEvent(noise_multiplier)), steps
     )
     assert charged >= float(pld.get_epsilon(1e-5))
+
+
+# --------------------------------------------------------------- every field of every branch
+#
+# Mutation testing found cross_check's fallback branches and verdict texts unchecked: the
+# primary's name and epsilon, the tolerance, and the words an operator reads could all change
+# without a test noticing. These pin them.
+
+
+def test_the_defaults_are_one_gaussian_step_at_sensitivity_one():
+    assert cross_check(3.0, 1e-5) == cross_check(3.0, 1e-5, "gaussian", 1.0, 1)
+
+
+def test_the_unavailable_branch_still_reports_our_epsilon(monkeypatch):
+    import sys
+
+    from synthproof.accounting.differential import epsilon_for_noise_scale
+
+    monkeypatch.setitem(sys.modules, "autodp.transformer_zoo", None)  # import now fails
+    a = cross_check(2.0, 1e-5, tolerance=0.02)
+    assert a.verdict == "unavailable" and a.secondary is None and a.secondary_epsilon is None
+    assert a.primary == "dp_accounting"
+    assert a.primary_epsilon == epsilon_for_noise_scale(2.0, 1e-5, "gaussian", 1.0, 1)
+    assert a.tolerance == 0.02 and a.relative_difference is None
+    assert "autodp is not installed" in a.detail and "Install autodp" in a.detail
+    assert not a.blocks_release
+
+
+def test_the_unsupported_branch_names_both_accountants_and_keeps_our_epsilon():
+    a = cross_check(1.5, 1e-5, "dpsgd", 1.0, 2, tolerance=0.03)
+    assert (a.primary, a.secondary) == ("dp_accounting", "autodp")
+    assert a.primary_epsilon is not None and a.primary_epsilon > 0
+    assert a.tolerance == 0.03 and a.relative_difference is None
+    assert "the assurance is weaker" in a.detail
+
+
+@pytest.mark.parametrize("sigma", [4.0, 40.0])  # 40.0 puts autodp's epsilon below 1
+def test_agreement_reports_the_relative_difference_between_the_two(sigma):
+    a = cross_check(sigma, 1e-5, "gaussian", 1.0, 3)
+    assert a.verdict in ("agree", "conservative") and a.primary == "dp_accounting"
+    assert a.relative_difference == pytest.approx(
+        abs(a.primary_epsilon - a.secondary_epsilon) / a.secondary_epsilon
+    )
+    if a.verdict == "agree":
+        assert "agree within" in a.detail
+
+
+def _forced(monkeypatch, ours):
+    """cross_check with dp_accounting's answer replaced, so each verdict can be reached."""
+    import synthproof.accounting.differential as d
+
+    monkeypatch.setattr(d, "epsilon_for_noise_scale", lambda *a, **k: ours)
+    return d.cross_check(4.0, 1e-5, "gaussian", 1.0, 3)
+
+
+def test_an_under_report_says_it_refuses_and_why(monkeypatch):
+    theirs = cross_check(4.0, 1e-5, "gaussian", 1.0, 3).secondary_epsilon
+    a = _forced(monkeypatch, theirs * 0.5)
+    assert a.verdict == "under_report" and a.blocks_release
+    assert a.detail.startswith("REFUSING") and "F4" in a.detail and "must not ship" in a.detail
+
+
+def test_a_larger_report_is_conservative_and_says_so(monkeypatch):
+    theirs = cross_check(4.0, 1e-5, "gaussian", 1.0, 3).secondary_epsilon
+    a = _forced(monkeypatch, theirs * 1.5)
+    assert a.verdict == "conservative" and not a.blocks_release
+    assert a.relative_difference == pytest.approx(0.5)
+    assert "We report the LARGER value" in a.detail and "investigating" in a.detail
