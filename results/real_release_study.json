@@ -1,0 +1,336 @@
+{
+  "corpus": "research/real_releases/releases.json",
+  "n_releases": 6,
+  "property_definitions": {
+    "P1": "privacy-loss parameter (epsilon or rho) stated",
+    "P2": "delta stated (or pure DP stated)",
+    "P3": "mechanism stated",
+    "P4": "unit of privacy / neighbouring relation stated",
+    "P5": "basis of any exact size or total stated (or none released exactly)",
+    "P6": "randomness / seed secrecy addressed",
+    "P7": "input fingerprint keyed (only if a fingerprint is published)",
+    "P8": "measurements on the confidential data labelled or charged",
+    "P9": "operating range of any empirical privacy metric (only if one is published)",
+    "P10": "artefact tamper-evident (signed)",
+    "P11": "privacy claim machine-checkable from the artefact"
+  },
+  "coverage": {
+    "P1": {
+      "documented": 5,
+      "partial": 0,
+      "not_documented": 1,
+      "not_applicable": 0
+    },
+    "P2": {
+      "documented": 2,
+      "partial": 2,
+      "not_documented": 2,
+      "not_applicable": 0
+    },
+    "P3": {
+      "documented": 5,
+      "partial": 1,
+      "not_documented": 0,
+      "not_applicable": 0
+    },
+    "P4": {
+      "documented": 5,
+      "partial": 0,
+      "not_documented": 1,
+      "not_applicable": 0
+    },
+    "P5": {
+      "documented": 5,
+      "partial": 0,
+      "not_documented": 1,
+      "not_applicable": 0
+    },
+    "P6": {
+      "documented": 2,
+      "partial": 0,
+      "not_documented": 4,
+      "not_applicable": 0
+    },
+    "P7": {
+      "documented": 0,
+      "partial": 0,
+      "not_documented": 0,
+      "not_applicable": 6
+    },
+    "P8": {
+      "documented": 3,
+      "partial": 0,
+      "not_documented": 3,
+      "not_applicable": 0
+    },
+    "P9": {
+      "documented": 0,
+      "partial": 0,
+      "not_documented": 0,
+      "not_applicable": 6
+    },
+    "P10": {
+      "documented": 0,
+      "partial": 0,
+      "not_documented": 6,
+      "not_applicable": 0
+    },
+    "P11": {
+      "documented": 0,
+      "partial": 0,
+      "not_documented": 6,
+      "not_applicable": 0
+    }
+  },
+  "releases": [
+    {
+      "id": "israel_births_2014",
+      "name": "Israel National Registry of Live Births, 2014 (singleton births)",
+      "release_type": "synthetic microdata",
+      "properties": {
+        "P1": "documented",
+        "P2": "documented",
+        "P3": "documented",
+        "P4": "documented",
+        "P5": "documented",
+        "P6": "documented",
+        "P7": "not_applicable",
+        "P8": "documented",
+        "P9": "not_applicable",
+        "P10": "not_documented",
+        "P11": "not_documented"
+      },
+      "audit": {
+        "leaks": 0,
+        "unverifiable": 2,
+        "findings": [
+          {
+            "code": "RB2",
+            "severity": "unverifiable",
+            "field": "num_rows"
+          },
+          {
+            "code": "RB5",
+            "severity": "unverifiable",
+            "field": "accountant_agreement"
+          },
+          {
+            "code": "RB1",
+            "severity": "note",
+            "field": "seed"
+          },
+          {
+            "code": "RB8",
+            "severity": "note",
+            "field": "public_invariants"
+          }
+        ]
+      }
+    },
+    {
+      "id": "census_2020_redistricting",
+      "name": "2020 US Census Redistricting Data (P.L. 94-171), TopDown Algorithm",
+      "release_type": "statistics (and microdata detail file)",
+      "properties": {
+        "P1": "documented",
+        "P2": "partial",
+        "P3": "documented",
+        "P4": "documented",
+        "P5": "documented",
+        "P6": "documented",
+        "P7": "not_applicable",
+        "P8": "not_documented",
+        "P9": "not_applicable",
+        "P10": "not_documented",
+        "P11": "not_documented"
+      },
+      "audit": {
+        "leaks": 0,
+        "unverifiable": 2,
+        "findings": [
+          {
+            "code": "RB5",
+            "severity": "unverifiable",
+            "field": "accountant_agreement"
+          },
+          {
+            "code": "RB6",
+            "severity": "unverifiable",
+            "field": "domain_source"
+          },
+          {
+            "code": "RB1",
+            "severity": "note",
+            "field": "seed"
+          },
+          {
+            "code": "RB8",
+            "severity": "note",
+            "field": "public_invariants"
+          }
+        ]
+      }
+    },
+    {
+      "id": "census_2020_ddhca",
+      "name": "2020 US Census Detailed DHC-A, SafeTab-P",
+      "release_type": "statistics",
+      "properties": {
+        "P1": "documented",
+        "P2": "not_documented",
+        "P3": "documented",
+        "P4": "documented",
+        "P5": "documented",
+        "P6": "not_documented",
+        "P7": "not_applicable",
+        "P8": "not_documented",
+        "P9": "not_applicable",
+        "P10": "not_documented",
+        "P11": "not_documented"
+      },
+      "audit": {
+        "leaks": 0,
+        "unverifiable": 4,
+        "findings": [
+          {
+            "code": "RB1",
+            "severity": "unverifiable",
+            "field": "seed"
+          },
+          {
+            "code": "RB5",
+            "severity": "unverifiable",
+            "field": "accountant_agreement"
+          },
+          {
+            "code": "RB6",
+            "severity": "unverifiable",
+            "field": "domain_source"
+          },
+          {
+            "code": "RB8",
+            "severity": "unverifiable",
+            "field": "public_invariants"
+          }
+        ]
+      }
+    },
+    {
+      "id": "google_mobility",
+      "name": "Google COVID-19 Community Mobility Reports",
+      "release_type": "statistics",
+      "properties": {
+        "P1": "documented",
+        "P2": "documented",
+        "P3": "documented",
+        "P4": "documented",
+        "P5": "documented",
+        "P6": "not_documented",
+        "P7": "not_applicable",
+        "P8": "documented",
+        "P9": "not_applicable",
+        "P10": "not_documented",
+        "P11": "not_documented"
+      },
+      "audit": {
+        "leaks": 0,
+        "unverifiable": 2,
+        "findings": [
+          {
+            "code": "RB1",
+            "severity": "unverifiable",
+            "field": "seed"
+          },
+          {
+            "code": "RB5",
+            "severity": "unverifiable",
+            "field": "accountant_agreement"
+          }
+        ]
+      }
+    },
+    {
+      "id": "microsoft_broadband",
+      "name": "Microsoft US Broadband Usage Percentages (zip-code level)",
+      "release_type": "statistics",
+      "properties": {
+        "P1": "not_documented",
+        "P2": "not_documented",
+        "P3": "partial",
+        "P4": "not_documented",
+        "P5": "not_documented",
+        "P6": "not_documented",
+        "P7": "not_applicable",
+        "P8": "not_documented",
+        "P9": "not_applicable",
+        "P10": "not_documented",
+        "P11": "not_documented"
+      },
+      "audit": {
+        "leaks": 1,
+        "unverifiable": 3,
+        "findings": [
+          {
+            "code": "RB4",
+            "severity": "leak",
+            "field": "evaluation"
+          },
+          {
+            "code": "RB1",
+            "severity": "unverifiable",
+            "field": "seed"
+          },
+          {
+            "code": "RB5",
+            "severity": "unverifiable",
+            "field": "accountant_agreement"
+          },
+          {
+            "code": "RB6",
+            "severity": "unverifiable",
+            "field": "domain_source"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wikimedia_pageviews",
+      "name": "Wikimedia differentially private pageviews (Feb 2023 onward)",
+      "release_type": "statistics",
+      "properties": {
+        "P1": "documented",
+        "P2": "partial",
+        "P3": "documented",
+        "P4": "documented",
+        "P5": "documented",
+        "P6": "not_documented",
+        "P7": "not_applicable",
+        "P8": "documented",
+        "P9": "not_applicable",
+        "P10": "not_documented",
+        "P11": "not_documented"
+      },
+      "audit": {
+        "leaks": 0,
+        "unverifiable": 3,
+        "findings": [
+          {
+            "code": "RB1",
+            "severity": "unverifiable",
+            "field": "seed"
+          },
+          {
+            "code": "RB5",
+            "severity": "unverifiable",
+            "field": "accountant_agreement"
+          },
+          {
+            "code": "RB7",
+            "severity": "unverifiable",
+            "field": "contribution_bound"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -33,6 +33,7 @@ from synthproof.api.descriptions import (  # noqa: F401  (audit_ceiling re-expor
     audit_ceiling,
 )
 from synthproof.api.security import limit_key
+from synthproof.audit.mechanism_audit import mechanism_audit_for
 from synthproof.frontier.certificate import EVALUATION_PRIVACY
 from synthproof.frontier.experiment import (
     MECHANISMS,
@@ -231,6 +232,7 @@ def _signed_sheet(
         "evaluation_privacy": EVALUATION_PRIVACY,
         "attacks_run": ["canary_audit", "distance_mia"],
         "attacks_not_implemented": NOT_IMPLEMENTED_ATTACKS,
+        "mechanism_audit": mechanism_audit_for(req.mechanism),
     }
     sheet_dict["signature"] = ctx.ledger._private_key.sign(
         canonical_sheet_payload(sheet_dict)

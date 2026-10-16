@@ -298,12 +298,98 @@ def imputation_paper_table() -> str:
 
 
 # (document, block name, generator)
+
+# The preregistered W9 cells, in the order docs/prereg/W9_gdp_audit.md lists them.
+W9_CELLS = [
+    (m, e) for m in ("independent", "moments", "pairwise", "fixed_workload", "mst") for e in (1, 4)
+] + [("aim", 1), ("dpvae", 1)]
+
+
+def gdp_w9_table() -> str:
+    """Audited vs proved epsilon per mechanism: results/gdp/*.json (W9)."""
+    rows = [
+        "| Mechanism | target ε | proved ε | **audited ε** (lower bound) | ceiling ε "
+        "| audited / proved | μ_emp | comparator μ | violation | bounded runs/world |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---|---:|",
+    ]
+    hashes = set()
+    for mech, eps in W9_CELLS:
+        rel = f"results/gdp/{mech}_eps{eps}.json"
+        if not (ROOT / rel).exists():
+            rows.append(f"| `{mech}` | {eps} | not run | | | | | | | |")
+            continue
+        d = _load(rel)
+        hashes.add(d["preregistration_sha256"])
+        verdict = (
+            "**claimed**"
+            if d["violation_claimed"]
+            else ("flagged" if d["violation_flagged"] else "none")
+        )
+        rows.append(
+            f"| `{mech}` | {d['target_eps']:g} | {d['proved_eps']:.4f} | "
+            f"**{d['eps_emp']:.4f}** | {d['eps_ceiling_at_this_n']:.2f} | "
+            f"{d['eps_emp'] / d['proved_eps']:.3f} | {d['mu_emp']:.4f} | "
+            f"{d['comparator_mu']:.4f} | {verdict} | {d['bounded_per_world']} |"
+        )
+    rows.append("")
+    rows.append(
+        f"*Generated from `results/gdp/*.json`. delta = 1e-2, alpha = 0.05; every cell ran under "
+        f"the preregistration with SHA-256 {', '.join(sorted(h[:12] for h in hashes)) or '—'}…*"
+    )
+    return "\n".join(rows)
+
+
+_STATUS_MARK = {"documented": "Y", "partial": "~", "not_documented": "N", "not_applicable": "–"}
+
+
+def real_release_coverage_table() -> str:
+    """Which of P1-P11 each release documents: results/real_release_study.json (W11)."""
+    d = _load("results/real_release_study.json")
+    props = list(d["property_definitions"])
+    rows = [
+        "| Release | type | " + " | ".join(props) + " |",
+        "|---|---|" + ":-:|" * len(props),
+    ]
+    for r in d["releases"]:
+        marks = " | ".join(_STATUS_MARK[r["properties"][p]] for p in props)
+        rows.append(f"| {r['name']} | {r['release_type']} | {marks} |")
+
+    def _total(p: str) -> str:
+        applicable = d["n_releases"] - d["coverage"][p]["not_applicable"]
+        return f"{d['coverage'][p]['documented']}/{applicable}" if applicable else "n/a"
+
+    totals = " | ".join(_total(p) for p in props)
+    rows.append(f"| **documented / applicable** | | {totals} |")
+    rows.append("")
+    rows.append(
+        "*Y documented · ~ partial · N not found in the fetched sources · – not applicable. "
+        "Generated from `results/real_release_study.json`.*"
+    )
+    return "\n".join(rows)
+
+
+def real_release_audit_table() -> str:
+    """What the boundary auditor reports on each release's documented values (W11)."""
+    d = _load("results/real_release_study.json")
+    rows = ["| Release | leaks | unverifiable | findings |", "|---|---:|---:|---|"]
+    for r in d["releases"]:
+        a = r["audit"]
+        found = ", ".join(f"{f['code']} {f['severity']}" for f in a["findings"])
+        rows.append(f"| {r['name']} | {a['leaks']} | {a['unverifiable']} | {found} |")
+    rows.append("")
+    rows.append("*Generated from `results/real_release_study.json`.*")
+    return "\n".join(rows)
+
+
 BLOCKS: List[Tuple[str, str, Callable[[], str]]] = [
     ("results/ADVERSARY_COMPARISON.md", "adversary-table", adversary_table),
     ("results/SELECTION_ABLATION.md", "selection-table-adult", selection_table_adult),
     ("results/SELECTION_ABLATION.md", "selection-table-acs", selection_table_acs),
     ("results/SELECTION_ABLATION.md", "selection-floor-table", selection_floor_table),
     ("results/AUDITOR_COMPARISON.md", "auditor-table", auditor_table),
+    ("results/GDP_AUDIT.md", "gdp-w9-table", gdp_w9_table),
+    ("results/REAL_RELEASE_STUDY.md", "real-release-coverage", real_release_coverage_table),
+    ("results/REAL_RELEASE_STUDY.md", "real-release-audit", real_release_audit_table),
     ("results/H1_RESULTS.md", "h1-trend-table", h1_trend_table),
     ("results/H1_RESULTS.md", "h1-ratio-table", h1_ratio_table),
     (

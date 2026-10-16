@@ -150,8 +150,8 @@ def main():
     print(f"target     : (eps, delta) = ({args.eps}, {args.delta:g})")
     print(f"runs       : {args.runs} per world  ({2 * args.runs} fits)")
     print(
-        f"ceiling    : max provable mu at this run count = "
-        f"{max_provable_mu(args.runs, args.runs, args.alpha):.4f}\n"
+        f"ceiling    : max provable mu on the {args.runs // 4} bounded runs per world = "
+        f"{max_provable_mu(args.runs // 4, args.runs // 4, args.alpha):.4f}\n"
     )
 
     t0 = time.time()

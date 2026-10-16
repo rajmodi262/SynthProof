@@ -25,7 +25,10 @@ web/test-results/
 # Downloaded datasets and generated experiment output. These are large, they are not needed to
 # run the service, and baking them in would make the image contents depend on who built it.
 data/
-results/
+results/*
+# Except the preregistered GDP audit cells: small JSON files that new sheets embed and hash
+# (synthproof/audit/mechanism_audit.py). Without them the image would sign mechanism_audit: null.
+!results/gdp
 demo/
 build/
 

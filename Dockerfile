@@ -62,6 +62,7 @@ COPY synthproof/ /app/synthproof/
 COPY scripts/ /app/scripts/
 # The console's demo presets read these. Without them every preset silently ran the toy table.
 COPY demo_datasets/ /app/demo_datasets/
+COPY results/gdp/ /app/results/gdp/
 
 # The console, built in stage 1. Without this the container has an API and no UI.
 COPY --from=console /synthproof/api/console /app/synthproof/api/console

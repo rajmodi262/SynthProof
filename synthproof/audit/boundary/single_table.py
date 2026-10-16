@@ -15,6 +15,22 @@ from synthproof.audit.boundary._types import (
 
 
 def _seed(sheet: Mapping[str, Any]) -> List[BoundaryFinding]:
+    # An explicit null is a statement ("withheld"); a missing key is silence. SynthProof's own
+    # sheets always carry the key, but a sheet transcribed from someone else's documentation
+    # (scripts/run_real_release_study.py) has it only when the documentation addresses it, and
+    # reading silence as "withheld" would credit a release with a property nobody stated.
+    if "seed" not in sheet:
+        return [
+            BoundaryFinding(
+                "RB1",
+                UNVERIFIABLE,
+                "seed",
+                "The artefact does not say whether the run seed or random numbers are withheld.",
+                "If the seed were published or derivable, the release would be a deterministic "
+                "function of the table and membership could be decided by replay.",
+                "State that the randomness is withheld (seed: null), as a published claim.",
+            )
+        ]
     seed = sheet.get("seed")
     if seed is None:
         return [

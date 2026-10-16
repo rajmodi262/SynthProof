@@ -1,6 +1,43 @@
-# GDP audit — the first non-zero empirical privacy bound this project has produced
+# GDP audit — audited against proved epsilon, every mechanism
 
-<!-- provenance: results/gdp_audit.json, results/h1_all_families.json, results/auditor_comparison.json -->
+<!-- provenance: results/gdp_audit.json, results/h1_all_families.json, results/auditor_comparison.json, results/gdp/ -->
+
+## W9 (2026-10-16): every mechanism, preregistered, held-out threshold
+
+> Plan committed before the runs: [`docs/prereg/W9_gdp_audit.md`](../docs/prereg/W9_gdp_audit.md);
+> each cell records its SHA-256. Raw output: [`gdp/`](gdp/) · `make gdp-audit`.
+> **Estimator change:** the threshold is now chosen on half the scored runs and the bound computed
+> on the other half. The August estimator below chose it on the scores it bounded, which biases
+> the bound upward (`tests/test_gdp.py`); its numbers are kept for the record and superseded.
+> A cell reading "not run" has not finished yet.
+
+<!-- BEGIN GENERATED: gdp-w9-table -->
+| Mechanism | target ε | proved ε | **audited ε** (lower bound) | ceiling ε | audited / proved | μ_emp | comparator μ | violation | bounded runs/world |
+|---|---:|---:|---:|---:|---:|---:|---:|---|---:|
+| `independent` | 1 | 0.9999 | **0.2161** | 26.01 | 0.216 | 0.1743 | 0.4547 | none | 1000 |
+| `independent` | 4 | 3.9999 | **1.5945** | 26.01 | 0.399 | 0.7560 | 1.3297 | none | 1000 |
+| `moments` | 1 | 0.9999 | **0.2161** | 26.01 | 0.216 | 0.1743 | 0.5325 | none | 1000 |
+| `moments` | 4 | 3.9999 | **1.5945** | 26.01 | 0.399 | 0.7560 | 1.4946 | none | 1000 |
+| `pairwise` | 1 | 0.9999 | **0.0287** | 26.01 | 0.029 | 0.0531 | 0.5325 | none | 1000 |
+| `pairwise` | 4 | not run | | | | | | | |
+| `fixed_workload` | 1 | not run | | | | | | | |
+| `fixed_workload` | 4 | not run | | | | | | | |
+| `mst` | 1 | not run | | | | | | | |
+| `mst` | 4 | not run | | | | | | | |
+| `aim` | 1 | not run | | | | | | | |
+| `dpvae` | 1 | not run | | | | | | | |
+
+*Generated from `results/gdp/*.json`. delta = 1e-2, alpha = 0.05; every cell ran under the preregistration with SHA-256 233f53e650e4…*
+<!-- END GENERATED: gdp-w9-table -->
+
+**Audited ε is a lower bound** from μ_emp at the same δ as the proved ε; the ceiling is the most
+this run count could certify against a perfect adversary. A cell where audited ε sits far below
+proved ε says this adversary on this instance did not reach the proof, not that the mechanism
+is more private than proved.
+
+---
+
+## August 2026 (superseded): `independent` only, threshold chosen on the scored runs
 
 > **Run 2026-08-25.** 5,000 fits (2,500 per world), `independent` mechanism, worst-case instance.
 > Raw output: [`gdp_audit.json`](gdp_audit.json) · Runner: `scripts/run_gdp_audit.py` ·

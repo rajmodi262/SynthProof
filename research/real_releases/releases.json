@@ -1,0 +1,551 @@
+{
+  "about": "W11 corpus: real differentially private releases, transcribed from their own primary documentation and run through the SynthProof boundary auditor. Every 'documented' or 'partial' status cites a source fetched on the date given, with a short quote or a close paraphrase marked as such. 'not_documented' means not found in the fetched sources, not proof of absence everywhere. 'not_applicable' means the release publishes nothing the property concerns (e.g. no fingerprint, no empirical privacy metric). The `sheet` block holds only documented values, in Privacy Data Sheet field names, for synthproof.audit.boundary.audit_sheet.",
+  "properties": {
+    "P1": "privacy-loss parameter (epsilon or rho) stated",
+    "P2": "delta stated (or pure DP stated)",
+    "P3": "mechanism stated",
+    "P4": "unit of privacy / neighbouring relation stated",
+    "P5": "basis of any exact size or total stated (or none released exactly)",
+    "P6": "randomness / seed secrecy addressed",
+    "P7": "input fingerprint keyed (only if a fingerprint is published)",
+    "P8": "measurements on the confidential data labelled or charged",
+    "P9": "operating range of any empirical privacy metric (only if one is published)",
+    "P10": "artefact tamper-evident (signed)",
+    "P11": "privacy claim machine-checkable from the artefact"
+  },
+  "releases": [
+    {
+      "id": "israel_births_2014",
+      "name": "Israel National Registry of Live Births, 2014 (singleton births)",
+      "publisher": "Israel Ministry of Health",
+      "release_type": "synthetic microdata",
+      "sources": [
+        {
+          "id": "S1",
+          "url": "https://arxiv.org/abs/2405.00267",
+          "title": "Hod & Canetti, Differentially Private Release of Israel's National Registry of Live Births",
+          "fetched": "2026-10-16"
+        }
+      ],
+      "properties": {
+        "P1": {
+          "status": "documented",
+          "value": "epsilon = 9.98",
+          "evidence": "\"the overall privacy loss budget is ε = 9.98\" (S1 §1.4)",
+          "source": "S1"
+        },
+        "P2": {
+          "status": "documented",
+          "value": "pure DP (delta = 0)",
+          "evidence": "section titled \"Opting for pure differential privacy\" (S1 §2.3.3)",
+          "source": "S1"
+        },
+        "P3": {
+          "status": "documented",
+          "value": "PrivBayes with private selection (Liu & Talwar)",
+          "evidence": "\"the private selection algorithm of Liu and Talwar (STOC 2019)\" (S1 abstract)",
+          "source": "S1"
+        },
+        "P4": {
+          "status": "documented",
+          "value": "one singleton birth; bounded neighbours",
+          "evidence": "\"we set the unit of privacy to a single singleton birth\" (S1 §2.3.1)",
+          "source": "S1"
+        },
+        "P5": {
+          "status": "documented",
+          "value": "exact n = 165,915 declared public",
+          "evidence": "\"we treat the total number of live birth ... as public information\" (S1 §2.3.2)",
+          "source": "S1"
+        },
+        "P6": {
+          "status": "documented",
+          "value": "OS CSPRNG; no seed published",
+          "evidence": "paraphrase: mechanisms use cryptographically secure PRNGs (S1 §2.10.3)",
+          "source": "S1"
+        },
+        "P7": {
+          "status": "not_applicable",
+          "evidence": "no input fingerprint published",
+          "source": "S1"
+        },
+        "P8": {
+          "status": "documented",
+          "value": "acceptance criteria evaluated under DP (epsilon 0.99 charged)",
+          "evidence": "\"ε = 0.99 for evaluating of the dataset with ... acceptance criteria\" (S1 §1.4)",
+          "source": "S1"
+        },
+        "P9": {
+          "status": "not_applicable",
+          "evidence": "no empirical privacy metric published",
+          "source": "S1"
+        },
+        "P10": {
+          "status": "not_documented",
+          "evidence": "no signature or checksum described",
+          "source": "S1"
+        },
+        "P11": {
+          "status": "not_documented",
+          "evidence": "column metadata table only (S1 Table 1); no machine-readable privacy claim",
+          "source": "S1"
+        }
+      },
+      "sheet": {
+        "dataset_name": "Israel live births 2014",
+        "mechanism": "PrivBayes + private selection",
+        "total_proved_eps": 9.98,
+        "delta": 0.0,
+        "num_rows": 165915,
+        "release_rows_source": "declared",
+        "public_invariants": [
+          {
+            "name": "number of records (n)",
+            "basis": "declared public by stakeholders (bounded DP)"
+          }
+        ],
+        "domain_source": "declared",
+        "contribution_bound": 1,
+        "evaluation_privacy": "acceptance criteria evaluated under DP, epsilon 0.99 included in the total",
+        "seed": null
+      }
+    },
+    {
+      "id": "census_2020_redistricting",
+      "name": "2020 US Census Redistricting Data (P.L. 94-171), TopDown Algorithm",
+      "publisher": "US Census Bureau",
+      "release_type": "statistics (and microdata detail file)",
+      "sources": [
+        {
+          "id": "S1",
+          "url": "https://arxiv.org/abs/2204.08986",
+          "title": "Abowd et al., The 2020 Census Disclosure Avoidance System TopDown Algorithm",
+          "fetched": "2026-10-16"
+        }
+      ],
+      "properties": {
+        "P1": {
+          "status": "documented",
+          "value": "rho = 2.63 (zCDP)",
+          "evidence": "\"ρ = 2.63 (the final production setting of TDA for the redistricting data)\" (S1 §2)",
+          "source": "S1"
+        },
+        "P2": {
+          "status": "partial",
+          "value": "(epsilon, delta) pairs reported at delta = 1e-10",
+          "evidence": "\"pairs associated with δ = 10−10\" (S1 §2)",
+          "source": "S1"
+        },
+        "P3": {
+          "status": "documented",
+          "value": "TopDown; discrete Gaussian noisy measurements",
+          "evidence": "paraphrase: discrete Gaussian generates the noisy measurements (S1 §2)",
+          "source": "S1"
+        },
+        "P4": {
+          "status": "documented",
+          "value": "person; bounded neighbours",
+          "evidence": "\"In this paper we use bounded neighbors\" (S1 §2, fn 3)",
+          "source": "S1"
+        },
+        "P5": {
+          "status": "documented",
+          "value": "state total populations exact by policy (invariants)",
+          "evidence": "\"counts that deliberately bypass the DP mechanism\" (S1 §3)",
+          "source": "S1"
+        },
+        "P6": {
+          "status": "documented",
+          "value": "random numbers withheld; code and parameters public",
+          "evidence": "\"release the source code and parameters ... but not the actual random numbers\" (S1 §1)",
+          "source": "S1"
+        },
+        "P7": {
+          "status": "not_applicable",
+          "evidence": "no input fingerprint published",
+          "source": "S1"
+        },
+        "P8": {
+          "status": "not_documented",
+          "evidence": "not addressed in the fetched source",
+          "source": "S1"
+        },
+        "P9": {
+          "status": "not_applicable",
+          "evidence": "no empirical privacy metric published",
+          "source": "S1"
+        },
+        "P10": {
+          "status": "not_documented",
+          "evidence": "no signature described",
+          "source": "S1"
+        },
+        "P11": {
+          "status": "not_documented",
+          "evidence": "no machine-readable privacy claim described",
+          "source": "S1"
+        }
+      },
+      "sheet": {
+        "dataset_name": "2020 Census P.L. 94-171",
+        "mechanism": "TopDown (discrete Gaussian)",
+        "privacy_parameter": "rho = 2.63 (zCDP)",
+        "delta": 1e-10,
+        "public_invariants": [
+          {
+            "name": "state total resident populations",
+            "basis": "apportionment (policy invariant)"
+          }
+        ],
+        "contribution_bound": 1,
+        "seed": null
+      }
+    },
+    {
+      "id": "census_2020_ddhca",
+      "name": "2020 US Census Detailed DHC-A, SafeTab-P",
+      "publisher": "US Census Bureau",
+      "release_type": "statistics",
+      "sources": [
+        {
+          "id": "S1",
+          "url": "https://arxiv.org/abs/2505.01472",
+          "title": "Haney et al., SafeTab-P: Disclosure Avoidance for the 2020 Census Detailed DHC-A",
+          "fetched": "2026-10-16"
+        },
+        {
+          "id": "S2",
+          "url": "https://www.census.gov/programs-surveys/decennial-census/decade/2020/planning-management/process/disclosure-avoidance/newsletters/findings-2020-data-products.html",
+          "title": "Census Bureau: New Papers, Code, and Findings for 2020 Census Data Products",
+          "fetched": "2026-10-16"
+        }
+      ],
+      "properties": {
+        "P1": {
+          "status": "documented",
+          "value": "rho = 19.776 at release; revised to 9.888",
+          "evidence": "\"revise this value downwards to half of its previous value (9.888)\" (S2)",
+          "source": "S2"
+        },
+        "P2": {
+          "status": "not_documented",
+          "evidence": "zCDP only; no delta in the fetched sources",
+          "source": "S1"
+        },
+        "P3": {
+          "status": "documented",
+          "value": "SafeTab-P; discrete Gaussian noisy counts",
+          "evidence": "paraphrase: discrete Gaussian noise with variance tied to rho (S1)",
+          "source": "S1"
+        },
+        "P4": {
+          "status": "documented",
+          "value": "record; bounded zCDP for composition with other products",
+          "evidence": "\"neighbors if their symmetric difference is 1\" (S1 Def. 1)",
+          "source": "S1"
+        },
+        "P5": {
+          "status": "documented",
+          "value": "exact total US population released without noise",
+          "evidence": "\"release the exact total U.S. population ... without noise infusion\" (S1 §4.1)",
+          "source": "S1"
+        },
+        "P6": {
+          "status": "not_documented",
+          "evidence": "not found in the fetched sources",
+          "source": "S1"
+        },
+        "P7": {
+          "status": "not_applicable",
+          "evidence": "no input fingerprint published",
+          "source": "S1"
+        },
+        "P8": {
+          "status": "not_documented",
+          "evidence": "not found in the fetched sources",
+          "source": "S1"
+        },
+        "P9": {
+          "status": "not_applicable",
+          "evidence": "no empirical privacy metric published",
+          "source": "S1"
+        },
+        "P10": {
+          "status": "not_documented",
+          "evidence": "no signature described",
+          "source": "S2"
+        },
+        "P11": {
+          "status": "not_documented",
+          "evidence": "code published on GitHub; no machine-readable privacy claim",
+          "source": "S2"
+        }
+      },
+      "sheet": {
+        "dataset_name": "2020 Census Detailed DHC-A",
+        "mechanism": "SafeTab-P (discrete Gaussian)",
+        "privacy_parameter": "rho = 9.888 (zCDP, revised from 19.776)",
+        "public_invariants": [
+          {
+            "name": "total US population",
+            "basis": null
+          }
+        ],
+        "contribution_bound": 1
+      }
+    },
+    {
+      "id": "google_mobility",
+      "name": "Google COVID-19 Community Mobility Reports",
+      "publisher": "Google",
+      "release_type": "statistics",
+      "sources": [
+        {
+          "id": "S1",
+          "url": "https://arxiv.org/abs/2004.04145",
+          "title": "Aktay et al., Google COVID-19 Community Mobility Reports: Anonymization Process Description (v1.1)",
+          "fetched": "2026-10-16"
+        }
+      ],
+      "properties": {
+        "P1": {
+          "status": "documented",
+          "value": "epsilon <= 1.76 per user per day (0.44 per metric family)",
+          "evidence": "\"protected by differential privacy with a maximum of ε = 1.76\" (S1 §2.1)",
+          "source": "S1"
+        },
+        "P2": {
+          "status": "documented",
+          "value": "delta = 0",
+          "evidence": "\"ε-differentially private with δ = 0\" (S1 §4)",
+          "source": "S1"
+        },
+        "P3": {
+          "status": "documented",
+          "value": "Laplace noise; DP bounded mean",
+          "evidence": "paraphrase: Laplace noise added to sums and counts (S1 §2.2)",
+          "source": "S1"
+        },
+        "P4": {
+          "status": "documented",
+          "value": "user-day, contributions bounded per category and location",
+          "evidence": "\"each LH user can contribute at most once to each category\" (S1 §2.1)",
+          "source": "S1"
+        },
+        "P5": {
+          "status": "documented",
+          "value": "fixed metric set; noise added to zero-valued metrics",
+          "evidence": "\"we are also adding noise to zero-valued metrics\" (S1 §4)",
+          "source": "S1"
+        },
+        "P6": {
+          "status": "not_documented",
+          "evidence": "not found in the fetched source",
+          "source": "S1"
+        },
+        "P7": {
+          "status": "not_applicable",
+          "evidence": "no input fingerprint published",
+          "source": "S1"
+        },
+        "P8": {
+          "status": "documented",
+          "value": "confidence intervals computed from DP values and public noise scale only",
+          "evidence": "\"no privacy budget is consumed by this operation\" (S1 §3)",
+          "source": "S1"
+        },
+        "P9": {
+          "status": "not_applicable",
+          "evidence": "no empirical privacy metric published",
+          "source": "S1"
+        },
+        "P10": {
+          "status": "not_documented",
+          "evidence": "no signature described",
+          "source": "S1"
+        },
+        "P11": {
+          "status": "not_documented",
+          "evidence": "no machine-readable privacy claim described",
+          "source": "S1"
+        }
+      },
+      "sheet": {
+        "dataset_name": "Google Community Mobility Reports",
+        "mechanism": "Laplace / DP bounded mean",
+        "total_proved_eps": 1.76,
+        "delta": 0.0,
+        "domain_source": "declared",
+        "contribution_bound": 1,
+        "evaluation_privacy": "confidence intervals derived from DP outputs and public noise parameters only"
+      }
+    },
+    {
+      "id": "microsoft_broadband",
+      "name": "Microsoft US Broadband Usage Percentages (zip-code level)",
+      "publisher": "Microsoft",
+      "release_type": "statistics",
+      "sources": [
+        {
+          "id": "S1",
+          "url": "https://github.com/microsoft/USBroadbandUsagePercentages",
+          "title": "README of the published dataset repository",
+          "fetched": "2026-10-16"
+        }
+      ],
+      "properties": {
+        "P1": {
+          "status": "not_documented",
+          "evidence": "epsilon not stated in the artefact's README, which points to arXiv 2103.14035 (not fetched)",
+          "source": "S1"
+        },
+        "P2": {
+          "status": "not_documented",
+          "evidence": "not stated in the README",
+          "source": "S1"
+        },
+        "P3": {
+          "status": "partial",
+          "value": "SmartNoise; mechanism not named",
+          "evidence": "\"We implemented differential privacy through the SmartNoise platform\" (S1)",
+          "source": "S1"
+        },
+        "P4": {
+          "status": "not_documented",
+          "evidence": "only \"presence of specific individuals\"; no unit stated",
+          "source": "S1"
+        },
+        "P5": {
+          "status": "not_documented",
+          "evidence": "zip-code values noised; county-level basis not stated",
+          "source": "S1"
+        },
+        "P6": {
+          "status": "not_documented",
+          "evidence": "not stated in the README",
+          "source": "S1"
+        },
+        "P7": {
+          "status": "not_applicable",
+          "evidence": "no input fingerprint published",
+          "source": "S1"
+        },
+        "P8": {
+          "status": "not_documented",
+          "value": "MAE, 95th-percentile error and bias against the non-private estimate are published",
+          "evidence": "error ranges relative to \"the non-private broadband coverage estimate\" (S1); no statement that they are outside epsilon",
+          "source": "S1"
+        },
+        "P9": {
+          "status": "not_applicable",
+          "evidence": "no empirical privacy metric published",
+          "source": "S1"
+        },
+        "P10": {
+          "status": "not_documented",
+          "evidence": "no signature or checksum",
+          "source": "S1"
+        },
+        "P11": {
+          "status": "not_documented",
+          "evidence": "no machine-readable privacy claim",
+          "source": "S1"
+        }
+      },
+      "sheet": {
+        "dataset_name": "US Broadband Usage Percentages",
+        "mechanism": "SmartNoise (unspecified)",
+        "evaluation": {
+          "mae_vs_non_private": "published",
+          "p95_error_range": "published",
+          "mean_signed_deviation": "published"
+        }
+      }
+    },
+    {
+      "id": "wikimedia_pageviews",
+      "name": "Wikimedia differentially private pageviews (Feb 2023 onward)",
+      "publisher": "Wikimedia Foundation",
+      "release_type": "statistics",
+      "sources": [
+        {
+          "id": "S1",
+          "url": "https://arxiv.org/abs/2308.16298",
+          "title": "Adeleye et al., Publishing Wikipedia usage data with strong privacy guarantees",
+          "fetched": "2026-10-16"
+        }
+      ],
+      "properties": {
+        "P1": {
+          "status": "documented",
+          "value": "zCDP rho stated, said to be stronger than (1, 1e-7)-DP",
+          "evidence": "paraphrase: zero-concentrated DP, stronger than (ε=1, δ=10⁻⁷)-DP (S1 §3.3); exact rho to be read from the PDF, the HTML rendering is garbled",
+          "source": "S1"
+        },
+        "P2": {
+          "status": "partial",
+          "value": "delta only through the (1, 1e-7) comparison",
+          "evidence": "see P1",
+          "source": "S1"
+        },
+        "P3": {
+          "status": "documented",
+          "value": "Tumult Analytics; discrete Gaussian and two-sided geometric noise",
+          "evidence": "paraphrase (S1 §4.3)",
+          "source": "S1"
+        },
+        "P4": {
+          "status": "documented",
+          "value": "user-day (device), first 10 unique pageviews per day",
+          "evidence": "paraphrase: each device contributes at most 10 unique pageviews per day (S1 §4.1.1)",
+          "source": "S1"
+        },
+        "P5": {
+          "status": "documented",
+          "value": "no exact counts; suppression applied to noisy counts",
+          "evidence": "paraphrase: thresholding is post-processing of noisy counts (S1 §4.1.2)",
+          "source": "S1"
+        },
+        "P6": {
+          "status": "not_documented",
+          "evidence": "not found in the fetched source",
+          "source": "S1"
+        },
+        "P7": {
+          "status": "not_applicable",
+          "evidence": "no input fingerprint published",
+          "source": "S1"
+        },
+        "P8": {
+          "status": "documented",
+          "value": "tuning on confidential data acknowledged as not DP; only global metrics published",
+          "evidence": "paraphrase: tuning parameters were not differentially private (S1 §5)",
+          "source": "S1"
+        },
+        "P9": {
+          "status": "not_applicable",
+          "evidence": "no empirical privacy metric published",
+          "source": "S1"
+        },
+        "P10": {
+          "status": "not_documented",
+          "evidence": "no signature described",
+          "source": "S1"
+        },
+        "P11": {
+          "status": "not_documented",
+          "evidence": "no machine-readable privacy claim described",
+          "source": "S1"
+        }
+      },
+      "sheet": {
+        "dataset_name": "Wikimedia DP pageviews",
+        "mechanism": "Tumult Analytics (discrete Gaussian, geometric)",
+        "privacy_parameter": "rho (zCDP), stronger than (1, 1e-7)-DP",
+        "domain_source": "declared",
+        "contribution_bound": 10,
+        "evaluation_privacy": "parameter tuning on confidential data stated as not differentially private"
+      }
+    }
+  ]
+}

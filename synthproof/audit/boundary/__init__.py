@@ -46,6 +46,7 @@ from synthproof.audit.boundary._types import (  # noqa: F401  (public API re-exp
     BoundaryReport,
     _number,
 )
+from synthproof.audit.boundary.audit_claim import _mechanism_audit  # noqa: F401
 from synthproof.audit.boundary.epsilon import _cross_check, _recompute_epsilon  # noqa: F401
 from synthproof.audit.boundary.relational import (  # noqa: F401
     _cross_table_fingerprint,
@@ -81,6 +82,7 @@ _CHECKS = (
     _fk_degree,
     _join_cardinality,
     _cross_table_fingerprint,
+    _mechanism_audit,
 )
 
 

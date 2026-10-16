@@ -146,6 +146,11 @@ class PrivacyDataSheet:
     # instead of reading the maker's own verdict above (audit C4, research/27). Noise scales are
     # data-independent calibration outputs, so publishing them reveals nothing about the input.
     mechanism_events: Optional[List[Dict]] = None
+    # What a strong membership adversary could CERTIFY about this mechanism, with the ceiling of
+    # that instrument, from the preregistered GDP audit (synthproof/audit/mechanism_audit.py).
+    # Mechanism-level, on a worst-case instance -- its own `scope` field says so -- and null when
+    # no preregistered audit exists, so "not audited" is visible rather than absent.
+    mechanism_audit: Optional[Dict] = None
 
     signature: Optional[str] = None
     public_key: Optional[str] = None

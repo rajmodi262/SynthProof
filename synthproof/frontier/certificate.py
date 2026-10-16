@@ -31,6 +31,7 @@ from synthproof.accounting.differential import (
 )
 from synthproof.accounting.noise import exact_noise
 from synthproof.audit.ceiling import ceiling_for
+from synthproof.audit.mechanism_audit import mechanism_audit_for
 from synthproof.audit.steinke import DEFAULT_ALPHA
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.preflight import enforce
@@ -268,6 +269,7 @@ class FrontierEngine:
             residual_risk=_RESIDUAL_RISK,
             accountant_agreement=agreement.to_dict(),
             mechanism_events=events,
+            mechanism_audit=mechanism_audit_for(mechanism),
             dataset_name=dataset.name,
             num_rows=size.rows,
             release_rows_source=size.source,

@@ -17,7 +17,7 @@ _SOUND_DOMAIN_SOURCES = ("declared", "codebook", "charged")
 class BoundaryFinding:
     """One channel, what the artefact shows about it, and what to do."""
 
-    code: str  # RB1..RB14
+    code: str  # RB0..RB15
     severity: str  # leak | unverifiable | note
     field: str
     finding: str
