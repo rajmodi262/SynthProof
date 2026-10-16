@@ -77,7 +77,15 @@ def generate_capsule_html(
         signature_raw = sheet.signature or ""
         public_key_raw = sheet.public_key or ""
     else:
-        signing_payload = sheet_dict.get("signing_payload", "")
+        # Always derived from the sheet being shown, never taken from the caller. It used to be
+        # read from a `signing_payload` key the console never sends, so every capsule exported
+        # from a console release embedded a signature over EMPTY bytes and the in-browser
+        # verifier could not check it (found 2026-10-16). Trusting a supplied payload instead
+        # would be worse: the signature could verify over bytes that differ from the sheet.
+        from synthproof.ledger.signing import canonical_sheet_payload
+
+        signed_fields = {k: v for k, v in sheet_dict.items() if k != "signing_payload"}
+        signing_payload = canonical_sheet_payload(signed_fields).decode("utf-8")
         signature_raw = sheet_dict.get("signature", "")
         public_key_raw = sheet_dict.get("public_key", "")
 

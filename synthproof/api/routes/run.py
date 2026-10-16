@@ -23,6 +23,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from synthproof.accounting.differential import cross_check_spends
+from synthproof.accounting.differential import enforce as enforce_accountant_agreement
 from synthproof.accounting.noise import exact_noise
 from synthproof.api import projection, schemas, state
 from synthproof.api.context import AppContext, get_context, require_api_key
@@ -41,6 +43,7 @@ from synthproof.frontier.experiment import (
     informative_numeric_columns,
     run_cell,
 )
+from synthproof.frontier.sheet import mechanism_events_from_spends
 from synthproof.ledger.types import LedgerEntry
 
 router = APIRouter()
@@ -188,7 +191,7 @@ def _start_worker(req: RunRequest, ds, target_col, corr_cols, events) -> None:
 
 
 def _signed_sheet(
-    ctx: AppContext, req: RunRequest, ds, target_col, payload, audit, mia, measurements
+    ctx: AppContext, req: RunRequest, ds, target_col, payload, audit, mia, measurements, spends
 ) -> dict:
     """The Privacy Data Sheet for this release, signed with the ledger key.
 
@@ -198,12 +201,20 @@ def _signed_sheet(
     """
     from synthproof.ledger.signing import canonical_sheet_payload, public_key_hex
 
+    # The same two fields the CLI engine signs (frontier/certificate.py). Without them a console
+    # release failed its own boundary check RB5: nobody could recompose its epsilon, and no second
+    # accountant had looked at it. An under-report refuses the release here, as it does there.
+    agreement = enforce_accountant_agreement(cross_check_spends(spends, req.delta))
+
     sheet_dict = {
         # RB6: how the column bounds / category domains were obtained. Demo datasets and
         # uploads infer them from the data (a leak the boundary auditor must flag); the
         # built-in declared-schema datasets do not. Never a marketing string.
         "domain_source": ctx.domain_source_for(req.dataset),
         "contribution_bound": 1,
+        # The trust assumption every epsilon here rests on: this service reads the table.
+        "deployment_model": "central",
+        "unit_of_privacy": "add/remove-one-record",
         # No fingerprint: this console holds no curator key, and a table name is not one.
         "input_fingerprint": None,
         "dataset_name": ds.name,
@@ -233,6 +244,8 @@ def _signed_sheet(
         "attacks_run": ["canary_audit", "distance_mia"],
         "attacks_not_implemented": NOT_IMPLEMENTED_ATTACKS,
         "mechanism_audit": mechanism_audit_for(req.mechanism),
+        "accountant_agreement": agreement.to_dict(),
+        "mechanism_events": mechanism_events_from_spends(spends),
     }
     sheet_dict["signature"] = ctx.ledger._private_key.sign(
         canonical_sheet_payload(sheet_dict)
@@ -314,7 +327,7 @@ def _done_frame(
     measurements = {k: v for k, v in payload.items() if not k.startswith("_")}
     return {
         "measurements": measurements,
-        "sheet": _signed_sheet(ctx, req, ds, target_col, payload, audit, mia, measurements),
+        "sheet": _signed_sheet(ctx, req, ds, target_col, payload, audit, mia, measurements, spends),
         "sample_records": synth.head(100).to_dict(orient="records"),
         # Utility and structure are scored against the fit split, not the full table. Stated in
         # the payload so the console cannot present `correlation_error` as a clean fidelity

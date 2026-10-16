@@ -32,6 +32,7 @@ ALLOWLIST = ROOT / "scripts" / "number_provenance_allowlist.json"
 DOCS = [
     "README.md",
     "DEMO.md",
+    "docs/PROBLEM.md",
     "CHANGELOG.md",
     "docs/thesis/ch0*.md",
     "docs/defence/DEFENCE.md",

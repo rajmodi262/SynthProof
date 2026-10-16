@@ -413,5 +413,23 @@ test.describe('the full pipeline, through the UI @slow', () => {
       expect(Math.abs(Number(shown.replace(/,/g, '')) - (actual as number)), `${path} shown as ${shown}`)
         .toBeLessThanOrEqual(0.5 * 10 ** -decimals + 1e-12)
     }
+
+    // The capsule of THIS release must verify in a browser. Until 2026-10-16 every capsule
+    // exported from a console release embedded a signature over empty bytes, so the page could
+    // only ever report failure; no test exported a real release's sheet, so nothing noticed.
+    const run = sources.run as { sheet: Record<string, unknown>; sample_records: unknown[] }
+    const exported = await request.post('/api/capsule/export', {
+      data: { sheet: run.sheet, records: run.sample_records.slice(0, 20) },
+    })
+    // Served from the test server's origin: WebCrypto exists only in a secure context, and a
+    // setContent page has none, so it could only ever say "Cannot Verify In This Browser".
+    const html = await exported.text()
+    await page.route('**/__capsule_under_test', (route) =>
+      route.fulfill({ contentType: 'text/html', body: html }),
+    )
+    await page.goto('/__capsule_under_test')
+    await expect(page.locator('.badge')).toHaveText(/Cryptographically Verified/i, {
+      timeout: 15_000,
+    })
   })
 })

@@ -82,3 +82,17 @@ def test_a_signing_failure_is_an_error_not_an_unsigned_sheet(monkeypatch):
     assert any(
         e == "error" and "signing key unavailable" in p.get("message", "") for e, p in events
     )
+
+
+def test_a_console_release_is_recomposable_and_cross_checked():
+    """The console's sheet carries the noisy steps and the second accountant's verdict, as the
+    CLI engine's does; it used to carry neither and failed its own RB5."""
+    from synthproof.audit.boundary import audit_sheet
+
+    done = [d for ev, d in _run() if ev == "done"][0]
+    sheet = done["sheet"]
+    assert sheet["mechanism_events"], "the noisy steps must be published"
+    assert sheet["accountant_agreement"]["verdict"] in ("agree", "conservative")
+    assert sheet["deployment_model"] == "central"
+    rb5 = [f for f in audit_sheet(sheet).findings if f.code == "RB5"]
+    assert rb5 and all(f.severity != "unverifiable" for f in rb5), [f.finding for f in rb5]

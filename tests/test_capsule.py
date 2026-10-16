@@ -262,3 +262,32 @@ def test_no_private_key_material_ever_reaches_a_capsule(tmp_path, monkeypatch):
     assert private_b64 not in html
     assert private_b64[:32] not in html
     assert "BEGIN PRIVATE KEY" not in html
+
+
+def test_a_signed_dict_sheet_embeds_the_bytes_its_signature_covers(tmp_path: Path):
+    """A console release reaches the exporter as a dict. Its capsule used to embed an empty
+    signing payload, so the browser could not check the signature; a payload supplied by the
+    caller must never be trusted either."""
+    import base64
+    import json as _json
+
+    from cryptography.hazmat.primitives.asymmetric import ed25519
+
+    key = ed25519.Ed25519PrivateKey.generate()
+    sheet = {
+        "dataset_name": "Console",
+        "num_rows": 3,
+        "mechanism": "independent",
+        "total_proved_eps": 1.0,
+        "total_audited_eps": 0.0,
+        "mechanism_events": [{"name": "gaussian", "noise_scale": 3.8, "sensitivity": 1.0}],
+    }
+    sheet["signature"] = key.sign(signing.canonical_sheet_payload(sheet)).hex()
+    sheet["signing_payload"] = '{"dataset_name":"forged"}'
+    html = generate_capsule_html(sheet, pd.DataFrame({"a": [1, 2, 3]}))
+    start = html.index('atob("') + len('atob("')
+    payload = _json.loads(base64.b64decode(html[start : html.index('"', start)]))
+    assert "forged" not in payload["signing_payload"]
+    key.public_key().verify(
+        bytes.fromhex(payload["signature"]), payload["signing_payload"].encode("utf-8")
+    )
