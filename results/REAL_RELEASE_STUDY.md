@@ -37,6 +37,12 @@ P1 privacy parameter · P2 delta · P3 mechanism · P4 unit of privacy · P5 bas
 or charged · P9 operating range of an empirical privacy metric · P10 signed artefact ·
 P11 machine-checkable claim.
 
+P9 transfers limit-of-detection reporting from analytical chemistry (MIQE 2.0, Bustin et al.,
+*Clinical Chemistry* 2025;71(6):634–651), where a non-detect is reported as "< LoD" with the limit
+beside it. The ceiling it asks for is a corollary of Steinke, Nasr & Jagielski (2023) Thm 2.1, and
+the quantity is already named "maximum auditable epsilon" by Annamalai, Ganev & De Cristofaro
+(arXiv:2405.10994) §2.2; neither is this project's invention.
+
 ## What the auditor reports on the documented values
 
 <!-- BEGIN GENERATED: real-release-audit -->
