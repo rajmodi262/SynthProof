@@ -67,6 +67,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Sequence, Tuple
 
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy import optimize, stats
 
 # Standard normal CDF and its inverse, named for the formulae above.
@@ -220,8 +221,8 @@ class GDPAuditResult:
 
 
 def mu_lower_bound(
-    scores_in: Sequence[float],
-    scores_out: Sequence[float],
+    scores_in: ArrayLike,
+    scores_out: ArrayLike,
     alpha: float = DEFAULT_ALPHA,
     thresholds: Optional[Sequence[float]] = None,
 ) -> GDPAuditResult:
@@ -301,8 +302,8 @@ def mu_lower_bound(
 
 
 def mu_bound_at_threshold(
-    scores_in: Sequence[float],
-    scores_out: Sequence[float],
+    scores_in: ArrayLike,
+    scores_out: ArrayLike,
     threshold: float,
     alpha: float = DEFAULT_ALPHA,
 ) -> GDPAuditResult:
@@ -339,8 +340,8 @@ def mu_bound_at_threshold(
 
 
 def mu_lower_bound_heldout(
-    scores_in: Sequence[float],
-    scores_out: Sequence[float],
+    scores_in: ArrayLike,
+    scores_out: ArrayLike,
     alpha: float = DEFAULT_ALPHA,
     select_frac: float = 0.5,
 ) -> GDPAuditResult:
@@ -384,8 +385,8 @@ def eps_for_mu(mu: float, delta: float) -> float:
 
 
 def audit_against_proof(
-    scores_in: Sequence[float],
-    scores_out: Sequence[float],
+    scores_in: ArrayLike,
+    scores_out: ArrayLike,
     proved_eps: float,
     delta: float,
     alpha: float = DEFAULT_ALPHA,
