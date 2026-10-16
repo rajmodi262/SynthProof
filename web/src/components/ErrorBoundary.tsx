@@ -27,7 +27,7 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="m-4 rounded-md border border-signal-bad/40 bg-signal-bad/[0.08] p-5 text-graphite dark:text-bone">
+        <div className="m-4 rounded-md border border-signal-bad/40 bg-signal-bad/8 p-5 text-graphite dark:text-bone">
           <div className="flex items-center gap-2 font-mono text-sm font-bold text-signal-bad">
             <span>⚠️</span>
             <span>{this.props.fallbackTitle || 'Component Render Error Intercepted'}</span>

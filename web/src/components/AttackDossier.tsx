@@ -78,7 +78,7 @@ export function AttackDossier({
           <div className="flex items-baseline justify-between">
             <h4 className="font-sans text-sm font-medium">Canary auditor</h4>
             <span
-              className={`font-mono text-2xs uppercase tracking-[0.1em] ${
+              className={`font-mono text-2xs uppercase tracking-widest ${
                 audit && audit.audited_eps > 0 ? 'text-signal-bad' : 'text-graphite-faint'
               }`}
             >

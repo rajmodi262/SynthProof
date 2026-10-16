@@ -73,7 +73,7 @@ export function BoundsGauge({
                   'repeating-linear-gradient(to bottom, #8A93A6 0 3px, transparent 3px 6px)',
               }}
             />
-            <span className="mt-1 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.1em] text-graphite-faint">
+            <span className="mt-1 whitespace-nowrap font-mono text-[9px] uppercase tracking-widest text-graphite-faint">
               audit ceiling
             </span>
           </div>
@@ -110,7 +110,7 @@ export function BoundsGauge({
         <div>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-audited-lift" />
-            <span className="label !tracking-[0.1em] text-graphite-faint">ε audited</span>
+            <span className="label tracking-widest! text-graphite-faint">ε audited</span>
           </div>
           <p className="mt-1 text-[11px] leading-snug text-graphite-faint">
             Measured lower bound from held-out canaries, 95% Clopper-Pearson.
@@ -119,7 +119,7 @@ export function BoundsGauge({
         <div>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-proved-lift" />
-            <span className="label !tracking-[0.1em] text-graphite-faint">ε proved</span>
+            <span className="label tracking-widest! text-graphite-faint">ε proved</span>
           </div>
           <p className="mt-1 text-[11px] leading-snug text-graphite-faint">
             Formal upper bound, RDP composition via dp_accounting.
@@ -183,7 +183,7 @@ export function BudgetMeter({
       </div>
       <div className="relative mt-3 h-2.5 overflow-hidden rounded-full bg-bone-deep shadow-inner dark:bg-stage-deep">
         <motion.div
-          className="absolute inset-y-0 left-0 bg-gradient-to-r from-proved via-[#6366f1] to-proved-lift shadow-sm"
+          className="absolute inset-y-0 left-0 bg-linear-to-r from-proved via-[#6366f1] to-proved-lift shadow-sm"
           initial={false}
           animate={{ width: `${frac * 100}%` }}
           transition={{ type: 'spring', stiffness: 120, damping: 22 }}

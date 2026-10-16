@@ -1,16 +1,184 @@
-@import './theme/tokens.css';
+@import './theme/tokens.css' layer(base);
 
-@import '@fontsource/instrument-serif/400.css';
-@import '@fontsource/instrument-serif/400-italic.css';
-@import '@fontsource/geist-sans/400.css';
-@import '@fontsource/geist-sans/500.css';
-@import '@fontsource/geist-sans/600.css';
-@import '@fontsource/geist-mono/400.css';
-@import '@fontsource/geist-mono/500.css';
+@import '@fontsource/instrument-serif/400.css' layer(base);
+@import '@fontsource/instrument-serif/400-italic.css' layer(base);
+@import '@fontsource/geist-sans/400.css' layer(base);
+@import '@fontsource/geist-sans/500.css' layer(base);
+@import '@fontsource/geist-sans/600.css' layer(base);
+@import '@fontsource/geist-mono/400.css' layer(base);
+@import '@fontsource/geist-mono/500.css' layer(base);
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@custom-variant dark (&:is([data-theme="dark"] *));
+
+@theme {
+  /* Tailwind 4 derives opacity modifiers (text-brass/50) with color-mix(), so the colours can
+     reference the theme variables directly; the v3 config needed rgb(var(--x-rgb) / a). */
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-brass: var(--brass);
+  --color-seal: var(--seal);
+  --color-verify: var(--verify);
+  --color-graphite: var(--ink);
+  --color-graphite-soft: var(--muted);
+  --color-graphite-faint: var(--faint);
+  --color-proved: var(--brass);
+  --color-proved-lift: var(--brass);
+  --color-audited: var(--brass);
+  --color-audited-lift: var(--brass);
+  --color-signal-ok: var(--verify);
+  --color-signal-bad: var(--seal);
+
+  --color-paper-2: var(--paper-2);
+  --color-paper: var(--paper);
+
+  --color-card: var(--card);
+
+  --color-brass-deep: var(--brass-deep);
+
+  --color-seal-bg: var(--seal-bg);
+
+  --color-on-accent: var(--on-accent);
+
+  --color-verify-bg: var(--verify-bg);
+
+  --color-bone: var(--paper);
+  --color-bone-deep: var(--paper-2);
+  --color-bone-edge: var(--line);
+
+  --color-stage: var(--paper-2);
+  --color-stage-deep: var(--paper);
+  --color-stage-line: var(--line);
+
+  --color-proved-wash: var(--paper-2);
+
+  --color-audited-wash: var(--paper-2);
+
+  --color-signal-warn: #d97706;
+
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-sans: 'Geist Sans', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-2xs--letter-spacing: 0.08em;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+
+  --shadow-e0: var(--shadow-e0);
+  --shadow-e1: var(--shadow-e1);
+  --shadow-e2: var(--shadow-e2);
+  --shadow-inset: var(--shadow-inset);
+  --shadow-brass: var(--shadow-brass);
+
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility label {
+  @apply font-mono text-2xs uppercase tracking-[0.14em] text-muted;
+}
+
+@utility measured-divider {
+  /* Measured divider: 1px line with 24px brass tick at left */
+  position: relative;
+  height: 1px;
+  background-color: var(--line);
+  width: 100%;
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 24px;
+    height: 1px;
+    background-color: var(--brass);
+  }
+}
+
+@utility panel {
+  @apply rounded-lg border border-line bg-card shadow-e0 transition-all duration-200;
+}
+
+@utility well {
+  @apply rounded-xl border border-line bg-paper-2 shadow-inset;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2
+           font-sans text-sm font-medium transition-all duration-150 active:scale-[0.99]
+           disabled:cursor-not-allowed disabled:opacity-40;
+}
+
+@utility btn-brass {
+  @apply btn bg-brass text-on-accent shadow-e0 hover:shadow-e1 hover:bg-[#966330] active:bg-brass-deep;
+  box-shadow: inset 0 1px 0 rgba(255, 244, 222, 0.4);
+}
+
+@utility btn-ghost {
+  @apply btn border border-line text-ink hover:bg-paper-2 hover:border-muted;
+}
+
+@utility btn-seal {
+  @apply btn border text-seal;
+  border-color: var(--seal);
+  background-color: var(--seal-bg);
+  &:hover {
+    background-color: rgba(var(--seal-rgb), 0.2);
+  }
+}
+
+@utility btn-verify {
+  @apply btn border text-verify;
+  border-color: var(--verify);
+  background-color: var(--verify-bg);
+  &:hover {
+    background-color: rgba(var(--verify-rgb), 0.2);
+  }
+}
+
+@utility field {
+  @apply w-full rounded-md border border-line bg-card px-3 py-2 font-sans text-sm
+           text-ink outline-hidden transition-all duration-150
+           focus:border-brass;
+}
 
 @layer base {
   html {
@@ -52,76 +220,6 @@
   .thin-scroll::-webkit-scrollbar-thumb {
     background: var(--line);
     border-radius: 3px;
-  }
-}
-
-@layer components {
-  .label {
-    @apply font-mono text-2xs uppercase tracking-[0.14em] text-muted;
-  }
-
-  /* Measured divider: 1px line with 24px brass tick at left */
-  .measured-divider {
-    position: relative;
-    height: 1px;
-    background-color: var(--line);
-    width: 100%;
-  }
-  .measured-divider::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 24px;
-    height: 1px;
-    background-color: var(--brass);
-  }
-
-  .panel {
-    @apply rounded-lg border border-line bg-card shadow-e0 transition-all duration-200;
-  }
-
-  .well {
-    @apply rounded-xl border border-line bg-paper-2 shadow-inset;
-  }
-
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2
-           font-sans text-sm font-medium transition-all duration-150 active:scale-[0.99]
-           disabled:cursor-not-allowed disabled:opacity-40;
-  }
-
-  .btn-brass {
-    @apply btn bg-brass text-on-accent shadow-e0 hover:shadow-e1 hover:bg-[#966330] active:bg-brass-deep;
-    box-shadow: inset 0 1px 0 rgba(255, 244, 222, 0.4);
-  }
-
-  .btn-ghost {
-    @apply btn border border-line text-ink hover:bg-paper-2 hover:border-muted;
-  }
-
-  .btn-seal {
-    @apply btn border text-seal;
-    border-color: var(--seal);
-    background-color: var(--seal-bg);
-  }
-  .btn-seal:hover {
-    background-color: rgba(var(--seal-rgb), 0.2);
-  }
-
-  .btn-verify {
-    @apply btn border text-verify;
-    border-color: var(--verify);
-    background-color: var(--verify-bg);
-  }
-  .btn-verify:hover {
-    background-color: rgba(var(--verify-rgb), 0.2);
-  }
-
-  .field {
-    @apply w-full rounded-md border border-line bg-card px-3 py-2 font-sans text-sm
-           text-ink outline-none transition-all duration-150
-           focus:border-brass;
   }
 }
 

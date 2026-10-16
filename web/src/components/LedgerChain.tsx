@@ -129,7 +129,7 @@ export function LedgerChain({
             <button
               onClick={reset}
               disabled={busy}
-              className="btn-verify !px-3 !py-1 !text-xs"
+              className="btn-verify px-3! py-1! text-xs!"
             >
               Reset Chain
             </button>
@@ -174,7 +174,7 @@ export function LedgerChain({
             <button
               onClick={() => executeAttack()}
               disabled={busy}
-              className="btn-seal !bg-seal !text-on-accent hover:!bg-[#943834] !px-3.5 !py-1.5 !text-xs font-semibold shadow-xs"
+              className="btn-seal bg-seal! text-on-accent! hover:bg-[#943834]! px-3.5! py-1.5! text-xs! font-semibold shadow-xs"
             >
               {busy
                 ? 'Simulating Attack...'

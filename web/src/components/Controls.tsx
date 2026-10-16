@@ -296,7 +296,7 @@ export function Controls({
             <span className="font-mono text-[10px] text-faint">synthetic rows</span>
             <input
               type="number"
-              className="field mt-1 !py-1.5 !text-xs font-mono"
+              className="field mt-1 py-1.5! text-xs! font-mono"
               min={100}
               max={20000}
               step={100}
@@ -309,7 +309,7 @@ export function Controls({
             <span className="font-mono text-[10px] text-faint">canary pairs</span>
             <input
               type="number"
-              className="field mt-1 !py-1.5 !text-xs font-mono"
+              className="field mt-1 py-1.5! text-xs! font-mono"
               min={1}
               max={500}
               value={config.num_canaries}
@@ -321,7 +321,7 @@ export function Controls({
             <span className="font-mono text-[10px] text-faint">random seed</span>
             <input
               type="number"
-              className="field mt-1 !py-1.5 !text-xs font-mono"
+              className="field mt-1 py-1.5! text-xs! font-mono"
               placeholder="secret (withheld)"
               value={config.seed ?? ''}
               disabled={running}
@@ -334,7 +334,7 @@ export function Controls({
             <span className="font-mono text-[10px] text-faint">failure delta (δ)</span>
             <input
               type="number"
-              className="field mt-1 !py-1.5 !text-xs font-mono"
+              className="field mt-1 py-1.5! text-xs! font-mono"
               step="1e-6"
               value={config.delta}
               disabled={running}
@@ -349,8 +349,8 @@ export function Controls({
         whileTap={{ scale: 0.985 }}
         className={
           running
-            ? 'btn-seal w-full !py-3.5 !font-semibold text-sm shadow-xs'
-            : 'btn-brass w-full !py-3.5 !font-semibold text-sm shadow-e1'
+            ? 'btn-seal w-full py-3.5! font-semibold! text-sm shadow-xs'
+            : 'btn-brass w-full py-3.5! font-semibold! text-sm shadow-e1'
         }
         onClick={running ? onCancel : onRun}
       >

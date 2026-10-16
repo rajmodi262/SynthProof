@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 
 // The console talks to the FastAPI service. Proxying /api in dev keeps the browser on one
@@ -29,7 +30,7 @@ function preloadFonts(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), preloadFonts()],
+  plugins: [react(), tailwindcss(), preloadFonts()],
   resolve: { alias: { '@': path.resolve(__dirname, './src') } },
   server: {
     port: 5173,

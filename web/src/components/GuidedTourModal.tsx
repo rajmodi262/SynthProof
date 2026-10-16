@@ -191,7 +191,7 @@ export function GuidedTourModal({
               </div>
 
               {/* Call to Action Banner */}
-              <div className="rounded-xl border border-verify/30 bg-verify/[0.04] p-3 text-xs">
+              <div className="rounded-xl border border-verify/30 bg-verify/4 p-3 text-xs">
                 <span className="font-mono font-bold text-verify">How to try it: </span>
                 <span className="text-ink">{step.callToAction}</span>
               </div>
@@ -204,7 +204,7 @@ export function GuidedTourModal({
           <button
             onClick={() => setCurrentStepIdx((i) => Math.max(0, i - 1))}
             disabled={currentStepIdx === 0}
-            className="btn-secondary !px-3 !py-1.5 !text-xs disabled:opacity-40"
+            className="btn-secondary px-3! py-1.5! text-xs! disabled:opacity-40"
           >
             ← Previous
           </button>
@@ -216,7 +216,7 @@ export function GuidedTourModal({
                   onClose()
                   onOpenVerifier()
                 }}
-                className="btn-primary !border-brass !bg-brass !px-3 !py-1.5 !text-xs !text-on-accent"
+                className="btn-primary border-brass! bg-brass! px-3! py-1.5! text-xs! text-on-accent!"
               >
                 🛡️ Open Zero-Trust Verifier
               </button>
@@ -225,14 +225,14 @@ export function GuidedTourModal({
             {currentStepIdx < TOUR_STEPS.length - 1 ? (
               <button
                 onClick={() => setCurrentStepIdx((i) => Math.min(TOUR_STEPS.length - 1, i + 1))}
-                className="btn-primary !px-4 !py-1.5 !text-xs"
+                className="btn-primary px-4! py-1.5! text-xs!"
               >
                 Next Step →
               </button>
             ) : (
               <button
                 onClick={onClose}
-                className="btn-ghost !px-3 !py-1.5 !text-xs text-muted hover:text-ink"
+                className="btn-ghost px-3! py-1.5! text-xs! text-muted hover:text-ink"
               >
                 Done / Explore Console
               </button>

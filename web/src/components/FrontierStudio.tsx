@@ -264,7 +264,7 @@ export function FrontierStudio({
               <tbody>
                 {cols.map((rowCol, rIdx) => (
                   <tr key={rowCol}>
-                    <td className="p-1 text-right font-semibold text-muted truncate max-w-[80px]">
+                    <td className="p-1 text-right font-semibold text-muted truncate max-w-20">
                       {rowCol.slice(0, 8)}
                     </td>
                     {cols.map((colCol, cIdx) => {

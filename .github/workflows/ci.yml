@@ -266,12 +266,10 @@ jobs:
           retention-days: 7
 
       - name: Dependency CVEs (npm audit)
-        # Production dependencies must be clean and block the build. Dev-only advisories
-        # are reported but do not fail it: they affect the build host, not the shipped
-        # bundle, and a tooling advisory should not stop a thesis experiment landing.
-        run: |
-          npm audit --omit=dev --audit-level=moderate
-          npm audit --audit-level=moderate || echo "::warning::dev-only advisories present"
+        # Every dependency, dev included, must be clean and blocks the build. Dev-only
+        # advisories used to be a warning while tailwind 3's build chain carried seven of
+        # them; the tailwind 4 migration (2026-10-16) cleared the last one.
+        run: npm audit --audit-level=moderate
 
   # The auditor is the instrument behind every privacy claim this project makes, and its
   # failure mode is silent: a blind auditor reports 0.00, which is also what a correct auditor

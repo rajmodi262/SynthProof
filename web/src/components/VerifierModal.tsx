@@ -8,9 +8,9 @@ import type { CertificateVerifyResult, RangeTone } from '@/types'
 // with the ceiling, so a claim no audit could certify rendered green. Green now means only that
 // the audit's reach covered the claim; it never means the release is safe.
 const RANGE_BOX: Record<RangeTone, string> = {
-  ok: 'border-signal-ok/50 bg-signal-ok/[0.04]',
-  warn: 'border-signal-warn/50 bg-signal-warn/[0.04]',
-  fail: 'border-signal-bad/50 bg-signal-bad/[0.05]',
+  ok: 'border-signal-ok/50 bg-signal-ok/4',
+  warn: 'border-signal-warn/50 bg-signal-warn/4',
+  fail: 'border-signal-bad/50 bg-signal-bad/5',
 }
 const RANGE_BADGE: Record<RangeTone, string> = {
   ok: 'bg-signal-ok/20 text-signal-ok',
@@ -246,7 +246,7 @@ export function VerifierModal({
           {/* Controls Bar */}
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-paper-2/60 p-3 shadow-xs">
             <div className="flex items-center gap-2">
-              <label className="btn-secondary cursor-pointer !px-3 !py-1.5 !text-xs">
+              <label className="btn-secondary cursor-pointer px-3! py-1.5! text-xs!">
                 📁 Upload Sheet / Capsule (.html, .json)
                 <input
                   type="file"
@@ -257,7 +257,7 @@ export function VerifierModal({
               </label>
               {initialSheet && (
                 <button
-                  className="btn-ghost !px-3 !py-1.5 !text-xs text-muted hover:text-ink"
+                  className="btn-ghost px-3! py-1.5! text-xs! text-muted hover:text-ink"
                   onClick={() => {
                     setJsonText(JSON.stringify(initialSheet, null, 2))
                     if (initialSheet.public_key) setPubKeyOverride(initialSheet.public_key)
@@ -271,14 +271,14 @@ export function VerifierModal({
 
             <div className="flex items-center gap-2">
               <button
-                className="btn-primary !px-4 !py-1.5 !text-xs"
+                className="btn-primary px-4! py-1.5! text-xs!"
                 onClick={() => handleVerify()}
                 disabled={loading}
               >
                 {loading ? 'Verifying...' : '⚡ Verify Certificate'}
               </button>
               <button
-                className="btn-secondary !px-4 !py-1.5 !text-xs !border-verify/50 !text-verify hover:!bg-verify/10"
+                className="btn-secondary px-4! py-1.5! text-xs! border-verify/50! text-verify! hover:bg-verify/10!"
                 onClick={handleExportCapsule}
                 disabled={exporting || !jsonText.trim()}
               >
@@ -300,9 +300,9 @@ export function VerifierModal({
                   className={`rounded-md border p-4 ${
                     result.signature_valid
                       ? result.publisher_authenticated
-                        ? 'border-verify/50 bg-verify/[0.06]'
-                        : 'border-brass/50 bg-brass/[0.06]'
-                      : 'border-seal/50 bg-seal/[0.06]'
+                        ? 'border-verify/50 bg-verify/6'
+                        : 'border-brass/50 bg-brass/6'
+                      : 'border-seal/50 bg-seal/6'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -429,7 +429,7 @@ export function VerifierModal({
             {activeTab === 'croissant' && croissantText && (
               <button
                 onClick={copyCroissant}
-                className="btn-ghost !px-2.5 !py-1 !text-2xs text-brass hover:text-ink"
+                className="btn-ghost px-2.5! py-1! text-2xs! text-brass hover:text-ink"
               >
                 {copiedCroissant ? '✓ Copied!' : '📋 Copy JSON-LD'}
               </button>
@@ -475,7 +475,7 @@ export function VerifierModal({
           <span className="font-mono text-[11px] text-muted">
             🔒 Fully offline-capable WebCrypto verification. No secret data ever leaves your browser.
           </span>
-          <button className="btn-ghost !px-4 !py-1.5 !text-xs text-muted hover:text-ink" onClick={onClose}>
+          <button className="btn-ghost px-4! py-1.5! text-xs! text-muted hover:text-ink" onClick={onClose}>
             Close
           </button>
         </div>

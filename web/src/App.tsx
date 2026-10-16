@@ -377,13 +377,13 @@ export default function App() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setTourOpen(true)}
-              className="btn-ghost !px-2.5 !py-1 !text-xs font-mono"
+              className="btn-ghost px-2.5! py-1! text-xs! font-mono"
             >
               <span>🎯 Tour</span>
             </button>
             <button
               onClick={() => setVerifierOpen(true)}
-              className="btn-brass !px-2.5 !py-1 !text-xs font-mono"
+              className="btn-brass px-2.5! py-1! text-xs! font-mono"
               aria-label="Open the Zero-Trust Verifier"
             >
               <span>🛡️ Verifier</span>
@@ -652,20 +652,20 @@ export default function App() {
                 </span>
                 <button
                   onClick={() => setVerifierOpen(true)}
-                  className="btn-brass !px-3 !py-1 !text-xs"
+                  className="btn-brass px-3! py-1! text-xs!"
                 >
                   🛡️ Inspect in Verifier
                 </button>
                 <button
                   onClick={copySheetJson}
-                  className="btn-ghost !px-3 !py-1 !text-xs"
+                  className="btn-ghost px-3! py-1! text-xs!"
                 >
                   {copiedSheet ? '✓ Copied!' : '📋 Copy JSON-LD'}
                 </button>
                 <button
                   onClick={handleDownloadCapsule}
                   disabled={exportingCapsule}
-                  className="btn-verify !px-3 !py-1 !text-xs"
+                  className="btn-verify px-3! py-1! text-xs!"
                 >
                   {exportingCapsule ? 'Packaging...' : '📦 Export Standalone Capsule (.html)'}
                 </button>
