@@ -69,32 +69,32 @@ export function KpiCard({
           {hasValue ? value : '—'}
         </span>
         {unit && hasValue && (
-          <span className="font-mono text-xs font-medium text-muted">
-            {unit}
-          </span>
+          <span className="font-mono text-xs font-medium text-muted">{unit}</span>
         )}
       </div>
 
-      {/* Layman label + micro-state chip */}
-      <div className="flex w-full flex-wrap items-center justify-between gap-1.5">
-        <p className="max-w-[85%] font-sans text-[12px] leading-tight text-muted">
-          {laymanLabel}
-        </p>
-        {chip && (
-          <span
-            className={`inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider ${
-              chip.variant === 'verify'
-                ? 'bg-verify-bg text-verify border border-verify/30'
-                : chip.variant === 'seal'
-                ? 'bg-seal-bg text-seal border border-seal/30'
-                : chip.variant === 'brass'
-                ? 'bg-brass/10 text-brass border border-brass/30'
-                : 'bg-paper-2 text-muted border border-line'
-            }`}
-          >
-            {chip.text}
-          </span>
-        )}
+      {/* Layman label, then the micro-state chip on a row of its own that is ALWAYS reserved.
+          The chip arrives with the ledger, after first paint; sharing a wrapping row with the
+          label, it pushed the label onto another line and grew every card (a 0.54 layout shift). */}
+      <div className="flex w-full flex-col gap-1.5">
+        <p className="font-sans text-[12px] leading-tight text-muted">{laymanLabel}</p>
+        <div className="h-5">
+          {chip && (
+            <span
+              className={`inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider ${
+                chip.variant === 'verify'
+                  ? 'bg-verify-bg text-verify border border-verify/30'
+                  : chip.variant === 'seal'
+                    ? 'bg-seal-bg text-seal border border-seal/30'
+                    : chip.variant === 'brass'
+                      ? 'bg-brass/10 text-brass border border-brass/30'
+                      : 'bg-paper-2 text-muted border border-line'
+              }`}
+            >
+              {chip.text}
+            </span>
+          )}
+        </div>
       </div>
     </button>
   )

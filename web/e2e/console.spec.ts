@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -317,5 +318,46 @@ test.describe('the full pipeline, through the UI @slow', () => {
     // so at the default target of eps=1 it silently vanished, hiding the ceiling in exactly
     // the case where it matters: sitting far above the proved bound.
     await expect(page.getByText(/audit ceiling/i).first()).toBeVisible()
+
+    // The measured frontier holds exactly the one release that ran, with its ledger entry --
+    // never a modelled curve (W8).
+    await expect(page.getByTestId('frontier-point')).toHaveCount(1)
+    await expect(page.getByRole('table', { name: /Measured frontier points/i })).toBeVisible()
+
+    // Accessibility of the populated console, not just the empty first screen (W8). The
+    // panels a release reveals are the ones an examiner actually reads.
+    const { violations } = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze()
+    const serious = violations
+      .filter((v) => v.impact === 'serious' || v.impact === 'critical')
+      .map((v) => `${v.id}: ${v.nodes.length} node(s), e.g. ${v.nodes[0]?.target.join(' ')}`)
+    expect(serious).toEqual([])
+  })
+
+  test('an epsilon sweep adds one measured point per real release, each with its ledger entry', async ({
+    page,
+    request,
+  }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: /HR Attrition/i }).first().click()
+    await page.getByText(/Run parameters/i).first().click()
+    await page.locator('label:has-text("canary pairs") input').fill('4')
+    const before = (await (await request.get('/api/ledger')).json()).count as number
+
+    await page.getByRole('button', { name: /Run release & compute proof/i }).first().click()
+    const sweep = page.getByRole('button', { name: /Sweep ε/ })
+    await expect(sweep).toBeEnabled({ timeout: 300_000 })
+    await sweep.click()
+
+    // One release for the first run, then one per budget in the sweep grid (five).
+    await expect(page.getByTestId('frontier-point')).toHaveCount(6, { timeout: 540_000 })
+    await expect(sweep).toBeEnabled({ timeout: 60_000 })
+    const rows = page.getByRole('table', { name: /Measured frontier points/i }).locator('tbody tr')
+    await expect(rows).toHaveCount(6)
+
+    // Every point was charged: the ledger grew by exactly the releases plotted.
+    const after = (await (await request.get('/api/ledger')).json()).count as number
+    expect(after - before).toBe(6)
   })
 })

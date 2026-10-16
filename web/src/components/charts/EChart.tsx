@@ -1,43 +1,15 @@
-import { useEffect, useRef } from 'react'
-import ReactECharts from 'echarts-for-react'
-import type { EChartsOption } from 'echarts'
+import { Suspense, lazy } from 'react'
+import type { EChartProps } from './EChartImpl'
 
-interface EChartProps {
-  option: EChartsOption
-  style?: React.CSSProperties
-  className?: string
-  loading?: boolean
-  onEvents?: Record<string, (params: any) => void>
-}
+// ECharts (~570 kB) is fetched only when a chart first renders, so it is off the critical path
+// to first paint. On Lighthouse's mobile profile it was the largest script blocking the
+// first render of the console.
+const EChartImpl = lazy(() => import('./EChartImpl'))
 
-export function EChart({ option, style, className, loading = false, onEvents }: EChartProps) {
-  const chartRef = useRef<ReactECharts>(null)
-
-  // Listen for dark mode / theme changes on <html>
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      chartRef.current?.getEchartsInstance().resize()
-    })
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] })
-    return () => observer.disconnect()
-  }, [])
-
+export function EChart(props: EChartProps) {
   return (
-    <div className={`relative w-full ${className || ''}`} style={style}>
-      <ReactECharts
-        ref={chartRef}
-        option={option}
-        notMerge={true}
-        lazyUpdate={true}
-        showLoading={loading}
-        loadingOption={{
-          text: '',
-          color: '#8A5A2B',
-          maskColor: 'transparent',
-        }}
-        style={{ height: '100%', width: '100%' }}
-        onEvents={onEvents}
-      />
-    </div>
+    <Suspense fallback={<div className={`relative w-full ${props.className || ''}`} style={props.style} />}>
+      <EChartImpl {...props} />
+    </Suspense>
   )
 }

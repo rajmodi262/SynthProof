@@ -42,6 +42,8 @@ export default {
           DEFAULT: withOpacity('--seal-rgb'),
           bg: 'var(--seal-bg)',
         },
+        // Text on a filled brass or seal surface; flips with the theme (tokens.css).
+        'on-accent': 'var(--on-accent)',
         verify: {
           DEFAULT: withOpacity('--verify-rgb'),
           bg: 'var(--verify-bg)',

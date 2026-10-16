@@ -1,16 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { api, runRelease } from '@/lib/api'
-import { PrivacyChamber, type CloudLayer } from '@/components/PrivacyChamber'
+import type { CloudLayer } from '@/components/PrivacyChamber'
 import { KpiRow } from '@/components/KpiRow'
 import { RightRail } from '@/components/RightRail'
 import { LedgerChain } from '@/components/LedgerChain'
 import { Controls } from '@/components/Controls'
-import { DetailDrawer } from '@/components/DetailDrawer'
-import { VerifierModal } from '@/components/VerifierModal'
-import { GuidedTourModal } from '@/components/GuidedTourModal'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
-import { FrontierStudio } from '@/components/FrontierStudio'
+import { SWEEP_GRID, pointFromResult, seriesFor, seriesKey, type FrontierPoint } from '@/lib/frontier'
 import type { RunStateContext } from '@/explainers/explainers'
 import type {
   DatasetOption,
@@ -21,6 +18,44 @@ import type {
   StageEvent,
   StartEvent,
 } from '@/types'
+
+// Loaded on demand, so the first paint does not wait for three.js (the chamber), KaTeX (the
+// frontier and explainer drawer) or the verifier. The main chunk was 1.5 MB before this.
+const PrivacyChamber = lazy(() => import('@/components/PrivacyChamber').then((m) => ({ default: m.PrivacyChamber })))
+const FrontierStudio = lazy(() => import('@/components/FrontierStudio').then((m) => ({ default: m.FrontierStudio })))
+const DetailDrawer = lazy(() => import('@/components/DetailDrawer').then((m) => ({ default: m.DetailDrawer })))
+const VerifierModal = lazy(() => import('@/components/VerifierModal').then((m) => ({ default: m.VerifierModal })))
+const GuidedTourModal = lazy(() => import('@/components/GuidedTourModal').then((m) => ({ default: m.GuidedTourModal })))
+
+// `className` sets the placeholder's height to the component's own, so nothing below it jumps
+// when the chunk arrives (the chamber's 192 px placeholder caused a 0.54 layout shift).
+function Loading({ label, className = 'h-48' }: { label: string; className?: string }) {
+  return (
+    <div role="status" className={`${className} flex items-center justify-center rounded-xl border border-line bg-card/60 font-mono text-xs text-muted`}>
+      Loading {label}…
+    </div>
+  )
+}
+
+// Mounts its children once they come within 200 px of the viewport, and keeps them mounted.
+// On a phone the 3D chamber sits below the controls, and starting three.js at load cost 2.5 s
+// of main-thread time on Lighthouse's mobile profile for a canvas no one could see yet.
+function WhenVisible({ children, placeholder }: { children: React.ReactNode; placeholder: React.ReactNode }) {
+  const [seen, setSeen] = useState(() => typeof IntersectionObserver === 'undefined')
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (seen || !ref.current) return
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) setSeen(true)
+      },
+      { rootMargin: '200px' },
+    )
+    io.observe(ref.current)
+    return () => io.disconnect()
+  }, [seen])
+  return seen ? <>{children}</> : <div ref={ref}>{placeholder}</div>
+}
 
 const DEFAULT_CONFIG: RunRequest = {
   dataset: 'toy',
@@ -82,6 +117,9 @@ export default function App() {
   const [result, setResult] = useState<RunResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [abort, setAbort] = useState<(() => void) | null>(null)
+  // Every release completed in this session, for the measured frontier.
+  const [frontier, setFrontier] = useState<FrontierPoint[]>([])
+  const [sweepProgress, setSweepProgress] = useState<{ done: number; total: number } | null>(null)
 
   // Layout mode & presentation state
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('studio')
@@ -128,30 +166,59 @@ export default function App() {
 
   const currentStage = running ? (stages[stages.length - 1]?.stage ?? 'starting') : null
 
-  function handleRun() {
+  // Runs `reqs` one after another through the real /run stream. Each completed release is
+  // charged to the ledger and becomes a frontier point; a failure stops the rest.
+  function runSequence(reqs: RunRequest[], sweep: boolean) {
     setRunning(true)
-    setStages([])
-    setResult(null)
     setError(null)
-    setStart(null)
-
-    const submittedConfig = config
-    setSubmitted(submittedConfig)
-
-    const cancel = runRelease(submittedConfig, {
-      onStart: setStart,
-      onStage: (e) => setStages((prev) => [...prev, e]),
-      onDone: (r) => {
-        setResult(r)
-        setRunning(false)
-        refreshLedger()
-      },
-      onError: (m) => {
-        setError(m)
-        setRunning(false)
-      },
+    let cancelled = false
+    let cancelCurrent: (() => void) | null = null
+    setAbort(() => () => {
+      cancelled = true
+      cancelCurrent?.()
+      setSweepProgress(null)
     })
-    setAbort(() => cancel)
+
+    const step = (i: number) => {
+      if (cancelled) return
+      if (i >= reqs.length) {
+        setRunning(false)
+        setSweepProgress(null)
+        return
+      }
+      const req = reqs[i]
+      setStages([])
+      setResult(null)
+      setStart(null)
+      setSubmitted(req)
+      if (sweep) setSweepProgress({ done: i + 1, total: reqs.length })
+      cancelCurrent = runRelease(req, {
+        onStart: setStart,
+        onStage: (e) => setStages((prev) => [...prev, e]),
+        onDone: (r) => {
+          setResult(r)
+          setFrontier((prev) => [...prev, pointFromResult(req, r)])
+          refreshLedger()
+          step(i + 1)
+        },
+        onError: (m) => {
+          setError(sweep ? `Sweep stopped at ε = ${req.target_eps}: ${m}` : m)
+          setRunning(false)
+          setSweepProgress(null)
+        },
+      })
+    }
+    step(0)
+  }
+
+  function handleRun() {
+    runSequence([config], false)
+  }
+
+  function handleSweep() {
+    if (running) return
+    const base = submitted ?? config
+    runSequence(SWEEP_GRID.map((eps) => ({ ...base, target_eps: eps })), true)
   }
 
   function handleCancel() {
@@ -222,13 +289,13 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-paper text-ink selection:bg-brass selection:text-white">
+    <div className="min-h-screen bg-paper text-ink selection:bg-brass selection:text-on-accent">
       {/* ------------------------------------------------------------- 1. Header (Sticky H 56px) */}
       <header className="sticky top-0 z-30 h-14 border-b border-line bg-paper/90 backdrop-blur-md">
         <div className="mx-auto flex h-full max-w-[1600px] items-center justify-between px-5">
           {/* Left: Product Lockup */}
           <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brass text-white shadow-brass">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brass text-on-accent shadow-brass">
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
@@ -250,7 +317,7 @@ export default function App() {
               onClick={() => setLayoutMode('studio')}
               className={`flex items-center gap-1.5 rounded-md px-3 py-1 font-mono text-xs font-semibold transition-all ${
                 layoutMode === 'studio'
-                  ? 'bg-brass text-white shadow-xs'
+                  ? 'bg-brass text-on-accent shadow-xs'
                   : 'text-muted hover:text-ink'
               }`}
             >
@@ -261,7 +328,7 @@ export default function App() {
               onClick={() => setLayoutMode('executive')}
               className={`flex items-center gap-1.5 rounded-md px-3 py-1 font-mono text-xs font-semibold transition-all ${
                 layoutMode === 'executive'
-                  ? 'bg-brass text-white shadow-xs'
+                  ? 'bg-brass text-on-accent shadow-xs'
                   : 'text-muted hover:text-ink'
               }`}
             >
@@ -294,7 +361,7 @@ export default function App() {
                     active
                       ? p.refuses
                         ? 'bg-amber-600 text-white shadow-xs'
-                        : 'bg-brass text-white shadow-xs'
+                        : 'bg-brass text-on-accent shadow-xs'
                       : p.refuses
                       ? 'border border-amber-600/40 bg-amber-600/10 text-amber-800 dark:text-amber-300'
                       : 'border border-line bg-card text-muted hover:border-brass hover:text-ink'
@@ -423,6 +490,8 @@ export default function App() {
             {/* Center Hero: 3D Privacy Chamber Stage (Takes Center Command!) */}
             <div className="order-1 xl:order-2 flex flex-col min-h-[580px] lg:min-h-[620px]">
               <ErrorBoundary fallbackTitle="3D Privacy Chamber Stage">
+                <WhenVisible placeholder={<Loading label="the privacy chamber" className="min-h-[580px]" />}>
+                <Suspense fallback={<Loading label="the privacy chamber" className="min-h-[580px]" />}>
                 <PrivacyChamber
                   cloud={result?.cloud ?? null}
                   layer={layer}
@@ -441,6 +510,8 @@ export default function App() {
                     else openExplainer('boundary')
                   }}
                 />
+                </Suspense>
+                </WhenVisible>
               </ErrorBoundary>
             </div>
 
@@ -475,6 +546,8 @@ export default function App() {
 
             <div className="flex flex-col min-h-[520px]">
               <ErrorBoundary fallbackTitle="3D Privacy Chamber Stage">
+                <WhenVisible placeholder={<Loading label="the privacy chamber" className="min-h-[580px]" />}>
+                <Suspense fallback={<Loading label="the privacy chamber" className="min-h-[580px]" />}>
                 <PrivacyChamber
                   cloud={result?.cloud ?? null}
                   layer={layer}
@@ -493,6 +566,8 @@ export default function App() {
                     else openExplainer('boundary')
                   }}
                 />
+                </Suspense>
+                </WhenVisible>
               </ErrorBoundary>
             </div>
 
@@ -542,11 +617,15 @@ export default function App() {
         {result && (
           <section>
             <ErrorBoundary fallbackTitle="Frontier Modeling Studio">
+              <Suspense fallback={<Loading label="the frontier" />}>
               <FrontierStudio
-                measurements={result.measurements}
                 result={result}
-                targetEps={(submitted ?? config).target_eps}
+                points={submitted ? seriesFor(frontier, seriesKey(submitted)) : []}
+                onSweep={handleSweep}
+                running={running}
+                sweepProgress={sweepProgress}
               />
+              </Suspense>
             </ErrorBoundary>
           </section>
         )}
@@ -593,7 +672,7 @@ export default function App() {
               </div>
             </header>
 
-            <pre className="thin-scroll max-h-72 overflow-auto rounded-lg border border-line bg-paper-2 p-4 font-mono text-[11px] leading-relaxed text-ink shadow-inset">
+            <pre tabIndex={0} aria-label="Privacy Data Sheet JSON" className="thin-scroll max-h-72 overflow-auto rounded-lg border border-line bg-paper-2 p-4 font-mono text-[11px] leading-relaxed text-ink shadow-inset">
               {JSON.stringify(result.sheet, null, 2)}
             </pre>
           </section>
@@ -612,6 +691,7 @@ export default function App() {
         </footer>
       </main>
 
+      <Suspense fallback={null}>
       {/* Signature DetailDrawer */}
       <DetailDrawer
         explainerKey={activeExplainer}
@@ -632,6 +712,7 @@ export default function App() {
         onClose={() => setTourOpen(false)}
         onOpenVerifier={() => setVerifierOpen(true)}
       />
+      </Suspense>
     </div>
   )
 }

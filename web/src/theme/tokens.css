@@ -1,27 +1,30 @@
 /* Brass, Ivory & Ink Precision Scientific Instrument Design System */
+/* Contrast: muted, faint and brass were adjusted on 2026-10-16 so every text token clears WCAG AA
+   (4.5:1) on paper-2, checked by axe in web/e2e/a11y.spec.ts. faint was 2.6:1 there. */
 
 :root {
   --paper: #F4F1EA;
   --paper-2: #EDE8DD;
   --card: #FBFAF6;
   --ink: #1A1712;
-  --muted: #6B6053;
-  --faint: #9A8F7E;
+  --muted: #554C42;
+  --faint: #6F675B;
   --line: #DED6C7;
-  --brass: #8A5A2B;
+  --brass: #825528;
   --brass-deep: #5E3A18;
   --seal: #7C2D2A;
   --seal-bg: #F3E4E1;
   --verify: #3F6B4E;
   --verify-bg: #E4EFE6;
+  --on-accent: #FBFAF6;
 
   /* RGB channels for Tailwind opacity modifiers */
   --seal-rgb: 124, 45, 42;
   --verify-rgb: 63, 107, 78;
-  --brass-rgb: 138, 90, 43;
+  --brass-rgb: 130, 85, 40;
   --ink-rgb: 26, 23, 18;
-  --muted-rgb: 107, 96, 83;
-  --faint-rgb: 154, 143, 126;
+  --muted-rgb: 85, 76, 66;
+  --faint-rgb: 111, 103, 91;
   --line-rgb: 222, 214, 199;
 
   /* Elevations */
@@ -39,21 +42,22 @@
     --card: #221D16;
     --ink: #F3EEE4;
     --muted: #A9A08F;
-    --faint: #7A7060;
+    --faint: #938B7E;
     --line: #3A3227;
-    --brass: #C08A4E;
+    --brass: #C28E53;
     --brass-deep: #8A5A2B;
     --seal: #C4635C;
     --seal-bg: #2A1714;
     --verify: #7FB08C;
     --verify-bg: #12241A;
+    --on-accent: #17140F;
 
     --seal-rgb: 196, 99, 92;
     --verify-rgb: 127, 176, 140;
-    --brass-rgb: 192, 138, 78;
+    --brass-rgb: 194, 142, 83;
     --ink-rgb: 243, 238, 228;
     --muted-rgb: 169, 160, 143;
-    --faint-rgb: 122, 112, 96;
+    --faint-rgb: 147, 139, 126;
     --line-rgb: 58, 50, 39;
 
     --shadow-e1: 0 1px 3px rgba(0, 0, 0, 0.3), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
@@ -70,21 +74,22 @@
   --card: #221D16;
   --ink: #F3EEE4;
   --muted: #A9A08F;
-  --faint: #7A7060;
+  --faint: #938B7E;
   --line: #3A3227;
-  --brass: #C08A4E;
+  --brass: #C28E53;
   --brass-deep: #8A5A2B;
   --seal: #C4635C;
   --seal-bg: #2A1714;
   --verify: #7FB08C;
   --verify-bg: #12241A;
+  --on-accent: #17140F;
 
   --seal-rgb: 196, 99, 92;
   --verify-rgb: 127, 176, 140;
-  --brass-rgb: 192, 138, 78;
+  --brass-rgb: 194, 142, 83;
   --ink-rgb: 243, 238, 228;
   --muted-rgb: 169, 160, 143;
-  --faint-rgb: 122, 112, 96;
+  --faint-rgb: 147, 139, 126;
   --line-rgb: 58, 50, 39;
 
   --shadow-e1: 0 1px 3px rgba(0, 0, 0, 0.3), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
@@ -98,22 +103,23 @@
   --paper-2: #EDE8DD;
   --card: #FBFAF6;
   --ink: #1A1712;
-  --muted: #6B6053;
-  --faint: #9A8F7E;
+  --muted: #554C42;
+  --faint: #6F675B;
   --line: #DED6C7;
-  --brass: #8A5A2B;
+  --brass: #825528;
   --brass-deep: #5E3A18;
   --seal: #7C2D2A;
   --seal-bg: #F3E4E1;
   --verify: #3F6B4E;
   --verify-bg: #E4EFE6;
+  --on-accent: #FBFAF6;
 
   --seal-rgb: 124, 45, 42;
   --verify-rgb: 63, 107, 78;
-  --brass-rgb: 138, 90, 43;
+  --brass-rgb: 130, 85, 40;
   --ink-rgb: 26, 23, 18;
-  --muted-rgb: 107, 96, 83;
-  --faint-rgb: 154, 143, 126;
+  --muted-rgb: 85, 76, 66;
+  --faint-rgb: 111, 103, 91;
   --line-rgb: 222, 214, 199;
 
   --shadow-e0: none;

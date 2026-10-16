@@ -808,7 +808,7 @@ export function PrivacyChamber({
               onClick={() => selectChapter(ch)}
               className={`rounded px-2.5 py-1 font-mono text-[10px] font-medium transition-all ${
                 activeChapter === ch.num
-                  ? 'bg-brass text-white shadow-xs font-semibold'
+                  ? 'bg-brass text-on-accent shadow-xs font-semibold'
                   : 'text-muted hover:text-ink hover:bg-card'
               }`}
             >
@@ -843,7 +843,7 @@ export function PrivacyChamber({
               type="button"
               onClick={() => setView('orbit')}
               className={`rounded px-2 py-0.5 font-mono text-[10px] font-medium transition-all ${
-                view === 'orbit' ? 'bg-brass text-white shadow-xs' : 'text-muted hover:text-ink'
+                view === 'orbit' ? 'bg-brass text-on-accent shadow-xs' : 'text-muted hover:text-ink'
               }`}
             >
               Orbit
@@ -852,7 +852,7 @@ export function PrivacyChamber({
               type="button"
               onClick={() => setView('top')}
               className={`rounded px-2 py-0.5 font-mono text-[10px] font-medium transition-all ${
-                view === 'top' ? 'bg-brass text-white shadow-xs' : 'text-muted hover:text-ink'
+                view === 'top' ? 'bg-brass text-on-accent shadow-xs' : 'text-muted hover:text-ink'
               }`}
             >
               2D PCA
@@ -861,7 +861,7 @@ export function PrivacyChamber({
               type="button"
               onClick={() => setView('side')}
               className={`rounded px-2 py-0.5 font-mono text-[10px] font-medium transition-all ${
-                view === 'side' ? 'bg-brass text-white shadow-xs' : 'text-muted hover:text-ink'
+                view === 'side' ? 'bg-brass text-on-accent shadow-xs' : 'text-muted hover:text-ink'
               }`}
             >
               Side
@@ -870,7 +870,7 @@ export function PrivacyChamber({
               type="button"
               onClick={() => setView('cinematic')}
               className={`rounded px-2 py-0.5 font-mono text-[10px] font-medium transition-all ${
-                view === 'cinematic' ? 'bg-brass text-white shadow-xs' : 'text-muted hover:text-ink'
+                view === 'cinematic' ? 'bg-brass text-on-accent shadow-xs' : 'text-muted hover:text-ink'
               }`}
             >
               Turntable
@@ -897,7 +897,7 @@ export function PrivacyChamber({
             onClick={() => setScannerActive(!scannerActive)}
             className={`rounded-md border px-2 py-1 font-mono text-[10px] transition-all ${
               scannerActive
-                ? 'border-brass bg-brass text-white'
+                ? 'border-brass bg-brass text-on-accent'
                 : 'border-line bg-card text-muted hover:border-brass hover:text-ink'
             }`}
             title="Toggle volumetric laser audit scanner"
@@ -922,12 +922,12 @@ export function PrivacyChamber({
             className={`flex items-center gap-1.5 rounded-md px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider transition-all shadow-xs ${
               isFullscreen
                 ? 'border border-line bg-card text-ink hover:bg-paper-2'
-                : 'border border-brass bg-brass text-white shadow-brass hover:bg-[#966330]'
+                : 'border border-brass bg-brass text-on-accent shadow-brass hover:bg-[#966330]'
             }`}
             title={isFullscreen ? 'Exit Fullscreen Presentation Studio (ESC)' : 'Expand Fullscreen Presentation Studio (F)'}
           >
             <span>{isFullscreen ? '✕ Exit Studio' : '⛶ Studio Focus'}</span>
-            <span className="text-[10px] opacity-70">({isFullscreen ? 'ESC' : 'F'})</span>
+            <span className="text-[10px]">({isFullscreen ? 'ESC' : 'F'})</span>
           </button>
         </div>
       </div>
@@ -989,13 +989,13 @@ export function PrivacyChamber({
               onClick={() => handleInspectionModeChange('split')}
               className={`flex items-center gap-1.5 rounded px-3 py-1 font-mono text-[11px] font-bold transition-all ${
                 inspectionMode === 'split'
-                  ? 'bg-brass text-white shadow-brass'
+                  ? 'bg-brass text-on-accent shadow-brass'
                   : 'text-muted hover:text-ink hover:bg-card'
               }`}
               title="Separates Real and Synthetic clouds side-by-side with an illuminated divider"
             >
               <span>↔ Split Comparison</span>
-              <span className="rounded bg-black/20 px-1 text-[9px] uppercase">Zero Overlap</span>
+              <span className="rounded border border-current px-1 text-[9px] uppercase">Zero Overlap</span>
             </button>
           </div>
         </div>

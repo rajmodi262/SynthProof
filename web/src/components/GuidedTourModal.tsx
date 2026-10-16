@@ -130,7 +130,7 @@ export function GuidedTourModal({
                 onClick={() => setCurrentStepIdx(idx)}
                 className={`flex h-6 items-center gap-1.5 rounded-full px-2.5 font-mono text-[10px] font-semibold transition-colors ${
                   idx === currentStepIdx
-                    ? 'bg-brass text-white shadow-xs'
+                    ? 'bg-brass text-on-accent shadow-xs'
                     : idx < currentStepIdx
                       ? 'bg-verify/20 text-verify hover:bg-verify/30'
                       : 'bg-card border border-line text-muted hover:text-ink'
@@ -216,7 +216,7 @@ export function GuidedTourModal({
                   onClose()
                   onOpenVerifier()
                 }}
-                className="btn-primary !border-brass !bg-brass !px-3 !py-1.5 !text-xs !text-white"
+                className="btn-primary !border-brass !bg-brass !px-3 !py-1.5 !text-xs !text-on-accent"
               >
                 🛡️ Open Zero-Trust Verifier
               </button>

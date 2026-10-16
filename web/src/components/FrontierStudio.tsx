@@ -1,11 +1,19 @@
 import { useMemo, useState } from 'react'
 import katex from 'katex'
-import type { Measurements, RunResult } from '@/types'
+import 'katex/dist/katex.min.css' // with the component, not in the render-blocking global sheet
+import type { RunResult } from '@/types'
+import { SWEEP_GRID, sweepCost, type FrontierPoint } from '@/lib/frontier'
 
 interface FrontierStudioProps {
-  measurements: Measurements | null
   result: RunResult | null
-  targetEps: number
+  /** The measured points comparable with the current release (same table, mechanism, size). */
+  points: FrontierPoint[]
+  /** Runs one real release per budget in SWEEP_GRID. */
+  onSweep?: () => void
+  /** True while any release is running; a sweep cannot start then. */
+  running?: boolean
+  /** 1-based progress of a running sweep, or null. */
+  sweepProgress?: { done: number; total: number } | null
 }
 
 function MathSpan({
@@ -27,51 +35,35 @@ function MathSpan({
   return <span className={className} dangerouslySetInnerHTML={{ __html: html }} />
 }
 
+// Plot geometry. Epsilon spans orders of magnitude, so the x-axis is logarithmic.
+const W = 480
+const H = 180
+const PAD = 10
+const TICKS = [0.25, 0.5, 1, 2, 4, 8, 16]
+
 export function FrontierStudio({
-  measurements,
   result,
-  targetEps,
+  points,
+  onSweep,
+  running = false,
+  sweepProgress = null,
 }: FrontierStudioProps) {
-  const [scrubEps, setScrubEps] = useState<number>(targetEps || 1.0)
   const [matrixView, setMatrixView] = useState<'diff' | 'real' | 'synth'>('diff')
 
-  // ILLUSTRATIVE saturation model F1(eps) = F_inf * (1 - exp(-k * eps)). It is NOT fitted to
-  // anything: k is a fixed constant, and only the TRTR ceiling and the marked current-release
-  // point are measured. The panel labels it as a model so it is never read as data.
-  const baselineF1 = measurements ? measurements.trtr_f1 : 0.82
-  const maxF1 = Math.min(1.0, baselineF1 * 0.98)
-  const kRate = 1.45
-
-  // Generate curve points for SVG Pareto graph
-  const curvePoints: [number, number][] = []
-  const w = 480
-  const h = 180
-  const maxPlotEps = 6.0
-
-  for (let e = 0.1; e <= maxPlotEps; e += 0.15) {
-    const f1 = maxF1 * (1 - Math.exp(-kRate * e))
-    const x = (e / maxPlotEps) * w
-    const y = h - (f1 / 1.0) * (h - 20) - 10
-    curvePoints.push([x, y])
-  }
-
-  const svgPath = curvePoints
-    .map((pt, i) => `${i === 0 ? 'M' : 'L'}${pt[0].toFixed(1)},${pt[1].toFixed(1)}`)
+  // Every value below comes from `points` -- completed releases -- or from `result`. Nothing is
+  // modelled, extrapolated or defaulted: with no releases the plot is empty and says so.
+  const epsValues = points.map((p) => p.proved_eps).filter((e) => e > 0)
+  const lo = Math.min(0.25, ...epsValues)
+  const hi = Math.max(16, ...epsValues)
+  const xOf = (eps: number) => ((Math.log(Math.max(eps, lo)) - Math.log(lo)) / (Math.log(hi) - Math.log(lo))) * W
+  const yOf = (f1: number) => H - Math.min(Math.max(f1, 0), 1) * (H - 2 * PAD) - PAD
+  const path = points
+    .map((p, i) => `${i === 0 ? 'M' : 'L'}${xOf(p.proved_eps).toFixed(1)},${yOf(p.tstr_f1).toFixed(1)}`)
     .join(' ')
+  const trtr = result ? result.measurements.trtr_f1 : null
+  const currentId = result?.ledger.entry_id
 
-  const scrubF1 = maxF1 * (1 - Math.exp(-kRate * scrubEps))
-  const scrubX = (Math.min(scrubEps, maxPlotEps) / maxPlotEps) * w
-  const scrubY = h - (scrubF1 / 1.0) * (h - 20) - 10
-
-  // Real point from current release
-  const actualEps = measurements ? measurements.proved_eps : targetEps
-  const actualF1 = measurements ? measurements.tstr_f1 : null
-  const actualX = (Math.min(actualEps, maxPlotEps) / maxPlotEps) * w
-  const actualY = actualF1 !== null ? h - (actualF1 / 1.0) * (h - 20) - 10 : null
-
-  // MEASURED correlations from the run (api/projection.correlation_matrices). This panel used
-  // to draw a sin()-generated matrix under the real column names; it now shows data or says
-  // there is none.
+  // MEASURED correlations from the run (api/projection.correlation_matrices).
   const corr = result?.correlations ?? null
   const cols = corr ? corr.columns : []
   const offDiag = corr
@@ -86,134 +78,127 @@ export function FrontierStudio({
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-line/60 pb-3.5">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-display text-2xl text-ink">Frontier Modeling & Correlation Topology</h3>
+            <h3 className="font-display text-2xl text-ink">Measured Frontier & Correlation Topology</h3>
             <span className="rounded-full border border-brass/40 bg-brass/10 px-2.5 py-0.5 font-mono text-[9px] font-bold text-brass tracking-wider">
-              PARETO FRONTIER
+              MEASURED ONLY
             </span>
           </div>
-          <p className="mt-1 font-sans text-xs text-muted flex items-center gap-1.5">
-            <span>Illustrative privacy-utility model</span>
-            <MathSpan math="F_1(\varepsilon)" className="text-ink font-semibold" />
-            <span>(not measured: only the current-release point and TRTR are) and the measured correlation matrix.</span>
+          <p className="mt-1 font-sans text-xs text-muted">
+            Each point is a release that ran and was charged to the ledger. No curve is fitted or
+            drawn between budgets that were not run.
           </p>
-        </div>
-
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="text-muted text-[11px]">Target Epsilon Budget:</span>
-          <span className="rounded-md border border-brass/50 bg-brass/15 px-2.5 py-1 font-mono text-xs font-bold text-brass shadow-xs">
-            ε = {scrubEps.toFixed(2)}
-          </span>
         </div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* -------------------------------------- Pareto Frontier Curve */}
+      <div className="grid gap-6 xl:grid-cols-2">
+        {/* -------------------------------------- Measured privacy-utility frontier */}
         <div className="rounded-xl border border-line bg-paper-2/60 p-4 shadow-sm">
           <div className="flex items-baseline justify-between">
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-ink">
-              Illustrative Tradeoff Model (not measured)
+              Privacy-utility frontier
             </span>
             <span className="font-mono text-xs text-brass">
-              <MathSpan math="F_1 \text{ vs Budget } \varepsilon" />
+              <MathSpan math="\text{TSTR } F_1 \text{ vs proved } \varepsilon" />
             </span>
           </div>
 
           <div className="relative mt-3 h-48 w-full">
-            <svg viewBox={`0 0 ${w} ${h}`} className="h-full w-full overflow-visible">
-              {/* Background gridlines */}
-              <line x1="0" y1={h - 10} x2={w} y2={h - 10} stroke="#8A5A2B" strokeWidth="1" opacity="0.35" />
-              <line x1="0" y1={h / 2} x2={w} y2={h / 2} stroke="#8A5A2B" strokeWidth="0.75" strokeDasharray="3 3" opacity="0.25" />
-              <line x1="0" y1="10" x2={w} y2="10" stroke="#8A5A2B" strokeWidth="0.75" strokeDasharray="3 3" opacity="0.25" />
+            <svg
+              viewBox={`0 0 ${W} ${H + 14}`}
+              className="h-full w-full overflow-visible"
+              role="img"
+              aria-label={`Measured frontier: ${points.length} release${points.length === 1 ? '' : 's'}`}
+            >
+              <line x1="0" y1={H - PAD} x2={W} y2={H - PAD} stroke="currentColor" className="text-line" strokeWidth="1" />
+              {TICKS.filter((t) => t >= lo && t <= hi).map((t) => (
+                <g key={t}>
+                  <line x1={xOf(t)} y1={PAD} x2={xOf(t)} y2={H - PAD} stroke="currentColor" className="text-line" strokeWidth="0.5" strokeDasharray="2 3" />
+                  <text x={xOf(t)} y={H + 8} textAnchor="middle" fill="currentColor" className="text-muted" fontSize="9" fontFamily="Geist Mono">
+                    ε={t}
+                  </text>
+                </g>
+              ))}
 
-              {/* Optimal zone shaded band: eps 0.8 - 2.0 */}
-              <rect
-                x={(0.8 / maxPlotEps) * w}
-                y="10"
-                width={(1.2 / maxPlotEps) * w}
-                height={h - 20}
-                fill="rgba(16, 185, 129, 0.12)"
-                stroke="#10B981"
-                strokeWidth="1"
-                strokeDasharray="4 4"
-                opacity="0.85"
-              />
-              <text
-                x={(1.4 / maxPlotEps) * w}
-                y="24"
-                textAnchor="middle"
-                fill="#10B981"
-                fontSize="10"
-                fontFamily="Geist Mono"
-                fontWeight="bold"
-              >
-                Shaded band: ε = 0.8 – 2.0 (display only, not a recommendation)
-              </text>
-
-              {/* Theoretical Baseline line (TRTR) */}
-              <line
-                x1="0"
-                y1={h - (baselineF1 / 1.0) * (h - 20) - 10}
-                x2={w}
-                y2={h - (baselineF1 / 1.0) * (h - 20) - 10}
-                stroke="#38BDF8"
-                strokeWidth="1.5"
-                strokeDasharray="4 4"
-              />
-              <text
-                x={w - 6}
-                y={h - (baselineF1 / 1.0) * (h - 20) - 14}
-                textAnchor="end"
-                fill="#38BDF8"
-                fontSize="10"
-                fontFamily="Geist Mono"
-                fontWeight="600"
-              >
-                TRTR Ground Truth Baseline ({baselineF1.toFixed(3)})
-              </text>
-
-              {/* Pareto Curve */}
-              <path d={svgPath} fill="none" stroke="#F59E0B" strokeWidth="3" />
-
-              {/* Interactive Scrub Marker */}
-              <circle cx={scrubX} cy={scrubY} r="5" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="1" />
-              <line x1={scrubX} y1={scrubY} x2={scrubX} y2={h - 10} stroke="#F59E0B" strokeWidth="1.5" strokeDasharray="2 2" />
-
-              {/* Actual Measured Release Point */}
-              {actualY !== null && (
+              {trtr !== null && (
                 <g>
-                  <circle cx={actualX} cy={actualY} r="7" fill="#38BDF8" stroke="#FFFFFF" strokeWidth="2" />
-                  <text
-                    x={actualX + 10}
-                    y={actualY + 4}
-                    fill="#38BDF8"
-                    fontSize="10"
-                    fontFamily="Geist Mono"
-                    fontWeight="bold"
-                  >
-                    Current Release (F₁ {actualF1?.toFixed(3)})
+                  <line x1="0" y1={yOf(trtr)} x2={W} y2={yOf(trtr)} stroke="#38BDF8" strokeWidth="1.5" strokeDasharray="4 4" />
+                  <text x={W - 6} y={yOf(trtr) - 4} textAnchor="end" fill="#38BDF8" fontSize="10" fontFamily="Geist Mono" fontWeight="600">
+                    TRTR, this release ({trtr.toFixed(3)})
                   </text>
                 </g>
               )}
+
+              {points.length > 1 && <path d={path} fill="none" stroke="#F59E0B" strokeWidth="2" />}
+
+              {points.map((p) => (
+                <circle
+                  key={p.entry_id}
+                  data-testid="frontier-point"
+                  cx={xOf(p.proved_eps)}
+                  cy={yOf(p.tstr_f1)}
+                  r={p.entry_id === currentId ? 7 : 5}
+                  fill={p.entry_id === currentId ? '#38BDF8' : '#F59E0B'}
+                  stroke="#FFFFFF"
+                  strokeWidth="1.5"
+                >
+                  <title>{`proved ε ${p.proved_eps.toFixed(3)} · TSTR F1 ${p.tstr_f1.toFixed(3)} · ledger ${p.entry_id}`}</title>
+                </circle>
+              ))}
             </svg>
           </div>
 
-          <div className="mt-3 flex items-center justify-between border-t border-line/60 pt-2.5">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-semibold text-ink">Scrub Target Budget:</span>
-              <input
-                type="range"
-                min="0.25"
-                max="5.0"
-                step="0.25"
-                value={scrubEps}
-                onChange={(e) => setScrubEps(Number(e.target.value))}
-                className="h-1.5 w-32 cursor-pointer appearance-none rounded-full bg-card accent-[#8A5A2B]"
-              />
-            </div>
-            <div className="font-mono text-xs font-bold text-brass">
-              Model TSTR (illustrative): {scrubF1.toFixed(3)}
-            </div>
+          {points.length < 2 && (
+            <p className="mt-2 font-mono text-[11px] text-faint">
+              {points.length === 0
+                ? 'No comparable releases yet.'
+                : 'One release measured. A frontier needs releases at several budgets: run a sweep, or run this configuration again at another ε.'}
+            </p>
+          )}
+
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line/60 pt-2.5">
+            <button
+              type="button"
+              onClick={onSweep}
+              disabled={!onSweep || running}
+              className="rounded-md bg-brass px-3 py-1.5 font-mono text-xs font-bold text-on-accent disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {sweepProgress
+                ? `Sweeping: release ${sweepProgress.done} of ${sweepProgress.total}`
+                : `Sweep ε ∈ {${SWEEP_GRID.join(', ')}}`}
+            </button>
+            <span className="font-mono text-[11px] text-muted">
+              {SWEEP_GRID.length} real releases; charges ε = {sweepCost()} to the ledger
+            </span>
           </div>
+
+          {points.length > 0 && (
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full border-collapse font-mono text-[11px]" aria-label="Measured frontier points">
+                <thead>
+                  <tr className="text-muted">
+                    <th className="p-1 text-left font-normal">target ε</th>
+                    <th className="p-1 text-left font-normal">proved ε</th>
+                    <th className="p-1 text-left font-normal">TSTR F1</th>
+                    <th className="p-1 text-left font-normal">corr. error</th>
+                    <th className="p-1 text-left font-normal">ledger entry</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {points.map((p) => (
+                    <tr key={p.entry_id} className={p.entry_id === currentId ? 'text-ink font-bold' : 'text-ink'}>
+                      <td className="p-1">{p.target_eps}</td>
+                      <td className="p-1">{p.proved_eps.toFixed(3)}</td>
+                      <td className="p-1">{p.tstr_f1.toFixed(3)}</td>
+                      <td className="p-1">{p.correlation_error.toFixed(4)}</td>
+                      <td className="p-1 text-muted" title={p.hash}>
+                        {p.entry_id.slice(0, 12)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* -------------------------------------- Pairwise Correlation Matrix */}
@@ -231,7 +216,7 @@ export function FrontierStudio({
                   onClick={() => setMatrixView(mode)}
                   className={`rounded px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider transition-all ${
                     matrixView === mode
-                      ? 'bg-brass text-white shadow-xs'
+                      ? 'bg-brass text-on-accent shadow-xs'
                       : 'text-muted hover:text-ink hover:bg-paper-2'
                   }`}
                 >
@@ -290,15 +275,16 @@ export function FrontierStudio({
                       const diff = isDiag ? 0.0 : Math.abs(realCorr - synthCorr)
 
                       const val = matrixView === 'diff' ? diff : matrixView === 'real' ? realCorr : synthCorr
+                      // The tint carries the band; the number stays ink so it reads in both themes.
                       const cellStyle =
                         matrixView === 'diff'
                           ? diff < 0.04
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold'
+                            ? 'bg-emerald-500/20 text-ink border border-emerald-500/40 font-bold'
                             : diff < 0.10
-                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                              : 'bg-rose-500/25 text-rose-300 border border-rose-500/40'
+                              ? 'bg-amber-500/20 text-ink border border-amber-500/40'
+                              : 'bg-rose-500/25 text-ink border border-rose-500/40'
                           : Math.abs(val) > 0.4
-                            ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 font-bold'
+                            ? 'bg-sky-500/20 text-ink border border-sky-500/40 font-bold'
                             : 'bg-card text-muted border border-line/40'
 
                       return (
@@ -331,4 +317,3 @@ export function FrontierStudio({
     </section>
   )
 }
-

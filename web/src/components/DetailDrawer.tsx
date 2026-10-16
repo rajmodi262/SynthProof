@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import katex from 'katex'
+import 'katex/dist/katex.min.css' // with the component, not in the render-blocking global sheet
 import { EXPLAINERS, type RunStateContext } from '@/explainers/explainers'
 import { DURATION, EASING } from '@/motion'
 

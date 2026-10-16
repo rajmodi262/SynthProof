@@ -26,6 +26,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.gzip import GZipMiddleware
 
 from synthproof import __version__
 from synthproof.api.context import AppContext, build_context
@@ -123,6 +124,10 @@ def create_app(
         allow_methods=["GET", "POST"],
         allow_headers=["*"],
     )
+    # Outermost, so it compresses the final response. The console's JavaScript went over the
+    # wire uncompressed (2.3 MB; Lighthouse performance 51). Starlette's GZip leaves
+    # text/event-stream alone, so the run stream is still delivered frame by frame, not buffered.
+    application.add_middleware(GZipMiddleware, minimum_size=1024)
     application.add_exception_handler(RequestValidationError, _validation_error)  # type: ignore[arg-type]
     for module in (run, datasets, ledger, artifacts):
         application.include_router(module.router)

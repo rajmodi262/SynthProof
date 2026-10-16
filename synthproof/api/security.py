@@ -147,6 +147,7 @@ CONSOLE_CSP = (
     "img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; "
     "worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 )
+ASSET_CACHE = "public, max-age=31536000, immutable"
 BASE_HEADERS = {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
@@ -166,4 +167,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # export, a self-contained HTML document with its verifier inline by design.
         if path == "/" or path.startswith("/assets/"):
             response.headers.setdefault("Content-Security-Policy", CONSOLE_CSP)
+        # Vite names every built asset by its content hash, so a given URL never changes
+        # content: the browser may keep it for a year. index.html ("/") is NOT cached this way,
+        # because it is what points at the new hashes after a rebuild.
+        if path.startswith("/assets/") and response.status_code == 200:
+            response.headers["Cache-Control"] = ASSET_CACHE
         return response

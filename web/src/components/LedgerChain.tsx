@@ -156,7 +156,7 @@ export function LedgerChain({
                   onClick={() => setSelectedAttack(opt.type)}
                   className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 font-mono text-[11px] font-medium transition-all ${
                     selectedAttack === opt.type
-                      ? 'border border-seal bg-seal text-white shadow-xs'
+                      ? 'border border-seal bg-seal text-on-accent shadow-xs'
                       : 'border border-line bg-card text-muted hover:border-seal/60 hover:text-seal'
                   }`}
                 >
@@ -174,7 +174,7 @@ export function LedgerChain({
             <button
               onClick={() => executeAttack()}
               disabled={busy}
-              className="btn-seal !bg-seal !text-white hover:!bg-[#943834] !px-3.5 !py-1.5 !text-xs font-semibold shadow-xs"
+              className="btn-seal !bg-seal !text-on-accent hover:!bg-[#943834] !px-3.5 !py-1.5 !text-xs font-semibold shadow-xs"
             >
               {busy
                 ? 'Simulating Attack...'
@@ -264,7 +264,7 @@ export function LedgerChain({
                           ? 'border-seal bg-seal-bg ring-1 ring-seal shadow-e1'
                           : 'border-seal/60 bg-seal-bg/40'
                         : isIllustrative
-                        ? 'border-line/70 bg-card/60 opacity-80 hover:opacity-100 hover:border-brass/50'
+                        ? 'border-line/70 bg-card/60 hover:border-brass/50'
                         : 'border-line bg-card shadow-e0 hover:-translate-y-0.5 hover:border-brass hover:shadow-e1'
                     }`}
                   >

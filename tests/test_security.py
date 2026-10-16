@@ -138,3 +138,37 @@ def test_the_console_gets_a_content_security_policy_without_inline_scripts():
         and "unsafe-inline" not in csp.split("script-src")[1].split(";")[0]
     )
     assert "frame-ancestors 'none'" in csp
+
+
+# ---------------------------------------------------------------- transport (W8)
+
+
+def test_large_responses_are_compressed():
+    r = _client({}).get("/openapi.json", headers={"Accept-Encoding": "gzip"})
+    assert r.status_code == 200 and r.headers.get("content-encoding") == "gzip"
+
+
+def test_the_run_stream_is_never_compressed():
+    # A gzipped event stream is buffered until enough bytes accumulate, which would deliver the
+    # pipeline log all at once at the end -- the defect the Vite proxy note also guards against.
+    with _client({}).stream("POST", "/api/run", json=RUN, headers={"Accept-Encoding": "gzip"}) as r:
+        assert r.headers["content-type"].startswith("text/event-stream")
+        assert "content-encoding" not in r.headers
+
+
+def test_hashed_assets_are_cached_but_the_index_is_not():
+    from starlette.applications import Starlette
+    from starlette.responses import PlainTextResponse
+    from starlette.routing import Route
+
+    from synthproof.api.security import ASSET_CACHE, SecurityHeadersMiddleware
+
+    app = Starlette(routes=[
+        Route("/", lambda r: PlainTextResponse("index")),
+        Route("/assets/index-abc123.js", lambda r: PlainTextResponse("js")),
+    ])
+    app.add_middleware(SecurityHeadersMiddleware)
+    c = TestClient(app)
+    assert c.get("/assets/index-abc123.js").headers["Cache-Control"] == ASSET_CACHE
+    assert "immutable" not in c.get("/").headers.get("Cache-Control", "")
+    assert c.get("/assets/missing.js").status_code == 404

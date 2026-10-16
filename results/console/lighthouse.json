@@ -1,0 +1,137 @@
+{
+  "tool": "lighthouse 12.8.2",
+  "date": "2026-10-16",
+  "base_commit": "6ef7cba",
+  "note": "Working tree on top of base_commit (W8 console changes, uncommitted at measurement). Local run against the FastAPI service serving the built console; three runs per profile, median reported. Lab numbers, not field data.",
+  "command": "npx lighthouse@12.8.2 http://127.0.0.1:8001/ --chrome-flags=--headless=new --only-categories=performance,accessibility,best-practices,seo [--preset=desktop]",
+  "profiles": {
+    "desktop": {
+      "categories_runs": {
+        "performance": [
+          91,
+          94,
+          95
+        ],
+        "accessibility": [
+          100,
+          100,
+          100
+        ],
+        "best-practices": [
+          100,
+          100,
+          100
+        ],
+        "seo": [
+          100,
+          100,
+          100
+        ]
+      },
+      "categories_median": {
+        "performance": 94,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics_runs": {
+        "first-contentful-paint": [
+          752.725,
+          723.787,
+          718.703
+        ],
+        "largest-contentful-paint": [
+          1257.042,
+          1190.55,
+          1193.771
+        ],
+        "cumulative-layout-shift": [
+          0.086,
+          0.086,
+          0.086
+        ],
+        "total-blocking-time": [
+          154,
+          106,
+          46
+        ],
+        "speed-index": [
+          969.27,
+          836.233,
+          844.994
+        ]
+      },
+      "metrics_median": {
+        "first-contentful-paint": 723.787,
+        "largest-contentful-paint": 1193.771,
+        "cumulative-layout-shift": 0.086,
+        "total-blocking-time": 106,
+        "speed-index": 844.994
+      }
+    },
+    "mobile": {
+      "categories_runs": {
+        "performance": [
+          79,
+          79,
+          79
+        ],
+        "accessibility": [
+          100,
+          100,
+          100
+        ],
+        "best-practices": [
+          96,
+          96,
+          96
+        ],
+        "seo": [
+          100,
+          100,
+          100
+        ]
+      },
+      "categories_median": {
+        "performance": 79,
+        "accessibility": 100,
+        "best-practices": 96,
+        "seo": 100
+      },
+      "metrics_runs": {
+        "first-contentful-paint": [
+          2713.694,
+          2716.289,
+          2710.218
+        ],
+        "largest-contentful-paint": [
+          4615.733,
+          4604.847,
+          4672.662
+        ],
+        "cumulative-layout-shift": [
+          0,
+          0,
+          0
+        ],
+        "total-blocking-time": [
+          90,
+          46.5,
+          70.0
+        ],
+        "speed-index": [
+          2713.694,
+          2716.289,
+          2710.218
+        ]
+      },
+      "metrics_median": {
+        "first-contentful-paint": 2713.694,
+        "largest-contentful-paint": 4615.733,
+        "cumulative-layout-shift": 0,
+        "total-blocking-time": 70.0,
+        "speed-index": 2713.694
+      }
+    }
+  }
+}

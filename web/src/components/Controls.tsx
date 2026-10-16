@@ -267,7 +267,7 @@ export function Controls({
               disabled={running}
               className={`tnum flex-1 rounded-md border py-1.5 font-mono text-[11px] font-medium transition-all ${
                 config.target_eps === e
-                  ? 'border-brass bg-brass text-white shadow-xs'
+                  ? 'border-brass bg-brass text-on-accent shadow-xs'
                   : 'border-line text-muted hover:border-brass hover:text-ink bg-card'
               }`}
             >
