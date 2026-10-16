@@ -163,10 +163,12 @@ def test_hashed_assets_are_cached_but_the_index_is_not():
 
     from synthproof.api.security import ASSET_CACHE, SecurityHeadersMiddleware
 
-    app = Starlette(routes=[
-        Route("/", lambda r: PlainTextResponse("index")),
-        Route("/assets/index-abc123.js", lambda r: PlainTextResponse("js")),
-    ])
+    app = Starlette(
+        routes=[
+            Route("/", lambda r: PlainTextResponse("index")),
+            Route("/assets/index-abc123.js", lambda r: PlainTextResponse("js")),
+        ]
+    )
     app.add_middleware(SecurityHeadersMiddleware)
     c = TestClient(app)
     assert c.get("/assets/index-abc123.js").headers["Cache-Control"] == ASSET_CACHE
