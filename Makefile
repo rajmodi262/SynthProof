@@ -1,4 +1,4 @@
-.PHONY: help claims tables thesis install install-locked lock test test-fast lint format h1 h1-acs h2 h2-acs h3 h3-acs h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
+.PHONY: help gdp-audit claims tables thesis install install-locked lock test test-fast lint format h1 h1-acs h2 h2-acs h3 h3-acs h2-analyse floor reproduce reproduce-all manifest figures demo serve data console console-build \
         console-install console-test security audit docker-build docker-up docs-check results-docs \n        calibration-check audit-compare selection-ablation audit-planner mutation docker-smoke \n        demo-datasets check-env imputation-doc demo-boundary
 
 help:
@@ -143,6 +143,16 @@ h3-acs:
 # statement. Reads results only -- runs no experiment.
 h2-analyse:
 	python -m scripts.analyse_h2
+
+# W9 -- the GDP audit of every mechanism, exactly the 12 cells preregistered in
+# docs/prereg/W9_gdp_audit.md (whose SHA-256 each result records). One job at a time: AIM
+# alone is ~2 hours at 500 runs per world.
+GDP_PREREG = docs/prereg/W9_gdp_audit.md
+GDP_RUN = python -m scripts.run_gdp_audit --delta 1e-2 --family 12 --prereg $(GDP_PREREG)
+gdp-audit:
+	for m in independent moments pairwise fixed_workload; do for e in 1 4; do \n	  $(GDP_RUN) --mechanism $$m --eps $$e --runs 4000 --out results/gdp/$${m}_eps$$e.json || exit 1; \n	done; done
+	for e in 1 4; do $(GDP_RUN) --mechanism mst --eps $$e --runs 2000 --out results/gdp/mst_eps$$e.json || exit 1; done
+	for m in aim dpvae; do $(GDP_RUN) --mechanism $$m --eps 1 --runs 500 --out results/gdp/$${m}_eps1.json || exit 1; done
 
 # Verify every published number against the committed manifest. `make reproduce-all` re-runs
 # every experiment first; that is long, and it is what the thesis's reproducibility claim

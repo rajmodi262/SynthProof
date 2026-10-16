@@ -300,6 +300,89 @@ def mu_lower_bound(
     return best
 
 
+def mu_bound_at_threshold(
+    scores_in: Sequence[float],
+    scores_out: Sequence[float],
+    threshold: float,
+    alpha: float = DEFAULT_ALPHA,
+) -> GDPAuditResult:
+    """The `mu` lower bound at ONE threshold fixed in advance.
+
+    Valid at level `alpha` only because the threshold was not chosen on these scores. Pair it
+    with a threshold selected on a disjoint split (`mu_lower_bound_heldout`).
+    """
+    a = np.asarray(scores_in, dtype=float)
+    b = np.asarray(scores_out, dtype=float)
+    if a.size == 0 or b.size == 0:
+        raise ValueError("Both score sets must be non-empty.")
+    half = alpha / 2.0
+    fp = int(np.sum(b > threshold))
+    fn = int(np.sum(a <= threshold))
+    fpr_u = _clopper_pearson_upper(fp, b.size, half)
+    fnr_u = _clopper_pearson_upper(fn, a.size, half)
+    mu = (
+        0.0
+        if fpr_u >= 1.0 or fnr_u >= 1.0
+        else max(0.0, float(_PHI_INV(1.0 - fpr_u) - _PHI_INV(fnr_u)))
+    )
+    return GDPAuditResult(
+        mu_emp=mu,
+        fpr=fp / b.size,
+        fnr=fn / a.size,
+        fpr_upper=fpr_u,
+        fnr_upper=fnr_u,
+        threshold=float(threshold),
+        n_positive=int(a.size),
+        n_negative=int(b.size),
+        alpha=alpha,
+    )
+
+
+def mu_lower_bound_heldout(
+    scores_in: Sequence[float],
+    scores_out: Sequence[float],
+    alpha: float = DEFAULT_ALPHA,
+    select_frac: float = 0.5,
+) -> GDPAuditResult:
+    """A `mu` lower bound with the threshold chosen on one split and bounded on the other.
+
+    `mu_lower_bound` maximises over every threshold on the same scores it then bounds. The
+    Clopper-Pearson intervals hold for one threshold fixed in advance, not for the best of a
+    thousand chosen after looking, so the maximum is biased upward and is not a valid
+    `alpha`-level lower bound (tests/test_gdp.py measures the inflation under the null). Here
+    the first `select_frac` of each score list picks the threshold and only the remainder is
+    bounded. Runs are i.i.d. by construction (one seed each), so the split is by position.
+    """
+    a = np.asarray(scores_in, dtype=float)
+    b = np.asarray(scores_out, dtype=float)
+    ka, kb = int(a.size * select_frac), int(b.size * select_frac)
+    if min(ka, kb, a.size - ka, b.size - kb) < 1:
+        raise ValueError("Each split needs at least one score per world.")
+    chosen = mu_lower_bound(a[:ka], b[:kb], alpha=alpha)
+    if not math.isfinite(chosen.threshold):
+        # The selection split could not separate the worlds at any threshold: nothing to test.
+        return mu_bound_at_threshold(a[ka:], b[kb:], float("inf"), alpha)
+    return mu_bound_at_threshold(a[ka:], b[kb:], chosen.threshold, alpha)
+
+
+def eps_for_mu(mu: float, delta: float) -> float:
+    """The smallest epsilon at which a `mu`-GDP mechanism satisfies `(eps, delta)`-DP.
+
+    Inverts `delta_for_mu`, which decreases in epsilon. Used to put an audited `mu` on the same
+    axis as a proved epsilon at the same delta. Returns 0.0 for `mu <= 0`.
+    """
+    if not (0.0 < delta < 1.0):
+        raise ValueError(f"delta must be in (0, 1), got {delta}")
+    if mu <= 0 or delta_for_mu(mu, 0.0) <= delta:
+        return 0.0
+    hi = 1.0
+    while delta_for_mu(mu, hi) > delta:
+        hi *= 2.0
+        if hi > 1e4:
+            raise ValueError(f"Cannot bracket eps for (mu={mu}, delta={delta}).")
+    return float(optimize.brentq(lambda e: delta_for_mu(mu, e) - delta, 0.0, hi, xtol=1e-10))
+
+
 def audit_against_proof(
     scores_in: Sequence[float],
     scores_out: Sequence[float],

@@ -245,3 +245,55 @@ def test_the_two_estimators_disagree_at_the_same_numeric_budget():
     target_mu = mu_from_eps_delta(target_eps, delta)
     assert max_provable_epsilon(60) < target_eps, "canary auditor should fall short"
     assert max_provable_mu(60, 60) > target_mu, "GDP auditor should reach it"
+
+
+# ------------------------------------------------------------------ held-out threshold (W9)
+
+import numpy as np  # noqa: E402
+
+from synthproof.audit.gdp import (  # noqa: E402
+    eps_for_mu,
+    mu_bound_at_threshold,
+    mu_lower_bound_heldout,
+)
+
+
+@pytest.mark.parametrize("eps", [0.25, 1.0, 4.0])
+def test_eps_for_mu_inverts_mu_from_eps_delta(eps):
+    assert eps_for_mu(mu_from_eps_delta(eps, 1e-2), 1e-2) == pytest.approx(eps, abs=1e-6)
+
+
+def test_eps_for_mu_is_zero_without_signal():
+    assert eps_for_mu(0.0, 1e-2) == 0.0
+
+
+def test_the_fixed_threshold_bound_is_the_clopper_pearson_formula():
+    from scipy import stats
+
+    ins, outs = [0.9] * 80 + [0.1] * 20, [0.1] * 90 + [0.9] * 10
+    r = mu_bound_at_threshold(ins, outs, threshold=0.5, alpha=0.05)
+    fpr_u = stats.beta.ppf(0.975, 10 + 1, 100 - 10)
+    fnr_u = stats.beta.ppf(0.975, 20 + 1, 100 - 20)
+    expected = stats.norm.ppf(1 - fpr_u) - stats.norm.ppf(fnr_u)
+    assert r.mu_emp == pytest.approx(expected) and (r.fpr, r.fnr) == (0.10, 0.20)
+
+
+def test_the_heldout_bound_keeps_its_level_under_the_null():
+    """Identical worlds (true mu = 0): a valid alpha = 0.05 lower bound is positive in at most
+    5% of audits. The max-over-thresholds bound chose its threshold on the scores it bounded and
+    measured 6.0-6.7% in a 300-trial simulation (docs/prereg/W9_gdp_audit.md)."""
+    rng = np.random.default_rng(7)
+    trials, n = 200, 300
+    hits = sum(
+        mu_lower_bound_heldout(rng.normal(size=n), rng.normal(size=n)).mu_emp > 0
+        for _ in range(trials)
+    )
+    # 0.05 plus three binomial standard errors at this trial count.
+    assert hits / trials <= 0.05 + 3 * math.sqrt(0.05 * 0.95 / trials)
+
+
+def test_the_heldout_bound_finds_a_real_signal_and_stays_below_it():
+    rng = np.random.default_rng(3)
+    r = mu_lower_bound_heldout(rng.normal(1.0, 1, 4000), rng.normal(0.0, 1, 4000))
+    assert 0.6 < r.mu_emp < 1.0
+    assert r.n_positive == 2000  # only the bounded half counts toward the interval

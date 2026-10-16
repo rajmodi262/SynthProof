@@ -46,6 +46,7 @@ Usage:
 """
 
 import argparse
+import hashlib
 import json
 import time
 from pathlib import Path
@@ -56,8 +57,11 @@ import pandas as pd
 from synthproof.accounting.accountant import Accountant
 from synthproof.audit.gdp import (
     audit_against_proof,
+    eps_for_mu,
     max_provable_mu,
+    mu_from_eps_delta,
     mu_from_gaussian_composition,
+    mu_lower_bound_heldout,
 )
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.profiler import DPDomainProfiler
@@ -99,7 +103,7 @@ def features(synth: pd.DataFrame) -> np.ndarray:
 
 
 def run_once(ds, schema, mechanism, eps, delta, seed, profile_eps):
-    """One release. Returns (features, noise_multiplier) or None if the mechanism refused."""
+    """One release. Returns (features, noise_multiplier, proved epsilon from the accountant)."""
     acc = Accountant(budget_eps=eps * 1.05, budget_delta=delta)
     profile = DPDomainProfiler(
         accountant=acc, eps_budget=profile_eps, schema_declared=True
@@ -111,7 +115,7 @@ def run_once(ds, schema, mechanism, eps, delta, seed, profile_eps):
     scales = getattr(gen, "noise_scales_", None)
     if sigma is None and scales:
         sigma = float(np.mean(list(scales.values())))
-    return features(synth), sigma
+    return features(synth), sigma, float(acc.total(delta))
 
 
 def main():
@@ -122,7 +126,21 @@ def main():
     ap.add_argument("--delta", type=float, default=1e-2)
     ap.add_argument("--alpha", type=float, default=0.05)
     ap.add_argument("--out", default="results/gdp_audit.json")
+    ap.add_argument(
+        "--family",
+        type=int,
+        default=1,
+        help="Cells in the preregistered family. A violation is CLAIMED only if it also holds "
+        "at alpha / family (Bonferroni); at alpha alone it is a flag to investigate.",
+    )
+    ap.add_argument(
+        "--prereg",
+        default=None,
+        help="Preregistration file; its SHA-256 is recorded in the output, so the result can be "
+        "checked against a plan committed BEFORE the run.",
+    )
     args = ap.parse_args()
+    prereg_sha = hashlib.sha256(Path(args.prereg).read_bytes()).hexdigest() if args.prereg else None
 
     ds_out, ds_in, schema = worst_case_datasets()
     profile_eps = args.eps * 0.02  # tiny: the schema is public, so this buys almost nothing
@@ -137,14 +155,15 @@ def main():
     )
 
     t0 = time.time()
-    fin, fout, sigmas = [], [], []
+    fin, fout, sigmas, proved = [], [], [], []
     for i in range(args.runs):
-        a, s1 = run_once(ds_in, schema, args.mechanism, args.eps, args.delta, i, profile_eps)
-        b, s2 = run_once(
+        a, s1, p1 = run_once(ds_in, schema, args.mechanism, args.eps, args.delta, i, profile_eps)
+        b, s2, p2 = run_once(
             ds_out, schema, args.mechanism, args.eps, args.delta, i + 10**6, profile_eps
         )
         fin.append(a)
         fout.append(b)
+        proved += [p1, p2]
         for s in (s1, s2):
             if s:
                 sigmas.append(float(s))
@@ -171,18 +190,42 @@ def main():
         scores_in, scores_out = X_in[half:, 3], X_out[half:, 3]
         adversary = "single statistic: rate of the [1,1,1] pattern"
 
-    res = audit_against_proof(scores_in, scores_out, args.eps, args.delta, alpha=args.alpha)
-    ceiling = max_provable_mu(len(scores_in), len(scores_out), args.alpha)
+    # The epsilon the ACCOUNTANT proved for these releases (profiling included), not the target.
+    proved_eps = float(np.max(proved))
+    # Primary estimate: threshold chosen on half of the scored runs, bounded on the other half.
+    # The max-over-thresholds bound on the same scores (`audit_against_proof`) is kept only as
+    # the pre-W9 comparator: it picks the threshold after looking, which biases it upward.
+    res = mu_lower_bound_heldout(scores_in, scores_out, alpha=args.alpha)
+    res.implied_mu = mu_from_eps_delta(proved_eps, args.delta)
+    res.proved_eps = proved_eps
+    res.delta = args.delta
+    legacy = audit_against_proof(scores_in, scores_out, proved_eps, args.delta, alpha=args.alpha)
+    ceiling = max_provable_mu(res.n_positive, res.n_negative, args.alpha)
+    eps_emp = eps_for_mu(res.mu_emp, args.delta)
+    eps_ceiling = eps_for_mu(ceiling, args.delta)
 
     mech_mu = None
     if sigmas:
         mech_mu = mu_from_gaussian_composition(len(COLS), float(np.mean(sigmas)))
 
+    # Violation: the empirical lower bound above what the proof allows. The comparator is the
+    # mechanism's own composed mu where the code exposes its noise, else the mu implied by the
+    # proved (eps, delta). Claimed only if it survives the family-wise alpha.
+    comparator = min(x for x in (mech_mu, res.implied_mu) if x is not None)
+    family_mu = mu_lower_bound_heldout(scores_in, scores_out, alpha=args.alpha / args.family).mu_emp
+    violation_flagged = res.mu_emp > comparator
+    violation_claimed = family_mu > comparator
+
     print("\n" + "=" * 74)
     print("GDP AUDIT")
     print("=" * 74)
     print(f"  adversary            {adversary}")
-    print(f"  scored runs/world    {len(scores_in)}")
+    print(f"  bounded runs/world   {res.n_positive}  (threshold chosen on a disjoint split)")
+    print(f"  proved eps           {proved_eps:.4f}   (the accountant, at delta = {args.delta:g})")
+    print(
+        f"  audited eps          {eps_emp:.4f}   "
+        f"(from mu_emp at the same delta; ceiling {eps_ceiling:.4f})"
+    )
     print(f"  FPR / FNR            {res.fpr:.4f} / {res.fnr:.4f}")
     print(f"  mu_emp (lower bound) {res.mu_emp:.4f}")
     print(f"  ceiling at this n    {ceiling:.4f}")
@@ -196,11 +239,12 @@ def main():
             f"(sqrt({len(COLS)})/sigma, sigma = {np.mean(sigmas):.3f} -- the TIGHT comparator)"
         )
 
-    if res.exceeds_implied:
+    if violation_flagged:
         verdict = (
-            f"VIOLATION FLAGGED. mu_emp = {res.mu_emp:.4f} EXCEEDS the implied "
-            f"mu = {res.implied_mu:.4f}. Either the mechanism, the accounting, or this audit is "
-            "wrong. Do not report this as a success; investigate before anything else."
+            f"VIOLATION {'CLAIMED' if violation_claimed else 'FLAGGED'}. mu_emp = "
+            f"{res.mu_emp:.4f} EXCEEDS the comparator mu = {comparator:.4f} "
+            f"(family-wise bound {family_mu:.4f}). Either the mechanism, the accounting, or this "
+            "audit is wrong. Do not report this as a success; investigate before anything else."
         )
     elif res.mu_emp <= 0:
         verdict = (
@@ -229,9 +273,18 @@ def main():
         "delta": args.delta,
         "runs_per_world": args.runs,
         "scored_per_world": int(len(scores_in)),
+        "bounded_per_world": int(res.n_positive),
+        "estimator": "held-out threshold: chosen on half the scored runs, Clopper-Pearson "
+        "bound (Bonferroni over FPR/FNR) on the other half",
+        "preregistration_sha256": prereg_sha,
         "adversary": adversary,
+        "proved_eps": proved_eps,
+        "proved_eps_range": [float(np.min(proved)), float(np.max(proved))],
         "mu_emp": res.mu_emp,
+        "eps_emp": eps_emp,
         "ceiling_at_this_n": ceiling,
+        "eps_ceiling_at_this_n": eps_ceiling,
+        "mu_emp_max_over_thresholds_biased": legacy.mu_emp,
         "implied_mu_from_eps_delta": res.implied_mu,
         "mechanism_mu_from_composition": mech_mu,
         "mean_noise_multiplier": float(np.mean(sigmas)) if sigmas else None,
@@ -240,6 +293,11 @@ def main():
         "threshold": res.threshold,
         "alpha": args.alpha,
         "exceeds_implied": res.exceeds_implied,
+        "comparator_mu": comparator,
+        "family_size": args.family,
+        "mu_emp_familywise": family_mu,
+        "violation_flagged": violation_flagged,
+        "violation_claimed": violation_claimed,
         "verdict": verdict,
         "elapsed_seconds": round(time.time() - t0, 1),
     }
