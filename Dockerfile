@@ -80,7 +80,12 @@ EXPOSE 8000
 # ledger volume.
 ENV PYTHONDONTWRITEBYTECODE=1 \
     MPLCONFIGDIR=/tmp/matplotlib \
-    XDG_CACHE_HOME=/tmp/.cache
+    XDG_CACHE_HOME=/tmp/.cache \
+    SYNTHPROOF_TRUSTED_NETWORK=private
+
+# SYNTHPROOF_TRUSTED_NETWORK=private: with no API key, the service answers only loopback and
+# private (RFC 1918) addresses -- the host reaches a container over a Docker bridge -- and refuses
+# the internet. Set SYNTHPROOF_API_KEY(S) to serve anyone else (synthproof/api/security.py).
 
 # Liveness for Docker and Compose. Standard library only -- the slim image has no curl.
 HEALTHCHECK --interval=15s --timeout=5s --start-period=90s --retries=4 \

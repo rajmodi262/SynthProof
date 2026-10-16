@@ -261,6 +261,9 @@ export interface paths {
         /**
          * Run
          * @description Runs one release and streams every stage as server-sent events.
+         *
+         *     Refused BEFORE anything runs (so with a plain HTTP status, not a stream) when the caller is
+         *     over its rate limit or the release would take it past its epsilon cap (api/security.py).
          */
         post: operations["run_api_run_post"];
         delete?: never;

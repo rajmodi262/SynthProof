@@ -16,7 +16,7 @@ import uuid
 from typing import Optional
 
 import pandas as pd
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 
 from synthproof.api import schemas, state
 from synthproof.api.context import (
@@ -28,6 +28,7 @@ from synthproof.api.context import (
     require_api_key,
 )
 from synthproof.api.descriptions import MECHANISM_INFO, NOT_IMPLEMENTED_ATTACKS
+from synthproof.api.security import limit_key
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.schema import Schema
 from synthproof.frontier.experiment import MECHANISMS
@@ -158,9 +159,11 @@ def datasets(ctx: AppContext = Depends(get_context)):
     response_model=schemas.UploadResult,
 )
 async def upload(
+    request: Request,
     file: UploadFile = File(...),
     schema_json: Optional[str] = None,
     ctx: AppContext = Depends(get_context),
+    actor: str = Depends(require_api_key),
 ):
     """Accepts a CSV and registers it for this session.
 
@@ -168,6 +171,7 @@ async def upload(
     THE DATA, which leaks and is not safe for a real release. The response says so, and the
     console is expected to surface that warning rather than bury it.
     """
+    ctx.rate_limiter.check(limit_key(request, actor))
     if not (file.filename or "").lower().endswith((".csv", ".txt")):
         raise HTTPException(400, "Upload a .csv file.")
 

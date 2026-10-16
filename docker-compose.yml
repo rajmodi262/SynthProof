@@ -12,8 +12,10 @@ services:
     # builds from this checkout instead. Pin a version with SYNTHPROOF_VERSION=v1.4.0.
     image: ghcr.io/rajmodi262/synthproof:${SYNTHPROOF_VERSION:-latest}
     build: .
+    # Loopback only: with no API key the service is open, so it is not published beyond this
+    # machine. To expose it, set SYNTHPROOF_API_KEY(S) first, then change this to "8000:8000".
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
       # Unset by default so the local demo needs no configuration. /api/health reports

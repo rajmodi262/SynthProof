@@ -58,6 +58,16 @@ test.describe('console: shell and contract', () => {
     }
   })
 
+  test('is served under a content security policy that forbids inline script', async ({
+    request,
+  }) => {
+    // The console must keep working with it: the next test fails on any console error, and a
+    // blocked script or stylesheet is reported as one (docs/threat_model.md, T4).
+    const csp = (await request.get('/')).headers()['content-security-policy'] ?? ''
+    expect(csp).toContain("script-src 'self'")
+    expect(csp).toContain("frame-ancestors 'none'")
+  })
+
   test('renders no uncaught errors on load', async ({ page }) => {
     // The capsule shipped a page whose entire inline script failed to parse, and nothing
     // noticed. This is that check, applied to the console.

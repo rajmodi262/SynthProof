@@ -100,8 +100,11 @@ That pulls the published image (`ghcr.io/rajmodi262/synthproof`, tagged per rele
 <http://localhost:8000>. `docker compose up --build` builds from this checkout instead. The
 signed ledger and its signing key live on the `ledger_data` volume, so they survive restarts and
 image upgrades; the container runs as a non-root user with a read-only root filesystem.
-Before exposing the port, set `SYNTHPROOF_API_KEY` (or `SYNTHPROOF_API_KEYS` for per-user
-attribution) — `/api/health` reports `auth: "disabled"` until you do.
+With no key set the service is open, so it is published on loopback only and refuses requests
+from outside its trusted network. Before exposing it, set `SYNTHPROOF_API_KEY` (or
+`SYNTHPROOF_API_KEYS` for per-user attribution) — `/api/health` reports `auth: "disabled"` until
+you do — and optionally `SYNTHPROOF_BUDGETS` to cap each principal's epsilon
+([threat model](docs/threat_model.md)).
 
 Every push builds this image in CI and drives it end to end: two signed releases (one of them
 AIM), ledger verification, the same ledger surviving the container being replaced, the Docker

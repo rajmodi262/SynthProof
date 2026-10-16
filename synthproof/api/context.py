@@ -24,6 +24,13 @@ from typing import Dict, Iterator, Mapping, Optional
 import pandas as pd
 from fastapi import Header, HTTPException, Request
 
+from synthproof.api.security import (
+    TRUSTED_NETWORKS,
+    RateLimiter,
+    budget_for,
+    enforce_trusted_network,
+    parse_budgets,
+)
 from synthproof.data.dataset import TabularDataset
 from synthproof.data.schema import Schema
 from synthproof.ledger import signing
@@ -112,6 +119,11 @@ class AppContext:
     api_keys: Dict[str, str]
     uploads: "OrderedDict[str, TabularDataset]" = field(default_factory=OrderedDict)
     demo_datasets: Dict[str, TabularDataset] = field(default_factory=dict)
+    # Hardening (api/security.py): epsilon caps per principal ("*" = everyone else), which
+    # clients an unauthenticated service answers, and releases/uploads per principal per minute.
+    budgets: Dict[str, float] = field(default_factory=dict)
+    trusted_network: str = "loopback"
+    rate_limiter: RateLimiter = field(default_factory=lambda: RateLimiter(0))
 
     # ---------------------------------------------------------------- configuration
 
@@ -247,6 +259,25 @@ class AppContext:
             ds = TabularDataset(sub, name=ds.name, schema=ds.schema)
         return ds
 
+    def spent_by(self, principal: str) -> float:
+        """Naive sum of the epsilon this principal has spent here (an upper bound)."""
+        return sum(e.eps_spent for e in self.ledger.get_entries() if e.actor == principal)
+
+    def check_budget(self, principal: str, requested_eps: float) -> None:
+        """Refuses a release that would take `principal` past its epsilon cap."""
+        cap = budget_for(self.budgets, principal)
+        if cap is None:
+            return
+        spent = self.spent_by(principal)
+        if spent + requested_eps > cap + 1e-12:
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    f"Budget exceeded: {principal!r} has spent eps={spent:.4f} of a cap of "
+                    f"{cap:g}, and this release requests eps={requested_eps:g}. Nothing was run."
+                ),
+            )
+
     def domain_source_for(self, name: str) -> str:
         """How this dataset's column bounds / category domains were obtained (read by RB6).
 
@@ -275,11 +306,20 @@ def build_context(env: Optional[Mapping[str, str]] = None) -> AppContext:
     shared = env.get("SYNTHPROOF_API_KEY", "").strip()
     if shared:
         keys[SHARED_PRINCIPAL] = shared
+    network = env.get("SYNTHPROOF_TRUSTED_NETWORK", "loopback").strip() or "loopback"
+    if network not in TRUSTED_NETWORKS:
+        raise ValueError(f"SYNTHPROOF_TRUSTED_NETWORK must be one of {TRUSTED_NETWORKS}.")
+    # Rate limiting defaults on for a durable ledger (a deployment) and off for the in-memory
+    # demo, where tests and the live demo run releases back to back.
+    rate = int(env.get("SYNTHPROOF_RATE_LIMIT", "30" if db != ":memory:" else "0"))
     ctx = AppContext(
         ledger=Ledger(db_path=db, private_key=ledger_key(db)),
         ledger_db=db,
         demo_mode=env.get("SYNTHPROOF_DEMO", "1" if db == ":memory:" else "0") == "1",
         api_keys=keys,
+        budgets=parse_budgets(env.get("SYNTHPROOF_BUDGETS", "")),
+        trusted_network=network,
+        rate_limiter=RateLimiter(rate),
     )
     ctx.seed_demo_ledger()
     return ctx
@@ -303,6 +343,8 @@ def require_api_key(
     """
     ctx = get_context(request)
     if not ctx.auth_enabled:
+        # An open service answers only its trusted network (api/security.py).
+        enforce_trusted_network(request, ctx.trusted_network)
         return ANONYMOUS
     supplied = x_api_key or ""
     if authorization and authorization.lower().startswith("bearer "):

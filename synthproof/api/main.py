@@ -29,6 +29,7 @@ from fastapi.staticfiles import StaticFiles
 
 from synthproof import __version__
 from synthproof.api.context import AppContext, build_context
+from synthproof.api.security import SecurityHeadersMiddleware
 
 _here = os.path.dirname(__file__)
 # `static/` holds the hand-written legacy console, which is a tracked source file.
@@ -114,6 +115,7 @@ def create_app(
         version=__version__,  # one source; this literal had drifted to 0.2.0
     )
     application.state.ctx = ctx if ctx is not None else build_context(env)
+    application.add_middleware(SecurityHeadersMiddleware)
     application.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins(env),

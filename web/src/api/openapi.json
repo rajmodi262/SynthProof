@@ -2149,7 +2149,7 @@
     },
     "/api/run": {
       "post": {
-        "description": "Runs one release and streams every stage as server-sent events.",
+        "description": "Runs one release and streams every stage as server-sent events.\n\nRefused BEFORE anything runs (so with a plain HTTP status, not a stream) when the caller is\nover its rate limit or the release would take it past its epsilon cap (api/security.py).",
         "operationId": "run_api_run_post",
         "parameters": [
           {

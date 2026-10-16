@@ -19,7 +19,7 @@ import traceback
 from typing import Any, Iterator, Optional
 
 import numpy as np
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -32,6 +32,7 @@ from synthproof.api.descriptions import (  # noqa: F401  (audit_ceiling re-expor
     _audit_payload,
     audit_ceiling,
 )
+from synthproof.api.security import limit_key
 from synthproof.frontier.certificate import EVALUATION_PRIVACY
 from synthproof.frontier.experiment import (
     MECHANISMS,
@@ -424,10 +425,17 @@ def _run_stream(
 @router.post("/api/run")
 def run(
     req: RunRequest,
+    request: Request,
     actor: str = Depends(require_api_key),
     ctx: AppContext = Depends(get_context),
 ):
-    """Runs one release and streams every stage as server-sent events."""
+    """Runs one release and streams every stage as server-sent events.
+
+    Refused BEFORE anything runs (so with a plain HTTP status, not a stream) when the caller is
+    over its rate limit or the release would take it past its epsilon cap (api/security.py).
+    """
+    ctx.rate_limiter.check(limit_key(request, actor))
+    ctx.check_budget(actor, req.target_eps)
     return StreamingResponse(
         _run_stream(req, actor, ctx),
         media_type="text/event-stream",
