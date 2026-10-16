@@ -1,0 +1,50 @@
+{
+  "preregistration": "docs/prereg/W10_h1_confirmatory.md",
+  "preregistration_sha256": "abdbb9e51cc9e0e38acd4dc13786262252d06cd76e2b0d064d9d0eab6fc3295e",
+  "amendments_sha256": "f6970495c5436ee1d0a8a345598480a358b67695da826d053c95be2823133fac",
+  "outcome": "correlation_error",
+  "margin": 0.005,
+  "alpha": 0.05,
+  "tost_alpha": 0.05,
+  "comparisons": [
+    {
+      "dataset": "adult",
+      "eps": 8.0,
+      "cells": {
+        "aim": {
+          "n": 15,
+          "mean": 0.013688453502274326,
+          "sd": 0.009669379993105518,
+          "ci95": [
+            0.00833372934371586,
+            0.019043177660832793
+          ]
+        },
+        "pairwise": {
+          "n": 15,
+          "mean": 0.0241032734406109,
+          "sd": 0.011736396303841844,
+          "ci95": [
+            0.017603873803053144,
+            0.030602673078168656
+          ]
+        },
+        "independent": {
+          "n": 15,
+          "mean": 0.1078279396033883,
+          "sd": 0.021892997431029446,
+          "ci95": [
+            0.09570400173655712,
+            0.11995187747021947
+          ]
+        }
+      },
+      "difference_aim_minus_pairwise": -0.010414819938336574,
+      "welch_p": 0.01321097593231071,
+      "tost_p": 0.9104125704524816,
+      "mde_at_80pct_power": 0.01139566320740746,
+      "welch_p_holm": 0.01321097593231071,
+      "verdict": "AIM lower"
+    }
+  ]
+}

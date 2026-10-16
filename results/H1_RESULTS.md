@@ -97,6 +97,10 @@ aim           [0.0059, 0.0153]     entirely below independent; overlaps pairwise
 The ordering aim < pairwise holds on the means (0.0105 vs 0.0283) but is **not established**:
 the intervals overlap.
 
+> **Settled for Adult at ε = 8 by the preregistered confirmatory run** (15 fresh seeds):
+> [`H1_CONFIRMATORY.md`](H1_CONFIRMATORY.md). This 5-seed grid is its pilot; other datasets and
+> ε values were not re-run.
+
 **Separation appears only at ε ≥ 4.** At ε ≤ 2 the DP noise dominates the 0.1034 correlation
 being measured and no family is distinguishable. That threshold is itself a useful
 practitioner result: *below ε ≈ 4 on this data, paying for a structured mechanism buys nothing

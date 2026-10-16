@@ -1,0 +1,45 @@
+{
+  "index": 12,
+  "config": {
+    "mechanism": "aim",
+    "target_eps": 8.0,
+    "seed": 112,
+    "delta": 1e-05,
+    "dataset": "uci_adult",
+    "rows": 6000,
+    "target_col": "income",
+    "corr_cols": [
+      "age",
+      "hours_per_week"
+    ],
+    "pipeline": "audit27"
+  },
+  "config_hash": "d3b4d29e2ce90fa0",
+  "metrics": {
+    "proved_eps": 7.9996220784537275,
+    "audited_eps": 0.0,
+    "audit_p": 0.8774695834885271,
+    "tstr_f1": 0.6907856560254189,
+    "marginal_w1": 0.028401839496706528,
+    "trtr_f1": 0.7584282340070896,
+    "usefulness_multi": 0.924456944604,
+    "mia_auc": 0.49350312499999993,
+    "domias_auc": 0.5637093750000001,
+    "domias_tpr_at_1pct": 0.015,
+    "singling_out_risk": 0.0,
+    "linkability_rate": 0.0,
+    "linkability_excess": 0.0,
+    "attr_inference_accuracy": 0.795,
+    "attr_leakage_vs_conditional": -0.1975,
+    "correlation_error": 0.0215626589228482,
+    "structure_error_all": 0.04910178355775734,
+    "pair_tvd": 0.09041125541125541,
+    "reference": "fit_split",
+    "auditor": "one_run",
+    "audit_ceiling": 2.9720875578943553,
+    "utility_source": "clean_fit",
+    "canary_fraction": 0.0
+  },
+  "completed": true,
+  "version": 2
+}

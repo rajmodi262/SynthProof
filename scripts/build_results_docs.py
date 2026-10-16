@@ -381,6 +381,38 @@ def real_release_audit_table() -> str:
     return "\n".join(rows)
 
 
+def h1_confirmatory_table() -> str:
+    """The preregistered AIM-vs-pairwise confirmatory run (W10): results/h1_confirmatory/."""
+    d = _load("results/h1_confirmatory/analysis.json")
+    rows = [
+        "| Dataset | eps | mechanism | seeds | correlation error, mean [95% CI] | SD |",
+        "|---|---:|---|---:|---|---:|",
+    ]
+    verdicts = []
+    for r in d["comparisons"]:
+        for mech, c in r["cells"].items():
+            lo, hi = c["ci95"]
+            rows.append(
+                f"| {r['dataset']} | {r['eps']:g} | `{mech}` | {c['n']} | "
+                f"{c['mean']:.4f} [{lo:.4f}, {hi:.4f}] | {c['sd']:.4f} |"
+            )
+        verdicts.append(
+            f"**{r['dataset']}, eps {r['eps']:g}: {r['verdict']}** -- AIM minus pairwise "
+            f"{r['difference_aim_minus_pairwise']:+.4f}, Welch p = {r['welch_p']:.4f} "
+            f"(Holm-adjusted {r['welch_p_holm']:.4f}); TOST p = {r['tost_p']:.4f} at margin "
+            f"+/-{d['margin']:g}; minimum detectable difference at 80% power "
+            f"{r['mde_at_80pct_power']:.4f}."
+        )
+    rows.append("")
+    rows.extend(verdicts)
+    rows.append("")
+    rows.append(
+        f"*Generated from `results/h1_confirmatory/analysis.json`. Preregistration SHA-256 "
+        f"{d['preregistration_sha256'][:12]}..., amendments {d['amendments_sha256'][:12]}...*"
+    )
+    return "\n".join(rows)
+
+
 BLOCKS: List[Tuple[str, str, Callable[[], str]]] = [
     ("results/ADVERSARY_COMPARISON.md", "adversary-table", adversary_table),
     ("results/SELECTION_ABLATION.md", "selection-table-adult", selection_table_adult),
@@ -392,6 +424,7 @@ BLOCKS: List[Tuple[str, str, Callable[[], str]]] = [
     ("results/REAL_RELEASE_STUDY.md", "real-release-audit", real_release_audit_table),
     ("results/H1_RESULTS.md", "h1-trend-table", h1_trend_table),
     ("results/H1_RESULTS.md", "h1-ratio-table", h1_ratio_table),
+    ("results/H1_CONFIRMATORY.md", "h1-confirmatory-table", h1_confirmatory_table),
     (
         "research/imputation_audit/RESULTS.md",
         "imputation-arms-table",
