@@ -14,6 +14,7 @@ Usage:
 """
 
 import argparse
+import hashlib
 import json
 import time
 
@@ -224,6 +225,12 @@ def main():
     )
     ap.add_argument("--out", default=None, help="output path override")
     ap.add_argument(
+        "--prereg",
+        default=None,
+        help="preregistration file; its SHA-256 goes into the payload, binding the result to a "
+        "plan committed before the run",
+    )
+    ap.add_argument(
         "--mechanisms",
         nargs="+",
         default=None,
@@ -340,6 +347,9 @@ def main():
         "true_correlation": float(true_corr),
         "utility_measured_on": "clean_fit",
         "elapsed_seconds": round(elapsed, 1),
+        "preregistration_sha256": (
+            hashlib.sha256(open(args.prereg, "rb").read()).hexdigest() if args.prereg else None
+        ),
         "cells": [r.to_dict() for r in res],
     }
     if fingerprint is not None:
