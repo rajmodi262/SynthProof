@@ -20,6 +20,8 @@ on:
       - tests/test_differential_accounting.py
       - tests/test_exact_noise.py
       - tests/test_weighted_allocation.py
+      - tests/test_noise_mechanisms.py
+      - pyproject.toml
       - scripts/mutation.sh
       - .github/workflows/mutation.yml
 

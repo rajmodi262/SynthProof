@@ -158,6 +158,7 @@ pytest_add_cli_args_test_selection = [
     "tests/test_exact_noise.py",
     "tests/test_weighted_allocation.py",
     "tests/test_cli_and_allocation_edges.py",
+    "tests/test_noise_mechanisms.py",
 ]
 also_copy = ["scripts/"]
 
