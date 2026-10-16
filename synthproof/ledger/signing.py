@@ -20,9 +20,12 @@ Key custody is an organisational control. Anyone with the private key can rewrit
 and re-sign it, so the chain is tamper-EVIDENT, not tamper-proof.
 """
 
+import hashlib
+import json
 import os
 import secrets
 import stat
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -35,6 +38,46 @@ PUBLIC_KEY_NAME = "synthproof_ed25519.pub"
 # The curator's secret for keyed input fingerprints. Held beside the signing key and, like it,
 # never published. See `load_fingerprint_key`.
 FINGERPRINT_KEY_NAME = "fingerprint.key"
+# Where a rotated-out key's PUBLIC half is kept (its private half is destroyed), and the log.
+RETIRED_DIR_NAME = "retired"
+ROTATION_LOG_NAME = "ROTATIONS.jsonl"
+
+
+def key_passphrase() -> Optional[bytes]:
+    """The passphrase that encrypts the private key at rest, if one is configured.
+
+    SYNTHPROOF_KEY_PASSPHRASE, or SYNTHPROOF_KEY_PASSPHRASE_FILE (a path, e.g. a Docker secret,
+    so the passphrase need not sit in the environment). Unset: keys are written unencrypted, as
+    before, and the file permissions are the only protection.
+    """
+    path = os.environ.get("SYNTHPROOF_KEY_PASSPHRASE_FILE")
+    if path:
+        value = Path(path).read_text(encoding="utf-8").strip()
+    else:
+        value = os.environ.get("SYNTHPROOF_KEY_PASSPHRASE", "")
+    return value.encode("utf-8") if value else None
+
+
+def _private_pem(key: ed25519.Ed25519PrivateKey) -> bytes:
+    passphrase = key_passphrase()
+    encryption = (
+        serialization.BestAvailableEncryption(passphrase)
+        if passphrase
+        else serialization.NoEncryption()
+    )
+    return key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=encryption,
+    )
+
+
+def key_fingerprint(key: ed25519.Ed25519PublicKey) -> str:
+    """A short, stable name for a public key: the first 16 hex digits of SHA-256 of its bytes."""
+    raw = key.public_bytes(
+        encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
+    )
+    return hashlib.sha256(raw).hexdigest()[:16]
 
 
 def resolve_key_dir() -> Path:
@@ -64,10 +107,10 @@ def generate_keypair(key_dir: Optional[Path] = None, overwrite: bool = False) ->
     honoured however late it is set. It used to default to the import-time constant, which
     meant writing the key somewhere the loaders would not look.
 
-    The private key is written unencrypted, which is appropriate for a capstone artefact and
-    NOT for a real deployment — a production holder would keep it in an HSM or a secrets
-    manager. `.keys/` is gitignored; the permission tightening below is a second line of
-    defence rather than the primary one.
+    The private key is encrypted at rest with the passphrase from `key_passphrase()` when one is
+    configured (SYNTHPROOF_KEY_PASSPHRASE or _FILE), and written unencrypted otherwise. A
+    production holder would still prefer an HSM or a secrets manager. `.keys/` is gitignored; the
+    permission tightening below is a further line of defence.
     """
     key_dir = Path(key_dir) if key_dir is not None else resolve_key_dir()
     key_dir.mkdir(parents=True, exist_ok=True)
@@ -82,13 +125,7 @@ def generate_keypair(key_dir: Optional[Path] = None, overwrite: bool = False) ->
         )
 
     private_key = ed25519.Ed25519PrivateKey.generate()
-    priv_path.write_bytes(
-        private_key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption(),
-        )
-    )
+    priv_path.write_bytes(_private_pem(private_key))
     pub_path.write_bytes(
         private_key.public_key().public_bytes(
             encoding=serialization.Encoding.PEM,
@@ -114,10 +151,59 @@ def load_private_key(path: Optional[Path] = None) -> ed25519.Ed25519PrivateKey:
             "    synthproof keygen\n"
             "Then publish the .pub file so a third party can verify your data sheets."
         )
-    key = serialization.load_pem_private_key(path.read_bytes(), password=None)
+    data = path.read_bytes()
+    encrypted = b"ENCRYPTED" in data.split(b"\n", 1)[0]
+    passphrase = key_passphrase()
+    if encrypted and passphrase is None:
+        raise SignatureError(
+            f"{path} is encrypted. Set SYNTHPROOF_KEY_PASSPHRASE (or _FILE) to the passphrase it "
+            "was written with."
+        )
+    try:
+        key = serialization.load_pem_private_key(data, password=passphrase if encrypted else None)
+    except ValueError as exc:  # wrong passphrase, or a corrupt file
+        raise SignatureError(f"Could not decrypt {path}: wrong passphrase or corrupt key.") from exc
     if not isinstance(key, ed25519.Ed25519PrivateKey):
         raise SignatureError(f"{path} is not an Ed25519 private key.")
     return key
+
+
+def rotate_keypair(key_dir: Optional[Path] = None) -> Tuple[str, str]:
+    """Replaces the signing key, keeping the old PUBLIC key so earlier signatures still verify.
+
+    The old public key moves to `retired/<fingerprint>.pub`; the old private key is overwritten
+    and deleted, so nothing can sign as it again; the event is appended to ROTATIONS.jsonl. A
+    sheet signed before the rotation carries its own public key and verifies against the retired
+    `.pub`. A file-backed ledger must be re-signed under the new key -- `Ledger.rotate_key`, which
+    `synthproof keygen --rotate --ledger PATH` runs -- because it verifies against one key.
+
+    Returns (retired_fingerprint, new_fingerprint).
+    """
+    key_dir = Path(key_dir) if key_dir is not None else resolve_key_dir()
+    priv_path, pub_path = key_dir / PRIVATE_KEY_NAME, key_dir / PUBLIC_KEY_NAME
+    old_private = load_private_key(priv_path)
+    old_fp = key_fingerprint(old_private.public_key())
+    retired = key_dir / RETIRED_DIR_NAME
+    retired.mkdir(exist_ok=True)
+    (retired / f"{old_fp}.pub").write_bytes(pub_path.read_bytes())
+    # Overwrite before deleting, so the retired private key is not trivially recoverable.
+    priv_path.write_bytes(secrets.token_bytes(len(priv_path.read_bytes())))
+    priv_path.unlink()
+    pub_path.unlink()
+    new_priv_path, _ = generate_keypair(key_dir)
+    new_fp = key_fingerprint(load_private_key(new_priv_path).public_key())
+    with open(key_dir / ROTATION_LOG_NAME, "a", encoding="utf-8") as fh:
+        fh.write(
+            json.dumps(
+                {
+                    "rotated_at": datetime.now(timezone.utc).isoformat(),
+                    "retired": old_fp,
+                    "current": new_fp,
+                }
+            )
+            + "\n"
+        )
+    return old_fp, new_fp
 
 
 def load_public_key(path: Optional[Path] = None) -> ed25519.Ed25519PublicKey:

@@ -260,6 +260,44 @@ def run(
         click.echo("This sheet is UNSIGNED. Re-run with --sign to make it verifiable.")
 
 
+def _rotate(key_dir: Optional[Path], ledger_db: Optional[str]) -> None:
+    """Rotates the signing key and, if given, re-signs a ledger under it -- ledger first checked."""
+    from synthproof.ledger.ledger import Ledger
+
+    ledger = None
+    if ledger_db:
+        # Verify under the CURRENT key before anything changes: a ledger that does not verify
+        # must not be re-signed into one that does.
+        ledger = Ledger(
+            db_path=ledger_db,
+            private_key=signing.load_private_key(
+                (key_dir or signing.resolve_key_dir()) / signing.PRIVATE_KEY_NAME
+            ),
+        )
+        ok, reason = ledger.verify_with_reason()
+        if not ok:
+            raise click.ClickException(
+                f"The ledger does not verify, so it was not rotated: {reason}"
+            )
+    try:
+        old_fp, new_fp = signing.rotate_keypair(key_dir)
+    except FileNotFoundError as exc:
+        raise click.ClickException(str(exc)) from exc
+    click.echo(f"Rotated signing key {old_fp} -> {new_fp}.")
+    click.echo(
+        f"  The old public key is kept in retired/{old_fp}.pub; its private key is destroyed."
+    )
+    if ledger is not None:
+        ledger.rotate_key(
+            signing.load_private_key(
+                (key_dir or signing.resolve_key_dir()) / signing.PRIVATE_KEY_NAME
+            )
+        )
+        click.echo(
+            f"  Re-signed {len(ledger.get_entries())} ledger entries and the head; it verifies."
+        )
+
+
 @main.command()
 @click.option(
     "--key-dir",
@@ -272,8 +310,29 @@ def run(
     is_flag=True,
     help="Replace an existing key. Every signature it made becomes unverifiable.",
 )
-def keygen(key_dir, overwrite):
-    """Creates the persistent Ed25519 signing key."""
+@click.option(
+    "--rotate",
+    is_flag=True,
+    help="Replace the key, keeping the old PUBLIC key in retired/ so earlier sheets still verify.",
+)
+@click.option(
+    "--ledger",
+    "ledger_db",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False),
+    help="With --rotate: a file-backed ledger to re-sign under the new key (it is verified first).",
+)
+def keygen(key_dir, overwrite, rotate, ledger_db):
+    """Creates the persistent Ed25519 signing key, or rotates it.
+
+    Set SYNTHPROOF_KEY_PASSPHRASE (or SYNTHPROOF_KEY_PASSPHRASE_FILE) first to have the private
+    key encrypted at rest.
+    """
+    if rotate:
+        _rotate(Path(key_dir) if key_dir else None, ledger_db)
+        return
+    if ledger_db:
+        raise click.UsageError("--ledger only applies with --rotate.")
     kwargs = {"overwrite": overwrite}
     if key_dir:
         kwargs["key_dir"] = Path(key_dir)

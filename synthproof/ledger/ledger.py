@@ -280,6 +280,56 @@ class Ledger:
             conn.close()
         return valid, reason
 
+    def rotate_key(self, new_private_key: ed25519.Ed25519PrivateKey) -> None:
+        """Re-signs every entry and the head under `new_private_key`, then switches to it.
+
+        Refuses unless the chain verifies under the CURRENT key first: rotation must not launder
+        a tampered ledger into a validly signed one. The entry hash does not cover the signature
+        (`LedgerEntry.canonical_bytes`), so re-signing leaves every hash and chain link intact.
+        Done in one transaction: an interruption leaves the old, still-valid signatures.
+        """
+        ok, reason = self.verify_with_reason()
+        if not ok:
+            raise ValueError(
+                f"Refusing to rotate the key of a ledger that does not verify: {reason}"
+            )
+        conn = self._get_conn()
+        rows = conn.execute("SELECT * FROM ledger_entries ORDER BY id ASC").fetchall()
+        tip = "0" * 64
+        try:
+            for row in rows:
+                entry = LedgerEntry(
+                    entry_id=row["entry_id"],
+                    prev_hash=row["prev_hash"],
+                    timestamp=row["timestamp"],
+                    dataset_id=row["dataset_id"],
+                    run_id=row["run_id"],
+                    mechanism_name=row["mechanism_name"],
+                    sensitivity=row["sensitivity"],
+                    noise_scale=row["noise_scale"],
+                    eps_spent=row["eps_spent"],
+                    delta=row["delta"],
+                    seed=row["seed"],
+                    actor=row["actor"],
+                    signature="",
+                )
+                sig = new_private_key.sign(entry.canonical_bytes()).hex()
+                conn.execute(
+                    "UPDATE ledger_entries SET signature = ? WHERE entry_id = ?",
+                    (sig, row["entry_id"]),
+                )
+                tip = row["hash"]
+            self._private_key = new_private_key
+            self._public_key = new_private_key.public_key()
+            self._write_head(conn, len(rows), tip)
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            if not self._conn:
+                conn.close()
+
     def clear(self) -> None:
         """Empties the ledger, head included.
 
