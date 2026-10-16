@@ -4,6 +4,8 @@ interface KpiCardProps {
   value: string | number | null
   unit?: string
   laymanLabel: string
+  /** The API field this value is read from, e.g. `run.sheet.total_proved_eps`. */
+  source?: string
   chip?: {
     text: string
     variant: 'verify' | 'seal' | 'neutral' | 'brass'
@@ -19,6 +21,7 @@ export function KpiCard({
   unit,
   laymanLabel,
   chip,
+  source,
   isOpen,
   onClick,
 }: KpiCardProps) {
@@ -28,6 +31,8 @@ export function KpiCard({
     <button
       type="button"
       id={`kpi-card-${id}`}
+      data-source={source}
+      title={source ? `Source: ${source}` : undefined}
       onClick={onClick}
       aria-haspopup="dialog"
       aria-expanded={isOpen}
@@ -62,6 +67,7 @@ export function KpiCard({
       {/* Main hero numeral */}
       <div className="my-1.5 flex items-baseline gap-1.5">
         <span
+          data-testid="kpi-value"
           className={`font-display text-4xl leading-none tracking-tight sm:text-5xl ${
             hasValue ? 'text-ink tnum' : 'text-faint'
           }`}

@@ -360,4 +360,58 @@ test.describe('the full pipeline, through the UI @slow', () => {
     const after = (await (await request.get('/api/ledger')).json()).count as number
     expect(after - before).toBe(6)
   })
+
+  test('every KPI value equals the API field it names, read from the real run stream', async ({
+    page,
+    request,
+  }) => {
+    // Capture the run stream itself. The route fetches the real response, keeps a copy, and
+    // hands the same bytes to the page -- so the console renders exactly what was captured.
+    let stream = ''
+    await page.route('**/api/run', async (route) => {
+      const response = await route.fetch()
+      stream = await response.text()
+      await route.fulfill({ response, body: stream })
+    })
+
+    await page.goto('/')
+    await page.getByRole('button', { name: /HR Attrition/i }).first().click()
+    await page.getByText(/Run parameters/i).first().click()
+    await page.locator('label:has-text("canary pairs") input').fill('4')
+    await page.getByRole('button', { name: /Run release & compute proof/i }).first().click()
+    await expect(page.getByTestId('frontier-point')).toHaveCount(1, { timeout: 300_000 })
+
+    const doneData = stream
+      .split('\n\n')
+      .find((frame) => frame.includes('event: done'))!
+      .split('\n')
+      .filter((l) => l.startsWith('data: '))
+      .map((l) => l.slice(6))
+      .join('\n')
+    const sources = {
+      run: JSON.parse(doneData),
+      ledger: await (await request.get('/api/ledger')).json(),
+    } as Record<string, unknown>
+    const resolve = (path: string) =>
+      path.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], sources)
+
+    const cards = page.locator('[data-source]')
+    const n = await cards.count()
+    expect(n, 'every KPI card declares its source').toBeGreaterThanOrEqual(7)
+    for (let i = 0; i < n; i++) {
+      const card = cards.nth(i)
+      const path = (await card.getAttribute('data-source'))!
+      const shown = (await card.getByTestId('kpi-value').innerText()).trim()
+      const actual = resolve(path)
+      if (typeof actual === 'boolean') {
+        expect(shown, path).toBe(actual ? 'INTACT' : 'BROKEN')
+        continue
+      }
+      expect(typeof actual, `${path} resolves to a number in the API`).toBe('number')
+      // Equal to the precision displayed: 0.123 means |actual - 0.123| <= 0.0005.
+      const decimals = (shown.split('.')[1] ?? '').length
+      expect(Math.abs(Number(shown.replace(/,/g, '')) - (actual as number)), `${path} shown as ${shown}`)
+        .toBeLessThanOrEqual(0.5 * 10 ** -decimals + 1e-12)
+    }
+  })
 })

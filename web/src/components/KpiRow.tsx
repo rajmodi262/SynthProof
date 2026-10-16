@@ -18,11 +18,17 @@ export function KpiRow({
   const audit = result?.audit ?? null
   const sheet = result?.sheet ?? null
 
-  const provedEps = sheet?.total_proved_eps ?? m?.proved_eps ?? null
-  const auditedEps = sheet?.total_audited_eps ?? m?.audited_eps ?? null
+  // ONE source per card, named in its `source` prop and shown on hover. The signed sheet is
+  // preferred where it carries the value, because that is the artefact a third party checks.
+  // There used to be fallbacks (`sheet.total_proved_eps ?? measurements.proved_eps`, and a
+  // `sheet.rows` the server never sends), which made "where did this number come from" have
+  // two answers. e2e/console.spec.ts resolves every `data-source` against the real run stream.
+  const num = (v: unknown) => (typeof v === 'number' ? v : null)
+  const provedEps = num(sheet?.total_proved_eps)
+  const auditedEps = num(sheet?.total_audited_eps)
   const ceiling = audit?.ceiling ?? null
   const correlationError = m?.correlation_error ?? null
-  const rows = sheet?.num_rows ?? (sheet?.rows as number | undefined) ?? null
+  const rows = num(sheet?.num_rows)
   const ledgerCount = ledger?.count ?? null
   const ledgerVerified = ledger?.verified ?? null
 
@@ -37,6 +43,7 @@ export function KpiRow({
       {/* 1. Privacy spent */}
       <KpiCard
         id="privacy-spent"
+        source="run.sheet.total_proved_eps"
         keyLabel="PRIVACY · PROVED"
         value={typeof provedEps === 'number' ? provedEps.toFixed(3) : null}
         unit="ε"
@@ -48,6 +55,7 @@ export function KpiRow({
       {/* 2. Privacy audited */}
       <KpiCard
         id="privacy-audited"
+        source="run.sheet.total_audited_eps"
         keyLabel="PRIVACY · AUDITED"
         value={typeof auditedEps === 'number' ? auditedEps.toFixed(3) : null}
         unit="ε"
@@ -59,6 +67,7 @@ export function KpiRow({
       {/* 3. Audit reach */}
       <KpiCard
         id="audit-reach"
+        source="run.audit.ceiling"
         keyLabel="AUDIT · CEILING"
         value={typeof ceiling === 'number' ? ceiling.toFixed(2) : null}
         unit="ε max"
@@ -78,6 +87,7 @@ export function KpiRow({
       {/* 4. Faithfulness */}
       <KpiCard
         id="faithfulness"
+        source="run.measurements.correlation_error"
         keyLabel="UTILITY · FIDELITY"
         value={typeof correlationError === 'number' ? correlationError.toFixed(3) : null}
         unit="MAE"
@@ -89,6 +99,7 @@ export function KpiRow({
       {/* 5. Records */}
       <KpiCard
         id="records"
+        source="run.sheet.num_rows"
         keyLabel="RELEASE · SIZE"
         value={typeof rows === 'number' ? rows.toLocaleString() : null}
         unit="rows"
@@ -100,6 +111,7 @@ export function KpiRow({
       {/* 6. Ledger height */}
       <KpiCard
         id="ledger-height"
+        source="ledger.count"
         keyLabel="LEDGER · HEIGHT"
         value={typeof ledgerCount === 'number' ? ledgerCount : null}
         unit="sealed"
@@ -111,6 +123,7 @@ export function KpiRow({
       {/* 7. Seal */}
       <KpiCard
         id="seal"
+        source="ledger.verified"
         keyLabel="INTEGRITY · SEAL"
         value={ledgerVerified === null ? null : ledgerVerified ? 'INTACT' : 'BROKEN'}
         laymanLabel="Is the cryptographic chain intact now?"
